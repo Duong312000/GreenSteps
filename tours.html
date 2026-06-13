@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Danh sách các hành trình xanh được gợi ý tại Việt Nam bởi GreenSteps.">
+    <title>GreenSteps Travel - Tìm kiếm Lịch Trình Xanh</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Geist:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Header Container -->
+    <div id="app-header"></div>
+
+    <main class="main-viewport">
+        <!-- BANNERS SECTION (Slide Page 4) -->
+        <section class="tours-banners-section">
+            <div class="dest-banner-card" onclick="filterByDestination('Đà Lạt')">
+                <img src="image/1dc8619487310884c9d631d689ece1e7.jpg" alt="Đà Lạt">
+                <div class="dest-banner-overlay">
+                    <h3>Đà Lạt</h3>
+                    <p>4 loại tour đặc sắc</p>
+                </div>
+            </div>
+            <div class="dest-banner-card" onclick="filterByDestination('Phú Yên')">
+                <img src="image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg" alt="Phú Yên">
+                <div class="dest-banner-overlay">
+                    <h3>Phú Yên</h3>
+                    <p>4 loại tour đặc sắc</p>
+                </div>
+            </div>
+            <div class="dest-banner-card" onclick="filterByDestination('Đà Nẵng - Hội An')">
+                <img src="image/Viet Nam.png" alt="Đà Nẵng - Hội An">
+                <div class="dest-banner-overlay">
+                    <h3>Đà Nẵng - Hội An</h3>
+                    <p>4 loại tour đặc sắc</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FILTER BAR SECTION (Slide Page 4) -->
+        <section class="tours-filter-section">
+            <div class="tours-filter-header">
+                <div class="search-input-wrapper">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="toursSearchInput" oninput="filterTours()" placeholder="Tìm kiếm tour...">
+                </div>
+                <span class="tours-count-badge" id="toursCountText">Tìm thấy 12 tour</span>
+            </div>
+            
+            <div class="tours-filters-row">
+                <select id="filterDestSelect" onchange="filterTours()">
+                    <option value="all">Tất cả điểm đến</option>
+                    <option value="Đà Lạt">Đà Lạt</option>
+                    <option value="Phú Yên">Phú Yên</option>
+                    <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>
+                </select>
+
+                <select id="filterTypeSelect" onchange="filterTours()">
+                    <option value="all">Tất cả loại tour</option>
+                    <option value="Gia đình">Tour Gia đình</option>
+                    <option value="Trải nghiệm">Tour Trải nghiệm</option>
+                    <option value="Tiết kiệm">Tour Tiết kiệm</option>
+                    <option value="Nghỉ dưỡng">Tour Nghỉ dưỡng</option>
+                </select>
+
+                <select id="filterPriceSelect" onchange="filterTours()">
+                    <option value="all">Tất cả mức giá</option>
+                    <option value="under2M">Dưới 2.000.000đ</option>
+                    <option value="2M-4M">2.000.000 - 4.000.000đ</option>
+                    <option value="above4M">Trên 4.000.000đ</option>
+                </select>
+            </div>
+        </section>
+
+        <!-- TOURS GRID (Slide Page 4) -->
+        <section class="tours-grid-section">
+            <div class="tours-grid" id="toursGrid">
+                <!-- Special "Create New Itinerary" Card (Placed at the very first slot) -->
+                <div class="tour-card create-new-card" onclick="openCreateItineraryModal()">
+                    <div class="create-new-dashed-box">
+                        <div class="plus-icon">+</div>
+                        <h3>Tạo Lịch Trình Mới</h3>
+                        <p>Bắt đầu hành trình trống của riêng bạn và để AI hỗ trợ sắp xếp địa điểm</p>
+                    </div>
+                </div>
+
+                <!-- Tour Cards will be rendered dynamically -->
+            </div>
+        </section>
+    </main>
+
+    <!-- CREATE ITINERARY MODAL -->
+    <div class="modal-overlay" id="createItiModal">
+        <div class="custom-modal-card">
+            <div class="modal-header">
+                <h3>Thiết lập Hành Trình Mới</h3>
+                <button class="modal-close-btn" onclick="closeCreateItineraryModal()">&times;</button>
+            </div>
+            <form id="createItiForm" onsubmit="submitNewItinerary(event)">
+                <div class="form-group">
+                    <label for="modalDest">Điểm đến</label>
+                    <select id="modalDest" required>
+                        <option value="Đà Lạt">Đà Lạt</option>
+                        <option value="Phú Yên">Phú Yên</option>
+                        <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modalDays">Số ngày đi</label>
+                    <select id="modalDays" required>
+                        <option value="1">1 ngày</option>
+                        <option value="2">2 ngày</option>
+                        <option value="3" selected>3 ngày</option>
+                        <option value="4">4 ngày</option>
+                        <option value="5">5 ngày</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeCreateItineraryModal()">Hủy</button>
+                    <button type="submit" class="btn-primary">Bắt đầu thiết kế</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer Container -->
+    <div id="app-footer"></div>
+
+    <!-- Core Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- Tours Interactions -->
+    <script>
+        const toursData = [
+            { id: "preset_dl_1", title: "Tour Đà Lạt Gia Đình 3N2Đ", destination: "Đà Lạt", days: 3, type: "Gia đình", cost: 1890000, oldCost: 2200000, image: "image/1dc8619487310884c9d631d689ece1e7.jpg", tags: ["Vườn hoa", "Thác Datanla", "Cù Lần"], rating: 4.9, votes: 128 },
+            { id: "preset_dl_2", title: "Tour Mạo Hiểm Đà Lạt", destination: "Đà Lạt", days: 2, type: "Trải nghiệm", cost: 1890000, oldCost: 2200000, image: "image/52627caa0015b2f833fbdc632d37dc82.jpg", tags: ["Canyoning", "Paragliding", "Camping"], rating: 4.8, votes: 89 },
+            { id: "preset_dl_3", title: "Tour Đà Lạt Tiết Kiệm", destination: "Đà Lạt", days: 2, type: "Tiết kiệm", cost: 990000, oldCost: 1200000, image: "image/581559b0ca4ebbb8ec09d933fc7bff3d.jpg", tags: ["Tour ghép", "Homestay", "Walking"], rating: 4.7, votes: 256 },
+            { id: "preset_dl_4", title: "Nghỉ Dưỡng Đà Lạt 4N3Đ", destination: "Đà Lạt", days: 4, type: "Nghỉ dưỡng", cost: 5990000, oldCost: 7000000, image: "image/2eee566424c1f35fbeacf85496b4b6e7.jpg", tags: ["Resort 5 sao", "Spa", "Fine dining"], rating: 5.0, votes: 45 },
+            
+            { id: "preset_py_1", title: "Phú Yên Gia Đình Vui Vẻ", destination: "Phú Yên", days: 3, type: "Gia đình", cost: 3290000, oldCost: 3800000, image: "image/cb4fbf769d60d911e13c255f7fb39dcc.jpg", tags: ["Bãi biển riêng", "Trẻ em", "BBQ hải sản"], rating: 4.9, votes: 78 },
+            { id: "preset_py_2", title: "Tour Phú Yên Biển Xanh", destination: "Phú Yên", days: 3, type: "Trải nghiệm", cost: 2490000, oldCost: 2900000, image: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", tags: ["Gành Đá Đĩa", "Bãi Xép", "Mũi Điện"], rating: 4.8, votes: 167 },
+            { id: "preset_py_3", title: "Tour Phú Yên Tiết Kiệm", destination: "Phú Yên", days: 2, type: "Tiết kiệm", cost: 890000, oldCost: 1100000, image: "image/e8b896896439701c1ff79d65290703b0.jpg", tags: ["Tour ghép đoàn", "Homestay", "Dân dã"], rating: 4.6, votes: 134 },
+            { id: "preset_py_4", title: "Nghỉ Dưỡng Phú Yên 4N3Đ", destination: "Phú Yên", days: 4, type: "Nghỉ dưỡng", cost: 4990000, oldCost: 5800000, image: "image/4302842f8d693c25238f2141964a64b2.jpg", tags: ["Resort view biển", "Spa thư giãn", "Hải sản"], rating: 4.9, votes: 52 },
+            
+            { id: "preset_dn_1", title: "Đà Nẵng Gia Đình 3N2Đ", destination: "Đà Nẵng - Hội An", days: 3, type: "Gia đình", cost: 2790000, oldCost: 3200000, image: "image/da38f44902391ce9a9e4f0fd4b69fb04.jpg", tags: ["Biển Mỹ Khê", "Cầu Vàng", "Asia Park"], rating: 4.8, votes: 189 },
+            { id: "preset_dn_2", title: "Đà Nẵng - Hội An Văn Hóa", destination: "Đà Nẵng - Hội An", days: 4, type: "Trải nghiệm", cost: 3990000, oldCost: 4500000, image: "image/Viet Nam.png", tags: ["Phố cổ Hội An", "Chùa Cầu", "Làng nghề"], rating: 4.9, votes: 312 },
+            { id: "preset_dn_3", title: "Tour Đà Nẵng Tiết Kiệm", destination: "Đà Nẵng - Hội An", days: 2, type: "Tiết kiệm", cost: 990000, oldCost: 1300000, image: "image/b025d2b33ebe6db7e576ff3476f9acde.jpg", tags: ["Tour ghép", "Hostel", "Đường phố"], rating: 4.7, votes: 203 },
+            { id: "preset_dn_4", title: "Nghỉ Dưỡng Đà Nẵng 5N4Đ", destination: "Đà Nẵng - Hội An", days: 5, type: "Nghỉ dưỡng", cost: 7990000, oldCost: 9500000, image: "image/7c9e14a82698a594dd914369bfb8eaa5.jpg", tags: ["Intercontinental", "Golf", "Bãi biển riêng"], rating: 5.0, votes: 67 }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check session queries
+            const qDest = sessionStorage.getItem('tours_search_dest');
+            if (qDest) {
+                document.getElementById('filterDestSelect').value = qDest;
+                sessionStorage.removeItem('tours_search_dest');
+            }
+            renderTours(toursData);
+        });
+
+        function renderTours(tours) {
+            const grid = document.getElementById('toursGrid');
+            
+            // Remove previous tour cards, keep the first Create Itinerary Card
+            const cardItems = grid.querySelectorAll('.tour-card:not(.create-new-card)');
+            cardItems.forEach(item => item.remove());
+
+            tours.forEach(tour => {
+                const card = document.createElement('div');
+                card.className = 'tour-card';
+                card.onclick = () => window.location.href = `tour_detail.html?id=${tour.id}`;
+                card.innerHTML = `
+                    <div class="tour-img-container">
+                        <img src="${tour.image}" alt="${tour.title}">
+                        <div class="price-pill-overlay">
+                            <span class="price-new">${tour.cost.toLocaleString('vi-VN')}đ</span>
+                            <span class="price-old">${tour.oldCost.toLocaleString('vi-VN')}đ</span>
+                        </div>
+                    </div>
+                    <div class="tour-info">
+                        <div class="tour-region">${tour.destination} • ${tour.days} ngày</div>
+                        <h3 class="tour-title">${tour.title}</h3>
+                        <div class="tour-tags-row">
+                            ${tour.tags.map(t => `<span class="tour-tag-pill">${t}</span>`).join('')}
+                        </div>
+                        <div class="tour-rating-row">
+                            <span class="tour-stars">⭐ ${tour.rating}</span>
+                            <span class="tour-votes">(${tour.votes})</span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('toursCountText').innerText = `Tìm thấy ${tours.length} tour`;
+        }
+
+        function filterTours() {
+            const query = document.getElementById('toursSearchInput').value.toLowerCase();
+            const dest = document.getElementById('filterDestSelect').value;
+            const type = document.getElementById('filterTypeSelect').value;
+            const price = document.getElementById('filterPriceSelect').value;
+
+            let filtered = toursData.filter(tour => {
+                // Search query match
+                const matchQuery = tour.title.toLowerCase().includes(query) || tour.destination.toLowerCase().includes(query);
+                
+                // Destination match
+                const matchDest = (dest === 'all' || tour.destination === dest);
+                
+                // Type match
+                const matchType = (type === 'all' || tour.type === type);
+                
+                // Price match
+                let matchPrice = true;
+                if (price === 'under2M') {
+                    matchPrice = tour.cost < 2000000;
+                } else if (price === '2M-4M') {
+                    matchPrice = tour.cost >= 2000000 && tour.cost <= 4000000;
+                } else if (price === 'above4M') {
+                    matchPrice = tour.cost > 4000000;
+                }
+
+                return matchQuery && matchDest && matchType && matchPrice;
+            });
+
+            renderTours(filtered);
+        }
+
+        function filterByDestination(dest) {
+            document.getElementById('filterDestSelect').value = dest;
+            filterTours();
+        }
+
+        // Modal triggers
+        function openCreateItineraryModal() {
+            document.getElementById('createItiModal').classList.add('active');
+        }
+
+        function closeCreateItineraryModal() {
+            document.getElementById('createItiModal').classList.remove('active');
+        }
+
+        function submitNewItinerary(e) {
+            e.preventDefault();
+            const dest = document.getElementById('modalDest').value;
+            const days = parseInt(document.getElementById('modalDays').value);
+
+            // Create blank itinerary in API
+            const newIti = {
+                id: "iti_" + Date.now(),
+                name: `Lịch trình tự thiết kế ${dest}`,
+                destination: dest,
+                days: days,
+                totalCost: 0,
+                totalCarbon: 0,
+                daysData: Array.from({ length: days }, () => [])
+            };
+
+            window.API.saveItinerary(newIti);
+            
+            // Redirect to editor
+            window.location.href = `schedule_editor.html?id=${newIti.id}`;
+        }
+    </script>
+</body>
+
+</html>

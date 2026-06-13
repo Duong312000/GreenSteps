@@ -1,0 +1,4 @@
+# Ignore large PDF design assets
+projec/GreenSteps System.pdf
+Idea (1).pdf
+*.pdf

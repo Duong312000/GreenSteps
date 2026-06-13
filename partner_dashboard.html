@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kênh đối tác cung cấp dịch vụ GreenSteps - Thống kê hiệu quả.">
+    <title>GreenSteps Travel - Thống kê đối tác</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Geist:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Header Container -->
+    <div id="app-header"></div>
+
+    <main class="main-viewport partner-viewport">
+        <!-- Dashboard Top Banner -->
+        <div class="part-dash-banner">
+            <div class="part-dash-welcome">
+                <h2 id="partnerWelcomeTitle">Kênh nhà cung cấp: Green Valley Travel</h2>
+                <p>Theo dõi booking, doanh thu, hành vi khách hàng và hiệu suất quảng bá của dịch vụ.</p>
+            </div>
+            <div class="part-dash-range-picker">
+                <button class="active">7 ngày</button>
+                <button>30 ngày</button>
+                <button>6 tháng</button>
+                <button>Năm nay</button>
+            </div>
+        </div>
+
+        <!-- STATS CARDS GRID (Slide Page 13) -->
+        <section class="part-stats-grid">
+            <div class="part-stat-box">
+                <span class="box-lbl">Tổng Booking</span>
+                <h3>128</h3>
+                <span class="trend positive">📈 +12% so với tháng trước</span>
+            </div>
+            <div class="part-stat-box">
+                <span class="box-lbl">Doanh thu tháng này</span>
+                <h3 id="dashRevenueVal">86.500.000đ</h3>
+                <span class="trend positive">📈 +8.5% so với tháng trước</span>
+            </div>
+            <div class="part-stat-box">
+                <span class="box-lbl">Dịch vụ đang hoạt động</span>
+                <h3>16</h3>
+                <span class="trend info">📋 3 chờ duyệt, 9 cần xử lý</span>
+            </div>
+            <div class="part-stat-box">
+                <span class="box-lbl">Điểm đánh giá</span>
+                <h3>4.8/5</h3>
+                <span class="trend positive">⭐ 12K+ lượt đánh giá</span>
+            </div>
+            <div class="part-stat-box">
+                <span class="box-lbl">Lượt xem dịch vụ</span>
+                <h3>12.430</h3>
+                <span class="trend positive">📈 +24% so với tuần trước</span>
+            </div>
+            <div class="part-stat-box">
+                <span class="box-lbl">Tỷ lệ chuyển đổi</span>
+                <h3>18.5%</h3>
+                <span class="trend info">👍 Khá tốt</span>
+            </div>
+        </section>
+
+        <!-- CHARTS SECTION (Slide Page 13 - HTML/CSS Column Charts) -->
+        <section class="part-charts-section">
+            <!-- Chart 1: Revenue Over Time -->
+            <div class="chart-box-card">
+                <h4>Doanh thu theo thời gian (6 tháng qua)</h4>
+                <div class="column-chart-container">
+                    <div class="chart-columns-track">
+                        <div class="chart-col-group">
+                            <div class="chart-col-bar" style="height: 40%;" title="T1: 35.0M"><span>35M</span></div>
+                            <span class="chart-col-label">T1</span>
+                        </div>
+                        <div class="chart-col-group">
+                            <div class="chart-col-bar" style="height: 55%;" title="T2: 48.0M"><span>48M</span></div>
+                            <span class="chart-col-label">T2</span>
+                        </div>
+                        <div class="chart-col-group">
+                            <div class="chart-col-bar" style="height: 70%;" title="T3: 60.5M"><span>60.5M</span></div>
+                            <span class="chart-col-label">T3</span>
+                        </div>
+                        <div class="chart-col-group">
+                            <div class="chart-col-bar" style="height: 65%;" title="T4: 58.0M"><span>58M</span></div>
+                            <span class="chart-col-label">T4</span>
+                        </div>
+                        <div class="chart-col-group">
+                            <div class="chart-col-bar" style="height: 85%;" title="T5: 78.5M"><span>78.5M</span></div>
+                            <span class="chart-col-label">T5</span>
+                        </div>
+                        <div class="chart-col-group">
+                            <div class="chart-col-bar active" style="height: 95%;" title="T6: 86.5M"><span>86.5M</span></div>
+                            <span class="chart-col-label">T6 (Hiện tại)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Demographics analysis card -->
+            <div class="chart-box-card">
+                <h4>Phân tích hành vi khách hàng</h4>
+                <div class="demo-stats-list">
+                    <div class="demo-stat-row">
+                        <span>Nhóm khách hàng tiêu biểu:</span>
+                        <strong>Khách gia đình (68%)</strong>
+                    </div>
+                    <div class="demo-stat-row">
+                        <span>Độ tuổi phổ biến nhất:</span>
+                        <strong>22 - 35 tuổi (54%)</strong>
+                    </div>
+                    <div class="demo-stat-row">
+                        <span>Điểm đến được đặt nhiều nhất:</span>
+                        <strong>Đà Lạt (45%)</strong>
+                    </div>
+                    <div class="demo-stat-row">
+                        <span>Thiết bị đặt dịch vụ chính:</span>
+                        <strong>Điện thoại di động (82%)</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BOOKINGS LIST SECTION (Slide Page 13) -->
+        <section class="part-bookings-section">
+            <div class="part-section-header">
+                <h3>Các lượt đặt dịch vụ gần đây</h3>
+                <button class="btn-export-list" onclick="alert('Đã xuất danh sách thành công!')"><i data-lucide="download"></i> Xuất danh sách</button>
+            </div>
+            <div class="part-table-wrapper">
+                <table class="part-table">
+                    <thead>
+                        <tr>
+                            <th>Mã BK</th>
+                            <th>Khách hàng</th>
+                            <th>Dịch vụ đã đặt</th>
+                            <th>Ngày đi</th>
+                            <th>Khách</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dashBookingsBody">
+                        <!-- Loaded dynamically from API -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer Container -->
+    <div id="app-footer"></div>
+
+    <!-- Core Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- Dashboard Interactions -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = window.Session.getCurrentUser();
+            if (!user || user.role !== 'provider') {
+                alert("Bạn cần đăng nhập với vai trò Đối tác (partner) để xem trang thống kê này!");
+                window.location.href = "auth.html";
+                return;
+            }
+
+            document.getElementById('partnerWelcomeTitle').innerText = `Kênh nhà cung cấp: ${user.companyName || 'Green Valley Travel'}`;
+            refreshDashboardUI();
+        });
+
+        function refreshDashboardUI() {
+            const bookings = window.API.getBookings();
+            const tbody = document.getElementById('dashBookingsBody');
+            tbody.innerHTML = "";
+
+            let totalRevenue = 86500000; // base revenue
+
+            bookings.forEach(bk => {
+                let statusLabel = "Chờ duyệt";
+                let statusClass = "pending";
+                
+                if (bk.status === 'approved') {
+                    statusLabel = "Đã xác nhận";
+                    statusClass = "success";
+                    totalRevenue += bk.value; // add approved booking values dynamically
+                } else if (bk.status === 'rejected') {
+                    statusLabel = "Đã hủy";
+                    statusClass = "danger";
+                }
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>#${bk.id}</strong></td>
+                    <td>${bk.customer}</td>
+                    <td>${bk.service}</td>
+                    <td>${bk.date}</td>
+                    <td>${bk.guests}</td>
+                    <td><strong>${bk.value.toLocaleString('vi-VN')}đ</strong></td>
+                    <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            document.getElementById('dashRevenueVal').innerText = totalRevenue.toLocaleString('vi-VN') + 'đ';
+
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        }
+    </script>
+</body>
+
+</html>
