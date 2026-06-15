@@ -16,6 +16,9 @@
     <!-- Icons (Lucide Icons via CDN) -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
     <!-- Leaflet JS Map (CDN) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -167,109 +170,7 @@
             background: var(--text-muted);
         }
 
-        /* Header */
-        header {
-            width: 100%;
-            border-bottom: 1px solid var(--border-color);
-            background-color: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            transition: var(--transition-smooth);
-            flex-shrink: 0;
-            z-index: 100;
-        }
-
-        [data-theme="dark"] header {
-            background-color: rgba(28, 36, 28, 0.85);
-        }
-
-        .header-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 40px;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 800;
-            font-size: 22px;
-            color: var(--primary);
-            font-family: 'Outfit', sans-serif;
-            cursor: pointer;
-        }
-
-        .logo img {
-            width: 38px;
-            height: 38px;
-            border-radius: var(--radius-full);
-        }
-
-        nav.nav-links {
-            display: flex;
-            align-items: center;
-            gap: 32px;
-        }
-
-        nav.nav-links a {
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            position: relative;
-            padding: 6px 0;
-            transition: var(--transition-smooth);
-            cursor: pointer;
-        }
-
-        nav.nav-links a:hover {
-            color: var(--primary);
-        }
-
-        nav.nav-links a.active {
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        nav.nav-links a.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background-color: var(--primary);
-            border-radius: var(--radius-full);
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .action-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            border: 1px solid transparent;
-        }
-
-        .action-btn:hover {
-            background-color: var(--bg-tertiary);
-            color: var(--primary);
-            border-color: var(--border-color);
-        }
+        /* Header styles loaded from css/style.css */
 
         /* ==========================================================================
            2. SPLIT-VIEW EDITOR (WANDERLOG STYLE)
@@ -1590,29 +1491,8 @@
 </head>
 
 <body>
-    <!-- HEADER -->
-    <header>
-        <div class="header-container">
-            <a onclick="goBackToTours()" class="logo">
-                <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Gemini_Generated_Image_szp1ouszp1ouszp1-atXzYPwERgnQFeZUO0iGDvZQKqvNuX.png"
-                    alt="GreenSteps Logo">
-                <span>GreenSteps</span>
-            </a>
-            <nav class="nav-links">
-                <a onclick="goBackToTours()">Điểm đến</a>
-                <a onclick="goBackToTours()">Tour du lịch</a>
-                <a class="active">Lịch trình AI</a>
-            </nav>
-            <div class="header-actions">
-                <button class="action-btn" title="Tìm kiếm"><i data-lucide="search"></i></button>
-                <button class="action-btn" title="Yêu thích"><i data-lucide="heart"></i></button>
-                <button class="action-btn" title="Ngôn ngữ"><i data-lucide="globe"></i></button>
-                <button class="action-btn theme-toggle" onclick="toggleTheme()" title="Đổi theme"><i data-lucide="moon"
-                        id="themeIcon"></i></button>
-                <button class="action-btn" title="Tài khoản"><i data-lucide="user"></i></button>
-            </div>
-        </div>
-    </header>
+    <!-- Header Container (Loaded dynamically from main.js) -->
+    <div id="app-header"></div>
 
     <!-- MAIN SPLIT-VIEW TIMELINE EDITOR -->
     <main id="itineraryEditorView">
@@ -1843,6 +1723,8 @@
 
     <!-- Core Scripts -->
     <script src="js/api.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/main.js"></script>
 
     <!-- JAVASCRIPT CONTROLLERS -->
     <script>
@@ -2010,7 +1892,12 @@
         };
 
         let appState = {
-            theme: "light",
+            get theme() {
+                return localStorage.getItem('greensteps_theme') || 'light';
+            },
+            set theme(val) {
+                localStorage.setItem('greensteps_theme', val);
+            },
             activeItinerary: null,
             activeDayIdx: 0,
             walletBalance: 5000000,
@@ -2205,10 +2092,10 @@
 
         function loadSavedState() {
             const dataStr = localStorage.getItem("greensteps_schedule_state");
-            if (dataStr) {
-                const data = JSON.parse(dataStr);
-                appState.theme = data.theme || "light";
-            }
+            
+            // Set data-theme on documentElement based on greensteps_theme first, fallback to light
+            const currentTheme = localStorage.getItem('greensteps_theme') || 'light';
+            document.documentElement.setAttribute("data-theme", currentTheme);
             
             // Sync with API Wallet Balance if possible
             if (window.API) {
@@ -2219,21 +2106,21 @@
                 appState.walletBalance = typeof data.walletBalance === "number" ? data.walletBalance : 5000000;
             }
             
-            document.documentElement.setAttribute("data-theme", appState.theme);
             const icon = document.getElementById("themeIcon");
             if (icon) {
-                icon.setAttribute("data-lucide", appState.theme === "dark" ? "sun" : "moon");
+                icon.setAttribute("data-lucide", currentTheme === "dark" ? "sun" : "moon");
                 lucide.createIcons();
             }
             updateWalletBalanceDisplay();
         }
 
         function toggleTheme() {
-            appState.theme = appState.theme === "light" ? "dark" : "light";
-            document.documentElement.setAttribute("data-theme", appState.theme);
+            let theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('greensteps_theme', theme);
             const icon = document.getElementById("themeIcon");
             if (icon) {
-                icon.setAttribute("data-lucide", appState.theme === "dark" ? "sun" : "moon");
+                icon.setAttribute("data-lucide", theme === "dark" ? "sun" : "moon");
                 lucide.createIcons();
             }
             saveStateToLocalStorage();
