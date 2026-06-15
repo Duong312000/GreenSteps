@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Geist:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Design System CSS -->
     <link rel="stylesheet" href="css/style.css">
@@ -34,8 +34,8 @@
                         <img src="image/2eee566424c1f35fbeacf85496b4b6e7.jpg" class="detail-slide" alt="Dalat 2">
                         <img src="image/52627caa0015b2f833fbdc632d37dc82.jpg" class="detail-slide" alt="Dalat 3">
                     </div>
-                    <button class="slider-btn prev" onclick="prevSlide()"><i data-lucide="chevron-left"></i></button>
-                    <button class="slider-btn next" onclick="nextSlide()"><i data-lucide="chevron-right"></i></button>
+                    <button class="slider-btn prev" onclick="prevSlide()"><i class="bi bi-chevron-left"></i></button>
+                    <button class="slider-btn next" onclick="nextSlide()"><i class="bi bi-chevron-right"></i></button>
                     <div class="slider-thumbnails" id="detailThumbnails">
                         <img src="image/1dc8619487310884c9d631d689ece1e7.jpg" class="thumbnail active" onclick="setSlide(0)">
                         <img src="image/2eee566424c1f35fbeacf85496b4b6e7.jpg" class="thumbnail" onclick="setSlide(1)">
@@ -45,11 +45,11 @@
 
                 <!-- Tour Overview -->
                 <div class="detail-overview-section">
-                    <span class="co2-stats-badge"><i data-lucide="leaf"></i> Lượng phát thải: 45 kg CO₂</span>
+                    <span class="co2-stats-badge"><i class="bi bi-leaf-fill"></i> Lượng phát thải: 45 kg CO₂</span>
                     <h1 id="detailTourTitle">Tour Đà Lạt Gia Đình 3N2Đ</h1>
-                    <p class="tour-geo-info"><i data-lucide="map-pin"></i> Đà Lạt, Lâm Đồng • 📅 3 ngày 2 đêm • 👥 4-8 người</p>
+                    <p class="tour-geo-info"><i class="bi bi-geo-alt-fill"></i> Đà Lạt, Lâm Đồng • <i class="bi bi-calendar-event"></i> 3 ngày 2 đêm • <i class="bi bi-people-fill"></i> 4-8 người</p>
                     <div class="tour-rating-summary">
-                        <span class="stars">⭐⭐⭐⭐⭐ 4.9</span>
+                        <span class="stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i> 4.9</span>
                         <span class="votes">(128 đánh giá)</span>
                     </div>
                     <p class="tour-desc-text">Trải nghiệm 3 ngày 2 đêm tuyệt vời tại thành phố ngàn hoa Đà Lạt cùng gia đình. Tour được thiết kế đặc biệt cho các gia đình có trẻ nhỏ với các hoạt động vui chơi an toàn, phù hợp mọi lứa tuổi.</p>
@@ -70,9 +70,9 @@
                                 </div>
                                 <div class="accordion-stats">
                                     <span>⏱️ 11 giờ</span>
-                                    <span>🍲 2 bữa</span>
-                                    <span>🚗 32 km</span>
-                                    <i data-lucide="chevron-down" class="accordion-chevron"></i>
+                                    <span><i class="bi bi-cup-hot-fill"></i> 2 bữa</span>
+                                    <span><i class="bi bi-car-front-fill"></i> 32 km</span>
+                                    <i class="bi bi-chevron-down accordion-chevron"></i>
                                 </div>
                             </div>
                             <div class="accordion-content">
@@ -81,7 +81,7 @@
                                         <div class="time-node">08:00</div>
                                         <div class="hourly-body">
                                             <h4>Đón khách và di chuyển</h4>
-                                            <p class="place">📍 Sân bay Liên Khương</p>
+                                            <p class="place"><i class="bi bi-geo-alt-fill"></i> Sân bay Liên Khương</p>
                                             <p class="desc">Đón quý khách tại sân bay/bến xe, di chuyển về trung tâm thành phố Đà Lạt với hướng dẫn viên chuyên nghiệp.</p>
                                         </div>
                                     </div>
@@ -89,7 +89,7 @@
                                         <div class="time-node">09:30</div>
                                         <div class="hourly-body">
                                             <h4>Check-in & nghỉ ngơi</h4>
-                                            <p class="place">🏨 Khách sạn Dahlia 3 sao</p>
+                                            <p class="place"><i class="bi bi-building-fill"></i> Khách sạn Dahlia 3 sao</p>
                                             <p class="desc">Check-in phòng, freshen up và chuẩn bị cho chuyến đi khám phá.</p>
                                         </div>
                                     </div>
@@ -97,7 +97,7 @@
                                         <div class="time-node">11:00</div>
                                         <div class="hourly-body">
                                             <h4>Tham quan biểu tượng thành phố</h4>
-                                            <p class="place">🏞️ Quảng trường Lâm Viên</p>
+                                            <p class="place"><i class="bi bi-tree-fill"></i> Quảng trường Lâm Viên</p>
                                             <p class="desc">Khám phá quảng trường lớn nhất Đà Lạt, nơi tập trung các công trình kiến trúc độc đáo như nụ hoa atisô và hoa dã quỳ khổng lồ.</p>
                                         </div>
                                     </div>
@@ -105,7 +105,7 @@
                                         <div class="time-node">12:30</div>
                                         <div class="hourly-body">
                                             <h4>Ăn trưa đặc sản</h4>
-                                            <p class="place">🍲 Nhà hàng lẩu gà lá é Tao Ngộ</p>
+                                            <p class="place"><i class="bi bi-cup-hot-fill"></i> Nhà hàng lẩu gà lá é Tao Ngộ</p>
                                             <p class="desc">Thưởng thức lẩu gà lá é trứ danh cùng các món ăn địa phương hấp dẫn.</p>
                                         </div>
                                     </div>
@@ -122,9 +122,9 @@
                                 </div>
                                 <div class="accordion-stats">
                                     <span>⏱️ 10 giờ</span>
-                                    <span>🍲 3 bữa</span>
-                                    <span>🚗 45 km</span>
-                                    <i data-lucide="chevron-down" class="accordion-chevron"></i>
+                                    <span><i class="bi bi-cup-hot-fill"></i> 3 bữa</span>
+                                    <span><i class="bi bi-car-front-fill"></i> 45 km</span>
+                                    <i class="bi bi-chevron-down accordion-chevron"></i>
                                 </div>
                             </div>
                             <div class="accordion-content">
@@ -133,7 +133,7 @@
                                         <div class="time-node">07:00</div>
                                         <div class="hourly-body">
                                             <h4>Ăn sáng buffet</h4>
-                                            <p class="place">🏨 Khách sạn</p>
+                                            <p class="place"><i class="bi bi-building-fill"></i> Khách sạn</p>
                                             <p class="desc">Bắt đầu ngày mới với bữa sáng buffet tươi ngon tại nhà hàng khách sạn.</p>
                                         </div>
                                     </div>
@@ -141,7 +141,7 @@
                                         <div class="time-node">09:00</div>
                                         <div class="hourly-body">
                                             <h4>Trượt máng xuyên rừng</h4>
-                                            <p class="place">🏞️ Khu du lịch Thác Datanla</p>
+                                            <p class="place"><i class="bi bi-tree-fill"></i> Khu du lịch Thác Datanla</p>
                                             <p class="desc">Trải nghiệm hệ thống xe trượt máng băng qua rừng thông dài nhất Đông Nam Á.</p>
                                         </div>
                                     </div>
@@ -149,7 +149,7 @@
                                         <div class="time-node">12:00</div>
                                         <div class="hourly-body">
                                             <h4>Ăn trưa gà nướng cơm lam</h4>
-                                            <p class="place">🍲 Nhà hàng Thung lũng Xanh</p>
+                                            <p class="place"><i class="bi bi-cup-hot-fill"></i> Nhà hàng Thung lũng Xanh</p>
                                             <p class="desc">Thưởng thức gà nướng mọi, cơm lam Tây Nguyên chấm muối vừng chuẩn vị.</p>
                                         </div>
                                     </div>
@@ -157,7 +157,7 @@
                                         <div class="time-node">14:00</div>
                                         <div class="hourly-body">
                                             <h4>Trải nghiệm văn hóa</h4>
-                                            <p class="place">🏞️ Làng Cù Lần</p>
+                                            <p class="place"><i class="bi bi-tree-fill"></i> Làng Cù Lần</p>
                                             <p class="desc">Khám phá bản làng hoang sơ dưới chân núi Langbiang, tìm hiểu nét văn hóa đặc sắc của người đồng bào.</p>
                                         </div>
                                     </div>
@@ -174,9 +174,9 @@
                                 </div>
                                 <div class="accordion-stats">
                                     <span>⏱️ 5 giờ</span>
-                                    <span>🍲 2 bữa</span>
-                                    <span>🚗 18 km</span>
-                                    <i data-lucide="chevron-down" class="accordion-chevron"></i>
+                                    <span><i class="bi bi-cup-hot-fill"></i> 2 bữa</span>
+                                    <span><i class="bi bi-car-front-fill"></i> 18 km</span>
+                                    <i class="bi bi-chevron-down accordion-chevron"></i>
                                 </div>
                             </div>
                             <div class="accordion-content">
@@ -185,7 +185,7 @@
                                         <div class="time-node">07:00</div>
                                         <div class="hourly-body">
                                             <h4>Ăn sáng & trả phòng</h4>
-                                            <p class="place">🏨 Khách sạn</p>
+                                            <p class="place"><i class="bi bi-building-fill"></i> Khách sạn</p>
                                             <p class="desc">Bữa sáng cuối cùng và kiểm tra hành lý trước khi tiến hành trả phòng.</p>
                                         </div>
                                     </div>
@@ -193,7 +193,7 @@
                                         <div class="time-node">08:30</div>
                                         <div class="hourly-body">
                                             <h4>Tham quan thiền viện</h4>
-                                            <p class="place">🏞️ Thiền viện Trúc Lâm Đà Lạt</p>
+                                            <p class="place"><i class="bi bi-tree-fill"></i> Thiền viện Trúc Lâm Đà Lạt</p>
                                             <p class="desc">Chiêm ngưỡng thiền viện tĩnh mịch ngự trên núi Phụng Hoàng, phóng tầm mắt ngắm hồ Tuyền Lâm trong xanh.</p>
                                         </div>
                                     </div>
@@ -201,7 +201,7 @@
                                         <div class="time-node">11:00</div>
                                         <div class="hourly-body">
                                             <h4>Mua sắm đặc sản</h4>
-                                            <p class="place">🛍️ Chợ Đà Lạt</p>
+                                            <p class="place"><i class="bi bi-bag-fill"></i> Chợ Đà Lạt</p>
                                             <p class="desc">Mua mứt hoa quả, rau củ tươi, atisô hoặc hoa tươi làm quà lưu niệm.</p>
                                         </div>
                                     </div>
@@ -209,7 +209,7 @@
                                         <div class="time-node">12:00</div>
                                         <div class="hourly-body">
                                             <h4>Ăn trưa & tiễn khách</h4>
-                                            <p class="place">✈️ Sân bay Liên Khương</p>
+                                            <p class="place"><i class="bi bi-airplane-fill"></i> Sân bay Liên Khương</p>
                                             <p class="desc">Dùng bữa trưa nhẹ và tiễn đoàn ra sân bay/bến xe, kết thúc kỳ nghỉ xanh.</p>
                                         </div>
                                     </div>
@@ -223,11 +223,11 @@
                 <div class="detail-highlights-section">
                     <h3>Điểm nổi bật của tour</h3>
                     <ul>
-                        <li><i data-lucide="check"></i> Tham quan Vườn hoa thành phố tuyệt đẹp</li>
-                        <li><i data-lucide="check"></i> Check-in Đồi chè Cầu Đất xanh mướt</li>
-                        <li><i data-lucide="check"></i> Khám phá Thác Datanla và trượt máng mạo hiểm</li>
-                        <li><i data-lucide="check"></i> Thưởng thức ẩm thực lẩu gà lá é địa phương độc đáo</li>
-                        <li><i data-lucide="check"></i> Trải nghiệm văn hóa tại Làng Cù Lần mộc mạc</li>
+                        <li><i class="bi bi-check-lg"></i> Tham quan Vườn hoa thành phố tuyệt đẹp</li>
+                        <li><i class="bi bi-check-lg"></i> Check-in Đồi chè Cầu Đất xanh mướt</li>
+                        <li><i class="bi bi-check-lg"></i> Khám phá Thác Datanla và trượt máng mạo hiểm</li>
+                        <li><i class="bi bi-check-lg"></i> Thưởng thức ẩm thực lẩu gà lá é địa phương độc đáo</li>
+                        <li><i class="bi bi-check-lg"></i> Trải nghiệm văn hóa tại Làng Cù Lần mộc mạc</li>
                     </ul>
                 </div>
             </div>
@@ -244,24 +244,24 @@
                     <div class="booking-features-list">
                         <p>Tour cơ bản bao gồm:</p>
                         <ul>
-                            <li><i data-lucide="calendar"></i> 3 ngày 2 đêm</li>
-                            <li><i data-lucide="bus"></i> Xe ghép đưa đón + Hướng dẫn viên</li>
-                            <li><i data-lucide="hotel"></i> Lưu trú homestay/khách sạn 3 sao</li>
-                            <li><i data-lucide="utensils-cross2"></i> Các bữa ăn chính trọn gói</li>
+                            <li><i class="bi bi-calendar-event"></i> 3 ngày 2 đêm</li>
+                            <li><i class="bi bi-bus-front-fill"></i> Xe ghép đưa đón + Hướng dẫn viên</li>
+                            <li><i class="bi bi-building-fill"></i> Lưu trú homestay/khách sạn 3 sao</li>
+                            <li><i class="bi bi-cup-hot-fill"></i> Các bữa ăn chính trọn gói</li>
                         </ul>
                     </div>
 
                     <form class="booking-custom-form" onsubmit="handleBookingSubmit(event)">
                         <div class="form-field">
-                            <label><i data-lucide="calendar"></i> Ngày xuất phát</label>
+                            <label><i class="bi bi-calendar-event"></i> Ngày xuất phát</label>
                             <input type="date" id="bookingDate" value="2026-06-14" required>
                         </div>
                         <div class="form-field">
-                            <label><i data-lucide="users"></i> Số lượng khách</label>
+                            <label><i class="bi bi-people-fill"></i> Số lượng khách</label>
                             <input type="number" id="bookingGuests" value="2" min="1" max="20" onchange="updateCalcPrice()" required>
                         </div>
                         <div class="form-field">
-                            <label><i data-lucide="hotel"></i> Tiêu chuẩn phòng</label>
+                            <label><i class="bi bi-building-fill"></i> Tiêu chuẩn phòng</label>
                             <select id="bookingRoomType" onchange="updateCalcPrice()">
                                 <option value="3s" selected>Khách sạn 3 sao (Mặc định)</option>
                                 <option value="4s">Khách sạn 4 sao (+400.000đ/ngày)</option>
@@ -271,13 +271,13 @@
 
                         <button type="submit" class="btn-book-now">Đặt tour ngay</button>
                         <button type="button" class="btn-design-yours" onclick="cloneAndEditTrip()">
-                            <i data-lucide="sparkles"></i> Thiết kế theo ý bạn
+                            <i class="bi bi-stars"></i> Thiết kế theo ý bạn
                         </button>
                         <p class="custom-hint-text">Tùy chỉnh ngày đi, điểm đến và hoạt động dựa trên tour Đà Lạt này.</p>
                     </form>
 
                     <div class="booking-hotline-row">
-                        <i data-lucide="phone-call"></i>
+                        <i class="bi bi-telephone-fill"></i>
                         <span>Hotline hỗ trợ: <strong>1900 1234</strong></span>
                     </div>
                 </div>

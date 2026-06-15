@@ -26,9 +26,7 @@ function initGlobalUI() {
     updateSessionUI();
 
     // 6. Initialize Lucide Icons if available
-    if (window.lucide) {
-        window.lucide.createIcons();
-    }
+    
 }
 
 function getHeaderHTML() {
@@ -53,14 +51,14 @@ function getHeaderHTML() {
     let authButtonHTML = '';
     if (user) {
         const wallet = window.API ? window.API.getWalletInfo() : { registered: false, balance: 0 };
-        const walletText = wallet.registered ? `<span class="header-wallet-bal">💳 ${wallet.balance.toLocaleString('vi-VN')}đ</span>` : '';
+        const walletText = wallet.registered ? `<span class="header-wallet-bal"><i class="bi bi-credit-card"></i> ${wallet.balance.toLocaleString('vi-VN')}đ</span>` : '';
         
         authButtonHTML = `
             <div class="user-session-header">
                 ${walletText}
-                <a href="profile.html" class="header-username-btn" title="Quản lý tài khoản">👤 ${user.fullname}</a>
+                <a href="profile.html" class="header-username-btn" title="Quản lý tài khoản"><i class="bi bi-person-circle"></i> ${user.fullname}</a>
                 <button onclick="handleHeaderRoleToggle()" class="header-role-toggle-btn" title="Chuyển vai trò">
-                    ${isPartner ? '🔄 Traveler Mode' : '🔄 Partner Mode'}
+                    ${isPartner ? '<i class="bi bi-arrow-left-right"></i> Traveler Mode' : '<i class="bi bi-arrow-left-right"></i> Partner Mode'}
                 </button>
                 <button onclick="handleHeaderLogout()" class="header-logout-btn">Đăng xuất</button>
             </div>
@@ -74,7 +72,7 @@ function getHeaderHTML() {
     return `
         <div class="header-container">
             <a href="index.html" class="logo">
-                <div class="logo-leaf-icon">🍃</div>
+                <div class="logo-leaf-icon"><i class="bi bi-leaf-fill"></i></div>
                 <span>GreenSteps</span>
             </a>
             <nav class="nav-links">
@@ -98,7 +96,7 @@ function getFooterHTML() {
         <div class="footer-container">
             <div class="footer-brand">
                 <div class="logo">
-                    <div class="logo-leaf-icon">🍃</div>
+                    <div class="logo-leaf-icon"><i class="bi bi-leaf-fill"></i></div>
                     <span>GreenSteps Travel</span>
                 </div>
                 <p>Tiên phong trong lĩnh vực du lịch bền vững tại Việt Nam. Khám phá thiên nhiên, bảo vệ môi trường.</p>
@@ -153,13 +151,11 @@ function updateThemeIcon(theme) {
     const icon = document.getElementById('themeIcon');
     if (!icon) return;
     if (theme === 'dark') {
-        icon.setAttribute('data-lucide', 'sun');
+        icon.className = 'bi bi-sun-fill';
     } else {
-        icon.setAttribute('data-lucide', 'moon');
+        icon.className = 'bi bi-moon-fill';
     }
-    if (window.lucide) {
-        window.lucide.createIcons();
-    }
+    
 }
 
 function highlightActiveLink() {

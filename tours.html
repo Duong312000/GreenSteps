@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Geist:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Design System CSS -->
     <link rel="stylesheet" href="css/style.css">
@@ -53,7 +53,7 @@
         <section class="tours-filter-section">
             <div class="tours-filter-header">
                 <div class="search-input-wrapper">
-                    <i data-lucide="search"></i>
+                    <i class="bi bi-search"></i>
                     <input type="text" id="toursSearchInput" oninput="filterTours()" placeholder="Tìm kiếm tour...">
                 </div>
                 <span class="tours-count-badge" id="toursCountText">Tìm thấy 12 tour</span>
@@ -198,7 +198,7 @@
                             ${tour.tags.map(t => `<span class="tour-tag-pill">${t}</span>`).join('')}
                         </div>
                         <div class="tour-rating-row">
-                            <span class="tour-stars">⭐ ${tour.rating}</span>
+                            <span class="tour-stars"><i class="bi bi-star-fill"></i> ${tour.rating}</span>
                             <span class="tour-votes">(${tour.votes})</span>
                         </div>
                     </div>
