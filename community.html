@@ -212,8 +212,14 @@
                     </div>
                 ` : '';
 
+                const postImageHtml = p.image ? `
+                    <div class="post-image-container">
+                        <img src="${p.image}" alt="${p.dest}">
+                    </div>
+                ` : '';
+
                 const card = document.createElement('div');
-                card.className = 'community-post-card';
+                card.className = 'community-post-card community-post';
                 card.innerHTML = `
                     <div class="post-card-header">
                         <div class="user-avatar-circle small">${p.avatar}</div>
@@ -224,6 +230,7 @@
                         <div class="post-stars-rating">${ratingText}</div>
                     </div>
                     <p class="post-card-body-text">${p.text}</p>
+                    ${postImageHtml}
                     ${attachedItiHtml}
                     <div class="post-card-footer">
                         <button class="footer-action-btn"><i class="bi bi-hand-thumbs-up-fill"></i> Hữu ích (${p.likes || 0})</button>

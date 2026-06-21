@@ -163,13 +163,46 @@
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Check session queries
-            const qDest = sessionStorage.getItem('tours_search_dest');
-            if (qDest) {
-                document.getElementById('filterDestSelect').value = qDest;
-                sessionStorage.removeItem('tours_search_dest');
+            // Parse query parameters from Apple-style Smart Search in menubar
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('search');
+            let destParam = urlParams.get('dest');
+            const budgetParam = urlParams.get('budget');
+            const styleParam = urlParams.get('style');
+
+            // Fallback to sessionStorage from home page search
+            const sessionDest = sessionStorage.getItem('tours_search_dest');
+            if (sessionDest) {
+                destParam = sessionDest;
+                sessionStorage.removeItem('tours_search_dest'); // Clear so it doesn't stick
             }
-            renderTours(toursData);
+
+            if (searchParam) {
+                document.getElementById('toursSearchInput').value = searchParam;
+            }
+            if (destParam) {
+                document.getElementById('filterDestSelect').value = destParam;
+            }
+            if (budgetParam) {
+                if (budgetParam === '3') {
+                    document.getElementById('filterPriceSelect').value = 'under2M';
+                } else if (budgetParam === '6') {
+                    document.getElementById('filterPriceSelect').value = '2M-4M';
+                } else if (budgetParam === '12') {
+                    document.getElementById('filterPriceSelect').value = 'above4M';
+                }
+            }
+            if (styleParam) {
+                if (styleParam === 'eco') {
+                    document.getElementById('filterTypeSelect').value = 'Trải nghiệm';
+                } else if (styleParam === 'adventure') {
+                    document.getElementById('filterTypeSelect').value = 'Tiết kiệm';
+                } else if (styleParam === 'relax') {
+                    document.getElementById('filterTypeSelect').value = 'Nghỉ dưỡng';
+                }
+            }
+
+            filterTours();
         });
 
         function renderTours(tours) {

@@ -181,12 +181,13 @@ const defaultState = {
             avatar: "A",
             time: "2 giờ trước",
             rating: 5,
-            text: "Chuyến đi Phú Yên 3 ngày 2 đêm của mình siêu xanh và đáng nhớ! Nhờ thuê xe điện VinFast mà mình vi vu khắp Tuy Hòa hết rất ít tiền, lại không ồn ào. Các bạn nên ghé qua homestay Hoa Vàng nhé, cực kỳ xinh xắn và chủ nhà thân thiện lắm.",
+            text: "Chuyến đi Phú Yên 3 ngày 2 đêm của mình siêu xanh và đáng nhớ! Nhờ thuê xe điện VinFast mà mình vi vu khắp Tuy Hòa hết rất ít tiền, lại không ồn ào. Các bạn nên ghé qua homestay Hoa Vàng nhé, cực kỳ xinh xắn và chủ nhà thân thiện lắm. Đặc biệt là ngắm bình minh ở Mũi Điện thực sự rất xúc động.",
             tripName: "Tour Phú Yên Biển Xanh 3N2Đ",
             dest: "Phú Yên",
             days: 3,
             likes: 24,
-            comments: 8
+            comments: 8,
+            image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80"
         },
         {
             id: "post_2",
@@ -194,12 +195,97 @@ const defaultState = {
             avatar: "V",
             time: "Hôm qua",
             rating: 5,
-            text: "Tính năng customize lịch trình của GreenSteps rất tiện lợi. Mình có thể thêm bớt địa điểm theo ý thích và hệ thống tự động tính toán lại chi phí. Đáng đồng tiền bát gạo! Chùa Cầu Hội An lúc hoàng hôn cực kỳ lung linh.",
+            text: "Tính năng customize lịch trình của GreenSteps rất tiện lợi. Mình có thể thêm bớt địa điểm theo ý thích và hệ thống tự động tính toán lại chi phí. Đáng đồng tiền bát gạo! Chùa Cầu Hội An lúc hoàng hôn cực kỳ lung linh. Mình cũng đã thử tour xe đạp quanh phố cổ, rất thư giãn và bảo vệ môi trường.",
             tripName: "Đà Nẵng - Hội An Văn Hóa 4N3Đ",
             dest: "Đà Nẵng - Hội An",
             days: 4,
             likes: 45,
-            comments: 12
+            comments: 12,
+            image: "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=80"
+        },
+        {
+            id: "post_3",
+            author: "Phạm Hoàng Nam",
+            avatar: "N",
+            time: "3 ngày trước",
+            rating: 4,
+            text: "Đà Lạt mùa này săn mây siêu đẹp mọi người ơi! Mình vừa hoàn thành chuyến đi xanh 3 ngày không rác thải nhựa. Mình tự mang bình nước cá nhân và nghỉ tại homestay sử dụng năng lượng mặt trời. Mọi người nên thử trekking đỉnh Langbiang thay vì đi xe jeep nhé, mệt nhưng ngắm cảnh đỉnh lắm!",
+            tripName: "Đà Lạt Săn Mây & Trekking 3N2Đ",
+            dest: "Đà Lạt",
+            days: 3,
+            likes: 32,
+            comments: 5,
+            image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80"
+        },
+        {
+            id: "post_4",
+            author: "Lê Minh Thư",
+            avatar: "T",
+            time: "4 ngày trước",
+            rating: 5,
+            text: "Gành Đá Đĩa thực sự là một kiệt tác của thiên nhiên. Mình đi vào sáng sớm nên rất vắng, chụp hình thỏa thích. Bữa trưa ăn hải sản ở đầm Ô Loan cực kỳ tươi ngon, nhà hàng ở đây cam kết không dùng đồ nhựa một lần. Ủng hộ lối sống xanh!",
+            tripName: "Phú Yên Xanh Mát 3N2Đ",
+            dest: "Phú Yên",
+            days: 3,
+            likes: 18,
+            comments: 3,
+            image: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80"
+        },
+        {
+            id: "post_5",
+            author: "Hoàng Đức Trung",
+            avatar: "T",
+            time: "5 ngày trước",
+            rating: 4,
+            text: "Ghé một chiếc quán cà phê nhỏ ở Trại Mát, nhâm nhi tách trà nóng giữa không khí se lạnh. Mình rất vui vì quán tự trồng rau hữu cơ và phân loại rác rất tốt. Một trải nghiệm chữa lành đúng nghĩa sau những ngày làm việc căng thẳng ở Sài Gòn.",
+            tripName: "Đà Lạt Chill & Eco-living 2N1Đ",
+            dest: "Đà Lạt",
+            days: 2,
+            likes: 15,
+            comments: 2,
+            image: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?auto=format&fit=crop&w=1200&q=80"
+        },
+        {
+            id: "post_6",
+            author: "Đỗ Phương Vy",
+            avatar: "V",
+            time: "1 tuần trước",
+            rating: 5,
+            text: "Bán đảo Sơn Trà là lá phổi xanh của Đà Nẵng. Mình đã may mắn nhìn thấy voọc chà vá chân nâu - nữ hoàng linh trưởng ở đây. Nhắc nhở các bạn khi đi nhớ giữ trật tự, không xả rác và tuyệt đối không cho khỉ ăn nhé. Hãy là những du khách văn minh!",
+            tripName: "Đà Nẵng Xanh Sơn Trà 3N2Đ",
+            dest: "Đà Nẵng - Hội An",
+            days: 3,
+            likes: 52,
+            comments: 14,
+            image: "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=1200&q=80"
+        },
+        {
+            id: "post_7",
+            author: "Ngô Quốc Khánh",
+            avatar: "K",
+            time: "1 tuần trước",
+            rating: 5,
+            text: "Ngắm san hô lộ thiên ở Hòn Yến khi thủy triều xuống là trải nghiệm độc nhất vô nhị. Tuy nhiên, san hô rất nhạy cảm nên mọi người tuyệt đối không giẫm đạp hay bẻ san hô mang về nhé. Hãy chỉ để lại những dấu chân và mang đi những bức ảnh đẹp thôi.",
+            tripName: "Hành trình biển xanh Hòn Yến 2N1Đ",
+            dest: "Phú Yên",
+            days: 2,
+            likes: 29,
+            comments: 6,
+            image: "https://images.unsplash.com/photo-1605538032432-a9f0c8d9baac?auto=format&fit=crop&w=1200&q=80"
+        },
+        {
+            id: "post_8",
+            author: "Vũ Mai Chi",
+            avatar: "C",
+            time: "2 tuần trước",
+            rating: 5,
+            text: "Một đêm cắm trại bên bờ hồ Tuyền Lâm, không wifi, không khói bụi thành phố. Sáng thức dậy thấy sương mù bảng lảng trên mặt hồ đẹp như tranh vẽ. Trước khi về nhóm mình đã dọn dẹp sạch sẽ toàn bộ khu vực cắm trại, trả lại vẻ đẹp hoang sơ vốn có.",
+            tripName: "Camping Hồ Tuyền Lâm Bình Yên 2N1Đ",
+            dest: "Đà Lạt",
+            days: 2,
+            likes: 63,
+            comments: 21,
+            image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
         }
     ],
     myServices: [
@@ -208,9 +294,14 @@ const defaultState = {
         { id: "ser_3", name: "Tour Phú Yên Biển Xanh 3N2Đ", type: "tour", dest: "Phú Yên", cost: 1890000, status: "active", bookingsCount: 16 }
     ],
     bookings: [
-        { id: "BK-1042", customer: "Nguyễn Văn A", service: "Tour Phú Yên Biển Xanh 3N2Đ", date: "12/10/2026", guests: 2, value: 4500000, status: "approved" },
+        { id: "BK-1042", customer: "Nguyễn Văn A", service: "Tour Phú Yên Biển Xanh 3N2Đ", date: "12/10/2026", guests: 2, value: 4500000, status: "deposit" },
         { id: "BK-1041", customer: "Trần Thị B", service: "Homestay Xanh Đà Lạt", date: "15/10/2026", guests: 4, value: 8200000, status: "pending" },
-        { id: "BK-1040", customer: "Lê Hoàng C", service: "Cafe Săn Mây Đà Lạt", date: "20/10/2026", guests: 1, value: 1200000, status: "approved" }
+        { id: "BK-1040", customer: "Lê Hoàng C", service: "Cafe Săn Mây Đà Lạt", date: "20/10/2026", guests: 1, value: 1200000, status: "deposit" },
+        { id: "BK-1039", customer: "Phạm Văn D", service: "Homestay Xanh Đà Lạt", date: "10/10/2026", guests: 2, value: 3400000, status: "deposit" },
+        { id: "BK-1038", customer: "Hoàng Thị E", service: "Cafe Săn Mây Đà Lạt", date: "09/10/2026", guests: 2, value: 160000, status: "deposit" },
+        { id: "BK-1037", customer: "Đỗ Minh F", service: "Tour Phú Yên Biển Xanh 3N2Đ", date: "08/10/2026", guests: 3, value: 5670000, status: "deposit" },
+        { id: "BK-1036", customer: "Ngô Quốc G", service: "Homestay Xanh Đà Lạt", date: "05/10/2026", guests: 1, value: 850000, status: "completed" },
+        { id: "BK-1035", customer: "Vũ Tuấn H", service: "Cafe Săn Mây Đà Lạt", date: "02/10/2026", guests: 4, value: 320000, status: "deposit" }
     ],
     transactions: [
         { id: "GD-2026060101", type: "deposit", desc: "Nạp tiền ví du lịch", date: "01/06/2026", amount: 2000000, status: "success" },
@@ -221,21 +312,21 @@ const defaultState = {
 
 // Database APIs
 function getDbState() {
-    let state = localStorage.getItem('greensteps_state_v3');
+    let state = localStorage.getItem('greensteps_state_v4');
     if (!state) {
-        localStorage.setItem('greensteps_state_v3', JSON.stringify(defaultState));
+        localStorage.setItem('greensteps_state_v4', JSON.stringify(defaultState));
         return defaultState;
     }
     try {
         return JSON.parse(state);
     } catch(e) {
-        localStorage.setItem('greensteps_state_v3', JSON.stringify(defaultState));
+        localStorage.setItem('greensteps_state_v4', JSON.stringify(defaultState));
         return defaultState;
     }
 }
 
 function saveDbState(state) {
-    localStorage.setItem('greensteps_state_v3', JSON.stringify(state));
+    localStorage.setItem('greensteps_state_v4', JSON.stringify(state));
 }
 
 // Exportable functions
@@ -364,7 +455,7 @@ const API = {
         let state = getDbState();
         let booking = state.bookings.find(bk => bk.id === id);
         if (booking) {
-            booking.status = "approved";
+            booking.status = "deposit";
             // Mock transaction refund or balance logic if supplier
             saveDbState(state);
         }

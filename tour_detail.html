@@ -386,7 +386,7 @@
             const totalValue = parseInt(valText);
 
             // Add Booking directly
-            const dbState = JSON.parse(localStorage.getItem('greensteps_state_v3'));
+            const dbState = JSON.parse(localStorage.getItem('greensteps_state_v4'));
             const newBooking = {
                 id: "BK-" + Date.now().toString().slice(-4),
                 customer: user.fullname,
@@ -397,7 +397,7 @@
                 status: "pending"
             };
             dbState.bookings.unshift(newBooking);
-            localStorage.setItem('greensteps_state_v3', JSON.stringify(dbState));
+            localStorage.setItem('greensteps_state_v4', JSON.stringify(dbState));
 
             alert(`Đặt tour thành công! Mã đơn hàng: ${newBooking.id}. Vui lòng kiểm tra ví và trạng thái duyệt tại trang cá nhân.`);
             window.location.href = "profile.html";

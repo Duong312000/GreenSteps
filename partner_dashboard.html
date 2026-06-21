@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Kênh đối tác cung cấp dịch vụ GreenSteps - Thống kê hiệu quả.">
+    <meta name="description" content="GreenSteps Travel - Thống kê đối tác cung cấp dịch vụ.">
     <title>GreenSteps Travel - Thống kê đối tác</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Geist:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -20,142 +20,153 @@
 </head>
 
 <body>
-    <!-- Header Container -->
+    <!-- Header Container (Renders the global menubar) -->
     <div id="app-header"></div>
 
-    <main class="main-viewport partner-viewport">
-        <!-- Dashboard Top Banner -->
-        <div class="part-dash-banner">
-            <div class="part-dash-welcome">
-                <h2 id="partnerWelcomeTitle">Kênh nhà cung cấp: Green Valley Travel</h2>
-                <p>Theo dõi booking, doanh thu, hành vi khách hàng và hiệu suất quảng bá của dịch vụ.</p>
+    <main class="main-viewport">
+        <div class="analytics-container">
+            <div class="user-title-row" style="margin-bottom: 10px; border-bottom: none;">
+                <div>
+                    <h2 style="font-size: 26px; color: var(--primary-green);" id="partnerWelcomeTitle">Thống kê Hiệu quả Kinh doanh</h2>
+                    <p style="font-size: 13px; color: var(--text-muted);">Theo dõi booking, doanh thu, hành vi khách hàng và hiệu suất hoạt động.</p>
+                </div>
             </div>
-            <div class="part-dash-range-picker">
-                <button class="active">7 ngày</button>
-                <button>30 ngày</button>
-                <button>6 tháng</button>
-                <button>Năm nay</button>
-            </div>
+
+            <!-- Metrics Cards Row -->
+            <section class="metrics-row">
+                <div class="metric-card">
+                    <span class="metric-label">Tổng doanh thu cọc</span>
+                    <span class="metric-value" id="metricsRevenue">12,450,000đ</span>
+                    <span class="metric-trend up">↑ +14.2% tháng này</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Số lượt đặt chỗ</span>
+                    <span class="metric-value" id="metricsBookings">48 đơn</span>
+                    <span class="metric-trend up">↑ +8.5% so với tháng trước</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">Chỉ số sinh thái xanh</span>
+                    <span class="metric-value">92%</span>
+                    <span class="metric-trend up" style="color: var(--primary-green);">Đạt chuẩn Eco Gold</span>
+                </div>
+            </section>
+
+            <!-- SVG Charts Section -->
+            <section class="charts-row">
+                <!-- Revenue Line Chart -->
+                <div class="chart-card">
+                    <h3>Biểu đồ tăng trưởng dòng tiền</h3>
+                    <div class="chart-svg-container">
+                        <svg width="100%" height="100%" viewBox="0 0 500 250" style="padding: 10px;">
+                            <!-- Grid lines -->
+                            <line x1="50" y1="50" x2="450" y2="50" stroke="var(--border-color)" stroke-dasharray="5,5" />
+                            <line x1="50" y1="120" x2="450" y2="120" stroke="var(--border-color)" stroke-dasharray="5,5" />
+                            <line x1="50" y1="190" x2="450" y2="190" stroke="var(--border-color)" stroke-dasharray="5,5" />
+                            <!-- Simulated Chart Line -->
+                            <path d="M 50 200 Q 150 170 200 120 T 350 80 T 450 40" fill="none" stroke="var(--primary-green)" stroke-width="4" />
+                            <circle cx="50" cy="200" r="5" fill="var(--primary-green)" />
+                            <circle cx="200" cy="120" r="5" fill="var(--primary-green)" />
+                            <circle cx="350" cy="80" r="5" fill="var(--primary-green)" />
+                            <circle cx="450" cy="40" r="5" fill="var(--primary-green)" />
+                            <text x="45" y="220" font-size="10" fill="var(--text-muted)">Tuần 1</text>
+                            <text x="190" y="220" font-size="10" fill="var(--text-muted)">Tuần 2</text>
+                            <text x="340" y="220" font-size="10" fill="var(--text-muted)">Tuần 3</text>
+                            <text x="435" y="220" font-size="10" fill="var(--text-muted)">Tuần 4</text>
+                        </svg>
+                    </div>
+                </div>
+                <!-- Distribution Column Chart -->
+                <div class="chart-card">
+                    <h3>Phân bổ loại hình dịch vụ</h3>
+                    <div class="chart-svg-container">
+                        <svg width="100%" height="100%" viewBox="0 0 250 250" style="padding: 10px;">
+                            <rect x="30" y="80" width="30" height="120" fill="var(--primary-green)" />
+                            <text x="25" y="220" font-size="10" fill="var(--text-muted)">Lưu trú</text>
+
+                            <rect x="110" y="120" width="30" height="80" fill="var(--mint-accent)" />
+                            <text x="105" y="220" font-size="10" fill="var(--text-muted)">Ăn uống</text>
+
+                            <rect x="190" y="150" width="30" height="50" fill="var(--accent-gold)" />
+                            <text x="192" y="220" font-size="10" fill="var(--text-muted)">Tours</text>
+                        </svg>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Funnel & Customer Behaviors -->
+            <section class="charts-row">
+                <!-- Conversion Funnel -->
+                <div class="chart-card">
+                    <h3>Phễu chuyển đổi du khách (AI Recommended Funnel)</h3>
+                    <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 10px;">
+                        <!-- Step 1 -->
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 120px; font-size: 13px; font-weight: 600;">1. Lượt xem dịch vụ</div>
+                            <div style="flex-grow: 1; height: 28px; background-color: var(--primary-green); color: white; display: flex; align-items: center; padding-left: 10px; font-size: 12px; font-weight: 600;">
+                                12.430 lượt (100%)
+                            </div>
+                        </div>
+                        <!-- Step 2 -->
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 120px; font-size: 13px; font-weight: 600;">2. Xem Lịch trình</div>
+                            <div style="flex-grow: 1; display: flex; align-items: center;">
+                                <div style="width: 22.8%; height: 28px; background-color: var(--mint-accent); color: white; display: flex; align-items: center; padding-left: 10px; font-size: 12px; font-weight: 600; white-space: nowrap;">
+                                    2.840 (22.8%)
+                                </div>
+                                <div style="flex-grow: 1; background-color: var(--bg-tertiary); height: 28px;"></div>
+                            </div>
+                        </div>
+                        <!-- Step 3 -->
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 120px; font-size: 13px; font-weight: 600;">3. Gửi Yêu cầu cọc</div>
+                            <div style="flex-grow: 1; display: flex; align-items: center;">
+                                <div style="width: 10.6%; height: 28px; background-color: var(--accent-gold); color: white; display: flex; align-items: center; padding-left: 10px; font-size: 12px; font-weight: 600; white-space: nowrap;">
+                                    1.320 (10.6%)
+                                </div>
+                                <div style="flex-grow: 1; background-color: var(--bg-tertiary); height: 28px;"></div>
+                            </div>
+                        </div>
+                        <!-- Step 4 -->
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 120px; font-size: 13px; font-weight: 600;">4. Đã xác nhận duyệt</div>
+                            <div style="flex-grow: 1; display: flex; align-items: center;">
+                                <div style="width: 2%; min-width: 30px; height: 28px; background-color: var(--danger); color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; white-space: nowrap;">
+                                    128 (1.02%)
+                                </div>
+                                <div style="flex-grow: 1; background-color: var(--bg-tertiary); height: 28px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demographics Analysis -->
+                <div class="chart-card">
+                    <h3>Phân tích hành vi khách hàng</h3>
+                    <div class="demo-stats-list" style="display: flex; flex-direction: column; gap: 14px;">
+                        <div class="demo-stat-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                            <span>Nhóm khách tiêu biểu:</span>
+                            <strong style="color: var(--primary-green);">Khách gia đình</strong>
+                        </div>
+                        <div class="demo-stat-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                            <span>Độ tuổi phổ biến:</span>
+                            <strong>22 - 35 tuổi</strong>
+                        </div>
+                        <div class="demo-stat-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                            <span>Điểm đến đặt nhiều nhất:</span>
+                            <strong>Đà Lạt</strong>
+                        </div>
+                        <div class="demo-stat-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                            <span>Loại hình ưa thích:</span>
+                            <strong>Tour văn hóa</strong>
+                        </div>
+                        <div class="demo-stat-row" style="display: flex; justify-content: space-between;">
+                            <span>Thiết bị đặt chính:</span>
+                            <strong>Điện thoại (82%)</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
-
-        <!-- STATS CARDS GRID (Slide Page 13) -->
-        <section class="part-stats-grid">
-            <div class="part-stat-box">
-                <span class="box-lbl">Tổng Booking</span>
-                <h3>128</h3>
-                <span class="trend positive"><i class="bi bi-graph-up-arrow"></i> +12% so với tháng trước</span>
-            </div>
-            <div class="part-stat-box">
-                <span class="box-lbl">Doanh thu tháng này</span>
-                <h3 id="dashRevenueVal">86.500.000đ</h3>
-                <span class="trend positive"><i class="bi bi-graph-up-arrow"></i> +8.5% so với tháng trước</span>
-            </div>
-            <div class="part-stat-box">
-                <span class="box-lbl">Dịch vụ đang hoạt động</span>
-                <h3>16</h3>
-                <span class="trend info"><i class="bi bi-clipboard-data-fill"></i> 3 chờ duyệt, 9 cần xử lý</span>
-            </div>
-            <div class="part-stat-box">
-                <span class="box-lbl">Điểm đánh giá</span>
-                <h3>4.8/5</h3>
-                <span class="trend positive"><i class="bi bi-star-fill"></i> 12K+ lượt đánh giá</span>
-            </div>
-            <div class="part-stat-box">
-                <span class="box-lbl">Lượt xem dịch vụ</span>
-                <h3>12.430</h3>
-                <span class="trend positive"><i class="bi bi-graph-up-arrow"></i> +24% so với tuần trước</span>
-            </div>
-            <div class="part-stat-box">
-                <span class="box-lbl">Tỷ lệ chuyển đổi</span>
-                <h3>18.5%</h3>
-                <span class="trend info"><i class="bi bi-hand-thumbs-up-fill"></i> Khá tốt</span>
-            </div>
-        </section>
-
-        <!-- CHARTS SECTION (Slide Page 13 - HTML/CSS Column Charts) -->
-        <section class="part-charts-section">
-            <!-- Chart 1: Revenue Over Time -->
-            <div class="chart-box-card">
-                <h4>Doanh thu theo thời gian (6 tháng qua)</h4>
-                <div class="column-chart-container">
-                    <div class="chart-columns-track">
-                        <div class="chart-col-group">
-                            <div class="chart-col-bar" style="height: 40%;" title="T1: 35.0M"><span>35M</span></div>
-                            <span class="chart-col-label">T1</span>
-                        </div>
-                        <div class="chart-col-group">
-                            <div class="chart-col-bar" style="height: 55%;" title="T2: 48.0M"><span>48M</span></div>
-                            <span class="chart-col-label">T2</span>
-                        </div>
-                        <div class="chart-col-group">
-                            <div class="chart-col-bar" style="height: 70%;" title="T3: 60.5M"><span>60.5M</span></div>
-                            <span class="chart-col-label">T3</span>
-                        </div>
-                        <div class="chart-col-group">
-                            <div class="chart-col-bar" style="height: 65%;" title="T4: 58.0M"><span>58M</span></div>
-                            <span class="chart-col-label">T4</span>
-                        </div>
-                        <div class="chart-col-group">
-                            <div class="chart-col-bar" style="height: 85%;" title="T5: 78.5M"><span>78.5M</span></div>
-                            <span class="chart-col-label">T5</span>
-                        </div>
-                        <div class="chart-col-group">
-                            <div class="chart-col-bar active" style="height: 95%;" title="T6: 86.5M"><span>86.5M</span></div>
-                            <span class="chart-col-label">T6 (Hiện tại)</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Demographics analysis card -->
-            <div class="chart-box-card">
-                <h4>Phân tích hành vi khách hàng</h4>
-                <div class="demo-stats-list">
-                    <div class="demo-stat-row">
-                        <span>Nhóm khách hàng tiêu biểu:</span>
-                        <strong>Khách gia đình (68%)</strong>
-                    </div>
-                    <div class="demo-stat-row">
-                        <span>Độ tuổi phổ biến nhất:</span>
-                        <strong>22 - 35 tuổi (54%)</strong>
-                    </div>
-                    <div class="demo-stat-row">
-                        <span>Điểm đến được đặt nhiều nhất:</span>
-                        <strong>Đà Lạt (45%)</strong>
-                    </div>
-                    <div class="demo-stat-row">
-                        <span>Thiết bị đặt dịch vụ chính:</span>
-                        <strong>Điện thoại di động (82%)</strong>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- BOOKINGS LIST SECTION (Slide Page 13) -->
-        <section class="part-bookings-section">
-            <div class="part-section-header">
-                <h3>Các lượt đặt dịch vụ gần đây</h3>
-                <button class="btn-export-list" onclick="alert('Đã xuất danh sách thành công!')"><i class="bi bi-download"></i> Xuất danh sách</button>
-            </div>
-            <div class="part-table-wrapper">
-                <table class="part-table">
-                    <thead>
-                        <tr>
-                            <th>Mã BK</th>
-                            <th>Khách hàng</th>
-                            <th>Dịch vụ đã đặt</th>
-                            <th>Ngày đi</th>
-                            <th>Khách</th>
-                            <th>Tổng tiền</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dashBookingsBody">
-                        <!-- Loaded dynamically from API -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
     </main>
 
     <!-- Footer Container -->
@@ -166,7 +177,7 @@
     <script src="js/state.js"></script>
     <script src="js/main.js"></script>
 
-    <!-- Dashboard Interactions -->
+    <!-- Dashboard Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const user = window.Session.getCurrentUser();
@@ -176,49 +187,21 @@
                 return;
             }
 
-            document.getElementById('partnerWelcomeTitle').innerText = `Kênh nhà cung cấp: ${user.companyName || 'Green Valley Travel'}`;
-            refreshDashboardUI();
-        });
-
-        function refreshDashboardUI() {
+            document.getElementById('partnerWelcomeTitle').innerText = `Thống kê đối tác: ${user.companyName || 'Green Valley Travel'}`;
+            
+            // Populate metrics from live bookings
             const bookings = window.API.getBookings();
-            const tbody = document.getElementById('dashBookingsBody');
-            tbody.innerHTML = "";
-
-            let totalRevenue = 86500000; // base revenue
-
+            const totalBookings = bookings.length;
+            let totalRevenue = 0;
             bookings.forEach(bk => {
-                let statusLabel = "Chờ duyệt";
-                let statusClass = "pending";
-                
-                if (bk.status === 'approved') {
-                    statusLabel = "Đã xác nhận";
-                    statusClass = "success";
-                    totalRevenue += bk.value; // add approved booking values dynamically
-                } else if (bk.status === 'rejected') {
-                    statusLabel = "Đã hủy";
-                    statusClass = "danger";
+                if (bk.status === 'approved' || bk.status === 'deposit' || bk.status === 'completed') {
+                    totalRevenue += bk.value;
                 }
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><strong>#${bk.id}</strong></td>
-                    <td>${bk.customer}</td>
-                    <td>${bk.service}</td>
-                    <td>${bk.date}</td>
-                    <td>${bk.guests}</td>
-                    <td><strong>${bk.value.toLocaleString('vi-VN')}đ</strong></td>
-                    <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
-                `;
-                tbody.appendChild(row);
             });
-
-            document.getElementById('dashRevenueVal').innerText = totalRevenue.toLocaleString('vi-VN') + 'đ';
-
-            if (window.lucide) {
-                window.lucide.createIcons();
-            }
-        }
+            
+            document.getElementById('metricsRevenue').innerText = totalRevenue.toLocaleString('vi-VN') + 'đ';
+            document.getElementById('metricsBookings').innerText = totalBookings + ' đơn';
+        });
     </script>
 </body>
 

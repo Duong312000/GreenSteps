@@ -12,12 +12,12 @@ const Session = {
     setCurrentUser: (user) => {
         localStorage.setItem('greensteps_user', JSON.stringify(user));
         // Update role in DB state
-        let dbState = localStorage.getItem('greensteps_state_v3');
+        let dbState = localStorage.getItem('greensteps_state_v4');
         if (dbState) {
             try {
                 let parsed = JSON.parse(dbState);
                 parsed.role = user.role;
-                localStorage.setItem('greensteps_state_v3', JSON.stringify(parsed));
+                localStorage.setItem('greensteps_state_v4', JSON.stringify(parsed));
             } catch(e) {}
         }
     },

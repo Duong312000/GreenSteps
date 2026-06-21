@@ -113,6 +113,30 @@
                     </div>
                 </div>
 
+                <!-- Display Settings (Theme Switcher) -->
+                <div class="display-settings-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">Cài đặt hiển thị</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Chuyển đổi giao diện sáng/tối để phù hợp với môi trường sử dụng của bạn.</p>
+                    <button class="theme-toggle-btn" id="themeToggleBtn" style="width: 100%; height: 40px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        Chế độ hiển thị
+                    </button>
+                </div>
+
+                <!-- Account Settings (Role Switcher & Logout) -->
+                <div class="account-settings-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">Quản lý tài khoản</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Chuyển đổi vai trò sử dụng hoặc đăng xuất khỏi hệ thống.</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="role-toggle-btn" onclick="handleRoleToggle()" style="width: 100%; height: 40px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-primary);">
+                            <i class="bi bi-arrow-left-right"></i> Chuyển đổi vai trò
+                        </button>
+                        <button class="logout-btn" onclick="handleLogout()" style="width: 100%; height: 40px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #c62828;">
+                            <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Actions Reset -->
                 <div class="reset-db-card">
                     <h3>Khôi phục trạng thái</h3>
@@ -279,6 +303,26 @@
             toggleEditDetails();
             alert("Lưu thông tin thành công!");
             window.location.reload();
+        }
+
+        function handleRoleToggle() {
+            if (window.Session) {
+                const newRole = window.Session.toggleRole();
+                alert(`Đã chuyển đổi vai trò thành công! Vai trò hiện tại: ${newRole === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch'}`);
+                if (newRole === 'provider') {
+                    window.location.href = 'partner_dashboard.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }
+        }
+
+        function handleLogout() {
+            if (window.Session) {
+                window.Session.logout();
+                alert("Đã đăng xuất tài khoản!");
+                window.location.href = 'index.html';
+            }
         }
 
         function resetProjectState() {
