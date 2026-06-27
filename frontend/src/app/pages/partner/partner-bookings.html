@@ -1,0 +1,60 @@
+<main class="main-viewport partner-viewport">
+    <div class="bookings-container">
+        <div class="user-title-row" style="margin-bottom: 10px; border-bottom: none; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="font-size: 26px; color: var(--primary-green);">Lịch sử & Quản lý đơn hàng du lịch</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Danh sách đơn hàng đặt dịch vụ, phê duyệt cọc và theo dõi trạng thái thanh toán.</p>
+            </div>
+        </div>
+
+            <section class="partner-dashboard-table-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm);">
+                <div class="table-wrapper" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 700;">
+                                <th style="padding: 12px 10px;">Mã đơn</th>
+                                <th style="padding: 12px 10px;">Khách hàng</th>
+                                <th style="padding: 12px 10px;">Dịch vụ yêu cầu</th>
+                                <th style="padding: 12px 10px;">Ngày đi</th>
+                                <th style="padding: 12px 10px;">Số khách</th>
+                                <th style="padding: 12px 10px;">Thành tiền</th>
+                                <th style="padding: 12px 10px;">Trạng thái</th>
+                                <th style="padding: 12px 10px; text-align: center;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngIf="bookings.length === 0">
+                                <td colspan="8" style="text-align: center; padding: 30px; color: var(--text-muted);">Không có đơn đặt chỗ nào lịch sử.</td>
+                            </tr>
+                            <tr *ngFor="let b of bookings" style="border-bottom: 1px solid var(--border-color); color: var(--text-primary);">
+                                <td style="padding: 14px 10px; font-weight: 700;">{{ b.id }}</td>
+                                <td style="padding: 14px 10px;">{{ b.customer || b.customer_name }}</td>
+                                <td style="padding: 14px 10px; font-weight: 600;">{{ b.service || b.service_name }}</td>
+                                <td style="padding: 14px 10px;">{{ b.date || b.booking_date }}</td>
+                                <td style="padding: 14px 10px;">{{ b.guests }} khách</td>
+                                <td style="padding: 14px 10px; font-weight: 700; color: var(--primary);">{{ b.value | number:'1.0-0':'vi-VN' }}đ</td>
+                                <td style="padding: 14px 10px;">
+                                    <span class="status-pill" [ngClass]="b.status === 'pending' ? 'pending' : (b.status === 'deposit' ? 'deposit' : (b.status === 'completed' ? 'success' : 'rejected'))">
+                                        {{ b.status === 'pending' ? 'Chờ duyệt' : (b.status === 'deposit' ? 'Đặt cọc' : (b.status === 'completed' ? 'Hoàn thành' : 'Đã hủy')) }}
+                                    </span>
+                                </td>
+                                <td style="padding: 14px 10px; display: flex; gap: 8px; justify-content: center;">
+                                    <ng-container *ngIf="b.status === 'pending'">
+                                        <button (click)="approveBooking(b.id)" style="background-color: var(--primary); border: none; border-radius: 4px; color: #FFFFFF; font-weight: 700; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 11px;">
+                                            <i class="bi bi-check-lg"></i> Duyệt cọc
+                                        </button>
+                                        <button (click)="rejectBooking(b.id)" style="background-color: #ffebee; border: 1px solid #ffcdd2; border-radius: 4px; color: #c62828; font-weight: 700; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 11px;">
+                                            <i class="bi bi-x-lg"></i> Từ chối
+                                        </button>
+                                    </ng-container>
+                                    <ng-container *ngIf="b.status !== 'pending'">
+                                        <span style="color: var(--text-muted); font-size: 11px; font-style: italic;">Đã xử lý</span>
+                                    </ng-container>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+    </div>
+</main>

@@ -1,0 +1,96 @@
+<!-- 1. Header Logo Area (ONLY logo and site name) -->
+<div class="logo-header">
+    <a routerLink="/" class="logo-container" style="text-decoration:none;">
+        <img src="image/greensteps_logo.png" class="logo-icon-img" alt="GreenSteps Travel Logo">
+        <span class="logo-text">GreenSteps Travel</span>
+    </a>
+    
+    <!-- Theme Toggle inside Logo Header for easier access -->
+    <button class="btn-theme-toggle" (click)="toggleTheme()" style="margin-left: 20px; background: var(--bg-hover); border: 1px solid var(--border-color); color: var(--text-color); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 4px;">
+        <i class="bi" [ngClass]="currentTheme === 'dark' ? 'bi-moon-fill' : 'bi-sun-fill'"></i>
+        <span>{{ currentTheme === 'dark' ? 'Tối' : 'Sáng' }}</span>
+    </button>
+</div>
+
+<!-- 2. Apple-style Navbar Menubar -->
+<nav class="menubar-navbar" id="menubar">
+    <ul class="menubar-nav-list" id="menubarTabs">
+        <!-- Main Navigation Tabs (Always Visible for All Users) -->
+        <li class="menubar-tab" routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Trang chủ</li>
+        <li class="menubar-tab" routerLink="/community" routerLinkActive="active">Cộng đồng</li>
+        <li class="menubar-tab" routerLink="/tours" routerLinkActive="active">Lịch trình</li>
+        <li class="menubar-tab" (click)="showGreenHandbookAlert()" style="cursor: pointer;">Cẩm nang Xanh</li>
+
+        <!-- Provider Partner Tabs (Only visible when logged in as provider) -->
+        <ng-container *ngIf="currentUser && currentUser.role === 'provider'">
+            <li class="menubar-tab" routerLink="/partner-dashboard" routerLinkActive="active">Thống kê Hiệu quả</li>
+            <li class="menubar-tab" routerLink="/partner-services" routerLinkActive="active">Dịch vụ của tôi</li>
+            <li class="menubar-tab" routerLink="/partner-bookings" routerLinkActive="active">Đơn hàng của tôi</li>
+            <li class="menubar-tab" routerLink="/partner-ads" routerLinkActive="active">Chiến dịch Quảng bá</li>
+        </ng-container>
+    </ul>
+    
+    <!-- Smart Search integrated inside Menubar -->
+    <div class="menubar-search-container">
+        <input 
+            #searchInput
+            type="text" 
+            class="menubar-search-input" 
+            placeholder="Tìm Phú Yên, cắm trại..." 
+            style="padding-left: 15px;"
+            [(ngModel)]="smartSearchQuery"
+            (focus)="showSearchDropdown()"
+            (keypress)="onSearchKeypress($event)">
+        
+        <!-- Expandable Smart Filter Dropdown -->
+        <div #filterDropdown class="search-filter-dropdown" [class.active]="isSearchDropdownActive">
+            <h4>Bộ lọc hành trình thông minh</h4>
+            <div class="filter-row">
+                <label for="filterDest">Điểm đến</label>
+                <select id="filterDest" [(ngModel)]="filterDest">
+                    <option value="Đà Lạt">Đà Lạt (Cao nguyên & Lâm viên)</option>
+                    <option value="Phú Yên">Phú Yên (Biển hoang sơ & Ghềnh đá)</option>
+                    <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An (Di sản & Biển xanh)</option>
+                </select>
+            </div>
+            <div class="filter-row">
+                <label for="filterBudget">Ngân sách dự kiến</label>
+                <select id="filterBudget" [(ngModel)]="filterBudget">
+                    <option value="3">Dưới 3 Triệu (Tiết kiệm)</option>
+                    <option value="6">3 - 6 Triệu (Tiêu chuẩn)</option>
+                    <option value="12">Trên 6 Triệu (Cao cấp)</option>
+                </select>
+            </div>
+            <div class="filter-row">
+                <label for="filterStyle">Phong cách du lịch</label>
+                <select id="filterStyle" [(ngModel)]="filterStyle">
+                    <option value="eco">Du lịch xanh (Eco-friendly)</option>
+                    <option value="adventure">Khám phá, phượt</option>
+                    <option value="relax">Nghỉ dưỡng thuần túy</option>
+                </select>
+            </div>
+            <button class="filter-btn" (click)="applySmartFilters()">Tìm kiếm đề xuất AI</button>
+        </div>
+    </div>
+    
+    <!-- Account Tab -->
+    <!-- Logged in: display avatar + username -->
+    <div *ngIf="currentUser" class="menubar-tab menubar-account-tab" routerLink="/profile" routerLinkActive="active" style="margin-left: auto; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <ng-container *ngIf="currentUser.avatarUrl">
+            <img [src]="currentUser.avatarUrl" class="menubar-user-avatar" alt="Avatar">
+        </ng-container>
+        <ng-container *ngIf="!currentUser.avatarUrl">
+            <div class="menubar-user-avatar-placeholder">{{ getFirstLetter(currentUser.fullname) }}</div>
+        </ng-container>
+        <span class="menubar-username-text">{{ currentUser.fullname }}</span>
+    </div>
+
+    <!-- Not logged in: display Login tab -->
+    <div *ngIf="!currentUser" class="menubar-tab menubar-account-tab" routerLink="/auth" routerLinkActive="active" style="margin-left: auto; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+        <i class="bi bi-person-circle" style="font-size: 16px;"></i>
+        <span>Đăng nhập</span>
+    </div>
+
+    <!-- Dropdown Menu for Overflowing Tabs (Slide down on hover) -->
+    <div class="menubar-overflow-panel" id="menubarOverflowPanel"></div>
+</nav>

@@ -1,0 +1,150 @@
+<main class="main-viewport profile-viewport" *ngIf="currentUser">
+    <div class="profile-layout-container">
+        <!-- Left Panel: User Profile Info Card -->
+        <div class="profile-left-col">
+            <div class="user-info-card">
+                <div class="user-avatar-circle" id="profileAvatar">{{ getFirstLetter(currentUser.fullname) }}</div>
+                <div class="user-title-row">
+                    <h2 id="profileName">{{ currentUser.fullname }}</h2>
+                    <span class="role-badge" id="profileRoleBadge">{{ currentUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</span>
+                </div>
+                <p class="user-email-text" id="profileEmail">{{ currentUser.email }}</p>
+                <p class="user-role-label">Nhà cung cấp: <strong id="profileProviderStatus">{{ currentUser.role === 'provider' ? 'Đã kích hoạt' : 'Chưa đăng ký' }}</strong></p>
+            </div>
+
+            <!-- Personal Info Details Form -->
+            <div class="personal-details-card">
+                <div class="card-header">
+                    <h3>Thông tin cá nhân</h3>
+                    <button class="btn-edit-details" (click)="toggleEditDetails()"><i class="bi bi-pencil-square"></i> Chỉnh sửa</button>
+                </div>
+                <form id="personalDetailsForm" (submit)="saveDetails($event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Họ và tên</label>
+                            <input type="text" id="detName" [(ngModel)]="detFullname" name="detFullname" [disabled]="!isEditing">
+                        </div>
+                        <div class="form-group">
+                            <label>Số điện thoại</label>
+                            <input type="tel" id="detPhone" [(ngModel)]="detPhone" name="detPhone" [disabled]="!isEditing">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="detEmail" [(ngModel)]="detEmail" name="detEmail" [disabled]="!isEditing">
+                        </div>
+                        <div class="form-group">
+                            <label>Ngày sinh</label>
+                            <input type="text" id="detDob" [(ngModel)]="detDob" name="detDob" [disabled]="!isEditing">
+                        </div>
+                        <div class="form-group">
+                            <label>Giới tính</label>
+                            <select id="detGender" [(ngModel)]="detGender" name="detGender" [disabled]="!isEditing">
+                                <option value="Nữ">Nữ</option>
+                                <option value="Nam">Nam</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Địa chỉ liên hệ</label>
+                            <input type="text" id="detAddress" [(ngModel)]="detAddress" name="detAddress" [disabled]="!isEditing">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-save-details" id="saveDetailsBtn" *ngIf="isEditing">Lưu thay đổi</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Panel: Wallet & Upgrades -->
+        <div class="profile-right-col">
+            <!-- Wallet Status Card -->
+            <div class="wallet-info-card">
+                <div class="wallet-header">
+                    <h3>Ví du lịch GreenSteps</h3>
+                    <span class="wallet-badge" [class.active]="walletRegistered">{{ walletRegistered ? 'Đã kích hoạt' : 'Chưa kích hoạt' }}</span>
+                </div>
+                
+                <div class="wallet-balance-box" *ngIf="walletRegistered">
+                    <span class="bal-label">Số dư khả dụng:</span>
+                    <h2 class="bal-value">{{ walletBalance | number:'1.0-0':'vi-VN' }}đ</h2>
+                    
+                    <div class="deposit-form-inline">
+                        <input type="number" [(ngModel)]="depositAmount" placeholder="Nhập số tiền nạp..." min="20000" step="10000">
+                        <button (click)="handleDeposit()"><i class="bi bi-plus-lg"></i> Nạp tiền</button>
+                    </div>
+                </div>
+
+                <div class="wallet-inactive-box" *ngIf="!walletRegistered">
+                    <p>Kích hoạt Ví du lịch để thanh toán gộp lịch trình, hưởng ưu đãi giảm giá và nhận hoàn trả cọc dễ dàng hơn.</p>
+                    <button class="btn-activate-wallet" (click)="handleWalletActivation()">Kích hoạt Ví & Nhận 5.000.000đ</button>
+                </div>
+            </div>
+
+            <!-- Provider Upgrades Status -->
+            <div class="provider-upgrade-card">
+                <h3>Trạng thái Nhà cung cấp</h3>
+                <div class="upgrade-status-box" *ngIf="currentUser.role !== 'provider'">
+                    <p>Bạn đang sử dụng GreenSteps với vai trò Khách du lịch. Hãy đăng ký làm Nhà cung cấp nếu muốn đăng và quản lý dịch vụ du lịch trên nền tảng.</p>
+                    <button class="btn-upgrade-provider" routerLink="/partner-register">Đăng ký làm Nhà cung cấp</button>
+                </div>
+                <div class="upgrade-status-box" *ngIf="currentUser.role === 'provider'">
+                    <p style="color:var(--success); font-weight:600;"><i class="bi bi-check-circle-fill"></i> Kênh nhà cung cấp đã được phê duyệt thành công.</p>
+                    <button class="btn-upgrade-provider" routerLink="/partner-dashboard">Vào kênh đối tác</button>
+                </div>
+            </div>
+
+            <!-- Account Settings (Role Switcher & Logout) -->
+            <div class="account-settings-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px;">
+                <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">Quản lý tài khoản</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Chuyển đổi vai trò sử dụng hoặc đăng xuất khỏi hệ thống.</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button class="role-toggle-btn" (click)="handleRoleToggle()" style="width: 100%; height: 40px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-primary);">
+                        <i class="bi bi-arrow-left-right"></i> Chuyển đổi vai trò
+                    </button>
+                    <button class="logout-btn" (click)="handleLogout()" style="width: 100%; height: 40px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #c62828;">
+                        <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                    </button>
+                </div>
+            </div>
+
+            <!-- Actions Reset -->
+            <div class="reset-db-card">
+                <h3>Khôi phục trạng thái</h3>
+                <p>Đặt lại vai trò du khách, trạng thái ví chưa kích hoạt, xóa lịch trình cũ để thực hiện lại chuỗi kiểm thử.</p>
+                <button class="btn-reset-db" (click)="resetProjectState()">Đặt lại dữ liệu (Reset)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions History Table -->
+    <section class="profile-transactions-section" *ngIf="walletRegistered">
+        <h3>Lịch sử giao dịch ví</h3>
+        <div class="transactions-table-wrapper">
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>Mã giao dịch</th>
+                        <th>Nội dung</th>
+                        <th>Ngày giao dịch</th>
+                        <th>Số tiền</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngIf="transactions.length === 0">
+                        <td colspan="5" style="text-align:center; color:var(--text-muted);">Không có giao dịch nào gần đây. Nạp tiền để bắt đầu.</td>
+                    </tr>
+                    <tr *ngFor="let t of transactions">
+                        <td><strong>{{ t.id }}</strong></td>
+                        <td>{{ t.desc }}</td>
+                        <td>{{ t.date }}</td>
+                        <td [ngClass]="t.amount > 0 ? 'amt-positive' : 'amt-negative'">
+                            <strong>{{ t.amount > 0 ? '+' : '' }}{{ t.amount | number:'1.0-0':'vi-VN' }}đ</strong>
+                        </td>
+                        <td><span class="status-pill success">{{ t.status === 'success' ? 'Hoàn thành' : 'Đang xử lý' }}</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>

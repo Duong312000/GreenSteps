@@ -1,0 +1,109 @@
+<main class="main-viewport" *ngIf="activeTour">
+    <!-- BREADCRUMB -->
+    <section class="detail-breadcrumb">
+        <a routerLink="/tours">Tìm kiếm tour</a> &gt; <span>{{ activeTour.title }}</span>
+    </section>
+
+    <!-- TOUR OVERVIEW (IMAGE SLIDER & ORDER BOX) -->
+    <section class="detail-overview-section">
+        <!-- Image Slider (Left) -->
+        <div class="detail-slider-wrapper">
+            <div class="detail-slides-container" id="detailSlides">
+                <img *ngFor="let img of slideImages; let idx = index" 
+                     [src]="img" 
+                     class="detail-slide" 
+                     [class.active]="activeSlideIndex === idx" 
+                     alt="Slide {{ idx + 1 }}">
+            </div>
+            
+            <div class="detail-thumbnails" id="detailThumbnails">
+                <img *ngFor="let img of slideImages; let idx = index" 
+                     [src]="img" 
+                     class="thumbnail" 
+                     [class.active]="activeSlideIndex === idx" 
+                     (click)="setSlide(idx)" 
+                     alt="Thumb {{ idx + 1 }}">
+            </div>
+        </div>
+
+        <!-- Order Box (Right) -->
+        <div class="detail-order-box">
+            <div class="detail-region-label">{{ activeTour.destination }} • {{ activeTour.days }} ngày</div>
+            <h1 class="detail-title-main" id="detailTourTitle">{{ activeTour.title }}</h1>
+            
+            <div class="detail-rating-row">
+                <span class="stars"><i class="bi bi-star-fill"></i> {{ activeTour.rating }}</span>
+                <span class="votes">({{ activeTour.votes }} đánh giá)</span>
+                <span class="carbon-badge"><i class="bi bi-leaf-fill"></i> {{ activeTour.carbon }}kg CO₂</span>
+            </div>
+
+            <p class="detail-description">{{ activeTour.description }}</p>
+
+            <form class="detail-booking-form" (submit)="submitBooking($event)">
+                <div class="form-group">
+                    <label for="bookingDate"><i class="bi bi-calendar-event"></i> Chọn ngày khởi hành</label>
+                    <input type="date" id="bookingDate" [(ngModel)]="bookingDate" name="bookingDate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bookingGuests"><i class="bi bi-people-fill"></i> Số lượng khách</label>
+                    <select id="bookingGuests" [(ngModel)]="bookingGuests" name="bookingGuests" class="form-control">
+                        <option [value]="1">1 người lớn</option>
+                        <option [value]="2">2 người lớn</option>
+                        <option [value]="3">3 người lớn</option>
+                        <option [value]="4">4 người lớn</option>
+                    </select>
+                </div>
+
+                <div class="price-summary-row">
+                    <span>Tổng chi phí (tạm tính):</span>
+                    <h3 class="price-calculated" id="calcPrice">{{ totalPrice | number:'1.0-0':'vi-VN' }}đ</h3>
+                </div>
+
+                <div class="detail-action-buttons">
+                    <button type="submit" class="btn-book-now"><i class="bi bi-wallet2"></i> Đặt Cọc Tour Ngay</button>
+                    <button type="button" class="btn-clone-edit" (click)="cloneAndEditTrip()"><i class="bi bi-robot"></i> Tự Chỉnh Sửa Lịch Trình</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- TOUR TIMELINE DETAILS (ACCORDION STYLE) -->
+    <section class="detail-timeline-section">
+        <h2>Chi Tiết Hành Trình Xanh</h2>
+        <p class="subtitle">Lịch trình đã được tính toán lượng phát thải Carbon thấp nhất và ưu tiên trải nghiệm bản địa.</p>
+
+        <div class="timeline-container">
+            <!-- Day tabs switcher (Horizontal Accordion Headers) -->
+            <div class="day-tabs-row" id="dayTabs">
+                <button *ngFor="let day of activeTour.data; let idx = index" 
+                        class="day-tab" 
+                        [class.active]="activeDayIndex === idx" 
+                        (click)="setDay(idx)">
+                    Ngày {{ idx + 1 }}
+                </button>
+            </div>
+
+            <!-- Timeline activities list (Body) -->
+            <div class="timeline-body-wrapper" id="timelineBody">
+                <ng-container *ngFor="let dayActivities of activeTour.data; let dayIdx = index">
+                    <div class="timeline-day-content" *ngIf="activeDayIndex === dayIdx">
+                        <div class="timeline-item-card" *ngFor="let act of dayActivities">
+                            <div class="timeline-time-node">
+                                <span class="time">{{ act.time }}</span>
+                                <div class="node-icon-bullet"><i class="bi" [ngClass]="act.icon || 'bi-geo-alt-fill'"></i></div>
+                            </div>
+                            <div class="timeline-item-info">
+                                <h3>{{ act.name }}</h3>
+                                <div class="item-meta-row">
+                                    <span class="meta-cost"><i class="bi bi-cash"></i> {{ act.cost === 0 ? 'Miễn phí' : (act.cost | number:'1.0-0':'vi-VN') + 'đ' }}</span>
+                                    <span class="meta-carbon"><i class="bi bi-leaf-fill"></i> {{ act.carbon }}kg CO₂</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+    </section>
+</main>

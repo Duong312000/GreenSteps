@@ -1,0 +1,199 @@
+<main class="main-viewport partner-viewport">
+    <div class="analytics-container">
+        <div class="user-title-row" style="margin-bottom: 10px; border-bottom: none; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="font-size: 26px; color: var(--primary-green);">Thống kê Hiệu quả Kinh doanh</h2>
+                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Theo dõi booking, doanh thu, hành vi khách hàng và hiệu suất hoạt động.</p>
+            </div>
+        </div>
+
+            <!-- Stat Cards Row -->
+            <div class="partner-stats-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                <div class="stat-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; display: flex; flex-direction: column; gap: 4px; box-shadow: var(--shadow-sm);">
+                    <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Tổng số đơn hàng đặt</span>
+                    <h3 style="font-size: 28px; font-weight: 800; color: var(--text-primary);">{{ bookingsCount }}</h3>
+                    <span style="font-size: 11px; color: var(--success); font-weight: 600;"><i class="bi bi-arrow-up-right"></i> +12% so với tháng trước</span>
+                </div>
+                <div class="stat-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; display: flex; flex-direction: column; gap: 4px; box-shadow: var(--shadow-sm);">
+                    <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Tổng doanh thu (tạm tính)</span>
+                    <h3 style="font-size: 28px; font-weight: 800; color: var(--primary);">{{ totalRevenue | number:'1.0-0':'vi-VN' }}đ</h3>
+                    <span style="font-size: 11px; color: var(--success); font-weight: 600;"><i class="bi bi-arrow-up-right"></i> +18% tăng trưởng</span>
+                </div>
+                <div class="stat-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; display: flex; flex-direction: column; gap: 4px; box-shadow: var(--shadow-sm);">
+                    <span style="font-size: 13px; color: var(--text-muted); font-weight: 600;">Khí thải CO₂ tiết kiệm</span>
+                    <h3 style="font-size: 28px; font-weight: 800; color: var(--accent);">{{ carbonSaved }} kg</h3>
+                    <span style="font-size: 11px; color: var(--success); font-weight: 600;"><i class="bi bi-tree-fill"></i> Tương đương 5 cây xanh</span>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="partner-charts-row" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 30px;">
+                <!-- Cash Flow Growth Chart -->
+                <div class="chart-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm);">
+                    <h3 style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 15px;">Biểu đồ tăng trưởng dòng tiền</h3>
+                    <div class="chart-svg-container" style="height: 220px; width: 100%;">
+                        <svg width="100%" height="100%" viewBox="0 0 500 250" style="padding: 10px;">
+                            <!-- Grid lines -->
+                            <line x1="50" y1="50" x2="450" y2="50" stroke="var(--border-color)" stroke-dasharray="5,5" />
+                            <line x1="50" y1="120" x2="450" y2="120" stroke="var(--border-color)" stroke-dasharray="5,5" />
+                            <line x1="50" y1="190" x2="450" y2="190" stroke="var(--border-color)" stroke-dasharray="5,5" />
+                            <!-- Simulated Chart Line -->
+                            <path d="M 50 200 Q 150 170 200 120 T 350 80 T 450 40" fill="none" stroke="var(--primary-green)" stroke-width="4" />
+                            <circle cx="50" cy="200" r="5" fill="var(--primary-green)" />
+                            <circle cx="200" cy="120" r="5" fill="var(--primary-green)" />
+                            <circle cx="350" cy="80" r="5" fill="var(--primary-green)" />
+                            <circle cx="450" cy="40" r="5" fill="var(--primary-green)" />
+                            <text x="45" y="220" font-size="10" fill="var(--text-muted)">Tuần 1</text>
+                            <text x="190" y="220" font-size="10" fill="var(--text-muted)">Tuần 2</text>
+                            <text x="340" y="220" font-size="10" fill="var(--text-muted)">Tuần 3</text>
+                            <text x="435" y="220" font-size="10" fill="var(--text-muted)">Tuần 4</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Distribution Column Chart -->
+                <div class="chart-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm);">
+                    <h3 style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 15px;">Phân bổ loại hình dịch vụ</h3>
+                    <div class="chart-svg-container" style="height: 220px; width: 100%; display: flex; align-items: center; justify-content: center;">
+                        <svg width="100%" height="100%" viewBox="0 0 250 250" style="padding: 10px;">
+                            <rect x="30" y="80" width="30" height="120" fill="var(--primary-green)" />
+                            <text x="25" y="220" font-size="10" fill="var(--text-muted)">Lưu trú</text>
+
+                            <rect x="110" y="120" width="30" height="80" fill="var(--mint-accent)" />
+                            <text x="105" y="220" font-size="10" fill="var(--text-muted)">Ăn uống</text>
+
+                            <rect x="190" y="150" width="30" height="50" fill="var(--accent-gold)" />
+                            <text x="192" y="220" font-size="10" fill="var(--text-muted)">Tours</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversion Funnel & Demographics Row -->
+            <div class="partner-charts-row" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 30px;">
+                <!-- Conversion Funnel -->
+                <div class="chart-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm);">
+                    <h3 style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 15px;">Phễu chuyển đổi du khách (AI Recommended Funnel)</h3>
+                    <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 10px;">
+                        <!-- Step 1 -->
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 120px; font-size: 13px; font-weight: 600;">1. Lượt xem dịch vụ</div>
+                            <div style="flex-grow: 1; height: 28px; background-color: var(--primary-green); color: white; display: flex; align-items: center; padding-left: 10px; font-size: 12px; font-weight: 600;">
+                                12.430 lượt (100%)
+                            </div>
+                        </div>
+                        <!-- Step 2 -->
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 120px; font-size: 13px; font-weight: 600;">2. Xem Lịch trình</div>
+                            <div style="flex-grow: 1; display: flex; align-items: center;">
+                                <div style="width: 22.8%; height: 28px; background-color: var(--mint-accent); color: white; display: flex; align-items: center; padding-left: 10px; font-size: 12px; font-weight: 600; white-space: nowrap;">
+                                    2.840 (22.8%)
+                                </div>
+                                <div style="flex-grow: 1; background-color: var(--bg-tertiary); height: 28px;"></div>
+                            </div>
+                        </div>
+                        <!-- Step 3 -->
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 120px; font-size: 13px; font-weight: 600;">3. Gửi Yêu cầu cọc</div>
+                            <div style="flex-grow: 1; display: flex; align-items: center;">
+                                <div style="width: 10.6%; height: 28px; background-color: var(--accent-gold); color: white; display: flex; align-items: center; padding-left: 10px; font-size: 12px; font-weight: 600; white-space: nowrap;">
+                                    1.320 (10.6%)
+                                </div>
+                                <div style="flex-grow: 1; background-color: var(--bg-tertiary); height: 28px;"></div>
+                            </div>
+                        </div>
+                        <!-- Step 4 -->
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 120px; font-size: 13px; font-weight: 600;">4. Đã xác nhận duyệt</div>
+                            <div style="flex-grow: 1; display: flex; align-items: center;">
+                                <div style="width: 2%; min-width: 30px; height: 28px; background-color: var(--danger); color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; white-space: nowrap;">
+                                    128 (1.02%)
+                                </div>
+                                <div style="flex-grow: 1; background-color: var(--bg-tertiary); height: 28px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demographics Analysis -->
+                <div class="chart-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm);">
+                    <h3 style="font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 15px;">Phân tích hành vi khách hàng</h3>
+                    <div class="demo-stats-list" style="display: flex; flex-direction: column; gap: 14px;">
+                        <div class="demo-stat-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; font-size: 13px;">
+                            <span>Nhóm khách tiêu biểu:</span>
+                            <strong style="color: var(--primary-green);">Khách gia đình</strong>
+                        </div>
+                        <div class="demo-stat-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; font-size: 13px;">
+                            <span>Độ tuổi phổ biến:</span>
+                            <strong>22 - 35 tuổi</strong>
+                        </div>
+                        <div class="demo-stat-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; font-size: 13px;">
+                            <span>Điểm đến đặt nhiều nhất:</span>
+                            <strong>Đà Lạt</strong>
+                        </div>
+                        <div class="demo-stat-row" style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; font-size: 13px;">
+                            <span>Loại hình ưa thích:</span>
+                            <strong>Tour văn hóa</strong>
+                        </div>
+                        <div class="demo-stat-row" style="display: flex; justify-content: space-between; font-size: 13px;">
+                            <span>Thiết bị đặt chính:</span>
+                            <strong>Điện thoại (82%)</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Requests Table -->
+            <section class="partner-dashboard-table-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm);">
+                <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 20px; color: var(--text-primary);">Danh sách yêu cầu đặt chỗ cần duyệt</h3>
+                
+                <div class="table-wrapper" style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                        <thead>
+                            <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 700;">
+                                <th style="padding: 12px 10px;">Mã đơn</th>
+                                <th style="padding: 12px 10px;">Khách hàng</th>
+                                <th style="padding: 12px 10px;">Dịch vụ yêu cầu</th>
+                                <th style="padding: 12px 10px;">Ngày đi</th>
+                                <th style="padding: 12px 10px;">Số khách</th>
+                                <th style="padding: 12px 10px;">Thành tiền</th>
+                                <th style="padding: 12px 10px;">Trạng thái</th>
+                                <th style="padding: 12px 10px; text-align: center;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngIf="bookings.length === 0">
+                                <td colspan="8" style="text-align: center; padding: 30px; color: var(--text-muted);">Không có yêu cầu đặt chỗ nào cần xử lý.</td>
+                            </tr>
+                            <tr *ngFor="let b of bookings" style="border-bottom: 1px solid var(--border-color); color: var(--text-primary);">
+                                <td style="padding: 14px 10px; font-weight: 700;">{{ b.id }}</td>
+                                <td style="padding: 14px 10px;">{{ b.customer || b.customer_name }}</td>
+                                <td style="padding: 14px 10px; font-weight: 600;">{{ b.service || b.service_name }}</td>
+                                <td style="padding: 14px 10px;">{{ b.date || b.booking_date }}</td>
+                                <td style="padding: 14px 10px;">{{ b.guests }} khách</td>
+                                <td style="padding: 14px 10px; font-weight: 700; color: var(--primary);">{{ b.value | number:'1.0-0':'vi-VN' }}đ</td>
+                                <td style="padding: 14px 10px;">
+                                    <span class="status-pill" [ngClass]="b.status === 'pending' ? 'pending' : (b.status === 'deposit' ? 'deposit' : (b.status === 'completed' ? 'success' : 'rejected'))">
+                                        {{ b.status === 'pending' ? 'Chờ duyệt' : (b.status === 'deposit' ? 'Đặt cọc' : (b.status === 'completed' ? 'Hoàn thành' : 'Đã hủy')) }}
+                                    </span>
+                                </td>
+                                <td style="padding: 14px 10px; display: flex; gap: 8px; justify-content: center;">
+                                    <ng-container *ngIf="b.status === 'pending'">
+                                        <button (click)="approveBooking(b.id)" style="background-color: var(--primary); border: none; border-radius: 4px; color: #FFFFFF; font-weight: 700; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 11px;">
+                                            <i class="bi bi-check-lg"></i> Duyệt cọc
+                                        </button>
+                                        <button (click)="rejectBooking(b.id)" style="background-color: #ffebee; border: 1px solid #ffcdd2; border-radius: 4px; color: #c62828; font-weight: 700; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 11px;">
+                                            <i class="bi bi-x-lg"></i> Từ chối
+                                        </button>
+                                    </ng-container>
+                                    <ng-container *ngIf="b.status !== 'pending'">
+                                        <span style="color: var(--text-muted); font-size: 11px; font-style: italic;">Đã xử lý</span>
+                                    </ng-container>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+    </div>
+</main>

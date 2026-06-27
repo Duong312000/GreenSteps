@@ -1,0 +1,131 @@
+<main class="main-viewport">
+    <!-- BANNERS SECTION (Slide Page 4) -->
+    <section class="tours-banners-section">
+        <div class="dest-banner-card" (click)="filterByDestination('Đà Lạt')">
+            <img src="image/1dc8619487310884c9d631d689ece1e7.jpg" alt="Đà Lạt">
+            <div class="dest-banner-overlay">
+                <h3>Đà Lạt</h3>
+                <p>4 loại tour đặc sắc</p>
+            </div>
+        </div>
+        <div class="dest-banner-card" (click)="filterByDestination('Phú Yên')">
+            <img src="image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg" alt="Phú Yên">
+            <div class="dest-banner-overlay">
+                <h3>Phú Yên</h3>
+                <p>4 loại tour đặc sắc</p>
+            </div>
+        </div>
+        <div class="dest-banner-card" (click)="filterByDestination('Đà Nẵng - Hội An')">
+            <img src="image/Viet Nam.png" alt="Đà Nẵng - Hội An">
+            <div class="dest-banner-overlay">
+                <h3>Đà Nẵng - Hội An</h3>
+                <p>4 loại tour đặc sắc</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FILTER BAR SECTION (Slide Page 4) -->
+    <section class="tours-filter-section">
+        <div class="tours-filter-header">
+            <div class="search-input-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" id="toursSearchInput" [(ngModel)]="searchQuery" (input)="filterTours()" placeholder="Tìm kiếm tour...">
+            </div>
+            <span class="tours-count-badge" id="toursCountText">Tìm thấy {{ filteredTours.length }} tour</span>
+        </div>
+        
+        <div class="tours-filters-row">
+            <select id="filterDestSelect" [(ngModel)]="filterDest" (change)="filterTours()">
+                <option value="all">Tất cả điểm đến</option>
+                <option value="Đà Lạt">Đà Lạt</option>
+                <option value="Phú Yên">Phú Yên</option>
+                <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>
+            </select>
+
+            <select id="filterTypeSelect" [(ngModel)]="filterType" (change)="filterTours()">
+                <option value="all">Tất cả loại tour</option>
+                <option value="Gia đình">Tour Gia đình</option>
+                <option value="Trải nghiệm">Tour Trải nghiệm</option>
+                <option value="Tiết kiệm">Tour Tiết kiệm</option>
+                <option value="Nghỉ dưỡng">Tour Nghỉ dưỡng</option>
+            </select>
+
+            <select id="filterPriceSelect" [(ngModel)]="filterPrice" (change)="filterTours()">
+                <option value="all">Tất cả mức giá</option>
+                <option value="under2M">Dưới 2.000.000đ</option>
+                <option value="2M-4M">2.000.000 - 4.000.000đ</option>
+                <option value="above4M">Trên 4.000.000đ</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- TOURS GRID (Slide Page 4) -->
+    <section class="tours-grid-section">
+        <div class="tours-grid" id="toursGrid">
+            <!-- Special "Create New Itinerary" Card (Placed at the very first slot) -->
+            <div class="tour-card create-new-card" (click)="openCreateItineraryModal()">
+                <div class="create-new-dashed-box">
+                    <div class="plus-icon">+</div>
+                    <h3>Tạo Lịch Trình Mới</h3>
+                    <p>Bắt đầu hành trình trống của riêng bạn và để AI hỗ trợ sắp xếp địa điểm</p>
+                </div>
+            </div>
+
+            <!-- Tour Cards rendered dynamically -->
+            <div class="tour-card" *ngFor="let tour of filteredTours" [routerLink]="['/tours', tour.id]" style="cursor: pointer;">
+                <div class="tour-img-container">
+                    <img [src]="tour.image" [alt]="tour.title">
+                    <div class="price-pill-overlay">
+                        <span class="price-new">{{ tour.cost | number:'1.0-0':'vi-VN' }}đ</span>
+                        <span class="price-old" *ngIf="tour.oldCost">{{ tour.oldCost | number:'1.0-0':'vi-VN' }}đ</span>
+                    </div>
+                </div>
+                <div class="tour-info">
+                    <div class="tour-region">{{ tour.destination }} • {{ tour.days }} ngày</div>
+                    <h3 class="tour-title">{{ tour.title }}</h3>
+                    <div class="tour-tags-row">
+                        <span class="tour-tag-pill" *ngFor="let tag of tour.tags">{{ tag }}</span>
+                    </div>
+                    <div class="tour-rating-row">
+                        <span class="tour-stars"><i class="bi bi-star-fill"></i> {{ tour.rating }}</span>
+                        <span class="tour-votes">({{ tour.votes }})</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- CREATE ITINERARY MODAL -->
+<div class="modal-overlay" [class.active]="isCreateModalOpen">
+    <div class="custom-modal-card">
+        <div class="modal-header">
+            <h3>Thiết lập Hành Trình Mới</h3>
+            <button class="modal-close-btn" (click)="closeCreateItineraryModal()">&times;</button>
+        </div>
+        <form id="createItiForm" (submit)="submitNewItinerary($event)">
+            <div class="form-group">
+                <label for="modalDest">Điểm đến</label>
+                <select id="modalDest" [(ngModel)]="modalDest" name="modalDest" required>
+                    <option value="Đà Lạt">Đà Lạt</option>
+                    <option value="Phú Yên">Phú Yên</option>
+                    <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="modalDays">Số ngày đi</label>
+                <select id="modalDays" [(ngModel)]="modalDays" name="modalDays" required>
+                    <option [value]="1">1 ngày</option>
+                    <option [value]="2">2 ngày</option>
+                    <option [value]="3">3 ngày</option>
+                    <option [value]="4">4 ngày</option>
+                    <option [value]="5">5 ngày</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" (click)="closeCreateItineraryModal()">Hủy</button>
+                <button type="submit" class="btn-primary">Bắt đầu thiết kế</button>
+            </div>
+        </form>
+    </div>
+</div>

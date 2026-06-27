@@ -1,0 +1,124 @@
+<main class="main-viewport community-viewport">
+    <div class="community-layout">
+        <!-- Main Feed (Left) -->
+        <div class="feed-col">
+            <!-- Create Post Card -->
+            <div class="create-post-card">
+                <h3>Chia sẻ hành trình xanh của bạn</h3>
+                <form (submit)="submitPost($event)">
+                    <textarea 
+                        [(ngModel)]="postText" 
+                        name="postText" 
+                        placeholder="Hãy chia sẻ trải nghiệm giảm thiểu carbon, homestay sinh thái hay xe điện thân thiện môi trường của bạn..." 
+                        required></textarea>
+                    
+                    <div class="post-controls-row">
+                        <!-- Select Dest -->
+                        <div class="control-group">
+                            <label><i class="bi bi-geo-alt-fill"></i> Điểm đến:</label>
+                            <select [(ngModel)]="postDest" name="postDest">
+                                <option value="Đà Lạt">Đà Lạt</option>
+                                <option value="Phú Yên">Phú Yên</option>
+                                <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>
+                            </select>
+                        </div>
+
+                        <!-- Select Days -->
+                        <div class="control-group">
+                            <label><i class="bi bi-calendar-event"></i> Số ngày:</label>
+                            <select [(ngModel)]="postDays" name="postDays">
+                                <option [value]="1">1 ngày</option>
+                                <option [value]="2">2 ngày</option>
+                                <option [value]="3">3 ngày</option>
+                                <option [value]="4">4 ngày</option>
+                                <option [value]="5">5 ngày</option>
+                            </select>
+                        </div>
+
+                        <!-- Star Rating Selection -->
+                        <div class="control-group rating-stars-select">
+                            <label>Đánh giá chuyến đi:</label>
+                            <div class="stars-row">
+                                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 1" (click)="setRating(1)"></i>
+                                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 2" (click)="setRating(2)"></i>
+                                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 3" (click)="setRating(3)"></i>
+                                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 4" (click)="setRating(4)"></i>
+                                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 5" (click)="setRating(5)"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions-right">
+                        <button type="submit" class="btn-post-submit">Đăng bài viết</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Feed Posts List -->
+            <div class="posts-feed-container">
+                <div class="feed-post-card" *ngFor="let post of posts">
+                    <div class="post-header">
+                        <div class="post-author-avatar">{{ getFirstLetter(post.author) }}</div>
+                        <div class="post-author-info">
+                            <h4>{{ post.author }}</h4>
+                            <span class="post-time">{{ post.time || 'Vừa xong' }}</span>
+                        </div>
+                        <div class="post-stars-rating">
+                            <i class="bi bi-star-fill" *ngFor="let s of [1,2,3,4,5]" [ngStyle]="{'color': s <= post.rating ? '#ffb300' : '#e0e0e0'}"></i>
+                        </div>
+                    </div>
+
+                    <div class="post-body">
+                        <p class="post-text-content">{{ post.text }}</p>
+                        
+                        <!-- Embedded Trip Banner -->
+                        <div class="post-trip-banner-pill" *ngIf="post.tripName">
+                            <span class="trip-dest-badge"><i class="bi bi-geo-alt-fill"></i> {{ post.dest }}</span>
+                            <span class="trip-name-text">{{ post.tripName }} • {{ post.days }} ngày</span>
+                        </div>
+
+                        <!-- Post Image if available -->
+                        <div class="post-media-container" *ngIf="post.image">
+                            <img [src]="post.image" [alt]="post.tripName" class="post-image-embed">
+                        </div>
+                    </div>
+
+                    <div class="post-footer-actions">
+                        <button class="post-action-btn" (click)="handleLike(post)">
+                            <i class="bi bi-hand-thumbs-up"></i> Thích ({{ post.likes }})
+                        </button>
+                        <button class="post-action-btn">
+                            <i class="bi bi-chat-text"></i> Bình luận ({{ post.comments }})
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Widgets (Right) -->
+        <div class="sidebar-col">
+            <!-- Sustainable Tips Widget -->
+            <div class="community-widget tip-widget">
+                <h3>Mẹo Du Lịch Xanh</h3>
+                <ul>
+                    <li>
+                        <div class="bullet-icon"><i class="bi bi-water"></i></div>
+                        <p>Mang theo bình nước cá nhân để hạn chế tối đa chai nhựa dùng một lần.</p>
+                    </li>
+                    <li>
+                        <div class="bullet-icon"><i class="bi bi-bicycle"></i></div>
+                        <p>Ưu tiên đi bộ, thuê xe đạp hoặc xe máy điện VinFast khi di chuyển nội đô.</p>
+                    </li>
+                    <li>
+                        <div class="bullet-icon"><i class="bi bi-house-door"></i></div>
+                        <p>Lựa chọn nghỉ chân tại Homestay bản địa hoặc Eco-resort sử dụng năng lượng mặt trời.</p>
+                    </li>
+                    <li>
+                        <div class="bullet-icon"><i class="bi bi-trash"></i></div>
+                        <p>Luôn thu dọn rác thải sạch sẽ khi cắm trại hoang dã hoặc trekking đồi núi.</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
