@@ -1,34 +1,61 @@
-<div class="footer-container">
-    <div class="footer-brand">
-        <div class="logo">
-            <div class="logo-leaf-icon"><i class="bi bi-leaf-fill"></i></div>
-            <span>GreenSteps Travel</span>
+<footer class="bg-gradient-to-r from-[#05361f] via-[#064927] to-[#022817] text-white">
+    <div class="mx-auto max-w-7xl px-8 py-8 lg:px-14">
+        <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-[1.25fr_1fr_1fr_1fr_1.35fr]">
+            <div>
+                <div class="mb-4 flex items-center gap-3">
+                    <img src="image/greensteps_logo.png" class="h-8 w-8 rounded-full bg-white object-cover" alt="GreenSteps">
+                    <span class="text-base font-extrabold">GREENSTEPS</span>
+                </div>
+                <p class="max-w-xs text-xs leading-6 text-white/75">Travel with purpose. Explore responsibly. Make a positive impact.</p>
+                <div class="mt-4 flex gap-3 text-white/85">
+                    <span class="grid h-7 w-7 place-items-center rounded-full bg-white/10 text-xs"><i class="bi bi-facebook"></i></span>
+                    <span class="grid h-7 w-7 place-items-center rounded-full bg-white/10 text-xs"><i class="bi bi-instagram"></i></span>
+                    <span class="grid h-7 w-7 place-items-center rounded-full bg-white/10 text-xs"><i class="bi bi-youtube"></i></span>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="mb-4 text-xs font-extrabold">Company</h3>
+                <div class="flex flex-col gap-2 text-xs text-white/70">
+                    <a href="#" class="hover:text-white">About Us</a>
+                    <a href="#" class="hover:text-white">Sustainability</a>
+                    <a href="#" class="hover:text-white">Careers</a>
+                    <a href="#" class="hover:text-white">Press</a>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="mb-4 text-xs font-extrabold">Support</h3>
+                <div class="flex flex-col gap-2 text-xs text-white/70">
+                    <a href="#" class="hover:text-white">Help Center</a>
+                    <a href="#" class="hover:text-white">Contact Us</a>
+                    <a href="#" class="hover:text-white">Terms of Use</a>
+                    <a href="#" class="hover:text-white">Privacy Policy</a>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="mb-4 text-xs font-extrabold">Popular Destinations</h3>
+                <div class="flex flex-col gap-2 text-xs text-white/70">
+                    <a routerLink="/tours" class="hover:text-white">Da Lat</a>
+                    <a routerLink="/tours" class="hover:text-white">Da Nang - Hoi An</a>
+                    <a routerLink="/tours" class="hover:text-white">Phu Yen</a>
+                    <a routerLink="/tours" class="hover:text-white">All Destinations</a>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="mb-4 text-xs font-extrabold">Newsletter</h3>
+                <p class="max-w-xs text-xs leading-6 text-white/70">Get travel inspiration and exclusive deals.</p>
+                <div class="mt-4 flex rounded-lg border border-white/15 bg-white/5 p-1">
+                    <input type="email" placeholder="Enter your email" class="min-w-0 flex-1 bg-transparent px-3 text-xs text-white outline-none placeholder:text-white/45">
+                    <button class="grid h-8 w-8 place-items-center rounded-md bg-emerald-600 text-white"><i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
         </div>
-        <p>Tiên phong trong lĩnh vực du lịch bền vững tại Việt Nam. Khám phá thiên nhiên, bảo vệ môi trường.</p>
-        <p class="footer-copyright">© 2026 GreenSteps Travel. All rights reserved.</p>
+
+        <div class="mt-8 border-t border-white/10 pt-5 text-xs text-white/55">
+            &copy; 2026 GreenSteps. All rights reserved.
+        </div>
     </div>
-    <div class="footer-links-grid">
-        <div class="footer-col">
-            <h4>KHÁM PHÁ</h4>
-            <a routerLink="/home">Điểm đến</a>
-            <a routerLink="/tours">Tour du lịch</a>
-            <a routerLink="/schedule/new">Lịch trình AI</a>
-        </div>
-        <div class="footer-col">
-            <h4>DỊCH VỤ</h4>
-            <a routerLink="/partner-services">Nhà cung cấp dịch vụ</a>
-            <a routerLink="/partner-register">Hợp tác đối tác</a>
-        </div>
-        <div class="footer-col">
-            <h4>HỖ TRỢ</h4>
-            <a routerLink="/profile">Tài khoản của tôi</a>
-            <a href="#">Trung tâm trợ giúp</a>
-        </div>
-        <div class="footer-col">
-            <h4>PHÁP LÝ</h4>
-            <a href="#">Chính sách bảo mật</a>
-            <a href="#">Điều khoản sử dụng</a>
-            <a href="#">Cookie Settings</a>
-        </div>
-    </div>
-</div>
+</footer>

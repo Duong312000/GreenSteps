@@ -11,7 +11,34 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Geist:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Cormorant+Garamond:wght@700&family=DM+Serif+Display&family=Geist:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS utilities for the redesigned landing page -->
+  <script>
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Geist', 'Be Vietnam Pro', 'Arial', 'sans-serif']
+            },
+            colors: {
+              emerald: {
+                600: '#059669'
+              },
+              sky: {
+                500: '#0EA5E9'
+              },
+              slate: {
+                800: '#1E293B'
+              }
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">

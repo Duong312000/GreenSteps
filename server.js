@@ -2,9 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const dns = require('dns');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+let isDbConnected = false;
 
 // Enable CORS and JSON parsing
 app.use(cors());
@@ -17,9 +19,43 @@ if (dbUri.includes('<db_username>') || dbUri.includes('<db_password>')) {
   dbUri = 'mongodb://localhost:27017/greensteps';
 }
 
-mongoose.connect(dbUri)
-  .then(() => console.log(`Successfully connected to MongoDB database!`))
-  .catch(err => console.error('Error connecting to MongoDB:', err));
+if (dbUri.startsWith('mongodb+srv://')) {
+  const dnsServers = (process.env.DNS_SERVERS || '8.8.8.8,1.1.1.1')
+    .split(',')
+    .map(server => server.trim())
+    .filter(Boolean);
+
+  if (dnsServers.length > 0) {
+    dns.setServers(dnsServers);
+  }
+}
+
+mongoose.set('bufferCommands', false);
+
+mongoose.connection.on('connected', () => {
+  isDbConnected = true;
+  console.log('Successfully connected to MongoDB database!');
+});
+
+mongoose.connection.on('disconnected', () => {
+  isDbConnected = false;
+  console.warn('MongoDB disconnected.');
+});
+
+mongoose.connection.on('error', (err) => {
+  isDbConnected = false;
+  console.error('MongoDB connection error:', err.message);
+});
+
+app.use('/api', (req, res, next) => {
+  if (isDbConnected) {
+    return next();
+  }
+
+  return res.status(503).json({
+    error: 'Database is not connected. Please check MONGODB_URI, network access, and MongoDB server status.'
+  });
+});
 
 // ==========================================================================
 // MONGOOSE SCHEMAS & MODELS (String IDs and String Refs for Compatibility)
@@ -268,7 +304,7 @@ app.put('/api/auth/profile/:userId', async (req, res) => {
   const { userId } = req.params;
   const { fullname, phone, email, dob, gender, address, role, companyName, company_name } = req.body;
   try {
-    const updateFields: any = {};
+    const updateFields = {};
     if (fullname !== undefined) updateFields.fullname = fullname;
     if (phone !== undefined) updateFields.phone = phone;
     if (email !== undefined) updateFields.email = email;
@@ -793,7 +829,34 @@ app.get('/api/tours/:id', async (req, res) => {
   }
 });
 
-// Start the Backend API Server
-app.listen(PORT, () => {
-  console.log(`GreenSteps Backend Server is running on port ${PORT}...`);
-});
+// Start the Backend API Server after MongoDB is ready
+async function startServer() {
+  try {
+    console.log('Connecting to MongoDB...');
+    await mongoose.connect(dbUri, {
+      serverSelectionTimeoutMS: 10000
+    });
+    isDbConnected = true;
+
+    const server = app.listen(PORT, () => {
+      console.log(`GreenSteps Backend Server is running on port ${PORT}...`);
+    });
+
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use. Stop the existing server or set another PORT in .env.`);
+        process.exit(1);
+      }
+
+      console.error('Server failed to start:', err.message);
+      process.exit(1);
+    });
+  } catch (err) {
+    isDbConnected = false;
+    console.error('Failed to connect to MongoDB. Server was not started.');
+    console.error(err.message);
+    process.exit(1);
+  }
+}
+
+startServer();
