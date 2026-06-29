@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { LoginModalService } from '../../services/login-modal.service';
 import { User } from '../../models/models';
 
 @Component({
@@ -26,7 +27,8 @@ export class PartnerRegisterComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private loginModalService: LoginModalService
   ) {}
 
   ngOnInit() {
@@ -47,7 +49,7 @@ export class PartnerRegisterComponent implements OnInit {
 
     if (!this.currentUser) {
       alert('Vui lòng đăng nhập trước khi đăng ký làm đối tác!');
-      this.router.navigate(['/auth']);
+      this.loginModalService.open();
       return;
     }
 

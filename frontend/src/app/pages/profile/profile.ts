@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
+import { LoginModalService } from '../../services/login-modal.service';
 import { User, WalletTransaction } from '../../models/models';
 
 @Component({
@@ -35,7 +36,8 @@ export class ProfileComponent implements OnInit {
     private authService: AuthService,
     private apiService: ApiService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private loginModalService: LoginModalService
   ) {}
 
   ngOnInit() {
@@ -51,7 +53,7 @@ export class ProfileComponent implements OnInit {
         
         this.loadWalletAndTransactions();
       } else {
-        this.router.navigate(['/auth']);
+        this.loginModalService.open();
       }
       this.cdr.detectChanges();
     });

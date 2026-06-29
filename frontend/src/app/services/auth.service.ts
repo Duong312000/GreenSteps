@@ -135,6 +135,42 @@ export class AuthService {
     }
   }
 
+  public async loginOrCreateWithIdentifier(identifier: string): Promise<{ success: boolean; message?: string; user?: User }> {
+    const normalized = identifier.trim();
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized);
+    const storedUsers = this.getOtpUsers();
+    const existingStoredUser = storedUsers.find(user =>
+      (isEmail && user.email?.toLowerCase() === normalized.toLowerCase()) ||
+      (!isEmail && this.normalizePhone(user.phone || '') === this.normalizePhone(normalized))
+    );
+
+    if (existingStoredUser) {
+      this.setCurrentUser(existingStoredUser);
+      return { success: true, user: existingStoredUser };
+    }
+
+    const demoUser = this.findDemoUser(normalized, isEmail);
+    if (demoUser) {
+      this.setCurrentUser(demoUser);
+      return { success: true, user: demoUser };
+    }
+
+    const username = isEmail ? normalized.split('@')[0] : this.normalizePhone(normalized);
+    const user: User = {
+      id: `otp_${Date.now()}`,
+      username,
+      fullname: isEmail ? username : `GreenSteps ${this.normalizePhone(normalized).slice(-4)}`,
+      email: isEmail ? normalized : `${this.normalizePhone(normalized)}@greensteps.local`,
+      phone: isEmail ? '' : normalized,
+      role: 'traveler'
+    };
+
+    storedUsers.push(user);
+    localStorage.setItem('greensteps_otp_users', JSON.stringify(storedUsers));
+    this.setCurrentUser(user);
+    return { success: true, user };
+  }
+
   public async updateProfile(userId: string, profileData: any): Promise<{ success: boolean; message?: string; user?: User }> {
     try {
       const res = await firstValueFrom(
@@ -188,5 +224,49 @@ export class AuthService {
 
   public logout() {
     this.setCurrentUser(null);
+  }
+
+  private getOtpUsers(): User[] {
+    try {
+      return JSON.parse(localStorage.getItem('greensteps_otp_users') || '[]');
+    } catch (e) {
+      localStorage.removeItem('greensteps_otp_users');
+      return [];
+    }
+  }
+
+  private findDemoUser(identifier: string, isEmail: boolean): User | null {
+    const demoUsers: User[] = [
+      {
+        id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
+        username: 'traveler',
+        fullname: 'Nguyễn Minh Anh',
+        email: 'minhanh.greentravel@gmail.com',
+        phone: '0901 234 567',
+        dob: '12/08/1996',
+        gender: 'Nữ',
+        address: 'Quận 1, TP. Hồ Chí Minh',
+        role: 'traveler'
+      },
+      {
+        id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        username: 'partner',
+        fullname: 'Trần Văn A',
+        companyName: 'Green Valley Travel',
+        email: 'partner.greentravel@gmail.com',
+        phone: '0902 987 654',
+        address: 'Quận 3, TP. Hồ Chí Minh',
+        role: 'provider'
+      }
+    ];
+
+    return demoUsers.find(user =>
+      (isEmail && user.email?.toLowerCase() === identifier.toLowerCase()) ||
+      (!isEmail && this.normalizePhone(user.phone || '') === this.normalizePhone(identifier))
+    ) || null;
+  }
+
+  private normalizePhone(value: string): string {
+    return value.replace(/\D/g, '').replace(/^84/, '0');
   }
 }

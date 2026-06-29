@@ -1,5 +1,7 @@
 # Local env files (MUST be ignored to protect database credentials)
 .env
+.env.*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
@@ -7,14 +9,20 @@
 
 # Dependency directories
 node_modules/
+frontend/node_modules/
 jspm_packages/
 web_packages/
 
 # Production builds
 dist/
+build/
 tmp/
 out/
 .angular/
+.cache/
+.npm-cache/
+frontend/.npm-cache/
+coverage/
 
 # IDE / Editor configurations
 .vscode/
@@ -31,6 +39,13 @@ yarn-debug.log*
 yarn-error.log*
 logs/
 *.log
+
+# OS / temporary files
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.old
 
 # Large PDF design assets
 *.pdf

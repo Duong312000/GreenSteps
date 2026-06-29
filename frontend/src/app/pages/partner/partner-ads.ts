@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { LoginModalService } from '../../services/login-modal.service';
 import { User } from '../../models/models';
 
 @Component({
@@ -17,14 +18,15 @@ export class PartnerAdsComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private loginModalService: LoginModalService
   ) {}
 
   ngOnInit() {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (!user || user.role !== 'provider') {
-        this.router.navigate(['/auth']);
+        this.loginModalService.open();
       }
       this.cdr.detectChanges();
     });

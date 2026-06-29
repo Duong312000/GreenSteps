@@ -5,12 +5,15 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
 import { User } from '../../models/models';
+import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { LoginModalComponent } from '../login-modal/login-modal';
+import { LoginModalService } from '../../services/login-modal.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, LoginModalComponent],
   templateUrl: './header.html',
   styleUrls: []
 })
@@ -20,6 +23,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   public smartSearchQuery: string = '';
   public isSearchDropdownActive: boolean = false;
   public isMobileMenuOpen: boolean = false;
+  public isLoginModalOpen: boolean = false;
   public isOverflowOpen: boolean = false;  // controlled by mouseenter/mouseleave
   public isProfileOpen: boolean = false;   // profile dropdown hover
   public navStartX: number = 0;            // left-x of first nav tab, for overflow panel alignment
@@ -50,14 +54,25 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('filterDropdown') filterDropdown!: ElementRef;
 
   private resizeObserver!: ResizeObserver;
+  private loginModalSubscription?: Subscription;
+  private updateScrollState() {
+    const nextIsScrolled = window.scrollY > 0;
+    if (this.isScrolled === nextIsScrolled) return;
 
-  @HostListener('window:scroll', [])
+    this.isScrolled = nextIsScrolled;
+    if (this.isHomeHeaderCollapsed) {
+      this.isOverflowOpen = false;
+    }
+  }
+
+  @HostListener('window:scroll')
   public onWindowScroll() {
-    this.isScrolled = window.scrollY > 10;
+    this.updateScrollState();
   }
 
   @HostListener('mouseenter')
   onMouseEnter() {
+    if (this.isHomeHeaderCollapsed) return;
     this.isOverflowOpen = true;
   }
 
@@ -75,10 +90,15 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.router.url === '/' || this.router.url.startsWith('/home');
   }
 
+  public get isHomeHeaderCollapsed(): boolean {
+    return this.isHomePage() && !this.isScrolled;
+  }
+
   constructor(
     public authService: AuthService,
     private router: Router,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private loginModalService: LoginModalService
   ) {}
 
   @HostListener('document:mousedown', ['$event'])
@@ -96,7 +116,19 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
 
+  public openLoginModal() {
+    this.isMobileMenuOpen = false;
+    this.isLoginModalOpen = true;
+  }
+
+  public closeLoginModal() {
+    this.isLoginModalOpen = false;
+  }
+
   ngOnInit() {
+    this.updateScrollState();
+    this.loginModalSubscription = this.loginModalService.open$.subscribe(() => this.openLoginModal());
+
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       this.updateNavigation();
@@ -109,6 +141,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.currentPath = event.url;
+      this.updateScrollState();
     });
 
     const savedTheme = localStorage.getItem('greensteps_theme') as 'light' | 'dark';
@@ -137,6 +170,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.loginModalSubscription?.unsubscribe();
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }

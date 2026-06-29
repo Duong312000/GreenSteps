@@ -234,11 +234,123 @@
     to { transform: scaleY(1); opacity: 1; }
   }
 
+  .gs-destination-carousel {
+    position: relative;
+    min-height: 455px;
+    max-width: 1180px;
+  }
+
+  .gs-destination-card {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: min(380px, 100%);
+    overflow: hidden;
+    border-radius: 1rem;
+    background: #fff;
+    cursor: pointer;
+    transition:
+      transform 920ms cubic-bezier(0.33, 1, 0.68, 1),
+      opacity 920ms cubic-bezier(0.33, 1, 0.68, 1),
+      box-shadow 920ms cubic-bezier(0.33, 1, 0.68, 1),
+      filter 920ms cubic-bezier(0.33, 1, 0.68, 1);
+    transform-origin: center center;
+    backface-visibility: hidden;
+    will-change: transform, opacity, filter;
+  }
+
+  .gs-destination-card.left,
+  .gs-destination-card.right {
+    z-index: 10;
+    opacity: 0.9;
+    filter: saturate(0.92) brightness(0.96);
+    box-shadow: 0 22px 55px rgba(15, 23, 42, 0.12);
+  }
+
+  .gs-destination-card.left {
+    transform: translateX(-144%) translateY(34px) scale(0.9);
+  }
+
+  .gs-destination-card.center {
+    z-index: 20;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1.08);
+    filter: saturate(1) brightness(1);
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.18);
+  }
+
+  .gs-destination-card.right {
+    transform: translateX(44%) translateY(34px) scale(0.9);
+  }
+
+  .gs-destination-card.wrapping {
+    z-index: 8;
+    opacity: 0.82;
+    transition:
+      transform 920ms cubic-bezier(0.33, 1, 0.68, 1),
+      opacity 920ms cubic-bezier(0.33, 1, 0.68, 1),
+      box-shadow 920ms cubic-bezier(0.33, 1, 0.68, 1),
+      filter 920ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  .gs-destination-card.left .gs-destination-image,
+  .gs-destination-card.right .gs-destination-image {
+    height: 390px;
+  }
+
+  .gs-destination-card.center .gs-destination-image {
+    height: 430px;
+  }
+
+  .gs-destination-dot {
+    transition: width 260ms ease, background 260ms ease, opacity 260ms ease;
+  }
+
+  .gs-destination-dot.active {
+    width: 1.75rem;
+    background: #059669;
+  }
+
+  @media (max-width: 1024px) {
+    .gs-destination-carousel {
+      display: grid;
+      min-height: auto;
+      gap: 1.5rem;
+    }
+
+    .gs-destination-card {
+      position: relative;
+      left: auto;
+      top: auto;
+      width: 100%;
+      max-width: 380px;
+      justify-self: center;
+      transform: none !important;
+    }
+
+    .gs-destination-card.left,
+    .gs-destination-card.right,
+    .gs-destination-card.center {
+      opacity: 1;
+      filter: none;
+      box-shadow: 0 22px 55px rgba(15, 23, 42, 0.12);
+    }
+
+    .gs-destination-card.left .gs-destination-image,
+    .gs-destination-card.right .gs-destination-image,
+    .gs-destination-card.center .gs-destination-image {
+      height: 360px;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .gs-soft-reveal,
     .gs-number-pulse,
-    .gs-bar-rise {
+    .gs-bar-rise,
+    .gs-destination-card,
+    .gs-destination-dot {
       animation: none !important;
+      transition: none !important;
       opacity: 1;
       transform: none;
     }
@@ -353,59 +465,31 @@
       <p class="mt-3 text-sm font-semibold text-slate-500">Handpicked places, unforgettable experiences.</p>
     </div>
 
-    <button class="absolute left-0 top-[46%] hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-slate-400 shadow-xl shadow-slate-900/10 ring-1 ring-slate-100 transition-all duration-300 hover:-translate-x-1 hover:text-emerald-600 md:grid">
+    <button type="button" (click)="rotateDestinations('prev')" class="absolute left-0 top-[46%] z-30 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-slate-400 shadow-xl shadow-slate-900/10 ring-1 ring-slate-100 transition-all duration-300 hover:-translate-x-1 hover:text-emerald-600 md:grid" aria-label="Previous destination">
       <i class="bi bi-chevron-left"></i>
     </button>
-    <button class="absolute right-0 top-[46%] hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-slate-400 shadow-xl shadow-slate-900/10 ring-1 ring-slate-100 transition-all duration-300 hover:translate-x-1 hover:text-emerald-600 md:grid">
+    <button type="button" (click)="rotateDestinations('next')" class="absolute right-0 top-[46%] z-30 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-slate-400 shadow-xl shadow-slate-900/10 ring-1 ring-slate-100 transition-all duration-300 hover:translate-x-1 hover:text-emerald-600 md:grid" aria-label="Next destination">
       <i class="bi bi-chevron-right"></i>
     </button>
 
-    <div class="mx-auto mt-12 flex max-w-6xl flex-col items-center justify-center gap-7 lg:flex-row lg:gap-0">
-      <article (click)="goToDestination('Đà Lạt')" class="group relative z-10 w-full max-w-[330px] cursor-pointer overflow-hidden rounded-2xl bg-white shadow-[0_22px_55px_rgba(15,23,42,0.12)] transition-all duration-300 hover:-translate-y-2 lg:-mr-4 lg:scale-95">
-        <div class="relative h-[390px]">
-          <img src="image/1dc8619487310884c9d631d689ece1e7.jpg" alt="Da Lat" class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110">
+    <div class="gs-destination-carousel mx-auto mt-12 max-w-6xl">
+      <article
+        *ngFor="let card of destinationCards; let idx = index"
+        (click)="goToDestination(card.dest)"
+        class="gs-destination-card group ring-1 ring-white"
+        [ngClass]="getDestinationPosition(idx)"
+        [class.wrapping]="isDestinationWrapping(idx)"
+        [attr.aria-current]="idx === activeDestinationIndex ? 'true' : null">
+        <div class="gs-destination-image relative">
+          <img [src]="card.image" [alt]="card.title" class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110">
           <div class="absolute inset-0 bg-gradient-to-b from-slate-900/10 via-slate-900/15 to-slate-950/80"></div>
           <div class="absolute left-5 top-5 rounded-full bg-white px-4 py-2 text-xs font-extrabold text-slate-800 shadow-lg shadow-slate-900/10">
-            <i class="bi bi-geo-alt-fill text-emerald-600"></i> Da Lat
+            <i class="bi bi-geo-alt-fill text-emerald-600"></i> {{ card.label }}
           </div>
           <div class="absolute inset-x-6 bottom-6 text-white">
-            <h3 class="font-serif text-3xl font-semibold">Da Lat</h3>
-            <p class="mt-1 text-xs font-bold text-white/90">The city of eternal spring</p>
-            <button class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/50 px-4 py-2 text-xs font-bold text-white transition-all duration-300 group-hover:bg-white group-hover:text-emerald-700">
-              Explore <i class="bi bi-arrow-right"></i>
-            </button>
-          </div>
-        </div>
-      </article>
-
-      <article (click)="goToDestination('Đà Nẵng - Hội An')" class="group relative z-20 w-full max-w-[380px] cursor-pointer overflow-hidden rounded-2xl bg-white shadow-[0_30px_80px_rgba(15,23,42,0.18)] ring-1 ring-white transition-all duration-300 hover:-translate-y-2 lg:scale-105">
-        <div class="relative h-[430px]">
-          <img src="image/Viet Nam.png" alt="Da Nang Hoi An" class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110">
-          <div class="absolute inset-0 bg-gradient-to-b from-slate-900/10 via-slate-900/15 to-slate-950/80"></div>
-          <div class="absolute left-5 top-5 rounded-full bg-white px-4 py-2 text-xs font-extrabold text-slate-800 shadow-lg shadow-slate-900/10">
-            <i class="bi bi-geo-alt-fill text-emerald-600"></i> Da Nang - Hoi An
-          </div>
-          <div class="absolute inset-x-6 bottom-6 text-white">
-            <h3 class="font-serif text-3xl font-semibold">Đà Nẵng - Hội An</h3>
-            <p class="mt-1 text-xs font-bold text-white/90">Heritage, beaches & vibrant culture</p>
-            <button class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/50 px-4 py-2 text-xs font-bold text-white transition-all duration-300 group-hover:bg-white group-hover:text-emerald-700">
-              Explore <i class="bi bi-arrow-right"></i>
-            </button>
-          </div>
-        </div>
-      </article>
-
-      <article (click)="goToDestination('Phú Yên')" class="group relative z-10 w-full max-w-[330px] cursor-pointer overflow-hidden rounded-2xl bg-white shadow-[0_22px_55px_rgba(15,23,42,0.12)] transition-all duration-300 hover:-translate-y-2 lg:-ml-4 lg:scale-95">
-        <div class="relative h-[390px]">
-          <img src="image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg" alt="Phu Yen" class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110">
-          <div class="absolute inset-0 bg-gradient-to-b from-slate-900/10 via-slate-900/15 to-slate-950/80"></div>
-          <div class="absolute left-5 top-5 rounded-full bg-white px-4 py-2 text-xs font-extrabold text-slate-800 shadow-lg shadow-slate-900/10">
-            <i class="bi bi-geo-alt-fill text-emerald-600"></i> Phu Yen
-          </div>
-          <div class="absolute inset-x-6 bottom-6 text-white">
-            <h3 class="font-serif text-3xl font-semibold">Phu Yen</h3>
-            <p class="mt-1 text-xs font-bold text-white/90">Wild beauty, peaceful shores</p>
-            <button class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/50 px-4 py-2 text-xs font-bold text-white transition-all duration-300 group-hover:bg-white group-hover:text-emerald-700">
+            <h3 class="font-serif text-3xl font-semibold">{{ card.title }}</h3>
+            <p class="mt-1 text-xs font-bold text-white/90">{{ card.subtitle }}</p>
+            <button type="button" class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/50 px-4 py-2 text-xs font-bold text-white transition-all duration-300 group-hover:bg-white group-hover:text-emerald-700">
               Explore <i class="bi bi-arrow-right"></i>
             </button>
           </div>
@@ -413,11 +497,15 @@
       </article>
     </div>
 
-    <div class="mt-8 flex justify-center gap-3">
-      <span class="h-2.5 w-2.5 rounded-full bg-emerald-600"></span>
-      <span class="h-2.5 w-2.5 rounded-full bg-slate-300"></span>
-      <span class="h-2.5 w-2.5 rounded-full bg-slate-300"></span>
-      <span class="h-2.5 w-2.5 rounded-full bg-slate-300"></span>
+    <div class="gs-destination-dots mt-8 flex justify-center gap-3">
+      <button
+        *ngFor="let card of destinationCards; let idx = index"
+        type="button"
+        (click)="setActiveDestination(idx)"
+        class="gs-destination-dot h-2.5 w-2.5 rounded-full bg-slate-300"
+        [class.active]="idx === activeDestinationIndex"
+        [attr.aria-label]="'Go to ' + card.title">
+      </button>
     </div>
 
     <div class="relative mx-auto mt-9 max-w-6xl">

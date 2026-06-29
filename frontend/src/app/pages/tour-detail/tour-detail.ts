@@ -11,7 +11,7 @@ import { Tour, Itinerary } from '../../models/models';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './tour-detail.html',
-  styleUrls: []
+  styleUrls: ['./tour-detail.css']
 })
 export class TourDetailComponent implements OnInit {
   public activeTour: Tour | null = null;
@@ -121,34 +121,24 @@ export class TourDetailComponent implements OnInit {
 
   public async submitBooking(event: Event) {
     event.preventDefault();
+    if (!this.activeTour) return;
 
-    const user = this.authService.getCurrentUser();
-    if (!user) {
-      alert("Bạn cần đăng nhập để đặt tour!");
-      this.router.navigate(['/auth']);
-      return;
-    }
+    const checkIn = this.bookingDate;
+    const checkOutDate = new Date(checkIn);
+    checkOutDate.setDate(checkOutDate.getDate() + Math.max(this.activeTour.days - 1, 1));
+    const checkOut = checkOutDate.toISOString().slice(0, 10);
 
-    const userId = user.id || user._id || '';
-
-    const newBooking = {
-      id: "BK-" + Date.now().toString().slice(-4),
-      customer: user.fullname,
-      customerId: userId,
-      service: this.activeTour ? this.activeTour.title : "Tour",
-      serviceId: this.activeTour ? this.activeTour.id : "ser_3",
-      date: new Date(this.bookingDate).toLocaleDateString('vi-VN'),
-      guests: this.bookingGuests,
-      value: this.totalPrice,
-      status: "pending"
+    const bookingContext = {
+      hotelId: `hotel_${this.activeTour.destination || 'greensteps'}`.toLowerCase().replace(/\s+/g, '_'),
+      roomId: 'premium_double_window',
+      tourId: this.activeTour.id,
+      checkIn,
+      checkOut,
+      guestCount: Number(this.bookingGuests),
+      roomCount: 1
     };
 
-    const success = await this.apiService.createBooking(newBooking);
-    if (success) {
-      alert(`Đặt tour thành công! Mã đơn hàng: ${newBooking.id}. Vui lòng kiểm tra ví và trạng thái duyệt tại trang cá nhân.`);
-      this.router.navigate(['/profile']);
-    } else {
-      alert('Đã xảy ra lỗi khi đặt tour. Vui lòng thử lại!');
-    }
+    localStorage.setItem('greensteps_booking_context', JSON.stringify(bookingContext));
+    this.router.navigate(['/booking'], { queryParams: bookingContext });
   }
 }

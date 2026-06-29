@@ -1,0 +1,180 @@
+<div class="login-overlay" (click)="requestClose()">
+  <section #loginDialog class="login-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+    <button type="button" class="login-modal__close" aria-label="Đóng" (click)="requestClose()">
+      <i class="bi bi-x-lg"></i>
+    </button>
+
+    <div class="login-modal__form">
+      <ng-container [ngSwitch]="authStep">
+        <div *ngSwitchCase="'login'" class="auth-panel">
+          <div class="login-modal__intro">
+            <h2>Đăng nhập hoặc tạo tài khoản</h2>
+            <p>Bạn có thể đăng nhập hoặc tạo tài khoản GreenSteps để tiếp tục hành trình du lịch xanh.</p>
+          </div>
+
+          <form class="auth-form" (submit)="onContinueSubmit($event)">
+            <label class="field-label" for="modalIdentifier">Email hoặc số điện thoại</label>
+            <label class="login-input" for="modalIdentifier">
+              <i class="bi" [ngClass]="identifierIcon"></i>
+              <input
+                #firstField
+                id="modalIdentifier"
+                type="text"
+                name="identifier"
+                autocomplete="username"
+                placeholder="Nhập email hoặc số điện thoại của bạn"
+                [(ngModel)]="identifier"
+                required>
+            </label>
+
+            <p class="auth-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
+            <p class="auth-alert success" *ngIf="successMessage">{{ successMessage }}</p>
+
+            <button type="submit" class="login-button" [disabled]="isSubmitting">
+              <span>{{ isSubmitting ? 'Đang xử lý...' : 'Tiếp tục' }}</span>
+              <i class="bi bi-arrow-right"></i>
+            </button>
+          </form>
+
+          <ng-container *ngTemplateOutlet="socialBlock; context: { label: 'hoặc đăng nhập bằng mạng xã hội', order: 'booking' }"></ng-container>
+
+          <p class="account-recovery">
+            Bạn mất quyền truy cập email hoặc số điện thoại?
+            <button type="button" class="text-link" (click)="openRecovery()">Khôi phục tài khoản</button>
+          </p>
+
+          <p class="auth-terms">
+            Bằng cách tiếp tục, bạn đồng ý với Điều khoản dịch vụ và Chính sách bảo mật của GreenSteps.
+          </p>
+        </div>
+
+        <div *ngSwitchCase="'forgot'" class="auth-panel">
+          <button class="back-link" type="button" (click)="setStep('login')">
+            <i class="bi bi-chevron-left"></i> Quay lại đăng nhập
+          </button>
+          <div class="login-modal__intro compact">
+            <h2>Bạn quên mật khẩu?</h2>
+            <p>Đừng lo, chúng tôi sẽ gửi mã xác thực qua email hoặc số điện thoại của bạn.</p>
+          </div>
+
+          <form class="auth-form" (submit)="onForgotSubmit($event)">
+            <div class="method-tabs">
+              <button type="button" [class.active]="verificationMethod === 'email'" (click)="chooseRecoveryMethod('email')">Email</button>
+              <button type="button" [class.active]="verificationMethod === 'phone'" (click)="chooseRecoveryMethod('phone')">Số điện thoại</button>
+            </div>
+            <label class="login-input">
+              <i class="bi" [ngClass]="verificationMethod === 'email' ? 'bi-envelope' : 'bi-telephone'"></i>
+              <input
+                #firstField
+                [type]="verificationMethod === 'email' ? 'email' : 'tel'"
+                name="recoveryIdentifier"
+                [placeholder]="verificationMethod === 'email' ? 'Nhập email của bạn' : 'Nhập số điện thoại của bạn'"
+                [(ngModel)]="identifier"
+                required>
+            </label>
+            <p class="auth-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
+            <button type="submit" class="login-button">Gửi mã xác thực</button>
+          </form>
+
+          <ng-container *ngTemplateOutlet="socialBlock; context: { label: 'Hoặc đăng nhập với', order: 'forgot' }"></ng-container>
+        </div>
+
+        <div *ngSwitchCase="'verify'" class="auth-panel centered">
+          <button class="back-link" type="button" (click)="goBackFromVerify()">
+            <i class="bi bi-chevron-left"></i> Quay lại
+          </button>
+          <div class="login-modal__intro compact">
+            <h2>Nhập mã xác thực</h2>
+            <p>{{ verificationMethod === 'email' ? 'Mã xác thực đã được gửi đến email của bạn.' : 'Mã xác thực đã được gửi đến số điện thoại của bạn.' }}</p>
+            <strong class="identifier">{{ identifier }}</strong>
+          </div>
+
+          <form class="auth-form" (submit)="verifyOtp($event)">
+            <div class="otp-row" [class.invalid]="errorMessage">
+              <input
+                class="otp-input"
+                *ngFor="let digit of otpDigits; let idx = index"
+                inputmode="numeric"
+                maxlength="1"
+                [attr.aria-label]="'Số OTP ' + (idx + 1)"
+                [value]="digit"
+                (input)="onOtpInput($event, idx)"
+                (keydown)="onOtpKeydown($event, idx)"
+                (paste)="onOtpPaste($event)">
+            </div>
+            <p class="auth-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
+            <p class="auth-alert success" *ngIf="successMessage">{{ successMessage }}</p>
+            <button type="submit" class="login-button" [disabled]="isSubmitting">Xác nhận</button>
+          </form>
+
+          <p class="login-register">Bạn chưa nhận được mã?
+            <button type="button" class="text-link" [disabled]="resendSeconds > 0" (click)="resendOtp()">
+              {{ resendSeconds > 0 ? ('Gửi lại mã sau ' + resendSeconds + 's') : 'Gửi lại mã' }}
+            </button>
+          </p>
+
+          <ng-container *ngIf="verificationPurpose === 'login'" [ngTemplateOutlet]="socialBlock" [ngTemplateOutletContext]="{ label: 'hoặc đăng nhập bằng mạng xã hội', order: 'booking' }"></ng-container>
+        </div>
+
+        <div *ngSwitchCase="'reset'" class="auth-panel">
+          <button class="back-link" type="button" (click)="setStep('verify')">
+            <i class="bi bi-chevron-left"></i> Quay lại
+          </button>
+          <div class="login-modal__intro compact">
+            <h2>Tạo mật khẩu mới</h2>
+            <p>Mật khẩu mới của bạn phải khác mật khẩu cũ và đảm bảo an toàn.</p>
+          </div>
+
+          <form class="auth-form" (submit)="onResetSubmit($event)">
+            <label class="login-input">
+              <i class="bi bi-lock"></i>
+              <input #firstField [type]="showResetPassword ? 'text' : 'password'" name="resetPassword" placeholder="Mật khẩu mới" [(ngModel)]="resetForm.password" required>
+              <button type="button" class="login-input__icon-btn" (click)="togglePassword('reset')" aria-label="Hiện hoặc ẩn mật khẩu">
+                <i class="bi" [ngClass]="showResetPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+              </button>
+            </label>
+            <label class="login-input">
+              <i class="bi bi-shield-lock"></i>
+              <input [type]="showResetConfirm ? 'text' : 'password'" name="resetConfirm" placeholder="Xác nhận mật khẩu mới" [(ngModel)]="resetForm.confirmPassword" required>
+              <button type="button" class="login-input__icon-btn" (click)="togglePassword('resetConfirm')" aria-label="Hiện hoặc ẩn mật khẩu">
+                <i class="bi" [ngClass]="showResetConfirm ? 'bi-eye-slash' : 'bi-eye'"></i>
+              </button>
+            </label>
+            <div class="password-hints">
+              <span>Độ mạnh: <b>{{ passwordStrength }}</b></span>
+              <small>Ít nhất 8 ký tự, có chữ hoa/thường, số và ký tự đặc biệt.</small>
+            </div>
+            <p class="auth-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
+            <button type="submit" class="login-button">Cập nhật mật khẩu</button>
+          </form>
+        </div>
+
+        <div *ngSwitchCase="'resetDone'" class="auth-panel centered">
+          <div class="done-icon"><i class="bi bi-check2"></i></div>
+          <div class="login-modal__intro compact">
+            <h2>Đổi mật khẩu thành công!</h2>
+            <p>Bạn có thể quay lại đăng nhập bằng mã xác thực hoặc mật khẩu mới.</p>
+          </div>
+          <button type="button" class="login-button" (click)="setStep('login')">Quay lại đăng nhập</button>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="login-modal__visual" aria-hidden="true">
+      <img src="image/login-vietnam.png" alt="">
+    </div>
+  </section>
+</div>
+
+<ng-template #socialBlock let-label="label" let-order="order">
+  <div class="login-divider"><span>{{ label || 'hoặc đăng nhập bằng mạng xã hội' }}</span></div>
+  <div class="social-login" [class.forgot-order]="order === 'forgot'">
+    <button *ngIf="order !== 'forgot'" type="button" (click)="alertSocial('Facebook')" aria-label="Đăng nhập bằng Facebook"><i class="bi bi-facebook"></i><span>Facebook</span></button>
+    <button *ngIf="order !== 'forgot'" type="button" (click)="alertSocial('Google')" aria-label="Đăng nhập bằng Google"><i class="bi bi-google"></i><span>Google</span></button>
+    <button *ngIf="order !== 'forgot'" type="button" (click)="alertSocial('Apple')" aria-label="Đăng nhập bằng Apple"><i class="bi bi-apple"></i><span>Apple</span></button>
+
+    <button *ngIf="order === 'forgot'" type="button" (click)="alertSocial('Facebook')" aria-label="Đăng nhập bằng Facebook"><i class="bi bi-facebook"></i><span>Facebook</span></button>
+    <button *ngIf="order === 'forgot'" type="button" (click)="alertSocial('Google')" aria-label="Đăng nhập bằng Google"><i class="bi bi-google"></i><span>Google</span></button>
+    <button *ngIf="order === 'forgot'" type="button" (click)="alertSocial('Apple')" aria-label="Đăng nhập bằng Apple"><i class="bi bi-apple"></i><span>Apple</span></button>
+  </div>
+</ng-template>

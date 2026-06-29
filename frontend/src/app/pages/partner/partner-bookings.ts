@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { LoginModalService } from '../../services/login-modal.service';
 import { User, Booking } from '../../models/models';
 
 @Component({
@@ -114,14 +115,15 @@ export class PartnerBookingsComponent implements OnInit {
     private apiService: ApiService,
     private authService: AuthService,
     private router: Router,
-    public cdr: ChangeDetectorRef
+    public cdr: ChangeDetectorRef,
+    private loginModalService: LoginModalService
   ) {}
 
   ngOnInit() {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (!user || user.role !== 'provider') {
-        this.router.navigate(['/auth']);
+        this.loginModalService.open();
       } else {
         this.loadBookings();
       }

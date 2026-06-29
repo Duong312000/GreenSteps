@@ -1,0 +1,328 @@
+<main class="booking-page">
+  <section class="booking-progress" aria-label="Tiến trình đặt cọc">
+    <div class="progress-step done"><span>1</span><p>Bạn chọn</p></div>
+    <div class="progress-line active"></div>
+    <div class="progress-step" [class.active]="!isPaymentStep && !isCompleteStep" [class.done]="isPaymentStep || isCompleteStep"><span>2</span><p>Chi tiết của bạn</p></div>
+    <div class="progress-line" [class.active]="isPaymentStep || isCompleteStep"></div>
+    <div class="progress-step" [class.active]="isPaymentStep || isCompleteStep"><span>3</span><p>Thanh toán</p></div>
+  </section>
+
+  <section class="booking-shell" *ngIf="!isPaymentStep && !isCompleteStep">
+    <aside class="summary-column">
+      <ng-container *ngTemplateOutlet="summaryCards"></ng-container>
+    </aside>
+
+    <section class="form-column">
+      <div class="notice-card" *ngIf="!currentUser">
+        <i class="bi bi-info-circle"></i>
+        <div>
+          <p>Bạn có thể tiếp tục đặt cọc tour. Vui lòng nhập thông tin để chúng tôi xác nhận lịch trình du lịch.</p>
+          <button type="button" class="text-link" (click)="openAuth()">Đăng nhập hoặc tạo tài khoản</button>
+        </div>
+      </div>
+
+      <div class="notice-card" *ngIf="currentUser">
+        <i class="bi bi-person-check"></i>
+        <div>
+          <p>Thông tin tài khoản đã được tự động điền nếu có sẵn. Bạn vẫn có thể chỉnh sửa trước khi sang bước thanh toán.</p>
+        </div>
+      </div>
+
+      <form class="booking-form" (submit)="$event.preventDefault(); continueToPayment()" novalidate>
+        <section class="booking-section">
+          <div class="section-heading">
+            <h2>Nhập thông tin chi tiết của bạn</h2>
+            <p>Thông tin này được dùng để xác nhận đặt cọc và liên hệ khi cần thiết.</p>
+          </div>
+
+          <div class="form-grid two">
+            <label class="booking-field" [class.invalid]="fieldError('lastName')">
+              <span>Họ</span>
+              <input name="lastName" [(ngModel)]="guestInfo.lastName" autocomplete="family-name" required>
+              <small *ngIf="fieldError('lastName')">{{ fieldError('lastName') }}</small>
+            </label>
+            <label class="booking-field" [class.invalid]="fieldError('firstName')">
+              <span>Tên</span>
+              <input name="firstName" [(ngModel)]="guestInfo.firstName" autocomplete="given-name" required>
+              <small *ngIf="fieldError('firstName')">{{ fieldError('firstName') }}</small>
+            </label>
+          </div>
+
+          <div class="form-grid two">
+            <label class="booking-field" [class.invalid]="fieldError('email')">
+              <span>Địa chỉ email</span>
+              <input type="email" name="email" [(ngModel)]="guestInfo.email" autocomplete="email" required>
+              <small *ngIf="fieldError('email')">{{ fieldError('email') }}</small>
+            </label>
+            <label class="booking-field" [class.invalid]="fieldError('country')">
+              <span>Vùng/quốc gia</span>
+              <select name="country" [(ngModel)]="guestInfo.country" required>
+                <option *ngFor="let country of countries" [value]="country">{{ country }}</option>
+              </select>
+              <small *ngIf="fieldError('country')">{{ fieldError('country') }}</small>
+            </label>
+          </div>
+
+          <label class="booking-field" [class.invalid]="fieldError('phone')">
+            <span>Số điện thoại</span>
+            <input type="tel" name="phone" [(ngModel)]="guestInfo.phone" autocomplete="tel" required>
+            <small *ngIf="fieldError('phone')">{{ fieldError('phone') }}</small>
+          </label>
+
+          <div class="check-row">
+            <label><input type="checkbox" name="receiveEmailConfirm" [(ngModel)]="guestInfo.receiveEmailConfirm"> Có, tôi muốn xác nhận điện tử miễn phí (được đề xuất)</label>
+          </div>
+        </section>
+
+        <section class="booking-section">
+          <h2>Bạn đặt tour cho ai?</h2>
+          <div class="radio-stack">
+            <label><input type="radio" name="bookingFor" value="self" [(ngModel)]="bookingFor"> Tôi là người tham gia chính</label>
+            <label><input type="radio" name="bookingFor" value="other" [(ngModel)]="bookingFor"> Tôi đặt tour này cho người khác</label>
+          </div>
+        </section>
+
+        <section class="booking-section room-section">
+          <div>
+            <h2>Thông tin tour đã chọn</h2>
+            <h3>{{ roomName }}</h3>
+            <p class="muted">{{ activeTour?.days || 3 }} ngày, {{ bookingContext.guestCount }} khách, điểm đến {{ activeTour?.destination || 'GreenSteps' }}.</p>
+          </div>
+          <div class="room-policy-grid">
+            <span><i class="bi bi-calendar-check"></i> Lịch trình xanh đã chọn</span>
+            <span><i class="bi bi-arrow-counterclockwise"></i> Hủy miễn phí trước {{ cancellationDate }}</span>
+            <span><i class="bi bi-people"></i> Phù hợp nhóm {{ bookingContext.guestCount }} khách</span>
+            <span><i class="bi bi-leaf"></i> Ưu tiên trải nghiệm bền vững</span>
+          </div>
+          <span class="green-badge">Tour thân thiện môi trường</span>
+        </section>
+
+        <section class="booking-section">
+          <h2>Thêm vào kỳ nghỉ</h2>
+          <div class="addon-list">
+            <label class="addon-item" *ngFor="let option of addOnOptions">
+              <input type="checkbox" [checked]="hasAddOn(option.id)" (change)="toggleAddOn(option.id, $any($event.target).checked)">
+              <span>
+                <b>{{ option.label }}</b>
+                <small>{{ option.desc }}</small>
+                <em>{{ option.price ? (option.price | number:'1.0-0':'vi-VN') + 'đ' : 'Miễn phí' }}</em>
+              </span>
+              <i class="bi" [ngClass]="option.icon"></i>
+            </label>
+          </div>
+        </section>
+
+        <section class="booking-section">
+          <h2>Thời gian khởi hành dự kiến</h2>
+          <div class="arrival-info">
+            <p><i class="bi bi-clock"></i> GreenSteps sẽ xác nhận khung giờ khởi hành sau khi giữ chỗ.</p>
+          </div>
+          <label class="booking-field">
+            <span>Chọn thời gian nếu bạn đã có dự kiến</span>
+            <select name="arrivalTime" [(ngModel)]="arrivalTime">
+              <option value="">Chưa chắc chắn</option>
+              <option *ngFor="let option of arrivalOptions" [value]="option">{{ option }}</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="booking-section choice-summary-card">
+          <h2>Tóm tắt lựa chọn của bạn</h2>
+          <div class="price-lines">
+            <p><span>Giá gốc</span><b>{{ basePrice | number:'1.0-0':'vi-VN' }}đ</b></p>
+            <p><span>Ưu đãi GreenSteps</span><b>-{{ discountAmount | number:'1.0-0':'vi-VN' }}đ</b></p>
+            <p><span>Phí dịch vụ/thuế</span><b>{{ serviceFee | number:'1.0-0':'vi-VN' }}đ</b></p>
+            <p><span>Dịch vụ thêm đã chọn</span><b>{{ addOnsTotal | number:'1.0-0':'vi-VN' }}đ</b></p>
+            <div class="choice-total">
+              <span>Số tiền đặt cọc dự kiến</span>
+              <strong>{{ depositAmount | number:'1.0-0':'vi-VN' }}đ</strong>
+            </div>
+            <p><span>Còn lại thanh toán sau</span><b>{{ remainingAmount | number:'1.0-0':'vi-VN' }}đ</b></p>
+          </div>
+          <p class="next-helper">Bạn sẽ kiểm tra lại thông tin và chọn phương thức thanh toán ở bước tiếp theo.</p>
+          <button type="submit" class="booking-submit">Tiếp theo: Chi tiết cuối cùng <i class="bi bi-arrow-right"></i></button>
+        </section>
+      </form>
+    </section>
+  </section>
+
+  <section class="payment-shell" *ngIf="isPaymentStep">
+    <section class="payment-main">
+      <div class="payment-title">
+        <h1>Chi tiết cuối cùng</h1>
+        <p>Kiểm tra lại thông tin đặt cọc và chọn phương thức thanh toán.</p>
+      </div>
+
+      <article class="payment-card">
+        <h2>Chọn cách thanh toán</h2>
+        <label class="pay-choice" [class.active]="payTiming === 'now'">
+          <input type="radio" name="payTiming" value="now" [(ngModel)]="payTiming">
+          <span>
+            <b>Thanh toán đặt cọc ngay</b>
+            <small>Giữ chỗ nhanh hơn, xác nhận đặt cọc ngay sau khi thanh toán.</small>
+          </span>
+        </label>
+        <label class="pay-choice" [class.active]="payTiming === 'later'">
+          <input type="radio" name="payTiming" value="later" [(ngModel)]="payTiming">
+          <span>
+            <b>Thanh toán sau / giữ chỗ tạm thời</b>
+            <small>GreenSteps sẽ liên hệ xác nhận trước khi thanh toán.</small>
+          </span>
+        </label>
+      </article>
+
+      <article class="payment-card">
+        <h2>Phương thức thanh toán</h2>
+        <p class="payment-method-error" *ngIf="paymentError('paymentMethod')">{{ paymentError('paymentMethod') }}</p>
+        <div class="payment-method-list">
+          <label class="payment-method-card" *ngFor="let method of paymentMethods" [class.active]="paymentMethod === method.id">
+            <input type="radio" name="paymentMethod" [value]="method.id" [(ngModel)]="paymentMethod">
+            <i class="bi" [ngClass]="method.icon"></i>
+            <span>
+              <b>{{ method.label }}</b>
+              <small>{{ method.desc }}</small>
+            </span>
+          </label>
+        </div>
+
+        <div class="card-form" *ngIf="paymentMethod === 'card'">
+          <div class="secure-note"><i class="bi bi-shield-lock"></i> Thông tin thẻ được mã hóa trong môi trường demo.</div>
+          <label class="payment-field" [class.invalid]="paymentError('cardName')">
+            <span>Tên trên thẻ</span>
+            <input name="cardName" [(ngModel)]="cardForm.cardName" placeholder="NGUYEN VAN A">
+            <small *ngIf="paymentError('cardName')">{{ paymentError('cardName') }}</small>
+          </label>
+          <label class="payment-field" [class.invalid]="paymentError('cardNumber')">
+            <span>Số thẻ</span>
+            <input name="cardNumber" [(ngModel)]="cardForm.cardNumber" placeholder="0000 0000 0000 0000" inputmode="numeric">
+            <small *ngIf="paymentError('cardNumber')">{{ paymentError('cardNumber') }}</small>
+          </label>
+          <div class="form-grid two">
+            <label class="payment-field" [class.invalid]="paymentError('expiry')">
+              <span>Ngày hết hạn</span>
+              <input name="expiry" [(ngModel)]="cardForm.expiry" placeholder="TT/NN">
+              <small *ngIf="paymentError('expiry')">{{ paymentError('expiry') }}</small>
+            </label>
+            <label class="payment-field" [class.invalid]="paymentError('cvc')">
+              <span>Mã bảo mật CVC</span>
+              <input name="cvc" [(ngModel)]="cardForm.cvc" placeholder="123" inputmode="numeric">
+              <small *ngIf="paymentError('cvc')">{{ paymentError('cvc') }}</small>
+            </label>
+          </div>
+        </div>
+      </article>
+
+      <article class="payment-card final-payment-card">
+        <label class="terms-check" [class.invalid]="paymentError('acceptedTerms')">
+          <input type="checkbox" name="acceptedTerms" [(ngModel)]="acceptedTerms">
+          <span>Tôi đồng ý với điều kiện đặt cọc, chính sách hủy và điều khoản của GreenSteps.</span>
+        </label>
+        <small class="terms-error" *ngIf="paymentError('acceptedTerms')">{{ paymentError('acceptedTerms') }}</small>
+        <button type="button" class="booking-submit" [disabled]="!paymentReady" (click)="completeDeposit()">Hoàn tất đặt cọc <i class="bi bi-lock-fill"></i></button>
+      </article>
+    </section>
+
+    <aside class="payment-summary">
+      <article class="summary-card payment-sticky-card">
+        <h2>{{ hotelName }}</h2>
+          <p class="muted">{{ hotelAddress }}</p>
+        <div class="detail-list compact">
+          <p><span>Ngày đi</span><b>{{ bookingContext.checkIn | date:'dd/MM/yyyy' }}</b></p>
+          <p><span>Ngày về</span><b>{{ bookingContext.checkOut | date:'dd/MM/yyyy' }}</b></p>
+          <p><span>Số khách</span><b>{{ bookingContext.guestCount }} khách</b></p>
+          <p><span>Gói tour</span><b>{{ roomName }}</b></p>
+        </div>
+        <div class="selected-addons" *ngIf="selectedAddOnLabels.length">
+          <span>Dịch vụ thêm</span>
+          <small *ngFor="let label of selectedAddOnLabels">{{ label }}</small>
+        </div>
+        <div class="price-lines">
+          <p><span>Tổng chi phí</span><b>{{ totalAmount | number:'1.0-0':'vi-VN' }}đ</b></p>
+          <p><span>Ưu đãi GreenSteps</span><b>-{{ discountAmount | number:'1.0-0':'vi-VN' }}đ</b></p>
+          <div class="choice-total">
+            <span>Đặt cọc cần thanh toán</span>
+            <strong>{{ depositAmount | number:'1.0-0':'vi-VN' }}đ</strong>
+          </div>
+          <p><span>Còn lại thanh toán sau</span><b>{{ remainingAmount | number:'1.0-0':'vi-VN' }}đ</b></p>
+        </div>
+        <div class="cancel-mini">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Hủy miễn phí trước {{ cancellationDate }}. Sau thời gian này tiền cọc có thể không được hoàn lại.</span>
+        </div>
+      </article>
+    </aside>
+  </section>
+
+  <section class="confirm-shell" *ngIf="isCompleteStep">
+    <div class="confirm-card">
+      <div class="done-icon"><i class="bi bi-check2"></i></div>
+      <h1>Đặt cọc thành công</h1>
+      <p>GreenSteps đã ghi nhận thông tin đặt cọc của bạn. Chúng tôi sẽ gửi xác nhận qua email hoặc số điện thoại bạn đã cung cấp.</p>
+      <div class="confirm-summary">
+        <p><span>Tour</span><b>{{ hotelName }}</b></p>
+        <p><span>Người đặt</span><b>{{ guestInfo.lastName }} {{ guestInfo.firstName }}</b></p>
+        <p><span>Tiền cọc</span><b>{{ depositAmount | number:'1.0-0':'vi-VN' }}đ</b></p>
+        <p><span>Thanh toán</span><b>{{ selectedPaymentLabel }}</b></p>
+      </div>
+      <div class="confirm-actions">
+        <button type="button" class="booking-submit" (click)="router.navigate(['/profile'])">Xem hồ sơ đặt chỗ</button>
+        <button type="button" class="secondary-button" (click)="router.navigate(['/tours'])">Tiếp tục khám phá</button>
+      </div>
+    </div>
+  </section>
+
+  <ng-template #summaryCards>
+    <article class="summary-card hotel-card">
+      <img [src]="activeTour?.image || 'image/login-vietnam.png'" [alt]="hotelName">
+      <div class="summary-card-body">
+        <div class="badge-row">
+          <span class="green-badge"><i class="bi bi-leaf-fill"></i> Tour xanh</span>
+          <span class="co2-badge">Tiết kiệm 3.2kg CO2</span>
+        </div>
+        <h1>{{ hotelName }}</h1>
+        <p class="muted"><i class="bi bi-geo-alt"></i> {{ hotelAddress }}</p>
+        <div class="rating-row">
+          <span class="stars">★★★★★</span>
+          <b>{{ activeTour?.rating || 4.8 }}</b>
+          <span>{{ activeTour?.votes || 128 }} đánh giá</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="summary-card">
+      <h2>Chi tiết tour</h2>
+      <div class="summary-grid">
+        <div><span>Ngày khởi hành</span><b>{{ bookingContext.checkIn | date:'dd/MM/yyyy' }}</b><small>Dự kiến</small></div>
+        <div><span>Ngày kết thúc</span><b>{{ bookingContext.checkOut | date:'dd/MM/yyyy' }}</b><small>Dự kiến</small></div>
+      </div>
+      <div class="detail-list">
+        <p><span>Số đêm</span><b>{{ nights }} đêm</b></p>
+        <p><span>Số khách</span><b>{{ bookingContext.guestCount }} khách</b></p>
+        <p><span>Số gói</span><b>{{ bookingContext.roomCount }} gói</b></p>
+        <p><span>Gói tour</span><b>{{ roomName }}</b></p>
+      </div>
+      <button type="button" class="text-link" (click)="changeSelection()">Đổi lựa chọn của bạn</button>
+    </article>
+
+    <article class="summary-card price-card">
+      <h2>Tóm tắt giá</h2>
+      <p><span>Giá gốc</span><b>{{ basePrice | number:'1.0-0':'vi-VN' }}đ</b></p>
+      <p><span>Ưu đãi GreenSteps</span><b>-{{ discountAmount | number:'1.0-0':'vi-VN' }}đ</b></p>
+      <p><span>Phí dịch vụ/thuế</span><b>{{ serviceFee | number:'1.0-0':'vi-VN' }}đ</b></p>
+      <p *ngIf="addOnsTotal > 0"><span>Dịch vụ thêm</span><b>{{ addOnsTotal | number:'1.0-0':'vi-VN' }}đ</b></p>
+      <div class="deposit-highlight">
+        <span>Đặt cọc dự kiến</span>
+        <strong>VND {{ depositAmount | number:'1.0-0':'vi-VN' }}</strong>
+      </div>
+      <p><span>Còn lại thanh toán sau</span><b>{{ remainingAmount | number:'1.0-0':'vi-VN' }}đ</b></p>
+    </article>
+
+    <article class="summary-card policy-card">
+      <h2><i class="bi bi-check-circle-fill"></i> Chính sách hủy</h2>
+      <p>Hủy miễn phí trước ngày {{ cancellationDate }}.</p>
+      <p>Sau thời gian này, tiền cọc có thể không được hoàn lại.</p>
+    </article>
+  </ng-template>
+
+  <div class="booking-toast" *ngIf="toastMessage">{{ toastMessage }}</div>
+</main>

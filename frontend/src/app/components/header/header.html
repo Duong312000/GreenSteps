@@ -9,21 +9,32 @@
     <div #headerWrapper class="mx-auto flex max-w-[1720px] px-6 lg:px-12" style="height: 88px;">
 
         <!-- ── DIV 1: LOGO (cố định, flex-shrink-0) ── -->
-        <div class="flex items-center flex-shrink-0" style="width: 240px;">
+        <div class="flex items-center flex-shrink-0" style="width: 300px;">
             <a routerLink="/home"
-               class="flex items-center gap-2.5 hover:opacity-90 transition-opacity"
+               class="flex items-center gap-3 rounded-full px-3 py-2 transition-all duration-300 hover:opacity-90"
+               [ngClass]="isHomeHeaderCollapsed ? 'bg-black/20 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.18)] ring-1 ring-white/20' : 'bg-white/55 backdrop-blur-md shadow-sm ring-1 ring-[#184A37]/10'"
                style="text-decoration: none;">
-                <img src="image/greensteps_logo_premium.png"
-                     class="h-11 w-auto object-contain"
+                <img src="image/greensteps_logo_header.png"
+                     class="h-14 w-14 rounded-full object-cover ring-2 transition-all duration-300"
+                     [ngClass]="isHomeHeaderCollapsed ? 'ring-white/70 shadow-[0_6px_18px_rgba(0,0,0,0.25)]' : 'ring-white shadow-sm'"
                      alt="GreenSteps">
-                <span class="text-2xl font-bold tracking-tight text-[#0F3F31] leading-none">
-                    GreenSteps
+                <span class="flex flex-col leading-none">
+                    <span class="text-[21px] font-extrabold tracking-normal transition-colors duration-300"
+                          [ngClass]="isHomeHeaderCollapsed ? 'text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.45)]' : 'text-[#0F3F31]'">
+                        GreenSteps
+                    </span>
+                    <span class="mt-1 text-[11px] font-bold uppercase tracking-[0.18em] transition-colors duration-300"
+                          [ngClass]="isHomeHeaderCollapsed ? 'text-[#D9F99D] drop-shadow-[0_1px_4px_rgba(0,0,0,0.45)]' : 'text-[#0E9F6E]'">
+                        Travel
+                    </span>
                 </span>
             </a>
         </div>
 
         <!-- ── DIV 2: NAV TABS (flex-1, overflow hidden, 1 hàng) ── -->
-        <div class="flex-1 overflow-hidden" style="height: 88px;">
+        <div class="flex-1 overflow-hidden transition-all duration-500 ease-out"
+             [ngClass]="isHomeHeaderCollapsed ? 'opacity-0 -translate-y-3 pointer-events-none' : 'opacity-100 translate-y-0 pointer-events-auto'"
+             style="height: 88px;">
             <nav #navContainer
                  class="header-main-nav overflow-hidden items-center gap-5"
                  style="height: 88px; flex-wrap: nowrap; width: 100%;">
@@ -73,7 +84,7 @@
         <div class="flex items-center justify-end gap-2 flex-shrink-0" style="width: 300px;">
 
             <!-- Search -->
-            <div class="relative" style="width: 150px;">
+            <div class="relative" style="width: 128px;">
                 <input
                     #searchInput
                     type="text"
@@ -165,13 +176,20 @@
                 </div>
             </div>
 
-            <!-- Đăng nhập (chưa đăng nhập) -->
-            <div *ngIf="!currentUser">
-                <a routerLink="/auth"
-                   class="flex h-9 items-center justify-center rounded-full bg-[#184A37]
-                          px-4 text-xs font-bold text-white
-                          transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#143e2e]"
-                   style="text-decoration: none;">Đăng nhập</a>
+            <!-- Đăng ký / Đăng nhập (chưa đăng nhập) -->
+            <div *ngIf="!currentUser" class="flex items-center gap-2">
+                <button type="button"
+                   (click)="openLoginModal()"
+                   class="flex h-9 min-w-[78px] items-center justify-center whitespace-nowrap rounded-full bg-white/70
+                          px-3 text-xs font-bold text-[#0E7A59]
+                          transition-all duration-300 hover:-translate-y-0.5 hover:bg-white
+                          border border-[#0E7A59] cursor-pointer">Đăng ký</button>
+                <button type="button"
+                   (click)="openLoginModal()"
+                   class="flex h-9 min-w-[88px] items-center justify-center whitespace-nowrap rounded-full bg-[#184A37]
+                          px-3 text-xs font-bold text-white
+                          transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#143e2e]
+                          border-0 cursor-pointer">Đăng nhập</button>
             </div>
 
             <!-- Hamburger mobile -->
@@ -193,7 +211,7 @@
     <div class="header-overflow-panel" [class.open]="isOverflowOpen" *ngIf="overflowTabs.length > 0">
         <div class="mx-auto flex max-w-[1720px] px-6 lg:px-12" style="height: 52px;">
             <!-- Left Spacer matching Logo width -->
-            <div style="width: 240px; flex-shrink: 0;"></div>
+            <div style="width: 300px; flex-shrink: 0;"></div>
 
             <!-- Center Overflow Tabs container matching main Nav flex-1 -->
             <div class="flex-1 flex items-center gap-5 overflow-hidden">
@@ -293,10 +311,16 @@
         </div>
 
         <div class="border-t border-[#184A37]/10 pt-6">
-            <a *ngIf="!currentUser" routerLink="/auth" (click)="toggleMobileMenu()"
-               class="w-full h-[52px] flex items-center justify-center rounded-[16px]
-                      bg-[#0E9F6E] text-[18px] font-bold text-white shadow-md hover:bg-[#0F6B4C] transition-all"
-               style="text-decoration:none;">Đăng nhập</a>
+            <div *ngIf="!currentUser" class="grid grid-cols-2 gap-3">
+                <button type="button" (click)="openLoginModal()"
+                   class="h-[52px] flex items-center justify-center whitespace-nowrap rounded-[16px]
+                          bg-white text-[16px] font-bold text-[#0E7A59] hover:bg-[#F4FAF6]
+                          transition-all border border-[#0E7A59] cursor-pointer">Đăng ký</button>
+                <button type="button" (click)="openLoginModal()"
+                   class="h-[52px] flex items-center justify-center whitespace-nowrap rounded-[16px]
+                          bg-[#184A37] text-[16px] font-bold text-white shadow-md hover:bg-[#143e2e]
+                          transition-all border-0 cursor-pointer">Đăng nhập</button>
+            </div>
             <a *ngIf="currentUser" routerLink="/profile" (click)="toggleMobileMenu()"
                class="w-full h-14 flex items-center gap-3 rounded-full bg-gray-50 px-4 py-2
                       text-sm font-bold text-[#0F3F31]"
@@ -309,6 +333,8 @@
         </div>
     </div>
 </div>
+
+<app-login-modal *ngIf="isLoginModalOpen" (close)="closeLoginModal()"></app-login-modal>
 
 <!-- AI PLANNER MODAL -->
 <div class="modal-overlay" [class.active]="isCreateModalOpen"
