@@ -406,42 +406,6 @@
             background-color: var(--mint-accent);
         }
 
-        /* Apple-style Overflow Menu Panel - CSS Hover trigger */
-        .menubar-overflow-panel {
-            position: absolute;
-            top: 50px;
-            left: 0;
-            width: 100%;
-            background-color: var(--overflow-bg);
-            backdrop-filter: var(--backdrop-blur);
-            -webkit-backdrop-filter: var(--backdrop-blur);
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: var(--shadow-md);
-            padding: 0 40px;
-            max-height: 0;
-            overflow: hidden;
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            z-index: 98;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                        max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                        padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .menubar-navbar:hover .menubar-overflow-panel:not(:empty) {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-            max-height: 300px;
-            padding: 16px 40px;
-        }
 
         /* Main Viewport Container */
         .main-viewport {
@@ -451,6 +415,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            padding-top: 88px;
         }
 
         /* Individual Page Container */
@@ -7819,7 +7784,8 @@
 .schedule-editor-container {
     display: flex;
     width: 100%;
-    height: calc(100vh - 120px);
+    margin-top: 88px;
+    height: calc(100vh - 88px);
     background-color: var(--bg-primary);
     overflow: hidden;
     position: relative;
@@ -8364,20 +8330,20 @@
     margin-bottom: 20px;
 }
 
-.suggestions-grid {
+.local-suggestions-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
 }
 
 @media (max-width: 1200px) {
-    .suggestions-grid {
+    .local-suggestions-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
 @media (max-width: 768px) {
-    .suggestions-grid {
+    .local-suggestions-grid {
         grid-template-columns: 1fr;
     }
 }
@@ -8749,7 +8715,8 @@ app-root:has(.schedule-editor-container) app-footer {
     position: relative;
     display: flex;
     width: 100%;
-    height: calc(100vh - 120px);
+    margin-top: 88px;
+    height: calc(100vh - 88px);
     background-color: var(--bg-primary);
     overflow: hidden;
     padding: 0 !important;
@@ -8851,6 +8818,300 @@ app-root:has(.schedule-editor-container) app-footer {
     border-radius: 0 !important;
 }
 
+header {
+    background-color: transparent;
+    border-bottom: 1px solid transparent;
+    box-shadow: none;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    transition: background-color 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-color 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                box-shadow 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                backdrop-filter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                -webkit-backdrop-filter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    overflow: visible !important;
+}
 
+/* Locked row height for logo, search, and profile wrapper containers */
+header .logo-container-wrapper,
+header .search-container-wrapper,
+header .profile-container-wrapper {
+    height: 88px;
+    display: flex;
+    align-items: center;
+}
 
+header .header-row {
+    height: 88px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--light-mint);
+    padding: 14px 20px;
+    border-radius: var(--border-radius-md);
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 600;
+}
 
+.wallet-balance-row strong {
+    font-size: 20px;
+    color: var(--primary-green);
+}
+
+.billing-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.billing-container h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.billing-item-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.billing-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 12px;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.billing-total-row strong {
+    font-size: 18px;
+    color: var(--primary-green);
+}
+
+/* Hide footer on schedule editor page */
+app-root:has(.schedule-editor-container) app-footer {
+    display: none !important;
+}
+
+/* Full-screen background map overlay styles */
+.schedule-editor-container {
+    position: relative;
+    display: flex;
+    width: 100%;
+    margin-top: 88px;
+    height: calc(100vh - 88px);
+    background-color: var(--bg-primary);
+    overflow: hidden;
+    padding: 0 !important;
+}
+
+.sidebar-panel {
+    position: relative;
+    z-index: 5;
+    height: 100% !important;
+    background-color: var(--bg-secondary) !important;
+    box-shadow: none !important;
+    border-right: 1px solid var(--border-color) !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    flex-shrink: 0;
+    overflow: hidden !important;
+}
+
+.editor-main-panel {
+    position: relative;
+    z-index: 4;
+    height: 100% !important;
+    background-color: var(--bg-secondary) !important;
+    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.15) !important;
+    border-right: 1px solid var(--border-color) !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    flex-grow: 1;
+}
+
+.right-map-panel {
+    position: relative;
+    z-index: 3;
+    height: 100% !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+.layout-resizer {
+    position: relative;
+    z-index: 10;
+    width: 2px;
+    margin: 0 -1px;
+    height: 100%;
+    flex-shrink: 0;
+    background-color: transparent;
+    transition: background-color 0.2s;
+}
+.layout-resizer::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -4px;
+    right: -4px;
+    cursor: col-resize;
+    background: transparent;
+    z-index: 11;
+}
+.layout-resizer:hover, .layout-resizer:active {
+    background-color: var(--primary) !important;
+}
+
+.sidebar-metrics-resizer {
+    position: relative;
+    z-index: 10;
+    height: 1px;
+    background-color: var(--border-color);
+    cursor: ns-resize;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+}
+.sidebar-metrics-resizer::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -4px;
+    bottom: -4px;
+    cursor: ns-resize;
+    background: transparent;
+    z-index: 11;
+}
+.sidebar-metrics-resizer:hover, .sidebar-metrics-resizer:active {
+    background-color: var(--primary) !important;
+}
+
+.leaflet-map-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    border-radius: 0 !important;
+}
+
+header {
+    background-color: transparent;
+    border-bottom: 1px solid transparent;
+    box-shadow: none;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    transition: background-color 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                border-color 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                box-shadow 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                backdrop-filter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                -webkit-backdrop-filter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+    overflow: visible !important;
+}
+
+/* Locked row height for logo, search, and profile wrapper containers */
+header .logo-container-wrapper,
+header .search-container-wrapper,
+header .profile-container-wrapper {
+    height: 88px;
+    display: flex;
+    align-items: center;
+}
+
+header .header-row {
+    height: 88px;
+    overflow: visible !important; /* Allow nav items wrapping to flow down */
+}
+
+header .nav-hover-trigger img {
+    height: 56px !important; /* Keep static logo height */
+    transition: none !important;
+}
+
+/* ============================================================
+   HEADER RESPONSIVE
+   Nav:  hidden on mobile (<640px), flex on tablet+
+   Hamburger: grid on mobile, hidden on tablet+
+   Overflow panel: same transitions on all screen sizes ≥640px
+   ============================================================ */
+
+.header-main-nav {
+    display: none !important;
+}
+.mobile-hamburger {
+    display: grid !important;
+}
+@media (min-width: 640px) {
+    .header-main-nav {
+        display: flex !important;
+    }
+    .mobile-hamburger {
+        display: none !important;
+    }
+}
+
+/* ============================================================
+   GLASS PANEL
+   ============================================================ */
+.glass-panel {
+    background-color: rgba(255, 255, 255, 0.82) !important;
+    border-bottom: 1px solid rgba(24, 74, 55, 0.1) !important;
+    box-shadow: 0 2px 15px rgba(24, 74, 55, 0.05) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    backdrop-filter: blur(25px) !important;
+}
+[data-theme="dark"] .glass-panel {
+    background-color: rgba(18, 18, 18, 0.82) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ============================================================
+   OVERFLOW PANEL
+   Nằm trong luồng bình thường → header:hover luôn đúng
+   ============================================================ */
+header {
+    overflow: visible;
+}
+.header-overflow-panel {
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    background-color: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-bottom: 1px solid rgba(24, 74, 55, 0.1);
+    box-shadow: 0 8px 24px rgba(24, 74, 55, 0.08);
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    pointer-events: none;
+}
+[data-theme="dark"] .header-overflow-panel {
+    background-color: rgba(18, 18, 18, 0.82);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+header:hover .header-overflow-panel,
+.header-overflow-panel.open {
+    max-height: 64px;
+    opacity: 1;
+    overflow: visible;
+    pointer-events: auto;
+}

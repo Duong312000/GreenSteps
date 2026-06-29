@@ -34,8 +34,16 @@ export class AuthService {
   public setCurrentUser(user: User | null) {
     if (user) {
       localStorage.setItem('greensteps_user', JSON.stringify(user));
+      document.cookie = `isLoggedIn=true; path=/; max-age=86400`;
+      document.cookie = `role=${user.role}; path=/; max-age=86400`;
+      document.cookie = `userId=${user.id || user._id}; path=/; max-age=86400`;
+      document.cookie = `fullname=${encodeURIComponent(user.fullname)}; path=/; max-age=86400`;
     } else {
       localStorage.removeItem('greensteps_user');
+      document.cookie = `isLoggedIn=; path=/; max-age=0`;
+      document.cookie = `role=; path=/; max-age=0`;
+      document.cookie = `userId=; path=/; max-age=0`;
+      document.cookie = `fullname=; path=/; max-age=0`;
     }
     this.currentUserSubject.next(user);
   }

@@ -6,7 +6,6 @@ import { AuthComponent } from './pages/auth/auth';
 import { ProfileComponent } from './pages/profile/profile';
 import { CommunityComponent } from './pages/community/community';
 import { ScheduleEditorComponent } from './pages/schedule-editor/schedule-editor';
-import { PartnerRegisterComponent } from './pages/partner/partner-register';
 import { PartnerDashboardComponent } from './pages/partner/partner-dashboard';
 import { PartnerServicesComponent } from './pages/partner/partner-services';
 import { PartnerBookingsComponent } from './pages/partner/partner-bookings';
@@ -20,8 +19,8 @@ export const routes: Routes = [
   { path: 'auth', component: AuthComponent },
   { path: 'profile', component: ProfileComponent },
   { path: 'community', component: CommunityComponent },
+  { path: 'schedule', component: ScheduleEditorComponent },
   { path: 'schedule/:id', component: ScheduleEditorComponent },
-  { path: 'partner-register', component: PartnerRegisterComponent },
   { path: 'partner-dashboard', component: PartnerDashboardComponent },
   { path: 'partner-services', component: PartnerServicesComponent },
   { path: 'partner-bookings', component: PartnerBookingsComponent },

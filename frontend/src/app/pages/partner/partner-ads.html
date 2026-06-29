@@ -1,57 +1,57 @@
-<main class="main-viewport partner-viewport">
-    <div class="ads-container">
-        <div class="user-title-row" style="margin-bottom: 10px; border-bottom: none; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h2 style="font-size: 26px; color: var(--primary-green);">Chiến dịch Quảng bá & Flash Sale</h2>
-                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Đẩy mạnh tiếp cận khách hàng tiềm năng và tối ưu hóa doanh số cùng trợ lý AI.</p>
-            </div>
+<main class="min-h-screen bg-[#fcfdfc] pt-28 pb-12 px-6 font-sans">
+    <div class="max-w-[1440px] mx-auto space-y-6">
+        
+        <!-- Header Title Row -->
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Chiến dịch Quảng bá & Flash Sale</h1>
+            <p class="text-sm text-gray-500 mt-1">Đẩy mạnh tiếp cận khách hàng tiềm năng và tối ưu hóa doanh số cùng trợ lý AI</p>
         </div>
 
-            <div class="partner-services-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                <!-- Card 1 -->
-                <div class="service-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow-sm); justify-content: space-between; height: 320px;">
-                    <div>
-                        <div style="width: 42px; height: 42px; border-radius: 50%; background-color: var(--light-mint); color: var(--primary-green); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 12px;">
-                            <i class="bi bi-robot"></i>
-                        </div>
-                        <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Đẩy dịch vụ lên gợi ý hàng đầu</h3>
-                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-top: 8px;">Nâng hạng hiển thị cơ sở của bạn ở mục ưu tiên của AI Recommendation khi người dùng lên lịch trình tại Phú Yên, Đà Lạt, Đà Nẵng.</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 1: Top AI -->
+            <div class="bg-white border border-teal-600/10 rounded-2xl p-6 flex flex-col justify-between h-[340px] shadow-sm hover:shadow-[0_12px_30px_rgba(13,148,136,0.08)] hover:-translate-y-1.5 transition-all duration-300 group cursor-pointer">
+                <div>
+                    <div class="w-12 h-12 rounded-full bg-teal-50 text-teal-700 flex items-center justify-center text-xl mb-4 group-hover:scale-105 transition-transform duration-300">
+                        <i class="bi bi-robot"></i>
                     </div>
-                    <div>
-                        <div style="font-size: 16px; font-weight: 800; color: var(--primary-green); margin-bottom: 12px;">150.000đ / ngày</div>
-                        <button (click)="buyCampaign('Đẩy dịch vụ lên top AI')" style="width: 100%; height: 38px; border: none; border-radius: var(--border-radius-sm); background-color: var(--primary); color: white; font-weight: 700; cursor: pointer; transition: var(--transition-smooth);">Đăng ký chiến dịch</button>
-                    </div>
+                    <h3 class="text-[17px] font-bold text-gray-800">Đẩy dịch vụ lên gợi ý hàng đầu</h3>
+                    <p class="text-xs text-gray-500 leading-relaxed mt-2 font-medium">Nâng hạng hiển thị cơ sở của bạn ở mục ưu tiên của AI Recommendation khi người dùng lên lịch trình tại Phú Yên, Đà Lạt, Đà Nẵng.</p>
                 </div>
-
-                <!-- Card 2 -->
-                <div class="service-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow-sm); justify-content: space-between; height: 320px;">
-                    <div>
-                        <div style="width: 42px; height: 42px; border-radius: 50%; background-color: #ffebee; color: #c62828; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 12px;">
-                            <i class="bi bi-percent"></i>
-                        </div>
-                        <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Tạo chương trình Flash Sale giờ vàng</h3>
-                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-top: 8px;">Đưa dịch vụ homestay/tour của bạn vào mục ưu đãi đặc biệt để khách du lịch tiết kiệm ngân sách lựa chọn nhanh.</p>
-                    </div>
-                    <div>
-                        <div style="font-size: 16px; font-weight: 800; color: #c62828; margin-bottom: 12px;">Miễn phí tạo</div>
-                        <button (click)="buyCampaign('Flash Sale Giờ Vàng')" style="width: 100%; height: 38px; border: 1px solid #c62828; border-radius: var(--border-radius-sm); background-color: transparent; color: #c62828; font-weight: 700; cursor: pointer; transition: var(--transition-smooth);">Tạo ưu đãi ngay</button>
-                    </div>
-                </div>
-
-                <!-- Card 3 -->
-                <div class="service-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow-sm); justify-content: space-between; height: 320px;">
-                    <div>
-                        <div style="width: 42px; height: 42px; border-radius: 50%; background-color: #fff8e1; color: var(--accent-gold); display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 12px;">
-                            <i class="bi bi-award-fill"></i>
-                        </div>
-                        <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Tài trợ huy hiệu sinh thái đặc biệt</h3>
-                        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-top: 8px;">Gắn nhãn chứng nhận "Eco-Certified Partner" nổi bật trên thẻ gợi ý để thu hút tệp du khách có trách nhiệm cao.</p>
-                    </div>
-                    <div>
-                        <div style="font-size: 16px; font-weight: 800; color: var(--accent-gold); margin-bottom: 12px;">300.000đ / tháng</div>
-                        <button (click)="buyCampaign('Eco-Certified Partner')" style="width: 100%; height: 38px; border: none; border-radius: var(--border-radius-sm); background-color: var(--primary); color: white; font-weight: 700; cursor: pointer; transition: var(--transition-smooth);">Đăng ký ngay</button>
-                    </div>
+                <div>
+                    <div class="text-lg font-black text-teal-700 mb-4">150.000đ / ngày</div>
+                    <button (click)="buyCampaign('Đẩy dịch vụ lên top AI')" class="w-full h-11 bg-[#0E9F6E] hover:bg-[#0c875d] text-white font-bold rounded-xl border-none cursor-pointer transition-colors shadow-sm text-sm">Đăng ký chiến dịch</button>
                 </div>
             </div>
+
+            <!-- Card 2: Flash Sale -->
+            <div class="bg-white border border-red-200 rounded-2xl p-6 flex flex-col justify-between h-[340px] shadow-sm hover:shadow-[0_12px_30px_rgba(239,68,68,0.08)] hover:-translate-y-1.5 transition-all duration-300 group cursor-pointer">
+                <div>
+                    <div class="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center text-xl mb-4 group-hover:scale-105 transition-transform duration-300">
+                        <i class="bi bi-percent"></i>
+                    </div>
+                    <h3 class="text-[17px] font-bold text-gray-800">Tạo chương trình Flash Sale giờ vàng</h3>
+                    <p class="text-xs text-gray-500 leading-relaxed mt-2 font-medium">Đưa dịch vụ homestay/tour của bạn vào mục ưu đãi đặc biệt để khách du lịch tiết kiệm ngân sách lựa chọn nhanh.</p>
+                </div>
+                <div>
+                    <div class="text-lg font-black text-red-600 mb-4">Miễn phí tạo</div>
+                    <button (click)="buyCampaign('Flash Sale Giờ Vàng')" class="w-full h-11 bg-white hover:bg-red-50 text-red-600 font-bold rounded-xl border border-red-200 cursor-pointer transition-colors text-sm">Tạo ưu đãi ngay</button>
+                </div>
+            </div>
+
+            <!-- Card 3: Eco Certified -->
+            <div class="bg-white border border-[#f59e0b]/20 rounded-2xl p-6 flex flex-col justify-between h-[340px] shadow-sm hover:shadow-[0_12px_30px_rgba(245,158,11,0.08)] hover:-translate-y-1.5 transition-all duration-300 group cursor-pointer">
+                <div>
+                    <div class="w-12 h-12 rounded-full bg-amber-50 text-[#d97706] flex items-center justify-center text-xl mb-4 group-hover:scale-105 transition-transform duration-300">
+                        <i class="bi bi-award-fill"></i>
+                    </div>
+                    <h3 class="text-[17px] font-bold text-gray-800">Tài trợ huy hiệu sinh thái đặc biệt</h3>
+                    <p class="text-xs text-gray-500 leading-relaxed mt-2 font-medium">Gắn nhãn chứng nhận "Eco-Certified Partner" nổi bật trên thẻ gợi ý để thu hút tệp du khách có trách nhiệm cao.</p>
+                </div>
+                <div>
+                    <div class="text-lg font-black text-[#d97706] mb-4">300.000đ / tháng</div>
+                    <button (click)="buyCampaign('Eco-Certified Partner')" class="w-full h-11 bg-[#0E9F6E] hover:bg-[#0c875d] text-white font-bold rounded-xl border-none cursor-pointer transition-colors shadow-sm text-sm">Đăng ký ngay</button>
+                </div>
+            </div>
+        </div>
     </div>
 </main>

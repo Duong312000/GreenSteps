@@ -62,8 +62,18 @@ app.use('/api', (req, res, next) => {
 // ==========================================================================
 
 // 1. User Model
+const BadgeSchema = new mongoose.Schema({
+  _id: { type: String }, // Badges_name PK
+  id: String,
+  badges_description: String,
+  foruserortour: { type: Number, required: true }
+}, { timestamps: true });
+const Badge = mongoose.model('Badge', BadgeSchema);
+
 const UserSchema = new mongoose.Schema({
-  _id: { type: String, default: () => new mongoose.Types.ObjectId().toString() },
+  _id: { type: String }, // ID_User PK (UG...)
+  id: String,
+  role: { type: String, enum: ['traveler', 'provider'], required: true },
   username: { type: String, unique: true, required: true },
   password_hash: { type: String, required: true },
   fullname: { type: String, required: true },
@@ -72,135 +82,245 @@ const UserSchema = new mongoose.Schema({
   dob: String,
   gender: String,
   address: String,
-  role: { type: String, enum: ['traveler', 'provider'], required: true },
-  company_name: String
+  job: String
 }, { timestamps: true });
-
 const User = mongoose.model('User', UserSchema);
 
-// 2. Wallet Model
+const BadgeUserSchema = new mongoose.Schema({
+  badge_name: { type: String, ref: 'Badge', required: true },
+  user_id: { type: String, ref: 'User', required: true }
+}, { timestamps: true });
+BadgeUserSchema.index({ badge_name: 1, user_id: 1 }, { unique: true });
+const BadgeUser = mongoose.model('BadgeUser', BadgeUserSchema);
+
 const WalletSchema = new mongoose.Schema({
-  _id: { type: String, default: () => new mongoose.Types.ObjectId().toString() },
+  _id: { type: String }, // ID_EW PK (EW...)
+  id: String,
   user_id: { type: String, ref: 'User', unique: true, required: true },
   balance: { type: Number, default: 0.00, min: 0 },
   registered: { type: Boolean, default: false }
 }, { timestamps: true });
-
 const Wallet = mongoose.model('Wallet', WalletSchema);
 
-// 3. WalletTransaction Model
 const WalletTransactionSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true }, // GD-xxxxxxxxxx
+  _id: { type: String }, // ID_WT PK (GD...)
+  id: String,
   wallet_id: { type: String, ref: 'Wallet', required: true },
   type: { type: String, enum: ['deposit', 'payment', 'refund'], required: true },
   description: { type: String, required: true },
   amount: { type: Number, required: true },
   status: { type: String, enum: ['success', 'pending', 'failed'], default: 'success' }
 }, { timestamps: true });
-
 const WalletTransaction = mongoose.model('WalletTransaction', WalletTransactionSchema);
 
-// 4. Tour Model (Suggested/Preset tours)
-const TourSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true }, // e.g. preset_dl_1
-  title: { type: String, required: true },
+const VenderSchema = new mongoose.Schema({
+  _id: { type: String }, // role PK ('1')
+  id: String,
+  user_id: { type: String, ref: 'User', unique: true, required: true },
+  registration_date: { type: String, required: true } // DD/MM/YYYY
+}, { timestamps: true });
+const Vender = mongoose.model('Vender', VenderSchema);
+
+const VenderContractSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_VC PK (VC...)
+  id: String,
+  user_id: { type: String, ref: 'User', required: true },
+  name_contract: { type: String, required: true },
+  text: { type: String, required: true }
+}, { timestamps: true });
+const VenderContract = mongoose.model('VenderContract', VenderContractSchema);
+
+const RevenueSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_Revenue PK (REV...)
+  id: String,
+  user_id: { type: String, ref: 'User', required: true },
+  monthyear: { type: String, required: true }, // MM/YYYY
+  total_booking: { type: Number, default: 0 },
+  total_revenue: { type: Number, default: 0.00 },
+  service_fee: { type: Number, default: 0.00 },
+  final_profit: { type: Number, default: 0.00 }
+}, { timestamps: true });
+const Revenue = mongoose.model('Revenue', RevenueSchema);
+
+const ContractSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_contract PK (CON...)
+  id: String,
+  name_contract: { type: String, required: true },
+  text: { type: String, required: true },
+  contract_status: { type: String, required: true } // active/inactive
+}, { timestamps: true });
+const Contract = mongoose.model('Contract', ContractSchema);
+
+const ProviderSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_provider PK (PROV...)
+  id: String,
+  contract_id: { type: String, ref: 'Contract', required: true },
+  name_provider: { type: String, required: true },
+  field: String,
   destination: { type: String, required: true },
-  days: { type: Number, required: true, min: 1 },
-  cost: { type: Number, required: true, min: 0 },
-  old_cost: Number,
-  carbon: { type: Number, required: true, min: 0 },
   image_url: String,
-  description: String,
-  rating: { type: Number, default: 5.0, min: 1.0, max: 5.0 },
-  votes_count: { type: Number, default: 0 },
-  badges: [String],
-  data: [[{
-    time: String,
-    name: String,
-    cost: Number,
-    carbon: Number,
-    icon: String,
-    type: { type: String, enum: ['lodging', 'dining', 'transport', 'attraction'] },
-    lat: Number,
-    lng: Number,
-    id: String
-  }]]
+  provider_status: { type: String, required: true }
 }, { timestamps: true });
+const Provider = mongoose.model('Provider', ProviderSchema);
 
-const Tour = mongoose.model('Tour', TourSchema);
-
-// 5. Itinerary Model (User designed custom itineraries)
-const ItinerarySchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true }, // iti_xxxxxxxxxx
-  name: { type: String, required: true },
-  user_id: { type: String, required: true }, // Map to traveler user UUID/ObjectId string representation
+const ScheduleSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_Schedule PK (SCH... or iti...)
+  id: String,
+  tour_name: { type: String, required: true },
   destination: { type: String, required: true },
   days: { type: Number, required: true, min: 1 },
-  total_cost: { type: Number, default: 0 },
-  total_carbon: { type: Number, default: 0 },
-  days_data: [[{
-    time: String,
-    name: String,
-    cost: Number,
-    carbon: Number,
-    icon: String,
-    type: { type: String, enum: ['lodging', 'dining', 'transport', 'attraction'] },
-    lat: Number,
-    lng: Number,
-    id: String
-  }]]
+  discount: { type: Number, default: 0.00 },
+  carbon: { type: Number, required: true, default: 0.00 },
+  image_url: String,
+  tour_description: String,
+  votes_count: { type: Number, default: 0 }
 }, { timestamps: true });
+const Schedule = mongoose.model('Schedule', ScheduleSchema);
 
-const Itinerary = mongoose.model('Itinerary', ItinerarySchema);
+const BadgeScheduleSchema = new mongoose.Schema({
+  badge_name: { type: String, ref: 'Badge', required: true },
+  schedule_id: { type: String, ref: 'Schedule', required: true }
+}, { timestamps: true });
+BadgeScheduleSchema.index({ badge_name: 1, schedule_id: 1 }, { unique: true });
+const BadgeSchedule = mongoose.model('BadgeSchedule', BadgeScheduleSchema);
 
-// 6. Service Model
-const ServiceSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true }, // ser_xxxxxxxxxx
-  provider_id: { type: String, required: true }, // Provider user ObjectId/UUID string
-  name: { type: String, required: true },
-  type: { type: String, required: true }, // lodging, dining, transport, attraction, tour
+const ScheduleSampleSchema = new mongoose.Schema({
+  _id: { type: String, ref: 'Schedule' }, // ID_ScheduleS PK references Schedule
+  id: String,
+  provider_id: { type: String, ref: 'Provider', required: true },
+  cost: { type: Number, required: true },
+  old_cost: Number,
+  rating: { type: Number, default: 5.0 },
+  votes_count: { type: Number, default: 0 }
+}, { timestamps: true });
+const ScheduleSample = mongoose.model('ScheduleSample', ScheduleSampleSchema);
+
+const ScheduleCustomSchema = new mongoose.Schema({
+  _id: { type: String, ref: 'Schedule' }, // ID_ScheduleC PK references Schedule
+  id: String,
+  user_id: { type: String, ref: 'User', required: true },
+  total_cost: { type: Number, default: 0.00 }
+}, { timestamps: true });
+const ScheduleCustom = mongoose.model('ScheduleCustom', ScheduleCustomSchema);
+
+const UserScheduleSchema = new mongoose.Schema({
+  user_id: { type: String, ref: 'User', required: true },
+  schedule_id: { type: String, ref: 'Schedule', required: true }
+}, { timestamps: true });
+UserScheduleSchema.index({ user_id: 1, schedule_id: 1 }, { unique: true });
+const UserSchedule = mongoose.model('UserSchedule', UserScheduleSchema);
+
+const GreenServiceSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_GS PK
+  id: String,
+  vender_id: { type: String, ref: 'Vender', required: true },
+  name_service: { type: String, required: true },
+  type: { type: String, required: true }, // stay, food, transport, attraction
+  cost: { type: Number, required: true },
   destination: { type: String, required: true },
-  cost: { type: Number, required: true, min: 0 },
-  carbon: { type: Number, default: 0 },
-  icon: { type: String, default: 'bi-gear-fill' },
-  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  carbon: { type: Number, default: 0.00 },
+  image_url: String,
   rating: { type: Number, default: 5.0 },
   bookings_count: { type: Number, default: 0 },
-  badges: [String]
+  current_data: { type: mongoose.Schema.Types.Mixed }
 }, { timestamps: true });
+const GreenService = mongoose.model('GreenService', GreenServiceSchema);
 
-const Service = mongoose.model('Service', ServiceSchema);
+const BadgeServiceSchema = new mongoose.Schema({
+  badge_name: { type: String, ref: 'Badge', required: true },
+  service_id: { type: String, ref: 'GreenService', required: true }
+}, { timestamps: true });
+BadgeServiceSchema.index({ badge_name: 1, service_id: 1 }, { unique: true });
+const BadgeService = mongoose.model('BadgeService', BadgeServiceSchema);
 
-// 7. Booking Model
-const BookingSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true }, // BK-xxxx
-  customer_id: { type: String }, // User ID string
-  customer_name: { type: String, required: true },
-  service_id: { type: String, required: true },
-  service_name: { type: String, required: true },
+const ServiceBookingSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_SB PK
+  id: String,
+  user_id: { type: String, ref: 'User', required: true },
+  service_id: { type: String, ref: 'GreenService', required: true },
+  fullname: { type: String, required: true },
+  name_service: { type: String, required: true },
   booking_date: { type: String, required: true },
   guests: { type: Number, required: true, min: 1 },
   value: { type: Number, required: true },
-  status: { type: String, enum: ['pending', 'deposit', 'completed', 'rejected'], default: 'pending' }
+  status: { type: String, required: true }, // pending, deposit, completed, rejected
+  votes_count: { type: Number, default: 0 }
 }, { timestamps: true });
+const ServiceBooking = mongoose.model('ServiceBooking', ServiceBookingSchema);
 
-const Booking = mongoose.model('Booking', BookingSchema);
+const ScheduleActivitySchema = new mongoose.Schema({
+  _id: { type: String }, // ID_Activity PK
+  id: String,
+  service_id: { type: String, ref: 'GreenService' }, // optional
+  schedule_id: { type: String, ref: 'Schedule', required: true },
+  day_number: { type: Number, required: true },
+  time: { type: String, required: true },
+  activity_name: { type: String, required: true },
+  activity_cost: { type: Number, default: 0.00 },
+  carbon: { type: Number, default: 0.00 },
+  icon: String,
+  type: String,
+  coordinates: String // "lat, lng"
+}, { timestamps: true });
+const ScheduleActivity = mongoose.model('ScheduleActivity', ScheduleActivitySchema);
 
-// 8. CommunityPost Model
+const AdCampaignSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_ADC PK
+  id: String,
+  user_id: { type: String, ref: 'User', required: true },
+  service_id: { type: String, ref: 'GreenService', required: true },
+  campaigns_type: { type: String, required: true },
+  campaigns_name: { type: String, required: true },
+  campaigns_cost: { type: Number, required: true },
+  duration_days: { type: Number, required: true },
+  start_date: { type: String, required: true },
+  end_date: { type: String, required: true },
+  status: { type: String, required: true }
+}, { timestamps: true });
+const AdCampaign = mongoose.model('AdCampaign', AdCampaignSchema);
+
 const CommunityPostSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true }, // post_xxxx
-  author_id: { type: String, ref: 'User', required: true },
-  rating: { type: Number, default: 5, min: 1, max: 5 },
+  _id: { type: String }, // ID_CUP PK
+  id: String,
+  user_id: { type: String, ref: 'User', required: true },
+  rating: { type: Number, required: true, min: 1, max: 5 },
   text: { type: String, required: true },
-  trip_name: String,
+  tour_name: String,
   destination: String,
+  image_url: String,
+  tour_description: String,
   days: Number,
   likes_count: { type: Number, default: 0 },
   comments_count: { type: Number, default: 0 },
+  current_data: { type: mongoose.Schema.Types.Mixed }
+}, { timestamps: true });
+const CommunityPost = mongoose.model('CommunityPost', CommunityPostSchema);
+
+const CommentPostSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_CEP PK
+  id: String,
+  user_id: { type: String, ref: 'User' },
+  post_id: { type: String, ref: 'CommunityPost', required: true }, // maps to ID_CUP
+  parent_comment_id: { type: String, ref: 'CommentPost' }, // optional
+  rating: Number,
+  text: { type: String, required: true },
   image_url: String
 }, { timestamps: true });
+const CommentPost = mongoose.model('CommentPost', CommentPostSchema);
 
-const CommunityPost = mongoose.model('CommunityPost', CommunityPostSchema);
+const CPSSSchema = new mongoose.Schema({
+  comment_id: { type: String, ref: 'CommentPost', required: true },
+  schedule_sample_id: { type: String, ref: 'ScheduleSample', required: true }
+}, { timestamps: true });
+CPSSSchema.index({ comment_id: 1, schedule_sample_id: 1 }, { unique: true });
+const CPSS = mongoose.model('CPSS', CPSSSchema);
+
+const CPGSSchema = new mongoose.Schema({
+  comment_id: { type: String, ref: 'CommentPost', required: true },
+  service_id: { type: String, ref: 'GreenService', required: true }
+}, { timestamps: true });
+CPGSSchema.index({ comment_id: 1, service_id: 1 }, { unique: true });
+const CPGS = mongoose.model('CPGS', CPGSSchema);
 
 // ==========================================================================
 // 1. AUTHENTICATION ENDPOINTS (/api/auth)
@@ -233,8 +353,7 @@ app.post('/api/auth/login', async (req, res) => {
         dob: user.dob,
         gender: user.gender,
         address: user.address,
-        role: user.role,
-        companyName: user.company_name
+        role: user.role
       }
     });
   } catch (err) {
@@ -245,9 +364,8 @@ app.post('/api/auth/login', async (req, res) => {
 
 // Register User
 app.post('/api/auth/register', async (req, res) => {
-  const { username, password, fullname, email, phone, dob, gender, address, role, companyName } = req.body;
+  const { username, password, fullname, email, phone, dob, gender, address, role } = req.body;
   try {
-    // Check if user exists
     const userExists = await User.findOne({
       $or: [{ username }, { email }]
     });
@@ -255,8 +373,10 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Tên đăng nhập hoặc Email đã được sử dụng!' });
     }
 
-    // Insert new user
+    const userId = 'UG' + Date.now().toString().slice(-8);
     const user = new User({
+      _id: userId,
+      id: userId,
       username,
       password_hash: password,
       fullname,
@@ -265,13 +385,15 @@ app.post('/api/auth/register', async (req, res) => {
       dob,
       gender,
       address,
-      role,
-      company_name: companyName
+      role
     });
     await user.save();
 
     // Create wallet for the new user
+    const walletId = 'EW' + Date.now().toString().slice(-8);
     const wallet = new Wallet({
+      _id: walletId,
+      id: walletId,
       user_id: user._id,
       balance: 0.00,
       registered: false
@@ -289,8 +411,7 @@ app.post('/api/auth/register', async (req, res) => {
         dob: user.dob,
         gender: user.gender,
         address: user.address,
-        role: user.role,
-        companyName: user.company_name
+        role: user.role
       }
     });
   } catch (err) {
@@ -302,7 +423,7 @@ app.post('/api/auth/register', async (req, res) => {
 // Update Profile
 app.put('/api/auth/profile/:userId', async (req, res) => {
   const { userId } = req.params;
-  const { fullname, phone, email, dob, gender, address, role, companyName, company_name } = req.body;
+  const { fullname, phone, email, dob, gender, address, role } = req.body;
   try {
     const updateFields = {};
     if (fullname !== undefined) updateFields.fullname = fullname;
@@ -312,12 +433,8 @@ app.put('/api/auth/profile/:userId', async (req, res) => {
     if (gender !== undefined) updateFields.gender = gender;
     if (address !== undefined) updateFields.address = address;
     if (role !== undefined) updateFields.role = role;
-    
-    const finalCompanyName = companyName || company_name;
-    if (finalCompanyName !== undefined) updateFields.company_name = finalCompanyName;
 
     const user = await User.findByIdAndUpdate(userId, updateFields, { new: true });
-
     if (!user) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy người dùng!' });
     }
@@ -333,8 +450,7 @@ app.put('/api/auth/profile/:userId', async (req, res) => {
         dob: user.dob,
         gender: user.gender,
         address: user.address,
-        role: user.role,
-        companyName: user.company_name
+        role: user.role
       }
     });
   } catch (err) {
@@ -354,6 +470,18 @@ app.post('/api/auth/role/:userId', async (req, res) => {
     user.role = user.role === 'traveler' ? 'provider' : 'traveler';
     await user.save();
 
+    if (user.role === 'provider') {
+      const existingVender = await Vender.findOne({ user_id: userId });
+      if (!existingVender) {
+        await Vender.create({
+          _id: '1',
+          id: '1',
+          user_id: userId,
+          registration_date: new Date().toLocaleDateString('vi-VN')
+        });
+      }
+    }
+
     res.json({ success: true, role: user.role });
   } catch (err) {
     console.error(err);
@@ -369,17 +497,44 @@ app.post('/api/auth/role/:userId', async (req, res) => {
 app.get('/api/itineraries/user/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
-    const itineraries = await Itinerary.find({ user_id: userId }).sort({ createdAt: -1 });
+    const customs = await ScheduleCustom.find({ user_id: userId });
+    const result = [];
+    for (const c of customs) {
+      const base = await Schedule.findById(c._id);
+      if (!base) continue;
 
-    const result = itineraries.map(iti => ({
-      id: iti.id,
-      name: iti.name,
-      destination: iti.destination,
-      days: iti.days,
-      totalCost: iti.total_cost,
-      totalCarbon: iti.total_carbon,
-      daysData: iti.days_data || []
-    }));
+      const activities = await ScheduleActivity.find({ schedule_id: c._id }).sort({ day_number: 1, time: 1 });
+      const daysData = [];
+      for (let i = 0; i < base.days; i++) {
+        daysData.push([]);
+      }
+      activities.forEach(act => {
+        const dIdx = act.day_number - 1;
+        if (dIdx >= 0 && dIdx < base.days) {
+          daysData[dIdx].push({
+            time: act.time,
+            name: act.activity_name,
+            cost: act.activity_cost,
+            carbon: act.carbon,
+            icon: act.icon,
+            type: act.type,
+            lat: act.coordinates ? parseFloat(act.coordinates.split(',')[0]) : null,
+            lng: act.coordinates ? parseFloat(act.coordinates.split(',')[1]) : null,
+            id: act._id
+          });
+        }
+      });
+
+      result.push({
+        id: c._id,
+        name: base.tour_name,
+        destination: base.destination || (base.tour_name.includes('Đà Lạt') ? 'Đà Lạt' : (base.tour_name.includes('Phú Yên') ? 'Phú Yên' : 'Đà Nẵng - Hội An')),
+        days: base.days,
+        totalCost: c.total_cost,
+        totalCarbon: base.carbon,
+        daysData: daysData
+      });
+    }
 
     res.json(result);
   } catch (err) {
@@ -392,19 +547,45 @@ app.get('/api/itineraries/user/:userId', async (req, res) => {
 app.get('/api/itineraries/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const iti = await Itinerary.findOne({ id: id });
-    if (!iti) {
+    const c = await ScheduleCustom.findById(id);
+    if (!c) {
+      return res.status(404).json({ error: 'Không tìm thấy lịch trình!' });
+    }
+    const base = await Schedule.findById(id);
+    if (!base) {
       return res.status(404).json({ error: 'Không tìm thấy lịch trình!' });
     }
 
+    const activities = await ScheduleActivity.find({ schedule_id: id }).sort({ day_number: 1, time: 1 });
+    const daysData = [];
+    for (let i = 0; i < base.days; i++) {
+      daysData.push([]);
+    }
+    activities.forEach(act => {
+      const dIdx = act.day_number - 1;
+      if (dIdx >= 0 && dIdx < base.days) {
+        daysData[dIdx].push({
+          time: act.time,
+          name: act.activity_name,
+          cost: act.activity_cost,
+          carbon: act.carbon,
+          icon: act.icon,
+          type: act.type,
+          lat: act.coordinates ? parseFloat(act.coordinates.split(',')[0]) : null,
+          lng: act.coordinates ? parseFloat(act.coordinates.split(',')[1]) : null,
+          id: act._id
+        });
+      }
+    });
+
     res.json({
-      id: iti.id,
-      name: iti.name,
-      destination: iti.destination,
-      days: iti.days,
-      totalCost: iti.total_cost,
-      totalCarbon: iti.total_carbon,
-      daysData: iti.days_data || []
+      id: c._id,
+      name: base.tour_name,
+      destination: base.destination || (base.tour_name.includes('Đà Lạt') ? 'Đà Lạt' : (base.tour_name.includes('Phú Yên') ? 'Phú Yên' : 'Đà Nẵng - Hội An')),
+      days: base.days,
+      totalCost: c.total_cost,
+      totalCarbon: base.carbon,
+      daysData: daysData
     });
   } catch (err) {
     console.error(err);
@@ -416,17 +597,50 @@ app.get('/api/itineraries/:id', async (req, res) => {
 app.post('/api/itineraries', async (req, res) => {
   const { id, name, user_id, destination, days, totalCost, totalCarbon, daysData } = req.body;
   try {
-    const updateData = {
-      name,
-      user_id,
-      destination,
-      days,
-      total_cost: totalCost,
-      total_carbon: totalCarbon,
-      days_data: daysData
-    };
+    await Schedule.findOneAndUpdate(
+      { _id: id },
+      {
+        tour_name: name,
+        destination: destination,
+        days: days,
+        discount: 0,
+        carbon: totalCarbon,
+        image_url: 'image/Viet Nam.png',
+        tour_description: `Hành trình tự thiết kế đi ${destination}`
+      },
+      { upsert: true, new: true }
+    );
 
-    await Itinerary.findOneAndUpdate({ id: id }, updateData, { upsert: true, new: true });
+    await ScheduleCustom.findOneAndUpdate(
+      { _id: id },
+      { user_id: user_id, total_cost: totalCost },
+      { upsert: true, new: true }
+    );
+
+    await ScheduleActivity.deleteMany({ schedule_id: id });
+    const activitiesToSave = [];
+    if (daysData && daysData.length > 0) {
+      daysData.forEach((day, dIdx) => {
+        day.forEach((act, aIdx) => {
+          const actId = `act_${id}_${dIdx + 1}_${aIdx + 1}_${Math.random().toString(36).substring(2, 7)}`;
+          activitiesToSave.push({
+            _id: actId,
+            id: actId,
+            schedule_id: id,
+            day_number: dIdx + 1,
+            time: act.time || '08:00',
+            activity_name: act.title || act.name || 'Hoạt động',
+            activity_cost: act.cost || 0,
+            carbon: act.carbon || 0,
+            icon: act.icon || 'bi-tree-fill',
+            type: act.type || 'attraction',
+            coordinates: act.lat && act.lng ? `${act.lat}, ${act.lng}` : null
+          });
+        });
+      });
+      await ScheduleActivity.insertMany(activitiesToSave);
+    }
+
     res.json({ success: true, message: 'Đã lưu lịch trình thành công!' });
   } catch (err) {
     console.error(err);
@@ -438,7 +652,9 @@ app.post('/api/itineraries', async (req, res) => {
 app.delete('/api/itineraries/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    await Itinerary.deleteOne({ id: id });
+    await ScheduleActivity.deleteMany({ schedule_id: id });
+    await ScheduleCustom.deleteOne({ _id: id });
+    await Schedule.deleteOne({ _id: id });
     res.json({ success: true, message: 'Đã xóa lịch trình thành công!' });
   } catch (err) {
     console.error(err);
@@ -486,6 +702,7 @@ app.post('/api/wallet/activate', async (req, res) => {
 
     const txId = 'GD-' + Date.now().toString().slice(-10);
     const transaction = new WalletTransaction({
+      _id: txId,
       id: txId,
       wallet_id: wallet._id,
       type: 'deposit',
@@ -515,6 +732,7 @@ app.post('/api/wallet/deposit', async (req, res) => {
 
     const txId = 'GD-' + Date.now().toString().slice(-10);
     const transaction = new WalletTransaction({
+      _id: txId,
       id: txId,
       wallet_id: wallet._id,
       type: 'deposit',
@@ -548,6 +766,7 @@ app.post('/api/wallet/pay', async (req, res) => {
 
     const txId = 'GD-' + Date.now().toString().slice(-10);
     const transaction = new WalletTransaction({
+      _id: txId,
       id: txId,
       wallet_id: wallet._id,
       type: 'payment',
@@ -596,7 +815,7 @@ app.get('/api/wallet/transactions/:userId', async (req, res) => {
 // Get All Posts
 app.get('/api/community/posts', async (req, res) => {
   try {
-    const posts = await CommunityPost.find().populate('author_id').sort({ createdAt: -1 });
+    const posts = await CommunityPost.find().populate('user_id').sort({ createdAt: -1 });
 
     const formatted = posts.map(row => {
       const diffMs = Date.now() - new Date(row.createdAt);
@@ -608,15 +827,15 @@ app.get('/api/community/posts', async (req, res) => {
         timeText = `${diffHours} giờ trước`;
       }
       
-      const authorName = row.author_id ? row.author_id.fullname : 'Người dùng GreenSteps';
+      const authorName = row.user_id ? row.user_id.fullname : 'Người dùng GreenSteps';
       return {
-        id: row.id,
+        id: row._id,
         author: authorName,
         avatar: authorName ? authorName.charAt(0).toUpperCase() : 'U',
         time: timeText,
         rating: row.rating,
         text: row.text,
-        tripName: row.trip_name,
+        tripName: row.tour_name,
         dest: row.destination,
         days: row.days,
         likes: row.likes_count,
@@ -638,11 +857,12 @@ app.post('/api/community/posts', async (req, res) => {
   try {
     const postId = 'post_' + Date.now();
     const post = new CommunityPost({
+      _id: postId,
       id: postId,
-      author_id: authorId,
+      user_id: authorId,
       rating: rating,
       text: text,
-      trip_name: tripName,
+      tour_name: tripName,
       destination: dest,
       days: days,
       image_url: image
@@ -662,8 +882,31 @@ app.post('/api/community/posts', async (req, res) => {
 // Get All Services
 app.get('/api/services', async (req, res) => {
   try {
-    const services = await Service.find({ status: 'active' });
-    res.json(services);
+    const services = await GreenService.find();
+    const formatted = [];
+    for (const s of services) {
+      const badgeServices = await BadgeService.find({ service_id: s._id });
+      const badges = badgeServices.map(bs => bs.badge_name);
+      
+      const vender = await Vender.findById(s.vender_id);
+      const providerId = vender ? vender.user_id : 'UG26pro0001';
+
+      formatted.push({
+        id: s._id,
+        provider_id: providerId,
+        name: s.name_service,
+        type: s.type,
+        destination: s.destination,
+        cost: s.cost,
+        carbon: s.carbon,
+        icon: s.type === 'lodging' || s.type === 'stay' ? 'bi-house-door-fill' : (s.type === 'dining' || s.type === 'food' ? 'bi-cup-hot-fill' : 'bi-gear-fill'),
+        status: 'active',
+        rating: s.rating,
+        bookings_count: s.bookings_count,
+        badges: badges
+      });
+    }
+    res.json(formatted);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Lỗi tải dịch vụ!' });
@@ -674,14 +917,17 @@ app.get('/api/services', async (req, res) => {
 app.get('/api/services/provider/:providerId', async (req, res) => {
   const { providerId } = req.params;
   try {
-    const result = await Service.find({ provider_id: providerId });
+    const vender = await Vender.findOne({ user_id: providerId });
+    const venderId = vender ? vender._id : '';
+
+    const result = await GreenService.find({ vender_id: venderId });
     const mapped = result.map(s => ({
-      id: s.id,
-      name: s.name,
+      id: s._id,
+      name: s.name_service,
       type: s.type,
       dest: s.destination,
       cost: s.cost,
-      status: s.status,
+      status: 'active',
       bookingsCount: s.bookings_count
     }));
     res.json(mapped);
@@ -695,20 +941,45 @@ app.get('/api/services/provider/:providerId', async (req, res) => {
 app.post('/api/services', async (req, res) => {
   const { providerId, name, type, destination, cost, carbon, icon } = req.body;
   try {
+    let vender = await Vender.findOne({ user_id: providerId });
+    if (!vender) {
+      vender = await Vender.create({
+        _id: '1',
+        id: '1',
+        user_id: providerId,
+        registration_date: new Date().toLocaleDateString('vi-VN')
+      });
+    }
+
     const serviceId = 'ser_' + Date.now();
-    const service = new Service({
+    const service = new GreenService({
+      _id: serviceId,
       id: serviceId,
-      provider_id: providerId,
-      name,
-      type,
-      destination,
-      cost,
+      vender_id: vender._id,
+      name_service: name,
+      type: type,
+      destination: destination,
+      cost: cost,
       carbon: carbon || 0,
+      image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
+      rating: 5.0,
+      bookings_count: 0
+    });
+    await service.save();
+
+    await BadgeService.create({ badge_name: 'green', service_id: service._id });
+
+    res.json({
+      id: service._id,
+      provider_id: providerId,
+      name: service.name_service,
+      type: service.type,
+      destination: service.destination,
+      cost: service.cost,
+      carbon: service.carbon,
       icon: icon || 'bi-gear-fill',
       status: 'active'
     });
-    await service.save();
-    res.json(service);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Lỗi đăng dịch vụ!' });
@@ -725,19 +996,21 @@ app.get('/api/bookings', async (req, res) => {
   try {
     let bookings;
     if (providerId) {
-      const providerServices = await Service.find({ provider_id: providerId });
-      const serviceIds = providerServices.map(s => s.id);
-      bookings = await Booking.find({ service_id: { $in: serviceIds } }).sort({ createdAt: -1 });
+      const vender = await Vender.findOne({ user_id: providerId });
+      const venderId = vender ? vender._id : '';
+      const services = await GreenService.find({ vender_id: venderId });
+      const serviceIds = services.map(s => s._id);
+      bookings = await ServiceBooking.find({ service_id: { $in: serviceIds } }).sort({ createdAt: -1 });
     } else if (customerId) {
-      bookings = await Booking.find({ customer_id: customerId }).sort({ createdAt: -1 });
+      bookings = await ServiceBooking.find({ user_id: customerId }).sort({ createdAt: -1 });
     } else {
-      bookings = await Booking.find().sort({ createdAt: -1 });
+      bookings = await ServiceBooking.find().sort({ createdAt: -1 });
     }
 
     const mapped = bookings.map(row => ({
-      id: row.id,
-      customer: row.customer_name,
-      service: row.service_name,
+      id: row._id,
+      customer: row.fullname,
+      service: row.name_service,
       date: row.booking_date,
       guests: row.guests,
       value: row.value,
@@ -756,15 +1029,16 @@ app.post('/api/bookings', async (req, res) => {
   const { customerId, customerName, serviceId, serviceName, date, guests, value } = req.body;
   try {
     const bookingId = 'BK-' + Date.now().toString().slice(-4);
-    const booking = new Booking({
+    const booking = new ServiceBooking({
+      _id: bookingId,
       id: bookingId,
-      customer_id: customerId,
-      customer_name: customerName,
+      user_id: customerId,
       service_id: serviceId,
-      service_name: serviceName,
+      fullname: customerName,
+      name_service: serviceName,
       booking_date: date,
-      guests,
-      value,
+      guests: guests,
+      value: value,
       status: 'pending'
     });
     await booking.save();
@@ -779,7 +1053,7 @@ app.post('/api/bookings', async (req, res) => {
 app.post('/api/bookings/:id/approve', async (req, res) => {
   const { id } = req.params;
   try {
-    await Booking.findOneAndUpdate({ id: id }, { status: 'deposit' });
+    await ServiceBooking.findByIdAndUpdate(id, { status: 'deposit' });
     res.json({ success: true, status: 'deposit' });
   } catch (err) {
     console.error(err);
@@ -791,7 +1065,7 @@ app.post('/api/bookings/:id/approve', async (req, res) => {
 app.post('/api/bookings/:id/reject', async (req, res) => {
   const { id } = req.params;
   try {
-    await Booking.findOneAndUpdate({ id: id }, { status: 'rejected' });
+    await ServiceBooking.findByIdAndUpdate(id, { status: 'rejected' });
     res.json({ success: true, status: 'rejected' });
   } catch (err) {
     console.error(err);
@@ -806,7 +1080,53 @@ app.post('/api/bookings/:id/reject', async (req, res) => {
 // Get All Preset Tours
 app.get('/api/tours', async (req, res) => {
   try {
-    const tours = await Tour.find().sort({ createdAt: 1 });
+    const samples = await ScheduleSample.find();
+    const tours = [];
+    for (const s of samples) {
+      const base = await Schedule.findById(s._id);
+      if (!base) continue;
+
+      const activities = await ScheduleActivity.find({ schedule_id: s._id }).sort({ day_number: 1, time: 1 });
+      const data = [];
+      for (let i = 0; i < base.days; i++) {
+        data.push([]);
+      }
+      activities.forEach(act => {
+        const dIdx = act.day_number - 1;
+        if (dIdx >= 0 && dIdx < base.days) {
+          data[dIdx].push({
+            time: act.time,
+            name: act.activity_name,
+            cost: act.activity_cost,
+            carbon: act.carbon,
+            icon: act.icon,
+            type: act.type,
+            lat: act.coordinates ? parseFloat(act.coordinates.split(',')[0]) : null,
+            lng: act.coordinates ? parseFloat(act.coordinates.split(',')[1]) : null,
+            id: act._id
+          });
+        }
+      });
+
+      const badgeSchedules = await BadgeSchedule.find({ schedule_id: s._id });
+      const badges = badgeSchedules.map(bs => bs.badge_name);
+
+      tours.push({
+        id: s._id,
+        title: base.tour_name,
+        destination: base.destination || (base.tour_name.includes('Đà Lạt') ? 'Đà Lạt' : (base.tour_name.includes('Phú Yên') ? 'Phú Yên' : 'Đà Nẵng - Hội An')),
+        days: base.days,
+        cost: s.cost,
+        oldCost: s.old_cost,
+        carbon: base.carbon,
+        image: base.image_url,
+        description: base.tour_description,
+        rating: s.rating,
+        votes_count: s.votes_count,
+        tags: badges,
+        data: data
+      });
+    }
     res.json(tours);
   } catch (err) {
     console.error(err);
@@ -818,11 +1138,55 @@ app.get('/api/tours', async (req, res) => {
 app.get('/api/tours/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const tour = await Tour.findOne({ id: id });
-    if (!tour) {
+    const s = await ScheduleSample.findById(id);
+    if (!s) {
       return res.status(404).json({ error: 'Không tìm thấy tour!' });
     }
-    res.json(tour);
+    const base = await Schedule.findById(id);
+    if (!base) {
+      return res.status(404).json({ error: 'Không tìm thấy tour!' });
+    }
+
+    const activities = await ScheduleActivity.find({ schedule_id: id }).sort({ day_number: 1, time: 1 });
+    const data = [];
+    for (let i = 0; i < base.days; i++) {
+      data.push([]);
+    }
+    activities.forEach(act => {
+      const dIdx = act.day_number - 1;
+      if (dIdx >= 0 && dIdx < base.days) {
+        data[dIdx].push({
+          time: act.time,
+          name: act.activity_name,
+          cost: act.activity_cost,
+          carbon: act.carbon,
+          icon: act.icon,
+          type: act.type,
+          lat: act.coordinates ? parseFloat(act.coordinates.split(',')[0]) : null,
+          lng: act.coordinates ? parseFloat(act.coordinates.split(',')[1]) : null,
+          id: act._id
+        });
+      }
+    });
+
+    const badgeSchedules = await BadgeSchedule.find({ schedule_id: id });
+    const badges = badgeSchedules.map(bs => bs.badge_name);
+
+    res.json({
+      id: s._id,
+      title: base.tour_name,
+      destination: base.destination || (base.tour_name.includes('Đà Lạt') ? 'Đà Lạt' : (base.tour_name.includes('Phú Yên') ? 'Phú Yên' : 'Đà Nẵng - Hội An')),
+      days: base.days,
+      cost: s.cost,
+      oldCost: s.old_cost,
+      carbon: base.carbon,
+      image: base.image_url,
+      description: base.tour_description,
+      rating: s.rating,
+      votes_count: s.votes_count,
+      tags: badges,
+      data: data
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Lỗi tải chi tiết tour!' });

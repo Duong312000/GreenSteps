@@ -1,60 +1,696 @@
-<main class="main-viewport partner-viewport">
-    <div class="bookings-container">
-        <div class="user-title-row" style="margin-bottom: 10px; border-bottom: none; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h2 style="font-size: 26px; color: var(--primary-green);">Lịch sử & Quản lý đơn hàng du lịch</h2>
-                <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Danh sách đơn hàng đặt dịch vụ, phê duyệt cọc và theo dõi trạng thái thanh toán.</p>
-            </div>
+<main class="min-h-screen bg-[#fcfdfc] pt-28 pb-12 px-6 font-sans">
+    <div class="max-w-[1440px] mx-auto space-y-6">
+        
+        <!-- Header -->
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Quản lý booking & vận hành</h1>
+            <p class="text-sm text-gray-500 mt-1">Theo dõi đơn đặt dịch vụ, các yêu cầu thay đổi từ du khách và lập lịch trình hướng dẫn</p>
         </div>
 
-            <section class="partner-dashboard-table-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm);">
-                <div class="table-wrapper" style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
-                        <thead>
-                            <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-weight: 700;">
-                                <th style="padding: 12px 10px;">Mã đơn</th>
-                                <th style="padding: 12px 10px;">Khách hàng</th>
-                                <th style="padding: 12px 10px;">Dịch vụ yêu cầu</th>
-                                <th style="padding: 12px 10px;">Ngày đi</th>
-                                <th style="padding: 12px 10px;">Số khách</th>
-                                <th style="padding: 12px 10px;">Thành tiền</th>
-                                <th style="padding: 12px 10px;">Trạng thái</th>
-                                <th style="padding: 12px 10px; text-align: center;">Hành động</th>
+        <!-- Navigation Tabs -->
+        <div class="border-b border-gray-200">
+            <nav class="flex space-x-8 -mb-px">
+                <button
+                    (click)="setActiveTab('bookings')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors border-none bg-transparent cursor-pointer"
+                    [class.border-[#006414]]="activeTab === 'bookings'"
+                    [class.text-[#006414]]="activeTab === 'bookings'"
+                    [class.border-transparent]="activeTab !== 'bookings'"
+                    [class.text-gray-400]="activeTab !== 'bookings'"
+                    [class.hover:text-gray-600]="activeTab !== 'bookings'"
+                >
+                    ĐƠN ĐẶT DỊCH VỤ
+                </button>
+                <button
+                    (click)="setActiveTab('change-requests')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors border-none bg-transparent cursor-pointer"
+                    [class.border-[#006414]]="activeTab === 'change-requests'"
+                    [class.text-[#006414]]="activeTab === 'change-requests'"
+                    [class.border-transparent]="activeTab !== 'change-requests'"
+                    [class.text-gray-400]="activeTab !== 'change-requests'"
+                    [class.hover:text-gray-600]="activeTab !== 'change-requests'"
+                >
+                    YÊU CẦU THAY ĐỔI
+                </button>
+                <button
+                    (click)="setActiveTab('schedules')"
+                    class="whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors border-none bg-transparent cursor-pointer"
+                    [class.border-[#006414]]="activeTab === 'schedules'"
+                    [class.text-[#006414]]="activeTab === 'schedules'"
+                    [class.border-transparent]="activeTab !== 'schedules'"
+                    [class.text-gray-400]="activeTab !== 'schedules'"
+                    [class.hover:text-gray-600]="activeTab !== 'schedules'"
+                >
+                    LỊCH TRÌNH VẬN HÀNH
+                </button>
+            </nav>
+        </div>
+
+        <!-- TAB CONTENT: BOOKINGS -->
+        <div class="space-y-6" *ngIf="activeTab === 'bookings'">
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                    <div class="text-2xl font-black text-blue-600">12</div>
+                    <div class="text-[11px] font-bold text-gray-400 mt-1 uppercase">Booking mới</div>
+                </div>
+                <div class="bg-[#FFF3CD] border border-[#ffeeb5] p-4 rounded-xl text-center">
+                    <div class="text-2xl font-black text-[#856404]">5</div>
+                    <div class="text-[11px] font-bold text-[#856404]/75 mt-1 uppercase">Chờ xác nhận</div>
+                </div>
+                <div class="bg-teal-50 border border-teal-100 p-4 rounded-xl text-center">
+                    <div class="text-2xl font-black text-teal-700">24</div>
+                    <div class="text-[11px] font-bold text-teal-600/75 mt-1 uppercase">Đã xác nhận</div>
+                </div>
+                <div class="bg-purple-50 border border-purple-100 p-4 rounded-xl text-center">
+                    <div class="text-2xl font-black text-purple-700">8</div>
+                    <div class="text-[11px] font-bold text-purple-600/75 mt-1 uppercase">Đang diễn ra</div>
+                </div>
+                <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl text-center">
+                    <div class="text-2xl font-black text-gray-700">145</div>
+                    <div class="text-[11px] font-bold text-gray-400 mt-1 uppercase">Hoàn thành</div>
+                </div>
+                <div class="bg-red-50 border border-red-100 p-4 rounded-xl text-center">
+                    <div class="text-2xl font-black text-red-700">18</div>
+                    <div class="text-[11px] font-bold text-red-600/75 mt-1 uppercase">Đã hủy</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="relative w-full md:w-[400px]">
+                    <input
+                        type="text"
+                        class="block w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 shadow-sm text-gray-700"
+                        placeholder="Tìm theo mã đơn, khách hàng..."
+                        [(ngModel)]="searchQuery"
+                    />
+                    <i class="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+                
+                <div class="flex gap-4 w-full md:w-auto">
+                    <select [(ngModel)]="statusFilter" class="h-9 px-3 rounded-lg border border-gray-200 text-sm text-gray-600 focus:outline-none bg-white">
+                        <option>Tất cả</option>
+                        <option>Chờ xác nhận</option>
+                        <option>Đã xác nhận</option>
+                        <option>Đã hủy</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left border-collapse">
+                        <thead class="bg-[#F7FBF4] text-gray-600 font-bold uppercase text-[10px] tracking-wider border-b border-gray-100">
+                            <tr>
+                                <th class="px-6 py-4">Mã Booking</th>
+                                <th class="px-6 py-4">Khách hàng</th>
+                                <th class="px-6 py-4">Dịch vụ yêu cầu</th>
+                                <th class="px-6 py-4">Ngày sử dụng</th>
+                                <th class="px-6 py-4 text-center">Khách</th>
+                                <th class="px-6 py-4 text-right">Tổng tiền</th>
+                                <th class="px-6 py-4 text-center">Thanh toán</th>
+                                <th class="px-6 py-4 text-center">Trạng thái</th>
+                                <th class="px-6 py-4 text-center">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr *ngIf="bookings.length === 0">
-                                <td colspan="8" style="text-align: center; padding: 30px; color: var(--text-muted);">Không có đơn đặt chỗ nào lịch sử.</td>
+                        <tbody class="divide-y divide-gray-50 text-gray-700">
+                            <tr *ngIf="filteredBookings.length === 0">
+                                <td colspan="9" class="text-center py-10 text-gray-400 italic">Không tìm thấy booking nào phù hợp.</td>
                             </tr>
-                            <tr *ngFor="let b of bookings" style="border-bottom: 1px solid var(--border-color); color: var(--text-primary);">
-                                <td style="padding: 14px 10px; font-weight: 700;">{{ b.id }}</td>
-                                <td style="padding: 14px 10px;">{{ b.customer || b.customer_name }}</td>
-                                <td style="padding: 14px 10px; font-weight: 600;">{{ b.service || b.service_name }}</td>
-                                <td style="padding: 14px 10px;">{{ b.date || b.booking_date }}</td>
-                                <td style="padding: 14px 10px;">{{ b.guests }} khách</td>
-                                <td style="padding: 14px 10px; font-weight: 700; color: var(--primary);">{{ b.value | number:'1.0-0':'vi-VN' }}đ</td>
-                                <td style="padding: 14px 10px;">
-                                    <span class="status-pill" [ngClass]="b.status === 'pending' ? 'pending' : (b.status === 'deposit' ? 'deposit' : (b.status === 'completed' ? 'success' : 'rejected'))">
-                                        {{ b.status === 'pending' ? 'Chờ duyệt' : (b.status === 'deposit' ? 'Đặt cọc' : (b.status === 'completed' ? 'Hoàn thành' : 'Đã hủy')) }}
+                            <tr *ngFor="let b of filteredBookings" class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4 font-bold text-gray-800">{{ b.id }}</td>
+                                <td class="px-6 py-4">
+                                    <p class="font-bold text-gray-800">{{ b.customerName }}</p>
+                                    <p class="text-xs text-gray-400 mt-0.5">{{ b.customerPhone }}</p>
+                                </td>
+                                <td class="px-6 py-4 font-medium text-gray-600 truncate max-w-[200px]">{{ b.serviceName }}</td>
+                                <td class="px-6 py-4 text-xs">{{ b.useDate }}</td>
+                                <td class="px-6 py-4 text-center">{{ b.guests }} khách</td>
+                                <td class="px-6 py-4 text-right font-bold text-gray-800">{{ b.totalPrice | number:'1.0-0':'vi-VN' }}đ</td>
+                                <td class="px-6 py-4 text-center text-xs">
+                                    <span class="text-teal-700 font-bold" *ngIf="b.paidAmount === b.totalPrice">Đã thanh toán</span>
+                                    <span class="text-orange-600 font-bold" *ngIf="b.paidAmount > 0 && b.paidAmount < b.totalPrice">Đã cọc {{ b.paidAmount | number:'1.0-0':'vi-VN' }}đ</span>
+                                    <span class="text-gray-400 font-bold" *ngIf="b.paidAmount === 0">Chưa trả tiền</span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold"
+                                          [ngClass]="b.status === 'pending' ? 'bg-orange-50 text-orange-700 border border-orange-200' : (b.status === 'confirmed' ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'bg-red-50 text-red-700 border-red-200')">
+                                        {{ b.status === 'pending' ? 'Chờ duyệt' : (b.status === 'confirmed' ? 'Đã duyệt' : 'Đã hủy') }}
                                     </span>
                                 </td>
-                                <td style="padding: 14px 10px; display: flex; gap: 8px; justify-content: center;">
-                                    <ng-container *ngIf="b.status === 'pending'">
-                                        <button (click)="approveBooking(b.id)" style="background-color: var(--primary); border: none; border-radius: 4px; color: #FFFFFF; font-weight: 700; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 11px;">
-                                            <i class="bi bi-check-lg"></i> Duyệt cọc
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-center gap-1.5" *ngIf="b.status === 'pending'">
+                                        <button (click)="handleBookingAction(b, 'confirm')" class="p-1.5 hover:text-teal-600 hover:bg-teal-50 border border-gray-100 rounded-lg cursor-pointer bg-white" title="Phê duyệt cọc">
+                                            <i class="bi bi-check-lg text-sm"></i>
                                         </button>
-                                        <button (click)="rejectBooking(b.id)" style="background-color: #ffebee; border: 1px solid #ffcdd2; border-radius: 4px; color: #c62828; font-weight: 700; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 11px;">
-                                            <i class="bi bi-x-lg"></i> Từ chối
+                                        <button (click)="handleBookingAction(b, 'reject')" class="p-1.5 hover:text-red-600 hover:bg-red-50 border border-gray-100 rounded-lg cursor-pointer bg-white" title="Từ chối/Hủy">
+                                            <i class="bi bi-x-lg text-sm"></i>
                                         </button>
-                                    </ng-container>
-                                    <ng-container *ngIf="b.status !== 'pending'">
-                                        <span style="color: var(--text-muted); font-size: 11px; font-style: italic;">Đã xử lý</span>
-                                    </ng-container>
+                                    </div>
+                                    <div class="text-center text-xs text-gray-400 font-medium italic" *ngIf="b.status !== 'pending'">Đã xử lý</div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-            </section>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: CHANGE REQUESTS -->
+        <div class="space-y-6" *ngIf="activeTab === 'change-requests'">
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
+                    <div class="text-2xl font-black text-orange-600">3</div>
+                    <div class="text-[11px] font-bold text-gray-400 mt-1 uppercase">Chờ xử lý</div>
+                </div>
+                <div class="bg-teal-50 border border-teal-100 p-4 rounded-xl text-center">
+                    <div class="text-2xl font-black text-teal-700">12</div>
+                    <div class="text-[11px] font-bold text-teal-600/75 mt-1 uppercase">Đã duyệt</div>
+                </div>
+                <div class="bg-red-50 border border-red-100 p-4 rounded-xl text-center">
+                    <div class="text-2xl font-black text-red-700">2</div>
+                    <div class="text-[11px] font-bold text-red-600/75 mt-1 uppercase">Từ chối</div>
+                </div>
+                <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl text-center">
+                    <div class="text-2xl font-black text-blue-700">8</div>
+                    <div class="text-[11px] font-bold text-blue-600/75 mt-1 uppercase">Đổi ngày</div>
+                </div>
+                <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl text-center">
+                    <div class="text-2xl font-black text-gray-700">5</div>
+                    <div class="text-[11px] font-bold text-gray-400 mt-1 uppercase">Yêu cầu hủy</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="relative w-full md:w-[400px]">
+                    <input
+                        type="text"
+                        class="block w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 shadow-sm text-gray-700"
+                        placeholder="Tìm theo mã yêu cầu, mã booking, khách hàng..."
+                        [(ngModel)]="changeSearchQuery"
+                    />
+                    <i class="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+                
+                <div class="flex gap-4 w-full md:w-auto">
+                    <select [(ngModel)]="changeStatusFilter" class="h-9 px-3 rounded-lg border border-gray-200 text-sm text-gray-600 focus:outline-none bg-white">
+                        <option>Tất cả</option>
+                        <option>Chờ xử lý</option>
+                        <option>Đã duyệt</option>
+                        <option>Từ chối</option>
+                        <option>Đã đề xuất</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left border-collapse">
+                        <thead class="bg-[#F7FBF4] text-gray-600 font-bold uppercase text-[10px] tracking-wider border-b border-gray-100">
+                            <tr>
+                                <th class="px-6 py-4">Mã YC</th>
+                                <th class="px-6 py-4">Mã Booking</th>
+                                <th class="px-6 py-4">Khách hàng</th>
+                                <th class="px-6 py-4">Dịch vụ liên quan</th>
+                                <th class="px-6 py-4">Loại yêu cầu</th>
+                                <th class="px-6 py-4">Ngày gửi</th>
+                                <th class="px-6 py-4 text-center">Trạng thái</th>
+                                <th class="px-6 py-4 text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50 text-gray-700">
+                            <tr *ngIf="filteredRequests.length === 0">
+                                <td colspan="8" class="text-center py-10 text-gray-400 italic">Không tìm thấy yêu cầu thay đổi nào.</td>
+                            </tr>
+                            <tr *ngFor="let r of filteredRequests" class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4 font-bold text-gray-800">{{ r.id }}</td>
+                                <td class="px-6 py-4 font-semibold text-[#0E9F6E]">{{ r.bookingId }}</td>
+                                <td class="px-6 py-4 font-bold text-gray-800">{{ r.customerName }}</td>
+                                <td class="px-6 py-4 font-medium text-gray-600 truncate max-w-[200px]">{{ r.serviceName }}</td>
+                                <td class="px-6 py-4 font-semibold text-gray-700 text-xs">{{ getRequestTypeLabel(r.type) }}</td>
+                                <td class="px-6 py-4 text-xs">{{ r.requestDate }}</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold"
+                                          [ngClass]="r.status === 'pending' ? 'bg-orange-50 text-orange-700 border border-orange-200' : (r.status === 'approved' ? 'bg-teal-50 text-teal-700 border border-teal-200' : (r.status === 'proposed' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-red-50 text-red-700 border-red-200'))">
+                                        {{ r.status === 'pending' ? 'Chờ xử lý' : (r.status === 'approved' ? 'Đã duyệt' : (r.status === 'proposed' ? 'Đã đề xuất' : 'Bị từ chối')) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-center gap-1.5" *ngIf="r.status === 'pending'">
+                                        <button (click)="handleChangeAction(r, 'approve')" class="p-1.5 hover:text-teal-600 hover:bg-teal-50 border border-gray-100 rounded-lg cursor-pointer bg-white" title="Chấp nhận thay đổi">
+                                            <i class="bi bi-check-lg text-sm"></i>
+                                        </button>
+                                        <button (click)="handleChangeAction(r, 'propose')" class="p-1.5 hover:text-blue-600 hover:bg-blue-50 border border-gray-100 rounded-lg cursor-pointer bg-white" title="Đề xuất phương án khác">
+                                            <i class="bi bi-calendar-range text-sm"></i>
+                                        </button>
+                                        <button (click)="handleChangeAction(r, 'reject')" class="p-1.5 hover:text-red-600 hover:bg-red-50 border border-gray-100 rounded-lg cursor-pointer bg-white" title="Từ chối">
+                                            <i class="bi bi-x-lg text-sm"></i>
+                                        </button>
+                                    </div>
+                                    <div class="text-center text-xs text-gray-400 font-medium italic" *ngIf="r.status !== 'pending'">Đã xử lý</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB CONTENT: SCHEDULES CONFIGURATOR -->
+        <div class="flex flex-col lg:flex-row gap-6 items-start" *ngIf="activeTab === 'schedules'">
+            <!-- Left Sidebar: Tour list -->
+            <div class="w-full lg:w-1/4 bg-white border border-gray-100 rounded-2xl shadow-sm flex flex-col overflow-hidden h-[750px] shrink-0">
+                <div class="p-4 border-b border-gray-100 bg-[#F7FBF4]">
+                    <h2 class="font-bold text-gray-800 text-md flex items-center gap-2">
+                        <i class="bi bi-geo-alt-fill text-teal-600"></i> Gói trải nghiệm đối tác
+                    </h2>
+                    <div class="relative mt-3">
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm tour..."
+                            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:border-teal-500 text-gray-700 bg-white"
+                            [(ngModel)]="tourSearchQuery"
+                        />
+                        <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    </div>
+                </div>
+
+                <div class="flex-grow overflow-y-auto divide-y divide-gray-50">
+                    <div
+                        *ngFor="let t of filteredTours"
+                        (click)="selectedTour = t"
+                        class="p-4 cursor-pointer hover:bg-teal-50/20 transition-all border-l-4"
+                        [class.border-l-teal-600]="selectedTour.id === t.id"
+                        [class.bg-teal-50/40]="selectedTour.id === t.id"
+                        [class.border-l-transparent]="selectedTour.id !== t.id"
+                    >
+                        <div class="flex gap-3">
+                            <img [src]="t.image" class="w-14 h-14 rounded-lg object-cover bg-gray-100 shrink-0" alt="Tour image">
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-800 leading-tight line-clamp-2">{{ t.name }}</h4>
+                                <p class="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                                    <i class="bi bi-clock"></i> {{ t.duration }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Main Area: Settings Editor -->
+            <div class="flex-1 w-full bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden h-[750px] flex flex-col">
+                <!-- Detail Header -->
+                <div class="p-5 border-b border-gray-100 flex justify-between items-start bg-gradient-to-r from-[#F7FBF4] to-white">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-gray-800">{{ selectedTour.name }}</h2>
+                        <div class="flex gap-4 mt-2 text-xs text-gray-400 font-semibold">
+                            <span class="flex items-center gap-1"><i class="bi bi-clock text-teal-600"></i> Thời lượng: {{ selectedTour.duration }}</span>
+                            <span class="flex items-center gap-1"><i class="bi bi-tag text-teal-600"></i> Phân loại: {{ selectedTour.type }}</span>
+                        </div>
+                    </div>
+                    <button class="px-4 py-2 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl text-xs font-semibold text-gray-600 flex items-center gap-1.5 cursor-pointer shadow-sm">
+                        <i class="bi bi-gear"></i> Thiết lập gói
+                    </button>
+                </div>
+
+                <!-- Navigation Tabs inside Configurator -->
+                <div class="border-b border-gray-100 px-5 bg-gray-50/50">
+                    <nav class="flex space-x-6 -mb-px">
+                        <button
+                            (click)="activeSection = 'itinerary'"
+                            class="py-3 text-xs font-bold border-b-2 transition-colors border-none bg-transparent cursor-pointer"
+                            [class.border-teal-600]="activeSection === 'itinerary'"
+                            [class.text-teal-700]="activeSection === 'itinerary'"
+                            [class.border-transparent]="activeSection !== 'itinerary'"
+                            [class.text-gray-400]="activeSection !== 'itinerary'"
+                            [class.hover:text-gray-600]="activeSection !== 'itinerary'"
+                        >
+                            ITINERARY & TIMELINE
+                        </button>
+                        <button
+                            (click)="activeSection = 'route'"
+                            class="py-3 text-xs font-bold border-b-2 transition-colors border-none bg-transparent cursor-pointer"
+                            [class.border-teal-600]="activeSection === 'route'"
+                            [class.text-teal-700]="activeSection === 'route'"
+                            [class.border-transparent]="activeSection !== 'route'"
+                            [class.text-gray-400]="activeSection !== 'route'"
+                            [class.hover:text-gray-600]="activeSection !== 'route'"
+                        >
+                            TREKKING ROUTE MAP
+                        </button>
+                        <button
+                            (click)="activeSection = 'campsite'"
+                            class="py-3 text-xs font-bold border-b-2 transition-colors border-none bg-transparent cursor-pointer"
+                            [class.border-teal-600]="activeSection === 'campsite'"
+                            [class.text-teal-700]="activeSection === 'campsite'"
+                            [class.border-transparent]="activeSection !== 'campsite'"
+                            [class.text-gray-400]="activeSection !== 'campsite'"
+                            [class.hover:text-gray-600]="activeSection !== 'campsite'"
+                        >
+                            SƠ ĐỒ CAMPSITE
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Content Area -->
+                <div class="flex-grow overflow-y-auto p-6 bg-gray-50/10">
+                    
+                    <!-- SECTION: ITINERARY -->
+                    <div class="space-y-6 max-w-3xl mx-auto" *ngIf="activeSection === 'itinerary'">
+                        <div class="flex justify-between items-center pb-2 border-b border-gray-100">
+                            <div>
+                                <h3 class="text-md font-bold text-gray-800">Timeline hành trình</h3>
+                                <p class="text-xs text-gray-400 mt-0.5">Xây dựng timeline hoạt động từng ngày cho hướng dẫn viên</p>
+                            </div>
+                        </div>
+
+                        <div *ngFor="let day of itinerary" class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                            <div class="flex justify-between items-center pb-2 border-b border-gray-100">
+                                <h4 class="font-bold text-teal-700 flex items-center gap-2">
+                                    <span class="bg-teal-50 px-2 py-0.5 rounded-lg text-xs">Ngày {{ day.day }}</span>
+                                    {{ day.title }}
+                                </h4>
+                                <button class="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer"><i class="bi bi-three-dots-vertical"></i></button>
+                            </div>
+
+                            <!-- Timeline List -->
+                            <div class="space-y-4 relative pl-4 border-l-2 border-dashed border-gray-100 ml-2">
+                                <div *ngFor="let act of day.activities" class="relative group flex items-start gap-4">
+                                    <!-- Node Marker -->
+                                    <div class="absolute -left-[23px] top-1 w-[12px] h-[12px] rounded-full border-2 border-white bg-teal-600 shadow-sm"></div>
+                                    
+                                    <div class="bg-white p-3 rounded-xl border border-gray-100 hover:border-teal-500/50 shadow-sm flex-grow transition-all flex gap-3">
+                                        <div class="text-teal-700 font-extrabold text-sm w-12 shrink-0">{{ act.time }}</div>
+                                        <div class="flex-grow">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wide">{{ act.type }}</span>
+                                                <h5 class="font-bold text-sm text-gray-800 leading-tight">{{ act.title }}</h5>
+                                            </div>
+                                            <p class="text-xs text-gray-400 leading-relaxed font-medium">{{ act.description }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button (click)="openAddActivity(day.day)" class="w-full py-2.5 border border-dashed border-gray-200 rounded-xl text-xs font-semibold text-gray-400 hover:text-teal-600 hover:border-teal-600/30 transition-all cursor-pointer bg-white">
+                                + Thêm hoạt động vào Ngày {{ day.day }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SECTION: ROUTE MAP -->
+                    <div class="space-y-6" *ngIf="activeSection === 'route'">
+                        <div class="flex justify-between items-center bg-[#F7FBF4] border border-teal-600/10 p-4 rounded-2xl">
+                            <h3 class="text-[15px] font-bold text-teal-800">Trekking Route: LangBiang Summit Path</h3>
+                            <div class="flex gap-2">
+                                <button class="px-3 py-1.5 border border-gray-200 bg-white text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm cursor-pointer">+ Tạo route mới</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- SVG Map -->
+                            <div class="lg:col-span-2 bg-[#EAF4E4] border border-teal-600/20 rounded-2xl h-[380px] relative overflow-hidden flex-shrink-0 shadow-inner">
+                                <svg class="absolute inset-0 w-full h-full" viewBox="0 0 600 400" preserveAspectRatio="none">
+                                    <path d="M 80,300 L 180,240 L 260,200 L 380,150 L 500,80" fill="none" stroke="#006414" stroke-width="4" stroke-linecap="round" stroke-dasharray="8,8" />
+                                </svg>
+                                
+                                <div class="absolute left-[80px] top-[300px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                                    <div class="w-4 h-4 bg-green-700 rounded-full border-2 border-white shadow-md"></div>
+                                    <span class="mt-1 px-2 py-0.5 bg-green-700 text-white text-[9px] font-bold rounded shadow">Đón khách</span>
+                                </div>
+                                <div class="absolute left-[180px] top-[240px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                                    <div class="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-md"></div>
+                                    <span class="mt-1 px-2 py-0.5 bg-blue-600 text-white text-[9px] font-bold rounded shadow">Checkpoint 1</span>
+                                </div>
+                                <div class="absolute left-[260px] top-[200px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                                    <div class="w-4 h-4 bg-blue-700 rounded-full border-2 border-white shadow-md"></div>
+                                    <span class="mt-1 px-2 py-0.5 bg-blue-700 text-white text-[9px] font-bold rounded shadow">Nghỉ trưa</span>
+                                </div>
+                                <div class="absolute left-[380px] top-[150px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                                    <div class="w-4 h-4 bg-red-700 rounded-full border-2 border-white shadow-md"></div>
+                                    <span class="mt-1 px-2 py-0.5 bg-red-700 text-white text-[9px] font-bold rounded shadow">Vách dốc</span>
+                                </div>
+                                <div class="absolute left-[500px] top-[80px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                                    <div class="w-4 h-4 bg-orange-500 rounded-full border-2 border-white shadow-md"></div>
+                                    <span class="mt-1 px-2 py-0.5 bg-orange-500 text-white text-[9px] font-bold rounded shadow">Đỉnh 2167m</span>
+                                </div>
+                            </div>
+
+                            <!-- Waypoints List -->
+                            <div class="lg:col-span-1 space-y-4">
+                                <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Waypoints dọc tuyến</span>
+                                <div class="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                                    <div *ngFor="let wp of waypoints" class="p-3 bg-white border border-gray-100 rounded-xl shadow-sm flex items-center justify-between hover:border-teal-500/30 transition-colors">
+                                        <div class="flex items-center gap-2.5">
+                                            <span class="w-2.5 h-2.5 rounded-full" [ngClass]="wp.color"></span>
+                                            <span class="text-xs font-bold text-gray-700">{{ wp.name }}</span>
+                                        </div>
+                                        <span class="text-[9px] font-extrabold bg-gray-50 text-gray-500 border border-gray-100 px-2 py-0.5 rounded-full uppercase tracking-wider">{{ wp.tag }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECTION: CAMPSITE -->
+                    <div class="space-y-6" *ngIf="activeSection === 'campsite'">
+                        <div class="flex justify-between items-center bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                            <div>
+                                <h3 class="text-md font-bold text-gray-800">Sơ đồ và phân bổ Campsite</h3>
+                                <p class="text-xs text-gray-400 mt-0.5">Quản lý các khu lều trại và vị trí đốt lửa trại tập trung</p>
+                            </div>
+                            <button class="px-3 py-1.5 bg-[#006414] text-white text-xs font-semibold rounded-lg hover:bg-green-700 shadow-sm border-none cursor-pointer">
+                                Thêm khu lều mới
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- campsite map visual -->
+                            <div class="lg:col-span-2 bg-gray-50 rounded-2xl h-[380px] relative overflow-hidden border border-gray-200 shadow-inner flex items-center justify-center bg-cover" style="background-image: url('image/1dc8619487310884c9d631d689ece1e7.jpg'); background-blend-mode: multiply; background-color: rgba(0,0,0,0.3);">
+                                <div class="absolute inset-0 backdrop-blur-sm bg-black/10"></div>
+                                <!-- Zones Pins -->
+                                <div *ngFor="let zone of zones" style="top: zone.top; left: zone.left;" class="absolute flex flex-col items-center cursor-pointer transform -translate-x-1/2 -translate-y-1/2 group">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white relative z-10 transition-transform group-hover:scale-110"
+                                         [ngClass]="zone.color === 'green' ? 'bg-green-600' : (zone.color === 'blue' ? 'bg-blue-600' : 'bg-orange-500')">
+                                        <i class="bi bi-tent" *ngIf="zone.icon === 'Tent'"></i>
+                                        <i class="bi bi-fire" *ngIf="zone.icon !== 'Tent'"></i>
+                                    </div>
+                                    <span class="mt-2 px-2.5 py-1 bg-white border border-gray-100 rounded-lg text-[10px] font-extrabold text-gray-700 shadow opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                        Khu {{ zone.id }} ({{ zone.name }})
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- campsite grid cards -->
+                            <div class="lg:col-span-1 space-y-4">
+                                <span class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Trạng thái các khu lều</span>
+                                <div class="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+                                    <div *ngFor="let zone of zones" class="p-4 bg-white border border-gray-100 rounded-xl shadow-sm space-y-2.5">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0"
+                                                 [ngClass]="zone.color === 'green' ? 'bg-green-50 text-green-700' : (zone.color === 'blue' ? 'bg-blue-50 text-blue-700' : 'bg-orange-50 text-orange-700')">
+                                                <i class="bi bi-tent" *ngIf="zone.icon === 'Tent'"></i>
+                                                <i class="bi bi-fire" *ngIf="zone.icon !== 'Tent'"></i>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <h5 class="font-bold text-xs text-gray-800 leading-tight">{{ zone.name }}</h5>
+                                                <p class="text-[10px] text-gray-400 truncate mt-0.5">{{ zone.desc }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between items-center text-[10px]">
+                                            <span class="text-gray-500">Sức chứa: <b class="text-gray-700">{{ zone.capacity }} {{ zone.unit }}</b></span>
+                                            <span class="font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100" *ngIf="!zone.status.includes('Full')">{{ zone.status }}</span>
+                                            <span class="font-extrabold text-red-600 bg-red-50 px-2 py-0.5 rounded-md border border-red-100" *ngIf="zone.status.includes('Full')">{{ zone.status }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- BOOKINGS CONFIRM MODAL -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" *ngIf="showConfirmModal">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+            <div class="p-5 border-b border-gray-100 bg-[#F7FBF4]">
+                <h3 class="text-lg font-extrabold text-gray-800">Duyệt booking cọc</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="bg-[#EAF4E4] border border-[#a8cf8c] p-4 rounded-xl text-xs text-teal-800 space-y-1.5">
+                    <p><strong>Mã:</strong> {{ selectedBooking?.id }}</p>
+                    <p><strong>Khách hàng:</strong> {{ selectedBooking?.customerName }}</p>
+                    <p><strong>Dịch vụ:</strong> {{ selectedBooking?.serviceName }}</p>
+                    <p><strong>Khách:</strong> {{ selectedBooking?.guests }} khách</p>
+                </div>
+                <p class="text-xs text-gray-500 leading-relaxed font-semibold">Xác nhận rằng bạn đã kiểm tra và đồng ý nhận khoản đặt cọc từ du khách này. Booking sẽ được chuyển sang trạng thái "Đã duyệt cọc".</p>
+            </div>
+            <div class="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
+                <button (click)="showConfirmModal = false" class="px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 text-sm hover:bg-gray-50 cursor-pointer bg-white">
+                    Hủy
+                </button>
+                <button (click)="submitConfirm()" class="px-5 py-2.5 bg-[#0E9F6E] hover:bg-[#0c875d] text-white font-extrabold text-sm rounded-xl border-none cursor-pointer">
+                    Xác nhận duyệt cọc
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOOKINGS REJECT MODAL -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" *ngIf="showRejectModal">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+            <div class="p-5 border-b border-gray-100 bg-red-50">
+                <h3 class="text-lg font-extrabold text-red-700">Từ chối đặt dịch vụ</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Lý do từ chối *</label>
+                    <select [(ngModel)]="rejectReason" class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                        <option>Dịch vụ đã hết chỗ</option>
+                        <option>Nhà cung cấp không hoạt động ngày này</option>
+                        <option>Thông tin đặt dịch vụ không chính xác</option>
+                        <option>Yêu cầu cọc không hợp lệ</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Lời nhắn cho khách *</label>
+                    <textarea [(ngModel)]="rejectNotes" rows="3" placeholder="Rất tiếc chúng tôi phải hủy do..." class="p-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-gray-50/50"></textarea>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
+                <button (click)="showRejectModal = false" class="px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 text-sm hover:bg-gray-50 cursor-pointer bg-white">
+                    Hủy
+                </button>
+                <button (click)="submitReject()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm rounded-xl border-none cursor-pointer">
+                    Từ chối đơn
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHANGE REQUEST APPROVE MODAL -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" *ngIf="showApproveModal">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+            <div class="p-5 border-b border-gray-100 bg-[#F7FBF4]">
+                <h3 class="text-lg font-extrabold text-gray-800">Duyệt thay đổi lịch</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="bg-[#EAF4E4] border border-[#a8cf8c] p-4 rounded-xl text-xs text-teal-800 space-y-1.5">
+                    <p><strong>Yêu cầu:</strong> Duyệt thay đổi cho {{ selectedRequest?.customerName }}</p>
+                    <p><strong>Loại:</strong> {{ getRequestTypeLabel(selectedRequest?.type) }}</p>
+                </div>
+                <p class="text-xs text-gray-400 font-semibold leading-relaxed">Đồng ý thay đổi thông tin booking theo đúng như nội dung khách du lịch đã đề xuất gửi đến.</p>
+            </div>
+            <div class="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
+                <button (click)="showApproveModal = false" class="px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 text-sm hover:bg-gray-50 cursor-pointer bg-white">
+                    Hủy
+                </button>
+                <button (click)="submitApproveChange()" class="px-5 py-2.5 bg-[#0E9F6E] hover:bg-[#0c875d] text-white font-extrabold text-sm rounded-xl border-none cursor-pointer">
+                    Phê duyệt thay đổi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHANGE REQUEST REJECT MODAL -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" *ngIf="showRejectChangeModal">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+            <div class="p-5 border-b border-gray-100 bg-red-50">
+                <h3 class="text-lg font-extrabold text-red-700">Từ chối thay đổi</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-gray-500 leading-relaxed font-semibold">Bạn có chắc chắn muốn từ chối yêu cầu thay đổi lịch trình này? Đơn hàng sẽ giữ nguyên thông tin đặt dịch vụ cũ ban đầu.</p>
+            </div>
+            <div class="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
+                <button (click)="showRejectChangeModal = false" class="px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 text-sm hover:bg-gray-50 cursor-pointer bg-white">
+                    Hủy
+                </button>
+                <button (click)="submitRejectChange()" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm rounded-xl border-none cursor-pointer">
+                    Từ chối yêu cầu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHANGE REQUEST PROPOSE MODAL -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" *ngIf="showProposeModal">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+            <div class="p-5 border-b border-gray-100 bg-blue-50">
+                <h3 class="text-lg font-extrabold text-blue-700">Đề xuất phương án thay thế</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Ngày đề xuất mới *</label>
+                    <input type="date" [(ngModel)]="proposeNewDate" class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Phí chênh lệch (Nếu có, VNĐ)</label>
+                    <input type="number" [(ngModel)]="proposePriceDiff" placeholder="Ví dụ: 100000" class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Lý do đề xuất / Lời nhắn *</label>
+                    <textarea [(ngModel)]="proposeNotes" rows="3" placeholder="Ngày bạn chọn đã kín chỗ, chúng tôi đề xuất ngày này..." class="p-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-gray-50/50"></textarea>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
+                <button (click)="showProposeModal = false" class="px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 text-sm hover:bg-gray-50 cursor-pointer bg-white">
+                    Hủy
+                </button>
+                <button (click)="submitProposeChange()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm rounded-xl border-none cursor-pointer">
+                    Gửi đề xuất thay thế
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCHEDULE ADD ACTIVITY TIMELINE MODAL -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" *ngIf="showActivityModal">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+            <div class="p-5 border-b border-gray-100 bg-[#F7FBF4]">
+                <h3 class="text-lg font-extrabold text-gray-800">Thêm hoạt động vào Ngày {{ selectedDayIndex }}</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-500 uppercase">Thời gian *</label>
+                        <input type="time" [(ngModel)]="newActivityTime" class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-500 uppercase">Phân loại *</label>
+                        <select [(ngModel)]="newActivityType" class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                            <option value="transport">Di chuyển</option>
+                            <option value="trekking">Trekking / Đi bộ</option>
+                            <option value="food">Ăn uống / Bữa ăn</option>
+                            <option value="camp">Cắm lều trại</option>
+                            <option value="experience">Trải nghiệm / Điểm checkin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Tên hoạt động *</label>
+                    <input type="text" [(ngModel)]="newActivityTitle" placeholder="Dựng lều, Leo núi..." class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Mô tả chi tiết</label>
+                    <textarea [(ngModel)]="newActivityDesc" rows="2" placeholder="Hướng dẫn viên phổ biến luật..." class="p-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-gray-50/50"></textarea>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
+                <button (click)="showActivityModal = false" class="px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 text-sm hover:bg-gray-50 cursor-pointer bg-white">
+                    Hủy
+                </button>
+                <button (click)="submitAddActivity()" class="px-5 py-2.5 bg-[#006414] hover:bg-green-700 text-white font-extrabold text-sm rounded-xl border-none cursor-pointer" [disabled]="!newActivityTitle">
+                    Lưu hoạt động
+                </button>
+            </div>
+        </div>
+    </div>
+
 </main>

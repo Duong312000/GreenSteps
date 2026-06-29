@@ -8,7 +8,7 @@
     <aside class="sidebar-panel" [style.width.px]="sidebarWidth" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 20px 0 20px 20px;">
         <div style="display: flex; flex-direction: column; gap: 20px; overflow-y: auto; flex-grow: 1; min-height: 0; padding-right: 20px;">
             <div class="sidebar-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
-                <button class="btn-back-tours" routerLink="/tours" style="background: none; border: none; color: var(--text-muted); font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 10px; font-weight: 600;"><i class="bi bi-arrow-left"></i> Quay lại</button>
+                <button class="btn-back-tours" (click)="goBackToList()" style="background: none; border: none; color: var(--text-muted); font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 10px; font-weight: 600;"><i class="bi bi-arrow-left"></i> Quay lại</button>
                 <h3 id="coverItineraryTitle" style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0;">{{ activeItinerary.title }}</h3>
                 <span class="cover-dates" id="coverItineraryDates" style="font-size: 12px; color: var(--text-muted);">{{ activeItinerary.destLabel }} • {{ activeItinerary.days.length }} ngày</span>
             </div>
@@ -43,7 +43,7 @@
                          style="padding: 10px 15px; border-radius: var(--border-radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; gap: 2px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <i class="bi bi-calendar-event"></i>
-                            <span>Ngày {{ day.dayNum }}: {{ day.title }}</span>
+                            <span>{{ day.title }}</span>
                         </div>
                         <span class="sidebar-menu-item-preview" style="font-size: 11px; color: var(--text-muted); font-weight: 400; padding-left: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">
                             {{ getDayPreviewText(day) }}
@@ -103,7 +103,7 @@
         </div>
 
         <div class="active-day-header">
-            <h3 id="activeDayTitle">Ngày {{ activeDayIdx + 1 }}: {{ activeItinerary.days[activeDayIdx]?.title }}</h3>
+            <h3 id="activeDayTitle">{{ activeItinerary.days[activeDayIdx]?.title }}</h3>
             
             <div class="place-search-inline">
                 <input type="text" [(ngModel)]="customPlaceTitle" placeholder="Thêm địa điểm tùy chỉnh..." (keypress)="$event.key === 'Enter' && addCustomPlaceToActiveDay()">
@@ -163,7 +163,7 @@
             <h3>Gợi ý Dịch vụ Xanh địa phương</h3>
             <p class="subtitle">Được đề xuất dựa trên điểm đến và bộ lọc phát thải carbon cực thấp.</p>
             
-            <div class="suggestions-grid" id="suggestionsGrid">
+            <div class="local-suggestions-grid" id="suggestionsGrid">
                 <div class="suggestion-card" *ngFor="let rec of samplePlacesRecs[activeItinerary.dest]">
                     <div class="sugg-img-container">
                         <img class="sugg-img" [src]="rec.img" [alt]="rec.name">
@@ -304,6 +304,132 @@
             </div>
         </div>
     </aside>
+</div>
+
+<!-- SAVED PLANS LIST VIEW (When in List Mode) -->
+<div class="max-w-[1200px] mx-auto px-6 py-12 mt-20" *ngIf="isListMode">
+    <!-- Header Row -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-6 border-b border-[#184A37]/10">
+        <div>
+            <h1 class="text-3xl font-extrabold text-[#184A37] tracking-tight flex items-center gap-3">
+                <i class="bi bi-journal-richtext text-[#0E9F6E]"></i>
+                Kế hoạch Hành trình AI
+            </h1>
+            <p class="text-sm text-[#184A37]/60 mt-2 font-medium">Quản lý và tùy chỉnh các lịch trình du lịch xanh cá nhân hóa của bạn</p>
+        </div>
+        <button (click)="openCreateModal()" class="h-12 px-6 rounded-xl bg-[#0E9F6E] hover:bg-[#0F6B4C] text-white font-bold text-sm shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 border-0 cursor-pointer">
+            <i class="bi bi-plus-lg"></i>
+            Tạo Lịch Trình Mới
+        </button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="flex flex-col items-center justify-center py-20" *ngIf="isLoadingList">
+        <div class="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full text-[#0E9F6E] mb-4" role="status" style="border-right-color: transparent;"></div>
+        <span class="text-sm font-semibold text-[#184A37]/70">Đang tải danh sách lịch trình...</span>
+    </div>
+
+    <!-- Empty State -->
+    <div class="bg-white/80 backdrop-blur-md rounded-3xl border border-[#184A37]/10 p-12 text-center shadow-sm" *ngIf="!isLoadingList && savedItineraries.length === 0">
+        <div class="w-16 h-16 bg-[#E8F5E9] rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="bi bi-calendar-x text-3xl text-[#0E9F6E]"></i>
+        </div>
+        <h3 class="text-xl font-bold text-[#184A37]">Chưa có lịch trình nào</h3>
+        <p class="text-sm text-[#184A37]/60 mt-2 max-w-md mx-auto">Bạn chưa lưu lịch trình tự thiết kế nào trên GreenSteps. Hãy bắt đầu hành trình xanh đầu tiên của mình ngay bây giờ!</p>
+        <button (click)="openCreateModal()" class="mt-6 h-11 px-6 rounded-xl bg-[#0E9F6E] hover:bg-[#0F6B4C] text-white font-bold text-sm shadow-md transition-all duration-300 border-0 cursor-pointer">Bắt đầu thiết kế</button>
+    </div>
+
+    <!-- List of Saved Itineraries Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="!isLoadingList && savedItineraries.length > 0">
+        <div *ngFor="let iti of savedItineraries" (click)="openItinerary(iti.id)" class="group bg-white rounded-2xl border border-[#184A37]/10 overflow-hidden shadow-sm hover:shadow-md hover:border-[#0E9F6E]/40 transition-all duration-300 cursor-pointer flex flex-col justify-between">
+            <div>
+                <!-- Cover Image Area -->
+                <div class="relative h-44 w-full overflow-hidden bg-gray-100">
+                    <img [src]="iti.destination === 'Đà Lạt' ? 'image/cb4fbf769d60d911e13c255f7fb39dcc.jpg' : (iti.destination === 'Phú Yên' ? 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg' : 'image/Viet Nam.png')" alt="Destination cover" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                        <div>
+                            <span class="text-xs font-bold text-white/80 uppercase tracking-wider">{{ iti.destination }}</span>
+                            <h3 class="text-lg font-bold text-white mt-0.5 line-clamp-1">{{ iti.name }}</h3>
+                        </div>
+                    </div>
+                    <!-- Badge days -->
+                    <span class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm border border-[#184A37]/10 px-3 py-1 rounded-full text-xs font-bold text-[#184A37]">{{ iti.days }} ngày</span>
+                </div>
+
+                <!-- Info Metrics Area -->
+                <div class="p-5 space-y-4">
+                    <div class="grid grid-cols-2 gap-4 border-b border-gray-100 pb-4">
+                        <div>
+                            <span class="text-[10px] font-bold text-[#184A37]/50 uppercase tracking-wider block">Phát thải tích lũy</span>
+                            <span class="text-sm font-bold text-[#0E9F6E] flex items-center gap-1 mt-1">
+                                <i class="bi bi-leaf-fill"></i>
+                                {{ iti.totalCarbon }} kg CO₂
+                            </span>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold text-[#184A37]/50 uppercase tracking-wider block">Tổng chi phí</span>
+                            <span class="text-sm font-bold text-[#184A37] flex items-center gap-1 mt-1">
+                                <i class="bi bi-cash"></i>
+                                {{ iti.totalCost === 0 ? 'Miễn phí' : (iti.totalCost | number:'1.0-0':'vi-VN') + 'đ' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="px-5 pb-5 pt-1 flex items-center justify-between border-t border-gray-50 bg-gray-50/50">
+                <span class="text-[11px] font-semibold text-[#184A37]/50 flex items-center gap-1">
+                    <i class="bi bi-clock-history"></i> ID: {{ iti.id.substring(4, 12) }}
+                </span>
+                <div class="flex items-center gap-3">
+                    <button (click)="deleteSavedItinerary(iti.id, $event)" class="h-9 w-9 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-colors border-0 cursor-pointer" title="Xóa lịch trình">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                    <button (click)="openItinerary(iti.id)" class="h-9 px-4 rounded-lg bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#1B5E20] text-xs font-bold transition-all border-0 cursor-pointer">
+                        Mở biên tập
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- IN-PAGE CREATE MODAL FOR LIST MODE -->
+<div class="modal-overlay" [class.active]="isCreateModalOpen" style="z-index: 1000; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background-color: rgba(0, 0, 0, 0.45);" *ngIf="isListMode">
+    <div class="custom-modal-card bg-white p-8 rounded-2xl max-w-md w-full shadow-2xl relative" (click)="$event.stopPropagation()">
+        <div class="modal-header flex justify-between items-center border-b border-[#184A37]/10 pb-4 mb-6">
+            <h3 class="text-xl font-bold text-[#184A37] flex items-center gap-2 m-0">
+                <i class="bi bi-robot text-[#0E9F6E]"></i>
+                Thiết lập Hành Trình Mới
+            </h3>
+            <button class="text-2xl text-[#184A37]/50 hover:text-[#184A37] font-semibold bg-transparent border-0 focus:outline-none cursor-pointer" (click)="closeCreateModal()">&times;</button>
+        </div>
+        <form (submit)="createNewItinerary($event)" class="space-y-4 m-0">
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-[#184A37] mb-2 text-left" for="modalListDest">Điểm đến mong muốn</label>
+                <select id="modalListDest" [(ngModel)]="modalDest" name="modalDest" class="w-full h-11 px-3 rounded-xl border border-[#184A37]/20 focus:outline-none focus:border-[#0E9F6E] bg-gray-50 text-[#184A37] text-sm">
+                    <option value="Đà Lạt">Đà Lạt (Du lịch xanh rừng thông)</option>
+                    <option value="Phú Yên">Phú Yên (Khám phá Gành Đá Đĩa)</option>
+                    <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An (Di sản Phố Cổ)</option>
+                </select>
+            </div>
+            <div class="mb-5">
+                <label class="block text-sm font-semibold text-[#184A37] mb-2 text-left" for="modalListDays">Số ngày khám phá</label>
+                <select id="modalListDays" [(ngModel)]="modalDays" name="modalDays" class="w-full h-11 px-3 rounded-xl border border-[#184A37]/20 focus:outline-none focus:border-[#0E9F6E] bg-gray-50 text-[#184A37] text-sm">
+                    <option [value]="2">2 ngày 1 đêm</option>
+                    <option [value]="3">3 ngày 2 đêm</option>
+                    <option [value]="4">4 ngày 3 đêm</option>
+                </select>
+            </div>
+            <div class="pt-2 text-center">
+                <button type="submit" class="w-full h-12 bg-[#0E9F6E] hover:bg-[#0F6B4C] text-white font-bold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 border-0 cursor-pointer">
+                    <i class="bi bi-magic"></i>
+                    Bắt đầu Thiết kế AI
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- CHECKOUT / WALLET MODAL -->

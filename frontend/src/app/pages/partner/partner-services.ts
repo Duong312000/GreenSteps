@@ -25,11 +25,17 @@ export class PartnerServicesComponent implements OnInit {
   public serviceCarbon: number | null = null;
   public serviceDest: string = 'Đà Lạt';
 
+  // Filters State
+  public searchQuery: string = '';
+  public selectedTypes: string[] = [];
+  public selectedLocations: string[] = [];
+  public selectedStatuses: string[] = [];
+
   constructor(
     private apiService: ApiService,
     private authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    public cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -49,6 +55,84 @@ export class PartnerServicesComponent implements OnInit {
     const providerId = this.currentUser.id || this.currentUser._id || '';
     this.myServices = await this.apiService.getMyServices(providerId);
     this.cdr.detectChanges();
+  }
+
+  // Filter actions
+  public toggleTypeFilter(type: string) {
+    if (this.selectedTypes.includes(type)) {
+      this.selectedTypes = this.selectedTypes.filter(t => t !== type);
+    } else {
+      this.selectedTypes.push(type);
+    }
+    this.cdr.detectChanges();
+  }
+
+  public toggleLocationFilter(loc: string) {
+    if (this.selectedLocations.includes(loc)) {
+      this.selectedLocations = this.selectedLocations.filter(l => l !== loc);
+    } else {
+      this.selectedLocations.push(loc);
+    }
+    this.cdr.detectChanges();
+  }
+
+  public toggleStatusFilter(status: string) {
+    if (this.selectedStatuses.includes(status)) {
+      this.selectedStatuses = this.selectedStatuses.filter(s => s !== status);
+    } else {
+      this.selectedStatuses.push(status);
+    }
+    this.cdr.detectChanges();
+  }
+
+  public clearAllFilters() {
+    this.selectedTypes = [];
+    this.selectedLocations = [];
+    this.selectedStatuses = [];
+    this.searchQuery = '';
+    this.cdr.detectChanges();
+  }
+
+  public get filteredServices(): Service[] {
+    return this.myServices.filter(s => {
+      const matchSearch = s.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+      const matchType = this.selectedTypes.length === 0 || this.selectedTypes.includes(s.type);
+      const matchLocation = this.selectedLocations.length === 0 || this.selectedLocations.includes(s.destination);
+      
+      // Default all items to active if status is missing
+      const status = s.status || 'active';
+      const matchStatus = this.selectedStatuses.length === 0 || this.selectedStatuses.includes(status);
+      
+      return matchSearch && matchType && matchLocation && matchStatus;
+    });
+  }
+
+  // Count calculations
+  public get totalCount(): number {
+    return this.myServices.length;
+  }
+
+  public get activeCount(): number {
+    return this.myServices.filter(s => !s.status || s.status === 'active').length;
+  }
+
+  public get pendingCount(): number {
+    return this.myServices.filter(s => s.status === 'pending').length;
+  }
+
+  public get rejectedCount(): number {
+    return this.myServices.filter(s => s.status === 'rejected' || s.status === 'hidden').length;
+  }
+
+  public getServiceImage(srv: Service): string {
+    if (srv.type === 'stay') {
+      return 'image/1dc8619487310884c9d631d689ece1e7.jpg';
+    } else if (srv.type === 'food') {
+      return 'image/41a413334d9e3753b26c50f3a3921309.jpg';
+    } else if (srv.type === 'transport') {
+      return 'image/greensteps_logo.png';
+    }
+    return 'image/Gemini_Generated_Image_szp1ouszp1ouszp1.png';
   }
 
   public openAddModal() {

@@ -20,6 +20,12 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public activeDayIdx: number = 0;
   public walletBalance: number = 5000000;
   public customPlaceTitle: string = '';
+  public isListMode: boolean = false;
+  public savedItineraries: any[] = [];
+  public isLoadingList: boolean = false;
+  public isCreateModalOpen: boolean = false;
+  public modalDest: string = 'Đà Lạt';
+  public modalDays: number = 3;
 
   // Maps properties
   private map: any = null;
@@ -118,10 +124,13 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
+        this.isListMode = false;
         this.loadItineraryToEditor(id);
+        localStorage.setItem('greensteps_working_itinerary_id', id);
       } else {
-        // Fallback to Dalat 1 or new
-        this.loadItineraryToEditor('preset_dl_1');
+        this.isListMode = true;
+        this.activeItinerary = null;
+        this.loadSavedItinerariesList();
       }
     });
   }
@@ -131,6 +140,109 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       this.map.remove();
       this.map = null;
     }
+  }
+
+  public async loadSavedItinerariesList() {
+    this.isLoadingList = true;
+    this.cdr.detectChanges();
+    try {
+      const user = this.authService.getCurrentUser();
+      const userId = user ? (user.id || user._id || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d') : '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d';
+      this.savedItineraries = await this.apiService.getItineraries(userId);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      this.isLoadingList = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  public async deleteSavedItinerary(id: string, event: Event) {
+    event.stopPropagation();
+    if (confirm('Bạn có chắc chắn muốn xóa lịch trình này?')) {
+      const success = await this.apiService.deleteItinerary(id);
+      if (success) {
+        if (localStorage.getItem('greensteps_working_itinerary_id') === id) {
+          localStorage.removeItem('greensteps_working_itinerary_id');
+        }
+        alert('Đã xóa lịch trình thành công!');
+        this.loadSavedItinerariesList();
+      } else {
+        alert('Xóa lịch trình thất bại!');
+      }
+    }
+  }
+
+  public openItinerary(id: string) {
+    this.router.navigate(['/schedule', id]);
+  }
+
+  public openCreateModal() {
+    this.isCreateModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  public closeCreateModal() {
+    this.isCreateModalOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  public async createNewItinerary(event: Event) {
+    event.preventDefault();
+    this.isCreateModalOpen = false;
+    
+    const user = this.authService.getCurrentUser();
+    const userId = user ? (user.id || user._id || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d') : '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d';
+
+    const presets = await this.apiService.getPresetTours();
+    const matchedPreset = presets.find(t => 
+      t.destination.toLowerCase().includes(this.modalDest.toLowerCase()) || 
+      this.modalDest.toLowerCase().includes(t.destination.toLowerCase())
+    );
+
+    let daysData: any[][] = [];
+    let totalCost = 0;
+    let totalCarbon = 0;
+
+    if (matchedPreset) {
+      const rawData = matchedPreset.data || [];
+      for (let i = 0; i < Number(this.modalDays); i++) {
+        const dayActivities = rawData[i] || [];
+        daysData.push(JSON.parse(JSON.stringify(dayActivities)));
+      }
+      daysData.forEach(day => {
+        day.forEach(act => {
+          totalCost += act.cost || 0;
+          totalCarbon += act.carbon || 0;
+        });
+      });
+    } else {
+      daysData = Array.from({ length: Number(this.modalDays) }, () => []);
+    }
+
+    const newIti = {
+      id: 'iti_' + Date.now(),
+      name: `Lịch trình tự thiết kế ${this.modalDest}`,
+      user_id: userId,
+      destination: this.modalDest,
+      days: Number(this.modalDays),
+      totalCost: totalCost,
+      totalCarbon: totalCarbon,
+      daysData: daysData
+    };
+
+    const success = await this.apiService.saveItinerary(newIti);
+    if (success) {
+      localStorage.setItem('greensteps_working_itinerary_id', newIti.id);
+      this.router.navigate(['/schedule', newIti.id]);
+    } else {
+      alert('Không thể khởi tạo lịch trình mới!');
+    }
+  }
+
+  public goBackToList() {
+    localStorage.removeItem('greensteps_working_itinerary_id');
+    this.router.navigate(['/schedule']);
   }
 
   private mapDestToSlug(destName: string): string {
@@ -167,11 +279,12 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     const destLabel = apiIti.destination || this.mapSlugToDestLabel(destSlug);
     
     const days: any[] = [];
-    const daysCount = apiIti.days || (apiIti.daysData ? apiIti.daysData.length : 1);
+    const rawDaysData = apiIti.daysData || apiIti.days_data || apiIti.data || [];
+    const daysCount = apiIti.days || rawDaysData.length || 1;
     
     for (let i = 0; i < daysCount; i++) {
       const activities: any[] = [];
-      const rawActivities = (apiIti.daysData && apiIti.daysData[i]) ? apiIti.daysData[i] : [];
+      const rawActivities = rawDaysData[i] ? rawDaysData[i] : [];
       
       rawActivities.forEach((act: any) => {
         let lat = act.lat;

@@ -70,7 +70,7 @@ export interface Service {
   cost: number;
   carbon: number;
   icon?: string;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'pending' | 'rejected' | 'hidden';
   rating?: number;
   bookings_count?: number;
   bookingsCount?: number;

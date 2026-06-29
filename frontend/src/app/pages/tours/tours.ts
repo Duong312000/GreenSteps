@@ -61,6 +61,9 @@ export class ToursComponent implements OnInit {
         else if (style === 'adventure') this.filterType = 'Tiết kiệm';
         else if (style === 'relax') this.filterType = 'Nghỉ dưỡng';
       }
+      if (params['create'] === 'true') {
+        this.openCreateItineraryModal();
+      }
 
       // Check session storage fallback from home page
       const sessionDest = sessionStorage.getItem('tours_search_dest');
@@ -123,15 +126,44 @@ export class ToursComponent implements OnInit {
     const user = this.authService.getCurrentUser();
     const userId = user ? (user.id || user._id || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d') : '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d';
 
+    // Synchronize data: Automatically query and clone preset tour activities as starter template
+    const presets = await this.apiService.getPresetTours();
+    const matchedPreset = presets.find(t => 
+      t.destination.toLowerCase().includes(this.modalDest.toLowerCase()) || 
+      this.modalDest.toLowerCase().includes(t.destination.toLowerCase())
+    );
+
+    let daysData: any[][] = [];
+    let totalCost = 0;
+    let totalCarbon = 0;
+
+    if (matchedPreset) {
+      // Clone matching preset activities up to the requested days
+      const rawData = matchedPreset.data || [];
+      for (let i = 0; i < Number(this.modalDays); i++) {
+        const dayActivities = rawData[i] || [];
+        daysData.push(JSON.parse(JSON.stringify(dayActivities)));
+      }
+      // Calculate initial cost and carbon metrics
+      daysData.forEach(day => {
+        day.forEach(act => {
+          totalCost += act.cost || 0;
+          totalCarbon += act.carbon || 0;
+        });
+      });
+    } else {
+      daysData = Array.from({ length: Number(this.modalDays) }, () => []);
+    }
+
     const newIti: Itinerary = {
       id: 'iti_' + Date.now(),
       name: `Lịch trình tự thiết kế ${this.modalDest}`,
       user_id: userId,
       destination: this.modalDest,
       days: Number(this.modalDays),
-      totalCost: 0,
-      totalCarbon: 0,
-      daysData: Array.from({ length: Number(this.modalDays) }, () => [])
+      totalCost: totalCost,
+      totalCarbon: totalCarbon,
+      daysData: daysData
     };
 
     await this.apiService.saveItinerary(newIti);

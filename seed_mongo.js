@@ -1,21 +1,29 @@
-require('dotenv').config();
 const mongoose = require('mongoose');
+const dns = require('dns');
+require('dotenv').config();
 
-// Connection string
-let dbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/greensteps';
-if (dbUri.includes('<db_username>') || dbUri.includes('<db_password>')) {
-  console.warn('WARNING: MONGODB_URI contains placeholders. Using local MongoDB for seeding.');
-  dbUri = 'mongodb://localhost:27017/greensteps';
+const dbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/greensteps';
+
+if (dbUri.startsWith('mongodb+srv://')) {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
 }
 
-console.log(`Connecting to database at: ${dbUri}`);
+// ==========================================================================
+// NEW 24 RELATIONAL MONGOOSE SCHEMAS & MODELS WITH COMPATIBLE "id" FIELD
+// ==========================================================================
 
-// ==========================================================================
-// MODELS (Matching server.js)
-// ==========================================================================
+const BadgeSchema = new mongoose.Schema({
+  _id: { type: String }, // Badges_name PK
+  id: String,
+  badges_description: String,
+  foruserortour: { type: Number, required: true }
+}, { timestamps: true });
+const Badge = mongoose.model('Badge', BadgeSchema);
 
 const UserSchema = new mongoose.Schema({
-  _id: String,
+  _id: { type: String }, // ID_User PK (UG...)
+  id: String,
+  role: { type: String, enum: ['traveler', 'provider'], required: true },
   username: { type: String, unique: true, required: true },
   password_hash: { type: String, required: true },
   fullname: { type: String, required: true },
@@ -24,748 +32,679 @@ const UserSchema = new mongoose.Schema({
   dob: String,
   gender: String,
   address: String,
-  role: { type: String, enum: ['traveler', 'provider'], required: true },
-  company_name: String
+  job: String
 }, { timestamps: true });
-
 const User = mongoose.model('User', UserSchema);
 
+const BadgeUserSchema = new mongoose.Schema({
+  badge_name: { type: String, ref: 'Badge', required: true },
+  user_id: { type: String, ref: 'User', required: true }
+}, { timestamps: true });
+BadgeUserSchema.index({ badge_name: 1, user_id: 1 }, { unique: true });
+const BadgeUser = mongoose.model('BadgeUser', BadgeUserSchema);
+
 const WalletSchema = new mongoose.Schema({
-  _id: String,
+  _id: { type: String }, // ID_EW PK (EW...)
+  id: String,
   user_id: { type: String, ref: 'User', unique: true, required: true },
   balance: { type: Number, default: 0.00, min: 0 },
   registered: { type: Boolean, default: false }
 }, { timestamps: true });
-
 const Wallet = mongoose.model('Wallet', WalletSchema);
 
 const WalletTransactionSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
+  _id: { type: String }, // ID_WT PK (GD...)
+  id: String,
   wallet_id: { type: String, ref: 'Wallet', required: true },
   type: { type: String, enum: ['deposit', 'payment', 'refund'], required: true },
   description: { type: String, required: true },
   amount: { type: Number, required: true },
   status: { type: String, enum: ['success', 'pending', 'failed'], default: 'success' }
 }, { timestamps: true });
-
 const WalletTransaction = mongoose.model('WalletTransaction', WalletTransactionSchema);
 
-const TourSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  title: { type: String, required: true },
+const VenderSchema = new mongoose.Schema({
+  _id: { type: String }, // role PK ('1')
+  id: String,
+  user_id: { type: String, ref: 'User', unique: true, required: true },
+  registration_date: { type: String, required: true } // DD/MM/YYYY
+}, { timestamps: true });
+const Vender = mongoose.model('Vender', VenderSchema);
+
+const VenderContractSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_VC PK (VC...)
+  id: String,
+  user_id: { type: String, ref: 'User', required: true },
+  name_contract: { type: String, required: true },
+  text: { type: String, required: true }
+}, { timestamps: true });
+const VenderContract = mongoose.model('VenderContract', VenderContractSchema);
+
+const RevenueSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_Revenue PK (REV...)
+  id: String,
+  user_id: { type: String, ref: 'User', required: true },
+  monthyear: { type: String, required: true }, // MM/YYYY
+  total_booking: { type: Number, default: 0 },
+  total_revenue: { type: Number, default: 0.00 },
+  service_fee: { type: Number, default: 0.00 },
+  final_profit: { type: Number, default: 0.00 }
+}, { timestamps: true });
+const Revenue = mongoose.model('Revenue', RevenueSchema);
+
+const ContractSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_contract PK (CON...)
+  id: String,
+  name_contract: { type: String, required: true },
+  text: { type: String, required: true },
+  contract_status: { type: String, required: true } // active/inactive
+}, { timestamps: true });
+const Contract = mongoose.model('Contract', ContractSchema);
+
+const ProviderSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_provider PK (PROV...)
+  id: String,
+  contract_id: { type: String, ref: 'Contract', required: true },
+  name_provider: { type: String, required: true },
+  field: String,
   destination: { type: String, required: true },
-  days: { type: Number, required: true, min: 1 },
-  cost: { type: Number, required: true, min: 0 },
-  old_cost: Number,
-  carbon: { type: Number, required: true, min: 0 },
   image_url: String,
-  description: String,
-  rating: { type: Number, default: 5.0, min: 1.0, max: 5.0 },
-  votes_count: { type: Number, default: 0 },
-  badges: [String],
-  data: [[{
-    time: String,
-    name: String,
-    cost: Number,
-    carbon: Number,
-    icon: String,
-    type: { type: String, enum: ['lodging', 'dining', 'transport', 'attraction'] },
-    lat: Number,
-    lng: Number,
-    id: String
-  }]]
+  provider_status: { type: String, required: true }
 }, { timestamps: true });
+const Provider = mongoose.model('Provider', ProviderSchema);
 
-const Tour = mongoose.model('Tour', TourSchema);
-
-const ItinerarySchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  name: { type: String, required: true },
-  user_id: { type: String, required: true },
+const ScheduleSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_Schedule PK (SCH... or iti...)
+  id: String,
+  tour_name: { type: String, required: true },
   destination: { type: String, required: true },
   days: { type: Number, required: true, min: 1 },
-  total_cost: { type: Number, default: 0 },
-  total_carbon: { type: Number, default: 0 },
-  days_data: [[{
-    time: String,
-    name: String,
-    cost: Number,
-    carbon: Number,
-    icon: String,
-    type: { type: String, enum: ['lodging', 'dining', 'transport', 'attraction'] },
-    lat: Number,
-    lng: Number,
-    id: String
-  }]]
+  discount: { type: Number, default: 0.00 },
+  carbon: { type: Number, required: true, default: 0.00 },
+  image_url: String,
+  tour_description: String,
+  votes_count: { type: Number, default: 0 }
 }, { timestamps: true });
+const Schedule = mongoose.model('Schedule', ScheduleSchema);
 
-const Itinerary = mongoose.model('Itinerary', ItinerarySchema);
+const BadgeScheduleSchema = new mongoose.Schema({
+  badge_name: { type: String, ref: 'Badge', required: true },
+  schedule_id: { type: String, ref: 'Schedule', required: true }
+}, { timestamps: true });
+BadgeScheduleSchema.index({ badge_name: 1, schedule_id: 1 }, { unique: true });
+const BadgeSchedule = mongoose.model('BadgeSchedule', BadgeScheduleSchema);
 
-const ServiceSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  provider_id: { type: String, required: true },
-  name: { type: String, required: true },
-  type: { type: String, required: true },
+const ScheduleSampleSchema = new mongoose.Schema({
+  _id: { type: String, ref: 'Schedule' }, // ID_ScheduleS PK references Schedule
+  id: String,
+  provider_id: { type: String, ref: 'Provider', required: true },
+  cost: { type: Number, required: true },
+  old_cost: Number,
+  rating: { type: Number, default: 5.0 },
+  votes_count: { type: Number, default: 0 }
+}, { timestamps: true });
+const ScheduleSample = mongoose.model('ScheduleSample', ScheduleSampleSchema);
+
+const ScheduleCustomSchema = new mongoose.Schema({
+  _id: { type: String, ref: 'Schedule' }, // ID_ScheduleC PK references Schedule
+  id: String,
+  user_id: { type: String, ref: 'User', required: true },
+  total_cost: { type: Number, default: 0.00 }
+}, { timestamps: true });
+const ScheduleCustom = mongoose.model('ScheduleCustom', ScheduleCustomSchema);
+
+const UserScheduleSchema = new mongoose.Schema({
+  user_id: { type: String, ref: 'User', required: true },
+  schedule_id: { type: String, ref: 'Schedule', required: true }
+}, { timestamps: true });
+UserScheduleSchema.index({ user_id: 1, schedule_id: 1 }, { unique: true });
+const UserSchedule = mongoose.model('UserSchedule', UserScheduleSchema);
+
+const GreenServiceSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_GS PK
+  id: String,
+  vender_id: { type: String, ref: 'Vender', required: true },
+  name_service: { type: String, required: true },
+  type: { type: String, required: true }, // stay, food, transport, attraction
+  cost: { type: Number, required: true },
   destination: { type: String, required: true },
-  cost: { type: Number, required: true, min: 0 },
-  carbon: { type: Number, default: 0 },
-  icon: { type: String, default: 'bi-gear-fill' },
-  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  carbon: { type: Number, default: 0.00 },
+  image_url: String,
   rating: { type: Number, default: 5.0 },
   bookings_count: { type: Number, default: 0 },
-  badges: [String]
+  current_data: { type: mongoose.Schema.Types.Mixed }
 }, { timestamps: true });
+const GreenService = mongoose.model('GreenService', GreenServiceSchema);
 
-const Service = mongoose.model('Service', ServiceSchema);
+const BadgeServiceSchema = new mongoose.Schema({
+  badge_name: { type: String, ref: 'Badge', required: true },
+  service_id: { type: String, ref: 'GreenService', required: true }
+}, { timestamps: true });
+BadgeServiceSchema.index({ badge_name: 1, service_id: 1 }, { unique: true });
+const BadgeService = mongoose.model('BadgeService', BadgeServiceSchema);
 
-const BookingSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  customer_id: { type: String },
-  customer_name: { type: String, required: true },
-  service_id: { type: String, required: true },
-  service_name: { type: String, required: true },
+const ServiceBookingSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_SB PK
+  id: String,
+  user_id: { type: String, ref: 'User', required: true },
+  service_id: { type: String, ref: 'GreenService', required: true },
+  fullname: { type: String, required: true },
+  name_service: { type: String, required: true },
   booking_date: { type: String, required: true },
   guests: { type: Number, required: true, min: 1 },
   value: { type: Number, required: true },
-  status: { type: String, enum: ['pending', 'deposit', 'completed', 'rejected'], default: 'pending' }
+  status: { type: String, required: true }, // pending, deposit, completed, rejected
+  votes_count: { type: Number, default: 0 }
 }, { timestamps: true });
+const ServiceBooking = mongoose.model('ServiceBooking', ServiceBookingSchema);
 
-const Booking = mongoose.model('Booking', BookingSchema);
+const ScheduleActivitySchema = new mongoose.Schema({
+  _id: { type: String }, // ID_Activity PK
+  id: String,
+  service_id: { type: String, ref: 'GreenService' }, // optional
+  schedule_id: { type: String, ref: 'Schedule', required: true },
+  day_number: { type: Number, required: true },
+  time: { type: String, required: true },
+  activity_name: { type: String, required: true },
+  activity_cost: { type: Number, default: 0.00 },
+  carbon: { type: Number, default: 0.00 },
+  icon: String,
+  type: String,
+  coordinates: String // "lat, lng"
+}, { timestamps: true });
+const ScheduleActivity = mongoose.model('ScheduleActivity', ScheduleActivitySchema);
+
+const AdCampaignSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_ADC PK
+  id: String,
+  user_id: { type: String, ref: 'User', required: true },
+  service_id: { type: String, ref: 'GreenService', required: true },
+  campaigns_type: { type: String, required: true },
+  campaigns_name: { type: String, required: true },
+  campaigns_cost: { type: Number, required: true },
+  duration_days: { type: Number, required: true },
+  start_date: { type: String, required: true },
+  end_date: { type: String, required: true },
+  status: { type: String, required: true }
+}, { timestamps: true });
+const AdCampaign = mongoose.model('AdCampaign', AdCampaignSchema);
 
 const CommunityPostSchema = new mongoose.Schema({
-  id: { type: String, required: true, unique: true },
-  author_id: { type: String, ref: 'User', required: true },
-  rating: { type: Number, default: 5, min: 1, max: 5 },
+  _id: { type: String }, // ID_CUP PK
+  id: String,
+  user_id: { type: String, ref: 'User', required: true },
+  rating: { type: Number, required: true, min: 1, max: 5 },
   text: { type: String, required: true },
-  trip_name: String,
+  tour_name: String,
   destination: String,
+  image_url: String,
+  tour_description: String,
   days: Number,
   likes_count: { type: Number, default: 0 },
   comments_count: { type: Number, default: 0 },
-  image_url: String
+  current_data: { type: mongoose.Schema.Types.Mixed }
 }, { timestamps: true });
-
 const CommunityPost = mongoose.model('CommunityPost', CommunityPostSchema);
 
-// ==========================================================================
-// SEED DATA
-// ==========================================================================
+const CommentPostSchema = new mongoose.Schema({
+  _id: { type: String }, // ID_CEP PK
+  id: String,
+  user_id: { type: String, ref: 'User' },
+  post_id: { type: String, ref: 'CommunityPost', required: true }, // maps to ID_CUP
+  parent_comment_id: { type: String, ref: 'CommentPost' }, // optional
+  rating: Number,
+  text: { type: String, required: true },
+  image_url: String
+}, { timestamps: true });
+const CommentPost = mongoose.model('CommentPost', CommentPostSchema);
 
-const users = [
-  {
-    _id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
-    username: 'traveler',
-    password_hash: '123456',
-    fullname: 'Nguyễn Minh Anh',
-    email: 'minhanh.greentravel@gmail.com',
-    phone: '0901 234 567',
-    dob: '12/08/1996',
-    gender: 'Nữ',
-    address: 'Quận 1, TP. Hồ Chí Minh',
-    role: 'traveler'
-  },
-  {
-    _id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    username: 'partner',
-    password_hash: '123456',
-    fullname: 'Trần Văn A',
-    email: 'partner.greentravel@gmail.com',
-    phone: '0902 987 654',
-    dob: '15/05/1988',
-    gender: 'Nam',
-    address: 'Quận 3, TP. Hồ Chí Minh',
-    role: 'provider',
-    company_name: 'Green Valley Travel'
-  }
-];
+const CPSSSchema = new mongoose.Schema({
+  comment_id: { type: String, ref: 'CommentPost', required: true },
+  schedule_sample_id: { type: String, ref: 'ScheduleSample', required: true }
+}, { timestamps: true });
+CPSSSchema.index({ comment_id: 1, schedule_sample_id: 1 }, { unique: true });
+const CPSS = mongoose.model('CPSS', CPSSSchema);
 
-const wallets = [
-  {
-    _id: 'w_traveler_1',
-    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
-    balance: 1100000.00,
-    registered: true
-  },
-  {
-    _id: 'w_provider_1',
-    user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    balance: 0.00,
-    registered: false
-  }
-];
+const CPGSSchema = new mongoose.Schema({
+  comment_id: { type: String, ref: 'CommentPost', required: true },
+  service_id: { type: String, ref: 'GreenService', required: true }
+}, { timestamps: true });
+CPGSSchema.index({ comment_id: 1, service_id: 1 }, { unique: true });
+const CPGS = mongoose.model('CPGS', CPGSSchema);
 
-const transactions = [
-  {
-    id: 'GD-2026060101',
-    wallet_id: 'w_traveler_1',
-    type: 'deposit',
-    description: 'Nạp tiền ví du lịch',
-    amount: 2000000.00,
-    status: 'success'
-  },
-  {
-    id: 'GD-2026060202',
-    wallet_id: 'w_traveler_1',
-    type: 'payment',
-    description: 'Đặt cọc Tour Phú Yên',
-    amount: -1200000.00,
-    status: 'success'
-  },
-  {
-    id: 'GD-2026060403',
-    wallet_id: 'w_traveler_1',
-    type: 'refund',
-    description: 'Hoàn tiền dịch vụ xe điện',
-    amount: 300000.00,
-    status: 'success'
-  }
-];
-
-const services = [
-  {
-    id: 'ser_1',
-    provider_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    name: 'Homestay Xanh Đà Lạt',
-    type: 'stay',
-    destination: 'Đà Lạt',
-    cost: 850000.00,
-    carbon: 2.5,
-    icon: 'bi-house-door-fill',
-    status: 'active',
-    rating: 4.8,
-    bookings_count: 42,
-    badges: ['green', 'budget']
-  },
-  {
-    id: 'ser_2',
-    provider_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    name: 'Cafe Săn Mây Đà Lạt',
-    type: 'food',
-    destination: 'Đà Lạt',
-    cost: 80000.00,
-    carbon: 0.5,
-    icon: 'bi-cup-hot-fill',
-    status: 'active',
-    rating: 4.7,
-    bookings_count: 25,
-    badges: ['green']
-  },
-  {
-    id: 'ser_3',
-    provider_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-    name: 'Tour Phú Yên Biển Xanh 3N2Đ',
-    type: 'tour',
-    destination: 'Phú Yên',
-    cost: 1890000.00,
-    carbon: 15.0,
-    icon: 'bi-tree-fill',
-    status: 'active',
-    rating: 4.9,
-    bookings_count: 16,
-    badges: ['green', 'best seller']
-  }
-];
-
-const bookings = [
-  {
-    id: 'BK-1042',
-    customer_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
-    customer_name: 'Nguyễn Minh Anh',
-    service_id: 'ser_3',
-    service_name: 'Tour Phú Yên Biển Xanh 3N2Đ',
-    booking_date: '12/10/2026',
-    guests: 2,
-    value: 4500000.00,
-    status: 'deposit'
-  },
-  {
-    id: 'BK-1041',
-    customer_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
-    customer_name: 'Nguyễn Minh Anh',
-    service_id: 'ser_1',
-    service_name: 'Homestay Xanh Đà Lạt',
-    booking_date: '15/10/2026',
-    guests: 4,
-    value: 8200000.00,
-    status: 'pending'
-  },
-  {
-    id: 'BK-1040',
-    customer_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
-    customer_name: 'Nguyễn Minh Anh',
-    service_id: 'ser_2',
-    service_name: 'Cafe Săn Mây Đà Lạt',
-    booking_date: '20/10/2026',
-    guests: 1,
-    value: 1200000.00,
-    status: 'deposit'
-  }
-];
-
-const posts = [
-  {
-    id: 'post_1',
-    author_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
-    rating: 5,
-    text: 'Chuyến đi Phú Yên 3 ngày 2 đêm của mình siêu xanh và đáng nhớ! Nhờ thuê xe điện VinFast mà mình vi vu khắp Tuy Hòa hết rất ít tiền, lại không ồn ào. Các bạn nên ghé qua homestay Hoa Vàng nhé, cực kỳ xinh xắn và chủ nhà thân thiện lắm. Đặc biệt là ngắm bình minh ở Mũi Điện thực sự rất xúc động.',
-    trip_name: 'Tour Phú Yên Biển Xanh 3N2Đ',
-    destination: 'Phú Yên',
-    days: 3,
-    likes_count: 24,
-    comments_count: 8,
-    image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
-  },
-  {
-    id: 'post_2',
-    author_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
-    rating: 5,
-    text: 'Tính năng customize lịch trình của GreenSteps rất tiện lợi. Mình có thể thêm bớt địa điểm theo ý thích và hệ thống tự động tính toán lại chi phí. Đáng đồng tiền bát gạo! Chùa Cầu Hội An lúc hoàng hôn cực kỳ lung linh. Mình cũng đã thử tour xe đạp quanh phố cổ, rất thư giãn và bảo vệ môi trường.',
-    trip_name: 'Đà Nẵng - Hội An Văn Hóa 4N3Đ',
-    destination: 'Đà Nẵng - Hội An',
-    days: 4,
-    likes_count: 45,
-    comments_count: 12,
-    image_url: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=80'
-  }
-];
-
-const itineraries = [
-  {
-    id: 'iti_sample',
-    name: 'Lịch trình Phú Yên của tôi',
-    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
-    destination: 'Phú Yên',
-    days: 3,
-    total_cost: 1000000,
-    total_carbon: 13.0,
-    days_data: [
-      [
-        { time: "08:00", name: "Check-in Homestay Hoa Vàng", cost: 400000, carbon: 3.0, icon: "bi-house-door-fill", type: "lodging", lat: 13.2205, lng: 109.2885, id: "sample1" },
-        { time: "18:00", name: "Hải sản đầm Ô Loan", cost: 250000, carbon: 2.0, icon: "bi-cup-hot-fill", type: "dining", lat: 13.2625, lng: 109.2780, id: "sample2" }
-      ],
-      [
-        { time: "08:00", name: "Trekking Gành Đá Đĩa hoang sơ", cost: 150000, carbon: 0.0, icon: "bi-tree-fill", type: "attraction", lat: 13.3645, lng: 109.3045, id: "sample3" },
-        { time: "15:00", name: "Thuê xe máy điện VinFast", cost: 120000, carbon: 0.1, icon: "bi-scooter", type: "transport", lat: 13.0882, lng: 109.3025, id: "sample4" }
-      ],
-      [
-        { time: "10:00", name: "Bánh Hỏi Lòng Heo Bà Năm", cost: 80000, carbon: 1.0, icon: "bi-cup-hot-fill", type: "dining", lat: 13.0905, lng: 109.2995, id: "sample5" }
-      ]
-    ]
-  }
-];
-
-const presetTours = [
-  {
-    id: "preset_dl_1",
-    title: "Tour Đà Lạt Gia Đình 3N2Đ",
-    destination: "Đà Lạt",
-    days: 3,
-    cost: 1890000,
-    carbon: 45,
-    image_url: "image/1dc8619487310884c9d631d689ece1e7.jpg",
-    badges: ["Gia đình", "Phổ biến"],
-    description: "Trải nghiệm 3 ngày 2 đêm tuyệt vời tại thành phố ngàn hoa Đà Lạt cùng gia đình. Tour được thiết kế đặc biệt cho các gia đình có trẻ nhỏ.",
-    data: [
-      [
-        { time: "08:00", name: "Đón khách - Khách sạn Dahlia", cost: 0, carbon: 0, icon: "bi-building-fill", id: "t_dl_1_1" },
-        { time: "10:00", name: "Dạo chơi Thung lũng Tình Yêu", cost: 150000, carbon: 3, icon: "bi-tree-fill", id: "t_dl_1_2" },
-        { time: "12:00", name: "Ăn trưa lẩu gà lá é Tao Ngộ", cost: 80000, carbon: 1.5, icon: "bi-cup-hot-fill", id: "t_dl_1_3" },
-        { time: "14:00", name: "Ghé Vườn hoa thành phố", cost: 50000, carbon: 1, icon: "bi-tree-fill", id: "t_dl_1_4" }
-      ],
-      [
-        { time: "08:00", name: "Ăn sáng tại khách sạn", cost: 0, carbon: 0, icon: "bi-cup-hot-fill", id: "t_dl_1_5" },
-        { time: "10:00", name: "Trượt máng Thác Datanla", cost: 170000, carbon: 1.2, icon: "bi-tree-fill", id: "t_dl_1_6" },
-        { time: "14:00", name: "Khám phá Làng Cù Lần", cost: 200000, carbon: 2, icon: "bi-tree-fill", id: "t_dl_1_7" }
-      ],
-      [
-        { time: "08:00", name: "Cafe Săn Mây Đà Lạt", cost: 80000, carbon: 0.5, icon: "bi-cup-hot-fill", id: "t_dl_1_8" },
-        { time: "11:00", name: "Mua sắm đặc sản chợ Đà Lạt", cost: 100000, carbon: 1, icon: "bi-cup-hot-fill", id: "t_dl_1_9" }
-      ]
-    ]
-  },
-  {
-    id: "preset_dl_2",
-    title: "Tour Mạo Hiểm Đà Lạt",
-    destination: "Đà Lạt",
-    days: 2,
-    cost: 1890000,
-    carbon: 55,
-    image_url: "image/52627caa0015b2f833fbdc632d37dc82.jpg",
-    badges: ["Trải nghiệm", "Mạo hiểm"],
-    description: "Thử thách bản thân với trekking, leo núi vượt thác Datanla (canyoning), đu dây và cắm trại qua đêm giữa rừng thông Đà Lạt.",
-    data: [
-      [
-        { time: "08:00", name: "Đón khách di chuyển lên đỉnh Langbiang", cost: 0, carbon: 5, icon: "bi-bus-front-fill", id: "t_dl_2_1" },
-        { time: "09:30", name: "Trekking leo núi chinh phục đỉnh Langbiang", cost: 120000, carbon: 0, icon: "bi-tree-fill", id: "t_dl_2_2" },
-        { time: "13:00", name: "Ăn trưa dã ngoại (Eco Lunch)", cost: 100000, carbon: 0.5, icon: "bi-cup-hot-fill", id: "t_dl_2_3" },
-        { time: "15:00", name: "Dựng lều trại & chuẩn bị BBQ tối", cost: 300000, carbon: 2, icon: "bi-house-door-fill", id: "t_dl_2_4" }
-      ],
-      [
-        { time: "05:30", name: "Ngắm bình minh trên đỉnh núi & Cafe sáng", cost: 50000, carbon: 0.2, icon: "bi-cup-hot-fill", id: "t_dl_2_5" },
-        { time: "08:30", name: "Trải nghiệm Canyoning vượt thác Datanla", cost: 1100000, carbon: 1.5, icon: "bi-tree-fill", id: "t_dl_2_6" },
-        { time: "13:00", name: "Ăn trưa tại nhà hàng sinh thái", cost: 150000, carbon: 1.2, icon: "bi-cup-hot-fill", id: "t_dl_2_7" },
-        { time: "15:00", name: "Trải nghiệm Zipline xuyên rừng thông", cost: 350000, carbon: 0.5, icon: "bi-tree-fill", id: "t_dl_2_8" }
-      ]
-    ]
-  },
-  {
-    id: "preset_dl_3",
-    title: "Tour Đà Lạt Tiết Kiệm",
-    destination: "Đà Lạt",
-    days: 2,
-    cost: 990000,
-    carbon: 15,
-    image_url: "image/581559b0ca4ebbb8ec09d933fc7bff3d.jpg",
-    badges: ["Tiết kiệm", "Giá rẻ"],
-    description: "Khám phá Đà Lạt thanh bình với chi phí tối ưu nhất, nghỉ tại homestay sinh thái và di chuyển bằng xe đạp/xe bus công cộng.",
-    data: [
-      [
-        { time: "08:00", name: "Nhận xe đạp và bắt đầu tour quanh Hồ Xuân Hương", cost: 50000, carbon: 0, icon: "bi-bicycle", id: "t_dl_3_1" },
-        { time: "10:00", name: "Tham quan Ga Đà Lạt cổ kính", cost: 20000, carbon: 0.2, icon: "bi-tree-fill", id: "t_dl_3_2" },
-        { time: "12:00", name: "Bánh mì xíu mại Hoàng Diệu", cost: 35000, carbon: 0.8, icon: "bi-cup-hot-fill", id: "t_dl_3_3" },
-        { time: "14:00", name: "Khám phá Dinh I Bảo Đại nghệ thuật", cost: 60000, carbon: 1, icon: "bi-tree-fill", id: "t_dl_3_4" }
-      ],
-      [
-        { time: "08:30", name: "Khám phá Chùa Linh Phước (Chùa Ve Chai)", cost: 30000, carbon: 1.5, icon: "bi-tree-fill", id: "t_dl_3_5" },
-        { time: "11:30", name: "Ăn trưa cơm niêu đất dân dã Đà Lạt", cost: 75000, carbon: 1.2, icon: "bi-cup-hot-fill", id: "t_dl_3_6" },
-        { time: "14:00", name: "Dạo bước trong rừng thông hồ Tuyền Lâm", cost: 0, carbon: 0.2, icon: "bi-tree-fill", id: "t_dl_3_7" },
-        { time: "16:00", name: "Trà chiều & Bánh ngọt ngắm hoàng hôn", cost: 80000, carbon: 0.5, icon: "bi-cup-hot-fill", id: "t_dl_3_8" }
-      ]
-    ]
-  },
-  {
-    id: "preset_dl_4",
-    title: "Nghỉ Dưỡng Đà Lạt 4N3Đ",
-    destination: "Đà Lạt",
-    days: 4,
-    cost: 5990000,
-    carbon: 60,
-    image_url: "image/6ba7b55db5bf22fa2ff07b46ec6ff3a2.jpg",
-    badges: ["Nghỉ dưỡng", "Sang trọng"],
-    description: "Kỳ nghỉ dưỡng sinh thái cao cấp tại Ana Mandara Villas Dalat Resort & Spa cổ kính, tận hưởng không gian riêng tư giữa rừng thông.",
-    data: [
-      [
-        { time: "09:00", name: "Đón sân bay Liên Khương bằng xe điện riêng", cost: 250000, carbon: 0.2, icon: "bi-bus-front-fill", id: "t_dl_4_1" },
-        { time: "10:30", name: "Check-in Ana Mandara Villas Dalat Resort", cost: 5990000, carbon: 18, icon: "bi-building-fill", id: "t_dl_4_2" },
-        { time: "12:00", name: "Ăn trưa lãng mạn tại nhà hàng Le Petit", cost: 600000, carbon: 3.5, icon: "bi-cup-hot-fill", id: "t_dl_4_3" },
-        { time: "15:00", name: "Liệu trình Massage thảo mộc tại Spa resort", cost: 1000000, carbon: 0.5, icon: "bi-heart-fill", id: "t_dl_4_4" }
-      ],
-      [
-        { time: "09:00", name: "Tham quan Vườn Dâu Tây sinh học công nghệ cao", cost: 100000, carbon: 0.8, icon: "bi-tree-fill", id: "t_dl_4_5" },
-        { time: "12:00", name: "Ăn trưa salad hữu cơ tự hái tại vườn", cost: 200000, carbon: 0.4, icon: "bi-cup-hot-fill", id: "t_dl_4_6" },
-        { time: "15:00", name: "Chơi golf mini tại resort biệt lập", cost: 300000, carbon: 2, icon: "bi-tree-fill", id: "t_dl_4_7" }
-      ],
-      [
-        { time: "08:30", name: "Trekking nhẹ khám phá đỉnh Robin", cost: 100000, carbon: 0.1, icon: "bi-tree-fill", id: "t_dl_4_8" },
-        { time: "10:30", name: "Trải nghiệm Cáp treo đồi Robin ngắm rừng thông", cost: 120000, carbon: 2.5, icon: "bi-tree-fill", id: "t_dl_4_9" },
-        { time: "13:00", name: "Ăn trưa lẩu rau buffet tươi ngon", cost: 250000, carbon: 1.5, icon: "bi-cup-hot-fill", id: "t_dl_4_10" },
-        { time: "16:00", name: "Trà chiều kiểu Anh bên lò sưởi cổ kính", cost: 180000, carbon: 0.8, icon: "bi-cup-hot-fill", id: "t_dl_4_11" }
-      ],
-      [
-        { time: "09:00", name: "Lớp học làm mứt dâu tây truyền thống", cost: 150000, carbon: 1, icon: "bi-cup-hot-fill", id: "t_dl_4_12" },
-        { time: "12:00", name: "Trả phòng & xe tiễn sân bay kết thúc hành trình", cost: 250000, carbon: 4.5, icon: "bi-bus-front-fill", id: "t_dl_4_13" }
-      ]
-    ]
-  },
-  {
-    id: "preset_py_1",
-    title: "Tour Phú Yên Gia Đình",
-    destination: "Phú Yên",
-    days: 3,
-    cost: 2990000,
-    carbon: 22,
-    image_url: "image/3cb236b2f70b777a941ea5d71c4c1d42.jpg",
-    badges: ["Gia đình", "Nghỉ dưỡng"],
-    description: "Chuyến du lịch gia đình thư thái tại vùng đất hoa vàng trên cỏ xanh, trải nghiệm bãi cát trắng và ẩm thực hải sản phong phú.",
-    data: [
-      [
-        { time: "08:30", name: "Đón gia đình tại sân bay bằng xe điện", cost: 150000, carbon: 0.5, icon: "bi-bus-front-fill", id: "t_py_1_1" },
-        { time: "10:00", name: "Check-in Eco Beach Resort", cost: 1500000, carbon: 5, icon: "bi-house-door-fill", id: "t_py_1_2" },
-        { time: "12:00", name: "Bữa trưa gia đình tại nhà hàng resort", cost: 400000, carbon: 3, icon: "bi-cup-hot-fill", id: "t_py_1_3" },
-        { time: "15:00", name: "Tắm biển cát trắng Tuy Hòa", cost: 0, carbon: 0, icon: "bi-tree-fill", id: "t_py_1_4" }
-      ],
-      [
-        { time: "08:30", name: "Phim trường Hoa Vàng Trên Cỏ Xanh", cost: 80000, carbon: 1.5, icon: "bi-camera-video-fill", id: "t_py_1_5" },
-        { time: "12:00", name: "Ăn trưa hải sản đầm Ô Loan", cost: 350000, carbon: 2, icon: "bi-cup-hot-fill", id: "t_py_1_6" },
-        { time: "14:30", name: "Tham quan Hải đăng Mũi Điện", cost: 50000, carbon: 1.8, icon: "bi-tree-fill", id: "t_py_1_7" }
-      ],
-      [
-        { time: "08:30", name: "Tham quan tháp Nghinh Phong", cost: 0, carbon: 0.2, icon: "bi-tree-fill", id: "t_py_1_8" },
-        { time: "10:30", name: "Mua đặc sản bò một nắng, bánh tráng", cost: 150000, carbon: 0.8, icon: "bi-bag-fill", id: "t_py_1_9" },
-        { time: "12:00", name: "Ăn trưa cơm gà Tuy Hòa", cost: 80000, carbon: 1, icon: "bi-cup-hot-fill", id: "t_py_1_10" }
-      ]
-    ]
-  },
-  {
-    id: "preset_py_2",
-    title: "Tour Phú Yên Biển Xanh 3N2Đ",
-    destination: "Phú Yên",
-    days: 3,
-    cost: 1890000,
-    carbon: 15,
-    image_url: "image/Viet Nam.png",
-    badges: ["Biển xanh", "Đặc sắc"],
-    description: "Khám phá trọn vẹn Phú Yên hoang sơ: check-in Gành Đá Đĩa kì thú, thưởng thức hải sản ngon đầm Ô Loan và ngắm hoàng hôn Mũi Điện.",
-    data: [
-      [
-        { time: "08:00", name: "Xe limousine đưa đón Tuy Hòa", cost: 150000, carbon: 8, icon: "bi-bus-front-fill", id: "t_py_2_1" },
-        { time: "12:00", name: "Check-in Homestay Hoa Vàng", cost: 400000, carbon: 3, icon: "bi-house-door-fill", id: "t_py_2_2" },
-        { time: "18:00", name: "Hải sản đầm Ô Loan", cost: 250000, carbon: 2, icon: "bi-cup-hot-fill", id: "t_py_2_3" }
-      ],
-      [
-        { time: "08:00", name: "Trekking Gành Đá Đĩa hoang sơ", cost: 150000, carbon: 0, icon: "bi-tree-fill", id: "t_py_2_4" },
-        { time: "14:00", name: "Tham quan Tháp Nhạn", cost: 50000, carbon: 0.5, icon: "bi-tree-fill", id: "t_py_2_5" },
-        { time: "16:30", name: "Xe máy điện dạo quanh bờ kè", cost: 60000, carbon: 0.1, icon: "bi-scooter", id: "t_py_2_6" }
-      ],
-      [
-        { time: "09:00", name: "Mua sắm đặc sản Tuy Hòa", cost: 100000, carbon: 1, icon: "bi-cup-hot-fill", id: "t_py_2_7" },
-        { time: "11:30", name: "Ăn mắt cá ngừ đại dương hầm thuốc bắc", cost: 80000, carbon: 0.8, icon: "bi-cup-hot-fill", id: "t_py_2_8" }
-      ]
-    ]
-  },
-  {
-    id: "preset_py_3",
-    title: "Tour Phú Yên Tiết Kiệm",
-    destination: "Phú Yên",
-    days: 2,
-    cost: 990000,
-    carbon: 5,
-    image_url: "image/Viet Nam (1).png",
-    badges: ["Tiết kiệm", "Giá tốt"],
-    description: "Khám phá Xứ Nẫu mộc mạc với ngân sách tiết kiệm nhất, di chuyển hoàn toàn bằng xe máy điện sinh thái và ở homestay cộng đồng.",
-    data: [
-      [
-        { time: "08:30", name: "Thuê xe máy điện VinFast tự lái", cost: 120000, carbon: 0.1, icon: "bi-scooter", id: "t_py_3_1" },
-        { time: "10:00", name: "Check-in Homestay phòng Dorm", cost: 200000, carbon: 1.5, icon: "bi-house-door-fill", id: "t_py_3_2" },
-        { time: "12:00", name: "Ăn trưa bánh xèo tôm nhảy", cost: 40000, carbon: 0.6, icon: "bi-cup-hot-fill", id: "t_py_3_3" },
-        { time: "14:00", name: "Chụp ảnh tại Bãi Xép hoang sơ", cost: 20000, carbon: 0.4, icon: "bi-tree-fill", id: "t_py_3_4" }
-      ],
-      [
-        { time: "08:30", name: "Check-in cầu gỗ Ông Cọp", cost: 10000, carbon: 0.2, icon: "bi-tree-fill", id: "t_py_3_5" },
-        { time: "11:30", name: "Ăn trưa cơm niêu đất dân dã", cost: 50000, carbon: 1, icon: "bi-cup-hot-fill", id: "t_py_3_6" },
-        { time: "14:00", name: "Ghé thăm nhà thờ Mằng Lăng cổ", cost: 0, carbon: 0.3, icon: "bi-tree-fill", id: "t_py_3_7" }
-      ]
-    ]
-  },
-  {
-    id: "preset_py_4",
-    title: "Nghỉ Dưỡng Phú Yên 4N3Đ",
-    destination: "Phú Yên",
-    days: 4,
-    cost: 5990000,
-    carbon: 45,
-    image_url: "image/Viet Nam (2).png",
-    badges: ["Nghỉ dưỡng", "Sang trọng"],
-    description: "Tận hưởng kỳ nghỉ sang trọng tại biệt thự Eco Beach Resort view biển Tuy Hòa, trải nghiệm spa và lặn ngắm san hô đảo Hòn Yến.",
-    data: [
-      [
-        { time: "09:00", name: "Xe điện resort đón khách Tuy Hòa", cost: 20000, carbon: 0.4, icon: "bi-bus-front-fill", id: "t_py_4_1" },
-        { time: "10:30", name: "Check-in biệt thự Eco Beach", cost: 2200000, carbon: 6, icon: "bi-house-door-fill", id: "t_py_4_2" },
-        { time: "12:30", name: "Ăn trưa tại nhà hàng ngắm biển", cost: 650000, carbon: 4, icon: "bi-cup-hot-fill", id: "t_py_4_3" },
-        { time: "15:30", name: "Tắm hồ bơi vô cực & Cocktail", cost: 150000, carbon: 0.8, icon: "bi-cup-hot-fill", id: "t_py_4_4" }
-      ],
-      [
-        { time: "08:30", name: "Đón bình minh cực Đông bằng cano", cost: 800000, carbon: 5, icon: "bi-tsunami", id: "t_py_4_5" },
-        { time: "12:00", name: "Ăn trưa hải sản tại Bãi Môn", cost: 500000, carbon: 3.5, icon: "bi-cup-hot-fill", id: "t_py_4_6" },
-        { time: "15:00", name: "Trị liệu Spa đá nóng phục hồi", cost: 700000, carbon: 0.8, icon: "bi-heart-fill", id: "t_py_4_7" }
-      ],
-      [
-        { time: "09:00", name: "Tham quan đảo Nhất Tự Sơn hoang sơ", cost: 400000, carbon: 2, icon: "bi-tsunami", id: "t_py_4_8" },
-        { time: "12:30", name: "Bữa trưa dã ngoại trên đảo", cost: 300000, carbon: 1.5, icon: "bi-cup-hot-fill", id: "t_py_4_9" },
-        { time: "15:30", name: "Lặn ngắm san hô tại Hòn Yến", cost: 450000, carbon: 1.2, icon: "bi-tree-fill", id: "t_py_4_10" }
-      ],
-      [
-        { time: "09:00", name: "Yoga thiền trên bãi cát resort", cost: 0, carbon: 0.1, icon: "bi-tree-fill", id: "t_py_4_11" },
-        { time: "12:00", name: "Trả phòng & tiễn khách Tuy Hòa", cost: 250000, carbon: 1.8, icon: "bi-bus-front-fill", id: "t_py_4_12" }
-      ]
-    ]
-  },
-  {
-    id: "preset_dn_1",
-    title: "Tour Đà Nẵng Gia Đình",
-    destination: "Đà Nẵng - Hội An",
-    days: 3,
-    cost: 3890000,
-    carbon: 30,
-    image_url: "image/7c9e14a82698a594dd914369bfb8eaa5.jpg",
-    badges: ["Gia đình", "Phổ biến"],
-    description: "Khám phá thành phố đáng sống nhất Việt Nam cùng cả nhà: vui chơi Bà Nà Hills, tắm biển Mỹ Khê và thưởng thức ẩm thực miền Trung đặc trưng.",
-    data: [
-      [
-        { time: "08:30", name: "Đón gia đình tại sân bay về resort", cost: 150000, carbon: 3.5, icon: "bi-bus-front-fill", id: "t_dn_1_1" },
-        { time: "10:00", name: "Check-in Golden Bay Hotel Đà Nẵng", cost: 1200000, carbon: 4.5, icon: "bi-building-fill", id: "t_dn_1_2" },
-        { time: "12:00", name: "Ăn trưa cơm niêu gia đình ấm cúng", cost: 250000, carbon: 2, icon: "bi-cup-hot-fill", id: "t_dn_1_3" },
-        { time: "15:30", name: "Ngắm Voọc chà vá bán đảo Sơn Trà", cost: 100000, carbon: 1.5, icon: "bi-tree-fill", id: "t_dn_1_4" }
-      ],
-      [
-        { time: "08:30", name: "Vui chơi giải trí tại Bà Nà Hills", cost: 950000, carbon: 6, icon: "bi-tree-fill", id: "t_dn_1_5" },
-        { time: "12:30", name: "Ăn buffet trưa quốc tế Bà Nà Hills", cost: 350000, carbon: 3, icon: "bi-cup-hot-fill", id: "t_dn_1_6" },
-        { time: "18:30", name: "Ăn tối hải sản biển Mỹ Khê", cost: 400000, carbon: 2.8, icon: "bi-cup-hot-fill", id: "t_dn_1_7" }
-      ],
-      [
-        { time: "09:00", name: "Tham quan bảo tàng điêu khắc Chăm", cost: 60000, carbon: 0.5, icon: "bi-tree-fill", id: "t_dn_1_8" },
-        { time: "11:00", name: "Mua sắm đặc sản chợ Hàn", cost: 150000, carbon: 1.2, icon: "bi-bag-fill", id: "t_dn_1_9" }
-      ]
-    ]
-  },
-  {
-    id: "preset_dn_2",
-    title: "Đà Nẵng - Hội An Văn Hóa",
-    destination: "Đà Nẵng - Hội An",
-    days: 4,
-    cost: 3990000,
-    carbon: 32,
-    image_url: "image/Viet Nam.png",
-    badges: ["Văn hóa", "Trải nghiệm"],
-    description: "Hành trình di sản độc đáo: check-in Cầu Vàng Bà Nà Hills, dạo bước Phố cổ Hội An lung linh đèn lồng và trải nghiệm làm đèn lồng giấy.",
-    data: [
-      [
-        { time: "09:00", name: "Xe limousine đón tiễn sân bay", cost: 150000, carbon: 4, icon: "bi-bus-front-fill", id: "t_dn_2_1" },
-        { time: "13:00", name: "Check-in khách sạn sinh thái Hội An", cost: 800000, carbon: 5, icon: "bi-building-fill", id: "t_dn_2_2" },
-        { time: "18:00", name: "Ẩm thực phố cổ Cao lầu, cơm gà", cost: 200000, carbon: 1.5, icon: "bi-cup-hot-fill", id: "t_dn_2_3" }
-      ],
-      [
-        { time: "08:00", name: "Check-in Cầu Vàng nổi tiếng Bà Nà", cost: 900000, carbon: 6, icon: "bi-tree-fill", id: "t_dn_2_4" },
-        { time: "12:30", name: "Buffet truyền thống miền Trung", cost: 300000, carbon: 3, icon: "bi-cup-hot-fill", id: "t_dn_2_5" },
-        { time: "18:00", name: "Thưởng thức lẩu hải sản Đà Nẵng", cost: 300000, carbon: 3, icon: "bi-cup-hot-fill", id: "t_dn_2_6" }
-      ],
-      [
-        { time: "09:00", name: "Dạo bộ tham quan Phố cổ Hội An", cost: 120000, carbon: 0, icon: "bi-tree-fill", id: "t_dn_2_7" },
-        { time: "15:00", name: "Xe đạp dạo chơi vườn rau hữu cơ Trà Quế", cost: 50000, carbon: 0, icon: "bi-bicycle", id: "t_dn_2_8" },
-        { time: "18:00", name: "Tham gia lớp học làm đèn lồng giấy", cost: 150000, carbon: 0.2, icon: "bi-palette-fill", id: "t_dn_2_9" }
-      ],
-      [
-        { time: "09:00", name: "Khám phá rừng dừa thúng Bảy Mẫu", cost: 150000, carbon: 0.5, icon: "bi-tsunami", id: "t_dn_2_10" },
-        { time: "12:00", name: "Mua sắm quà lưu niệm & tiễn khách", cost: 100000, carbon: 1, icon: "bi-bag-fill", id: "t_dn_2_11" }
-      ]
-    ]
-  },
-  {
-    id: "preset_dn_3",
-    title: "Tour Đà Nẵng Tiết Kiệm",
-    destination: "Đà Nẵng - Hội An",
-    days: 2,
-    cost: 990000,
-    carbon: 14,
-    image_url: "image/b025d2b33ebe6db7e576ff3476f9acde.jpg",
-    badges: ["Tiết kiệm", "Đường phố"],
-    description: "Khám phá thành phố của những cây cầu với chi phí tối giản, ăn uống chợ đêm ẩm thực phong phú và đi bộ khám phá phố cổ.",
-    data: [
-      [
-        { time: "08:30", name: "Đi xe bus công cộng Danabus", cost: 20000, carbon: 0.5, icon: "bi-bus-front-fill", id: "t_dn_3_1" },
-        { time: "10:00", name: "Check-in hostel giường Dorm", cost: 150000, carbon: 1.5, icon: "bi-house-door-fill", id: "t_dn_3_2" },
-        { time: "12:00", name: "Bánh mì Phượng Hội An nổi tiếng", cost: 40000, carbon: 0.8, icon: "bi-cup-hot-fill", id: "t_dn_3_3" },
-        { time: "14:00", name: "Leo núi Ngũ Hành Sơn hang động", cost: 40000, carbon: 0.4, icon: "bi-tree-fill", id: "t_dn_3_4" }
-      ],
-      [
-        { time: "09:00", name: "Thuê xe đạp ngắm biển Mỹ Khê", cost: 40000, carbon: 0, icon: "bi-bicycle", id: "t_dn_3_5" },
-        { time: "12:00", name: "Ăn trưa Mỳ Quảng ếch ngon rẻ", cost: 50000, carbon: 1, icon: "bi-cup-hot-fill", id: "t_dn_3_6" },
-        { time: "14:30", name: "Chụp ảnh Cầu Rồng biểu tượng", cost: 0, carbon: 0.2, icon: "bi-tree-fill", id: "t_dn_3_7" }
-      ]
-    ]
-  },
-  {
-    id: "preset_dn_4",
-    title: "Nghỉ Dưỡng Đà Nẵng 5N4Đ",
-    destination: "Đà Nẵng - Hội An",
-    days: 5,
-    cost: 7990000,
-    carbon: 90,
-    image_url: "image/7c9e14a82698a594dd914369bfb8eaa5.jpg",
-    badges: ["Nghỉ dưỡng", "Sang trọng"],
-    description: "Kỳ nghỉ dưỡng đẳng cấp thượng lưu tại resort Intercontinental bán đảo Sơn Trà, trải nghiệm chơi golf và du thuyền ngắm hoàng hôn.",
-    data: [
-      [
-        { time: "09:00", name: "Đón khách bằng xe điện VIP", cost: 300000, carbon: 0.2, icon: "bi-bus-front-fill", id: "t_dn_4_1" },
-        { time: "10:30", name: "Check-in Intercontinental Resort", cost: 7990000, carbon: 20, icon: "bi-building-fill", id: "t_dn_4_2" },
-        { time: "12:30", name: "Ăn trưa tại Citron ngắm biển", cost: 950000, carbon: 5, icon: "bi-cup-hot-fill", id: "t_dn_4_3" },
-        { time: "15:30", name: "Thư giãn trên bãi cát resort riêng tư", cost: 0, carbon: 0, icon: "bi-tree-fill", id: "t_dn_4_4" }
-      ],
-      [
-        { time: "09:00", name: "Chơi Golf 18 hố ven biển", cost: 2200000, carbon: 4.5, icon: "bi-tree-fill", id: "t_dn_4_5" },
-        { time: "13:00", name: "Buffet hải sản hảo hạng quốc tế", cost: 750000, carbon: 5.5, icon: "bi-cup-hot-fill", id: "t_dn_4_6" },
-        { time: "16:00", name: "Trị liệu xông hơi thải độc thảo dược", cost: 1200000, carbon: 1, icon: "bi-heart-fill", id: "t_dn_4_7" }
-      ],
-      [
-        { time: "08:30", name: "Đi cano cao tốc ra Cù Lao Chàm", cost: 900000, carbon: 12, icon: "bi-tsunami", id: "t_dn_4_8" },
-        { time: "12:00", name: "Ăn trưa hải sản nướng hoang sơ", cost: 600000, carbon: 3.5, icon: "bi-cup-hot-fill", id: "t_dn_4_9" },
-        { time: "14:30", name: "Lặn san hô bảo tồn rực rỡ sắc màu", cost: 500000, carbon: 0.8, icon: "bi-tree-fill", id: "t_dn_4_10" }
-      ],
-      [
-        { time: "09:30", name: "Lớp học nấu ăn các món miền Trung", cost: 600000, carbon: 1.5, icon: "bi-cup-hot-fill", id: "t_dn_4_11" },
-        { time: "15:00", name: "Du thuyền buồm ngắm hoàng hôn vịnh", cost: 1500000, carbon: 3, icon: "bi-tsunami", id: "t_dn_4_12" },
-        { time: "19:00", name: "Bữa tối nến lãng mạn bờ biển resort", cost: 1200000, carbon: 4, icon: "bi-cup-hot-fill", id: "t_dn_4_13" }
-      ],
-      [
-        { time: "09:00", name: "Tập Taichi dưỡng sinh trên bãi cát", cost: 0, carbon: 0.1, icon: "bi-tree-fill", id: "t_dn_4_14" },
-        { time: "12:00", name: "Trả phòng & tiễn đưa ra sân bay", cost: 300000, carbon: 3.5, icon: "bi-bus-front-fill", id: "t_dn_4_15" }
-      ]
-    ]
-  }
-];
 
 // ==========================================================================
-// SEEDING LOGIC
+// MIGRATION & SEEDING EXECUTION
 // ==========================================================================
 
 async function seed() {
-  try {
-    // 1. Clean old data
-    console.log('Cleaning old databases...');
-    await User.deleteMany({});
-    await Wallet.deleteMany({});
-    await WalletTransaction.deleteMany({});
-    await Tour.deleteMany({});
-    await Itinerary.deleteMany({});
-    await Service.deleteMany({});
-    await Booking.deleteMany({});
-    await CommunityPost.deleteMany({});
-    
-    // 2. Insert Users
-    console.log('Seeding Users...');
-    await User.insertMany(users);
-    
-    // 3. Insert Wallets
-    console.log('Seeding Wallets...');
-    await Wallet.insertMany(wallets);
-    
-    // 4. Insert Transactions
-    console.log('Seeding Wallet Transactions...');
-    await WalletTransaction.insertMany(transactions);
-    
-    // 5. Insert Services
-    console.log('Seeding Services...');
-    await Service.insertMany(services);
-    
-    // 6. Insert Bookings
-    console.log('Seeding Bookings...');
-    await Booking.insertMany(bookings);
-    
-    // 7. Insert Community Posts
-    console.log('Seeding Community Posts...');
-    await CommunityPost.insertMany(posts);
-    
-    // 8. Insert Custom Itineraries
-    console.log('Seeding Custom Itineraries...');
-    await Itinerary.insertMany(itineraries);
-    
-    // 9. Insert Preset Tours
-    console.log('Seeding Preset Tours...');
-    await Tour.insertMany(presetTours);
-    
-    console.log('Seeding completed successfully!');
-    process.exit(0);
-  } catch (err) {
-    console.error('Seeding failed with error:', err);
-    process.exit(1);
-  }
-}
+  console.log('Connecting to database:', dbUri);
+  await mongoose.connect(dbUri);
+  console.log('Connected! Starting migration and seeding...');
 
-mongoose.connect(dbUri)
-  .then(() => console.log('Connected to MongoDB database, starting seeding...'))
-  .catch(err => {
-    console.error('Error connecting to MongoDB:', err);
-    process.exit(1);
+  // 1. Drop old collections to clear conflicting unique indexes
+  console.log('Dropping old collections to reset indexes...');
+  const collectionsToDrop = [
+    'badges', 'users', 'badgeusers', 'wallets', 'wallettransactions',
+    'venders', 'vendercontracts', 'revenues', 'contracts', 'providers',
+    'schedules', 'badgeschedules', 'schedulesamples', 'schedulecustoms',
+    'userschedules', 'greenservices', 'badgeservices', 'servicebookings',
+    'scheduleactivities', 'adcampaigns', 'communityposts', 'commentposts',
+    'cpss', 'cpgs', 'cpsses', 'cpgses'
+  ];
+
+  for (const cName of collectionsToDrop) {
+    try {
+      await mongoose.connection.db.collection(cName).drop();
+      console.log(`- Dropped collection: ${cName}`);
+    } catch (e) {
+      // Ignore if collection doesn't exist
+    }
+  }
+
+  // 2. Insert Badges
+  console.log('Seeding Badges...');
+  await Badge.insertMany([
+    { _id: 'green', id: 'green', badges_description: 'Chứng nhận sinh thái xanh thân thiện môi trường', foruserortour: 2 },
+    { _id: 'budget', id: 'budget', badges_description: 'Giá cả tiết kiệm, phù hợp ngân sách học sinh sinh viên', foruserortour: 0 },
+    { _id: 'bestseller', id: 'bestseller', badges_description: 'Sản phẩm/dịch vụ lữ hành bán chạy nhất hệ thống', foruserortour: 1 }
+  ]);
+
+  // 3. Insert Users
+  console.log('Seeding Users & Wallets...');
+  const defaultUsers = [
+    {
+      _id: 'UG26tra0001',
+      id: 'UG26tra0001',
+      role: 'traveler',
+      username: 'traveler',
+      password_hash: '$2b$10$T8VqU8dG2C1F1JjHkL6hUe9eB5Z2D3O4P5Q6R7S8T9U0V1W2X3Y4Z', // placeholder for '123456'
+      fullname: 'Nguyễn Minh Anh',
+      email: 'minhanh.greentravel@gmail.com',
+      phone: '0901 234 567',
+      dob: '12/08/1996',
+      gender: '0',
+      address: 'Quận 1, TP. Hồ Chí Minh',
+      job: 'Nhân viên văn phòng'
+    },
+    {
+      _id: 'UG26pro0001',
+      id: 'UG26pro0001',
+      role: 'provider',
+      username: 'partner',
+      password_hash: '$2b$10$T8VqU8dG2C1F1JjHkL6hUe9eB5Z2D3O4P5Q6R7S8T9U0V1W2X3Y4Z', // placeholder for '123456'
+      fullname: 'Trần Văn A',
+      email: 'partner.greentravel@gmail.com',
+      phone: '0902 987 654',
+      dob: '15/05/1988',
+      gender: '1',
+      address: 'Quận 3, TP. Hồ Chí Minh',
+      job: 'Kinh doanh homestay'
+    }
+  ];
+
+  // Try checking if there are existing users in MongoDB to preserve their passwords
+  try {
+    const existingUsers = await mongoose.connection.db.collection('users_backup').find().toArray();
+    if (existingUsers.length > 0) {
+      for (const eu of existingUsers) {
+        const mappedRole = eu.role === 'provider' ? 'provider' : 'traveler';
+        const id = eu.id || eu._id.toString();
+        await User.create({
+          _id: id,
+          id: id,
+          role: mappedRole,
+          username: eu.username,
+          password_hash: eu.password_hash || eu.password || '$2b$10$T8VqU8dG2C1F1JjHkL6hUe9eB5Z2D3O4P5Q6R7S8T9U0V1W2X3Y4Z',
+          fullname: eu.fullname || eu.name || eu.username,
+          email: eu.email,
+          phone: eu.phone || '',
+          dob: eu.dob || '',
+          gender: eu.gender || '0',
+          address: eu.address || '',
+          job: eu.job || ''
+        });
+      }
+      console.log(`Migrated ${existingUsers.length} existing users.`);
+    } else {
+      await User.insertMany(defaultUsers);
+    }
+  } catch (err) {
+    await User.insertMany(defaultUsers);
+  }
+
+  // 4. Create Vender & VenderContract
+  console.log('Seeding Vender & VenderContracts...');
+  await Vender.create({ _id: '1', id: '1', user_id: 'UG26pro0001', registration_date: '28/06/2026' });
+  await VenderContract.create({
+    _id: 'VC26pro0001',
+    id: 'VC26pro0001',
+    user_id: 'UG26pro0001',
+    name_contract: 'Hợp đồng liên kết đối tác bán hàng GreenSteps',
+    text: 'Nội dung chi tiết về điều khoản chiết khấu, cam kết chất lượng xanh của hộ kinh doanh...'
   });
 
-mongoose.connection.on('open', seed);
+  // 5. Create Ewallet & Transactions
+  console.log('Seeding Wallets & Transactions...');
+  await Wallet.create({ _id: 'EW26tra0001', id: 'EW26tra0001', user_id: 'UG26tra0001', balance: 1100000.00, registered: true });
+  await Wallet.create({ _id: 'EW26pro0001', id: 'EW26pro0001', user_id: 'UG26pro0001', balance: 0.00, registered: false });
+
+  await WalletTransaction.insertMany([
+    { _id: 'GD260601010001', id: 'GD260601010001', wallet_id: 'EW26tra0001', type: 'deposit', description: 'Nạp tiền ví du lịch', amount: 2000000.00, status: 'success' },
+    { _id: 'GD260602020002', id: 'GD260602020002', wallet_id: 'EW26tra0001', type: 'payment', description: 'Đặt cọc Tour Phú Yên', amount: -1200000.00, status: 'success' },
+    { _id: 'GD260604030003', id: 'GD260604030003', wallet_id: 'EW26tra0001', type: 'refund', description: 'Hoàn tiền dịch vụ xe điện', amount: 300000.00, status: 'success' }
+  ]);
+
+  // 6. Create Revenue
+  await Revenue.create({
+    _id: 'REV2606pro0001',
+    id: 'REV2606pro0001',
+    user_id: 'UG26pro0001',
+    monthyear: '06/2026',
+    total_booking: 12,
+    total_revenue: 15000000.00,
+    service_fee: 1500000.00,
+    final_profit: 13500000.00
+  });
+
+  // 7. Create B2B contracts & providers
+  console.log('Seeding Contract & Providers...');
+  await Contract.create({
+    _id: 'CON0001',
+    id: 'CON0001',
+    name_contract: 'Hợp đồng hợp tác chiến lược Saigontourist B2B',
+    text: 'Nội dung hợp tác quảng bá gói sản phẩm lữ hành sinh thái...',
+    contract_status: 'active'
+  });
+
+  await Provider.create({
+    _id: 'PROV0001',
+    id: 'PROV0001',
+    contract_id: 'CON0001',
+    name_provider: 'Saigontourist',
+    field: 'Lữ hành quốc tế & nội địa',
+    destination: 'TP. Hồ Chí Minh',
+    image_url: 'https://example.com/logo.png',
+    provider_status: 'active'
+  });
+
+  // 8. Seeding Tours (Schedule + ScheduleSample + ScheduleActivity)
+  console.log('Migrating & Seeding Tours/Schedules...');
+  const defaultTours = [
+    {
+      id: "preset_dl_1",
+      title: "Tour Đà Lạt Gia Đình 3N2Đ",
+      destination: "Đà Lạt",
+      days: 3,
+      cost: 1890000,
+      oldCost: 2200000,
+      carbon: 45,
+      image: "image/1dc8619487310884c9d631d689ece1e7.jpg",
+      description: "Trải nghiệm 3 ngày 2 đêm tuyệt vời tại thành phố ngàn hoa Đà Lạt cùng gia đình. Tour được thiết kế đặc biệt cho các gia đình có trẻ nhỏ.",
+      data: [
+        [
+          { time: "08:00", name: "Đón khách - Khách sạn Dahlia", cost: 0, carbon: 0, icon: "bi-building-fill", type: "lodging", id: "t_dl_1_1" },
+          { time: "10:00", name: "Dạo chơi Thung lũng Tình Yêu", cost: 150000, carbon: 3, icon: "bi-tree-fill", type: "attraction", id: "t_dl_1_2" },
+          { time: "12:00", name: "Ăn trưa lẩu gà lá é Tao Ngộ", cost: 80000, carbon: 1.5, icon: "bi-cup-hot-fill", type: "dining", id: "t_dl_1_3" },
+          { time: "14:00", name: "Ghé Vườn hoa thành phố", cost: 50000, carbon: 1, icon: "bi-tree-fill", type: "attraction", id: "t_dl_1_4" }
+        ],
+        [
+          { time: "08:00", name: "Ăn sáng tại khách sạn", cost: 0, carbon: 0, icon: "bi-cup-hot-fill", type: "dining", id: "t_dl_1_5" },
+          { time: "10:00", name: "Trượt máng Thác Datanla", cost: 170000, carbon: 1.2, icon: "bi-tree-fill", type: "attraction", id: "t_dl_1_6" },
+          { time: "14:00", name: "Khám phá Làng Cù Lần", cost: 200000, carbon: 2, icon: "bi-tree-fill", type: "attraction", id: "t_dl_1_7" }
+        ],
+        [
+          { time: "08:00", name: "Cafe Săn Mây Đà Lạt", cost: 80000, carbon: 0.5, icon: "bi-cup-hot-fill", type: "dining", id: "t_dl_1_8" },
+          { time: "11:00", name: "Mua sắm đặc sản chợ Đà Lạt", cost: 100000, carbon: 1, icon: "bi-cup-hot-fill", type: "dining", id: "t_dl_1_9" }
+        ]
+      ]
+    },
+    {
+      id: "preset_py_2",
+      title: "Tour Phú Yên Biển Xanh 3N2Đ",
+      destination: "Phú Yên",
+      days: 3,
+      cost: 1890000,
+      oldCost: 2900000,
+      carbon: 15,
+      image: "image/Viet Nam.png",
+      description: "Khám phá trọn vẹn Phú Yên hoang sơ: check-in Gành Đá Đĩa kì thú, thưởng thức hải sản ngon đầm Ô Loan và ngắm hoàng hôn Mũi Điện.",
+      data: [
+        [
+          { time: "08:00", name: "Xe limousine đưa đón Tuy Hòa", cost: 150000, carbon: 8, icon: "bi-bus-front-fill", type: "transport", id: "t_py_2_1" },
+          { time: "12:00", name: "Check-in Homestay Hoa Vàng", cost: 400000, carbon: 3, icon: "bi-house-door-fill", type: "lodging", id: "t_py_2_2" },
+          { time: "18:00", name: "Hải sản đầm Ô Loan", cost: 250000, carbon: 2, icon: "bi-cup-hot-fill", type: "dining", id: "t_py_2_3" }
+        ],
+        [
+          { time: "08:00", name: "Trekking Gành Đá Đĩa hoang sơ", cost: 150000, carbon: 0, icon: "bi-tree-fill", type: "attraction", id: "t_py_2_4" },
+          { time: "14:00", name: "Tham quan Tháp Nhạn", cost: 50000, carbon: 0.5, icon: "bi-tree-fill", type: "attraction", id: "t_py_2_5" },
+          { time: "16:30", name: "Xe máy điện dạo quanh bờ kè", cost: 60000, carbon: 0.1, icon: "bi-scooter", type: "transport", id: "t_py_2_6" }
+        ],
+        [
+          { time: "09:00", name: "Mua sắm đặc sản Tuy Hòa", cost: 100000, carbon: 1, icon: "bi-cup-hot-fill", type: "dining", id: "t_py_2_7" },
+          { time: "11:30", name: "Ăn mắt cá ngừ đại dương hầm thuốc bắc", cost: 80000, carbon: 0.8, icon: "bi-cup-hot-fill", type: "dining", id: "t_py_2_8" }
+        ]
+      ]
+    },
+    {
+      id: "preset_dn_2",
+      title: "Đà Nẵng - Hội An Văn Hóa 4N3Đ",
+      destination: "Đà Nẵng - Hội An",
+      days: 4,
+      cost: 3990000,
+      oldCost: 4500000,
+      carbon: 32,
+      image: "image/Viet Nam.png",
+      description: "Hành trình di sản độc đáo: check-in Cầu Vàng Bà Nà Hills, dạo bước Phố cổ Hội An lung linh đèn lồng và trải nghiệm làm đèn lồng giấy.",
+      data: [
+        [
+          { time: "09:00", name: "Xe limousine đón tiễn sân bay", cost: 150000, carbon: 4, icon: "bi-bus-front-fill", type: "transport", id: "t_dn_2_1" },
+          { time: "13:00", name: "Check-in khách sạn sinh thái Hội An", cost: 800000, carbon: 5, icon: "bi-building-fill", type: "lodging", id: "t_dn_2_2" },
+          { time: "18:00", name: "Ẩm thực phố cổ Cao lầu, cơm gà", cost: 200000, carbon: 1.5, icon: "bi-cup-hot-fill", type: "dining", id: "t_dn_2_3" }
+        ],
+        [
+          { time: "08:00", name: "Check-in Cầu Vàng nổi tiếng Bà Nà", cost: 900000, carbon: 6, icon: "bi-tree-fill", type: "attraction", id: "t_dn_2_4" },
+          { time: "12:30", name: "Buffet truyền thống miền Trung", cost: 300000, carbon: 3, icon: "bi-cup-hot-fill", type: "dining", id: "t_dn_2_5" },
+          { time: "18:00", name: "Thưởng thức lẩu hải sản Đà Nẵng", cost: 300000, carbon: 3, icon: "bi-cup-hot-fill", type: "dining", id: "t_dn_2_6" }
+        ],
+        [
+          { time: "09:00", name: "Dạo bộ tham quan Phố cổ Hội An", cost: 120000, carbon: 0, icon: "bi-tree-fill", type: "attraction", id: "t_dn_2_7" },
+          { time: "15:00", name: "Xe đạp dạo chơi vườn rau hữu cơ Trà Quế", cost: 50000, carbon: 0, icon: "bi-bicycle", type: "transport", id: "t_dn_2_8" },
+          { time: "18:00", name: "Tham gia lớp học làm đèn lồng giấy", cost: 150000, carbon: 0.2, icon: "bi-palette-fill", type: "attraction", id: "t_dn_2_9" }
+        ],
+        [
+          { time: "09:00", name: "Khám phá rừng dừa thúng Bảy Mẫu", cost: 150000, carbon: 0.5, icon: "bi-tsunami", type: "attraction", id: "t_dn_2_10" },
+          { time: "12:00", name: "Mua sắm quà lưu niệm & tiễn khách", cost: 100000, carbon: 1, icon: "bi-bag-fill", type: "dining", id: "t_dn_2_11" }
+        ]
+      ]
+    }
+  ];
+
+  // We migrate additional tours from the database if they were backed up
+  let legacyTours = [];
+  try {
+    legacyTours = await mongoose.connection.db.collection('tours_backup').find().toArray();
+  } catch (e) {}
+
+  const allTours = [...defaultTours];
+  for (const lt of legacyTours) {
+    if (!allTours.some(t => t.id === lt.id)) {
+      allTours.push({
+        id: lt.id,
+        title: lt.title,
+        destination: lt.destination,
+        days: lt.days,
+        cost: lt.cost || 0,
+        oldCost: lt.old_cost || lt.oldCost || lt.cost * 1.2,
+        carbon: lt.carbon || 0,
+        image: lt.image_url || lt.image || 'image/Viet Nam.png',
+        description: lt.description || '',
+        data: lt.data || []
+      });
+    }
+  }
+
+  for (const tour of allTours) {
+    await Schedule.create({
+      _id: tour.id,
+      id: tour.id,
+      tour_name: tour.title,
+      destination: tour.destination,
+      days: tour.days,
+      discount: tour.oldCost ? Math.round(((tour.oldCost - tour.cost) / tour.oldCost) * 100) : 0,
+      carbon: tour.carbon,
+      image_url: tour.image,
+      tour_description: tour.description
+    });
+
+    await ScheduleSample.create({
+      _id: tour.id,
+      id: tour.id,
+      provider_id: 'PROV0001',
+      cost: tour.cost,
+      old_cost: tour.oldCost,
+      rating: 4.9,
+      votes_count: 15
+    });
+
+    if (tour.data && tour.data.length > 0) {
+      for (let d = 0; d < tour.data.length; d++) {
+        const dayActivities = tour.data[d] || [];
+        for (let a = 0; a < dayActivities.length; a++) {
+          const act = dayActivities[a];
+          const actId = act.id || `act_${tour.id}_${d + 1}_${a + 1}`;
+          
+          await ScheduleActivity.create({
+            _id: actId,
+            id: actId,
+            schedule_id: tour.id,
+            day_number: d + 1,
+            time: act.time || '08:00',
+            activity_name: act.name || act.title || 'Hoạt động',
+            activity_cost: act.cost || 0,
+            carbon: act.carbon || 0,
+            icon: act.icon || 'bi-tree-fill',
+            type: act.type || 'attraction',
+            coordinates: act.lat && act.lng ? `${act.lat}, ${act.lng}` : null
+          });
+        }
+      }
+    }
+
+    if (tour.id === 'preset_dl_1') {
+      await BadgeSchedule.create({ badge_name: 'green', schedule_id: tour.id });
+      await BadgeSchedule.create({ badge_name: 'bestseller', schedule_id: tour.id });
+    } else if (tour.id === 'preset_py_2') {
+      await BadgeSchedule.create({ badge_name: 'green', schedule_id: tour.id });
+      await BadgeSchedule.create({ badge_name: 'bestseller', schedule_id: tour.id });
+    } else {
+      await BadgeSchedule.create({ badge_name: 'green', schedule_id: tour.id });
+    }
+  }
+
+  // 9. Seed GreenServices
+  console.log('Seeding GreenServices...');
+  await GreenService.create({
+    _id: 'GSstaypro0001',
+    id: 'GSstaypro0001',
+    vender_id: '1',
+    name_service: 'Homestay Xanh Đà Lạt',
+    type: 'stay',
+    cost: 850000.00,
+    destination: 'Đà Lạt',
+    carbon: 2.50,
+    image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
+    rating: 4.8,
+    bookings_count: 42,
+    current_data: { wifi: true, parking: true }
+  });
+  await GreenService.create({
+    _id: 'GSfoodpro0001',
+    id: 'GSfoodpro0001',
+    vender_id: '1',
+    name_service: 'Cafe Săn Mây Đà Lạt',
+    type: 'food',
+    cost: 80000.00,
+    destination: 'Đà Lạt',
+    carbon: 0.50,
+    image_url: 'https://images.unsplash.com/photo-1555244162-803834f70033',
+    rating: 4.7,
+    bookings_count: 25,
+    current_data: { menu: ['cafe', 'tea'] }
+  });
+
+  await BadgeService.create({ badge_name: 'green', service_id: 'GSstaypro0001' });
+  await BadgeService.create({ badge_name: 'green', service_id: 'GSfoodpro0001' });
+
+  // 10. Seed ServiceBooking
+  await ServiceBooking.create({
+    _id: 'BK2606010001',
+    id: 'BK2606010001',
+    user_id: 'UG26tra0001',
+    service_id: 'GSstaypro0001',
+    fullname: 'Nguyễn Minh Anh',
+    name_service: 'Homestay Xanh Đà Lạt',
+    booking_date: '15/10/2026',
+    guests: 4,
+    value: 3400000.00,
+    status: 'deposit',
+    votes_count: 42
+  });
+
+  // 11. Seed ad_campaigns
+  await AdCampaign.create({
+    _id: 'ADC0001',
+    id: 'ADC0001',
+    user_id: 'UG26pro0001',
+    service_id: 'GSstaypro0001',
+    campaigns_type: 'top_recommend',
+    campaigns_name: 'Chiến dịch mùa hè rực rỡ',
+    campaigns_cost: 500000.00,
+    duration_days: 30,
+    start_date: '01/06/2026',
+    end_date: '01/07/2026',
+    status: 'active'
+  });
+
+  // 12. Seed Community & Comments
+  console.log('Seeding Community & Comments...');
+  await CommunityPost.create({
+    _id: 'CUPtra000101',
+    id: 'CUPtra000101',
+    user_id: 'UG26tra0001',
+    rating: 5,
+    text: 'Chuyến đi Phú Yên 3 ngày 2 đêm của mình siêu xanh và đáng nhớ! Nhờ thuê xe điện VinFast mà mình vi vu khắp Tuy Hòa hết rất ít tiền, lại không ồn ào. Các bạn nên ghé qua homestay Hoa Vàng nhé.',
+    tour_name: 'Tour Phú Yên Biển Xanh 3N2Đ',
+    destination: 'Phú Yên',
+    image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
+    tour_description: 'Khám phá Phú Yên',
+    days: 3,
+    likes_count: 24,
+    comments_count: 8,
+    current_data: { tips: 'Nên đi mùa khô' }
+  });
+
+  await CommentPost.create({
+    _id: 'CEPtra00010001',
+    id: 'CEPtra00010001',
+    user_id: 'UG26tra0001',
+    post_id: 'CUPtra000101',
+    rating: 5,
+    text: 'Chuyến đi tuyệt vời quá bạn ơi!',
+    image_url: null
+  });
+
+  await CPSS.create({
+    comment_id: 'CEPtra00010001',
+    schedule_sample_id: 'preset_py_2'
+  });
+
+  console.log('Database migrated & seeded successfully! Disconnecting...');
+  await mongoose.disconnect();
+  console.log('Done!');
+}
+
+seed().catch(err => {
+  console.error('Error seeding database:', err);
+  process.exit(1);
+});
