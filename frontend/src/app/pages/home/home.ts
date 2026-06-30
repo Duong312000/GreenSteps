@@ -10,7 +10,6 @@ type DestinationPosition = 'left' | 'center' | 'right';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './home.html',
-  styleUrls: []
 })
 export class HomeComponent {
   public searchDest: string = 'Đà Lạt';

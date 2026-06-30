@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { LoginModalService } from '../../services/login-modal.service';
 import { User } from '../../models/models';
@@ -10,14 +10,12 @@ import { User } from '../../models/models';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './partner-ads.html',
-  styleUrls: []
 })
 export class PartnerAdsComponent implements OnInit {
   public currentUser: User | null = null;
 
   constructor(
     private authService: AuthService,
-    private router: Router,
     private cdr: ChangeDetectorRef,
     private loginModalService: LoginModalService
   ) {}

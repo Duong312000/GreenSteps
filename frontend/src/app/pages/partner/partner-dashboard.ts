@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { LoginModalService } from '../../services/login-modal.service';
@@ -11,7 +11,6 @@ import { User, Booking } from '../../models/models';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './partner-dashboard.html',
-  styleUrls: []
 })
 export class PartnerDashboardComponent implements OnInit {
   public currentUser: User | null = null;
@@ -52,7 +51,6 @@ export class PartnerDashboardComponent implements OnInit {
   constructor(
     private apiService: ApiService,
     private authService: AuthService,
-    private router: Router,
     public cdr: ChangeDetectorRef,
     private loginModalService: LoginModalService
   ) {}

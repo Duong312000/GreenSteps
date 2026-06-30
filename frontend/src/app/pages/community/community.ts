@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -11,7 +11,6 @@ import { User, CommunityPost } from '../../models/models';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './community.html',
-  styleUrls: []
 })
 export class CommunityComponent implements OnInit {
   public currentUser: User | null = null;
@@ -26,7 +25,6 @@ export class CommunityComponent implements OnInit {
   constructor(
     private apiService: ApiService,
     private authService: AuthService,
-    private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
 

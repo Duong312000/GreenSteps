@@ -12,7 +12,6 @@ import { User, WalletTransaction } from '../../models/models';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './profile.html',
-  styleUrls: []
 })
 export class ProfileComponent implements OnInit {
   public currentUser: User | null = null;

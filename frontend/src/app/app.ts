@@ -7,8 +7,7 @@ import { FooterComponent } from './components/footer/footer';
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, HeaderComponent, FooterComponent],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  templateUrl: './app.html'
 })
 export class App {
   title = 'GreenSteps Travel';

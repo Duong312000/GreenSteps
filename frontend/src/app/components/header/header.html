@@ -11,20 +11,18 @@
         <!-- ── DIV 1: LOGO (cố định, flex-shrink-0) ── -->
         <div class="flex items-center flex-shrink-0" style="width: 300px;">
             <a routerLink="/home"
-               class="flex items-center gap-3 rounded-full px-3 py-2 transition-all duration-300 hover:opacity-90"
-               [ngClass]="isHomeHeaderCollapsed ? 'bg-black/20 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.18)] ring-1 ring-white/20' : 'bg-white/55 backdrop-blur-md shadow-sm ring-1 ring-[#184A37]/10'"
+               class="flex items-center gap-3 px-1 py-1 transition-all duration-300 hover:opacity-90"
                style="text-decoration: none;">
                 <img src="image/greensteps_logo_header.png"
-                     class="h-14 w-14 rounded-full object-cover ring-2 transition-all duration-300"
-                     [ngClass]="isHomeHeaderCollapsed ? 'ring-white/70 shadow-[0_6px_18px_rgba(0,0,0,0.25)]' : 'ring-white shadow-sm'"
+                     class="h-14 w-14 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.22)] transition-all duration-300"
                      alt="GreenSteps">
                 <span class="flex flex-col leading-none">
-                    <span class="text-[21px] font-extrabold tracking-normal transition-colors duration-300"
-                          [ngClass]="isHomeHeaderCollapsed ? 'text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.45)]' : 'text-[#0F3F31]'">
+                    <span class="text-[20px] font-extrabold tracking-normal drop-shadow-[0_1px_3px_rgba(0,0,0,0.26)] transition-colors duration-300"
+                          [ngClass]="isHomeHeaderCollapsed ? 'text-white' : 'text-[#0F3F31]'">
                         GreenSteps
                     </span>
-                    <span class="mt-1 text-[11px] font-bold uppercase tracking-[0.18em] transition-colors duration-300"
-                          [ngClass]="isHomeHeaderCollapsed ? 'text-[#D9F99D] drop-shadow-[0_1px_4px_rgba(0,0,0,0.45)]' : 'text-[#0E9F6E]'">
+                    <span class="mt-1 text-[11px] font-bold uppercase tracking-[0.18em] drop-shadow-[0_1px_3px_rgba(0,0,0,0.24)] transition-colors duration-300"
+                          [ngClass]="isHomeHeaderCollapsed ? 'text-[#D9F99D]' : 'text-[#0E9F6E]'">
                         Travel
                     </span>
                 </span>

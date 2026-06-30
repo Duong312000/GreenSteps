@@ -1,6 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
@@ -12,7 +12,6 @@ import { User, Booking } from '../../models/models';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './partner-bookings.html',
-  styleUrls: []
 })
 export class PartnerBookingsComponent implements OnInit {
   public currentUser: User | null = null;
@@ -114,7 +113,6 @@ export class PartnerBookingsComponent implements OnInit {
   constructor(
     private apiService: ApiService,
     private authService: AuthService,
-    private router: Router,
     public cdr: ChangeDetectorRef,
     private loginModalService: LoginModalService
   ) {}

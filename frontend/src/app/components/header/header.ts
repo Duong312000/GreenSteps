@@ -15,7 +15,6 @@ import { LoginModalService } from '../../services/login-modal.service';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule, LoginModalComponent],
   templateUrl: './header.html',
-  styleUrls: []
 })
 export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   public currentUser: User | null = null;

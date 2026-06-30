@@ -11,7 +11,6 @@ import { Tour, Itinerary } from '../../models/models';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './tours.html',
-  styleUrls: []
 })
 export class ToursComponent implements OnInit {
   public toursData: Tour[] = [];

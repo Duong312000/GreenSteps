@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { Itinerary, Activity, Tour } from '../../models/models';
+import { Itinerary } from '../../models/models';
 
 declare const L: any; // Leaflet mapped globally via index.html script tag
 
@@ -13,7 +13,6 @@ declare const L: any; // Leaflet mapped globally via index.html script tag
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './schedule-editor.html',
-  styleUrls: []
 })
 export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy {
   public activeItinerary: any = null; // Internal Editor representation

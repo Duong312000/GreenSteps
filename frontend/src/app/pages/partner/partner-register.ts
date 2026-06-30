@@ -11,7 +11,6 @@ import { User } from '../../models/models';
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './partner-register.html',
-  styleUrls: []
 })
 export class PartnerRegisterComponent implements OnInit {
   public currentUser: User | null = null;

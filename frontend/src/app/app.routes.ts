@@ -9,6 +9,7 @@ import { PartnerDashboardComponent } from './pages/partner/partner-dashboard';
 import { PartnerServicesComponent } from './pages/partner/partner-services';
 import { PartnerBookingsComponent } from './pages/partner/partner-bookings';
 import { PartnerAdsComponent } from './pages/partner/partner-ads';
+import { PartnerRegisterComponent } from './pages/partner/partner-register';
 import { BookingComponent } from './pages/booking/booking';
 
 export const routes: Routes = [
@@ -27,5 +28,6 @@ export const routes: Routes = [
   { path: 'partner-services', component: PartnerServicesComponent },
   { path: 'partner-bookings', component: PartnerBookingsComponent },
   { path: 'partner-ads', component: PartnerAdsComponent },
+  { path: 'partner-register', component: PartnerRegisterComponent },
   { path: '**', redirectTo: 'home' }
 ];

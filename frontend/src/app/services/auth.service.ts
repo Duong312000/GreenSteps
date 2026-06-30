@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { User } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private BACKEND_URL = 'http://localhost:5000/api/auth';
+  private BACKEND_URL = 'http://localhost:5055/api/auth';
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 

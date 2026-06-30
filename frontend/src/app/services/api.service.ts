@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
-import { Tour, Itinerary, Service, Booking, WalletInfo, WalletTransaction, CommunityPost, Activity } from '../models/models';
+import { firstValueFrom } from 'rxjs';
+import { Tour, Itinerary, Service, Booking, WalletInfo, WalletTransaction, CommunityPost } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private BACKEND_URL = 'http://localhost:5000/api';
+  private BACKEND_URL = 'http://localhost:5055/api';
 
   // Fallback static preset tours if backend is offline
   private mockPresetTours: Tour[] = [
