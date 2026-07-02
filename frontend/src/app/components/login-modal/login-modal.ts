@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnDestroy, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnDestroy, Output, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -20,6 +20,7 @@ export class LoginModalComponent implements AfterViewInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
   @ViewChild('loginDialog') loginDialog!: ElementRef<HTMLElement>;
   @ViewChild('firstField') firstField?: ElementRef<HTMLInputElement>;
+  @ViewChildren('otpInput') otpInputs?: QueryList<ElementRef<HTMLInputElement>>;
 
   public authStep: AuthStep = 'login';
   public verificationMethod: VerifyMethod = 'email';
@@ -116,29 +117,70 @@ export class LoginModalComponent implements AfterViewInit, OnDestroy {
     this.openVerify('Mã demo là 123456 để tiếp tục đặt lại mật khẩu.');
   }
 
-  public onOtpInput(event: Event, index: number) {
-    const input = event.target as HTMLInputElement;
-    const value = input.value.replace(/\D/g, '').slice(-1);
-    this.otpDigits[index] = value;
-    input.value = value;
-    if (value && index < 5) this.focusOtp(index + 1);
+  public trackOtpIndex(index: number) {
+    return index;
+  }
+
+  public onOtpBeforeInput(event: InputEvent) {
+    if (event.inputType === 'insertText' && event.data && !/^\d$/.test(event.data)) {
+      event.preventDefault();
+    }
+  }
+
+  public onOtpInput(value: string, index: number) {
+    const digit = value.replace(/\D/g, '').slice(-1);
+    this.otpDigits = this.otpDigits.map((current, digitIndex) => digitIndex === index ? digit : current);
+
+    if (digit && index < this.otpDigits.length - 1) {
+      requestAnimationFrame(() => this.focusOtp(index + 1));
+    }
   }
 
   public onOtpKeydown(event: KeyboardEvent, index: number) {
-    if (event.key === 'Backspace' && !this.otpDigits[index] && index > 0) this.focusOtp(index - 1);
+    if (event.key === 'Backspace') {
+      event.preventDefault();
+      if (this.otpDigits[index]) {
+        this.otpDigits = this.otpDigits.map((digit, digitIndex) => digitIndex === index ? '' : digit);
+      } else if (index > 0) {
+        this.otpDigits = this.otpDigits.map((digit, digitIndex) => digitIndex === index - 1 ? '' : digit);
+        requestAnimationFrame(() => this.focusOtp(index - 1));
+      }
+      return;
+    }
+
+    if (event.key === 'ArrowLeft' && index > 0) {
+      event.preventDefault();
+      this.focusOtp(index - 1);
+      return;
+    }
+
+    if (event.key === 'ArrowRight' && index < 5) {
+      event.preventDefault();
+      this.focusOtp(index + 1);
+    }
   }
 
-  public onOtpPaste(event: ClipboardEvent) {
-    const text = event.clipboardData?.getData('text').replace(/\D/g, '').slice(0, 6) || '';
-    if (!text) return;
+  public onOtpPaste(event: ClipboardEvent, index: number) {
     event.preventDefault();
-    this.otpDigits = Array.from({ length: 6 }, (_, index) => text[index] || '');
-    setTimeout(() => this.focusOtp(Math.min(text.length, 6) - 1), 0);
+    const text = event.clipboardData?.getData('text').replace(/\D/g, '').slice(0, this.otpDigits.length - index) || '';
+    if (!text) return;
+
+    this.otpDigits = this.otpDigits.map((digit, digitIndex) => {
+      if (digitIndex < index || digitIndex >= index + text.length) return digit;
+      return text[digitIndex - index] || '';
+    });
+
+    requestAnimationFrame(() => this.focusOtp(Math.min(index + text.length, this.otpDigits.length - 1)));
+  }
+
+  public selectOtp(event: Event) {
+    (event.target as HTMLInputElement).select();
   }
 
   public async verifyOtp(event: Event) {
     event.preventDefault();
     this.errorMessage = '';
+    if (this.isSubmitting) return;
     if (this.otpDigits.join('') !== '123456') {
       this.errorMessage = 'Mã xác thực không chính xác.';
       return;
@@ -263,8 +305,9 @@ export class LoginModalComponent implements AfterViewInit, OnDestroy {
   }
 
   private focusOtp(index: number) {
-    const dialog = this.loginDialog?.nativeElement;
-    dialog?.querySelectorAll<HTMLInputElement>('.otp-input')[index]?.focus();
+    const input = this.otpInputs?.get(index)?.nativeElement;
+    input?.focus();
+    input?.select();
   }
 
   private trapFocus(event: KeyboardEvent) {

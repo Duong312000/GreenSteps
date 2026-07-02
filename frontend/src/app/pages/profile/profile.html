@@ -1,150 +1,303 @@
-<main class="main-viewport profile-viewport" *ngIf="currentUser">
-    <div class="profile-layout-container">
-        <!-- Left Panel: User Profile Info Card -->
-        <div class="profile-left-col">
-            <div class="user-info-card">
-                <div class="user-avatar-circle" id="profileAvatar">{{ getFirstLetter(currentUser.fullname) }}</div>
-                <div class="user-title-row">
-                    <h2 id="profileName">{{ currentUser.fullname }}</h2>
-                    <span class="role-badge" id="profileRoleBadge">{{ currentUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</span>
-                </div>
-                <p class="user-email-text" id="profileEmail">{{ currentUser.email }}</p>
-                <p class="user-role-label">Nhà cung cấp: <strong id="profileProviderStatus">{{ currentUser.role === 'provider' ? 'Đã kích hoạt' : 'Chưa đăng ký' }}</strong></p>
-            </div>
+<main class="profile-dashboard">
+    <aside class="profile-dashboard__sidebar">
+        <nav class="profile-sidebar-nav" aria-label="Profile navigation">
+            <section class="profile-nav-group" *ngFor="let group of sidebarGroups">
+                <h2>{{ group.heading }}</h2>
+                <button type="button"
+                        *ngFor="let item of group.items"
+                        class="profile-nav-item"
+                        [class.active]="isSidebarItemActive(item)"
+                        (click)="handleSidebarItem(item)">
+                    <i class="bi" [ngClass]="item.icon"></i>
+                    <span>{{ item.label }}</span>
+                    <small *ngIf="item.badge">{{ item.badge }}</small>
+                </button>
+            </section>
+        </nav>
 
-            <!-- Personal Info Details Form -->
-            <div class="personal-details-card">
-                <div class="card-header">
-                    <h3>Thông tin cá nhân</h3>
-                    <button class="btn-edit-details" (click)="toggleEditDetails()"><i class="bi bi-pencil-square"></i> Chỉnh sửa</button>
-                </div>
-                <form id="personalDetailsForm" (submit)="saveDetails($event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Họ và tên</label>
-                            <input type="text" id="detName" [(ngModel)]="detFullname" name="detFullname" [disabled]="!isEditing">
+        <article class="profile-green-card">
+            <div class="profile-green-card__art"><i class="bi bi-tree"></i></div>
+            <h3>Du lịch xanh<br>Hành trình xanh</h3>
+            <p>Cùng GreenSteps bảo vệ thiên nhiên trong từng chuyến đi.</p>
+            <button type="button" routerLink="/home">Tìm hiểu thêm <i class="bi bi-arrow-right"></i></button>
+        </article>
+    </aside>
+
+    <section class="profile-dashboard__content" *ngIf="activeSection === 'overview'">
+        <header class="profile-dashboard__hero">
+            <div>
+                <p>Tài khoản GreenSteps</p>
+                <h1>Xin chào, {{ profileUser.fullname || profileUser.username }}</h1>
+                <span>Quản lý lịch trình, ví GreenSteps, điểm xanh và các chuyến đi của bạn.</span>
+            </div>
+            <button type="button" routerLink="/tours"><i class="bi bi-compass"></i>Khám phá tour</button>
+        </header>
+
+        <div class="profile-dashboard__grid">
+            <aside class="profile-dashboard__left">
+                <article class="profile-summary-card">
+                    <div class="profile-summary-cover"><img [src]="coverImage" alt="GreenSteps nature cover"></div>
+                    <div class="profile-summary-body">
+                        <div class="profile-avatar-wrap">
+                            <div class="profile-avatar-large">{{ getFirstLetter(profileUser.fullname) }}</div>
+                            <button type="button" class="profile-avatar-camera" aria-label="Cập nhật ảnh đại diện"><i class="bi bi-camera"></i></button>
                         </div>
-                        <div class="form-group">
-                            <label>Số điện thoại</label>
-                            <input type="tel" id="detPhone" [(ngModel)]="detPhone" name="detPhone" [disabled]="!isEditing">
+                        <h2>{{ profileUser.fullname || profileUser.username }}</h2>
+                        <span class="profile-role-pill">{{ profileUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</span>
+                        <div class="profile-summary-meta">
+                            <span><i class="bi bi-envelope"></i>{{ profileUser.email }}<i class="bi bi-patch-check-fill verified"></i></span>
+                            <span><i class="bi bi-calendar2"></i>Thành viên từ 05/2024</span>
                         </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="detEmail" [(ngModel)]="detEmail" name="detEmail" [disabled]="!isEditing">
+                        <button type="button" class="profile-outline-button" (click)="showPersonalInfo()">Chỉnh sửa hồ sơ</button>
+                        <article class="profile-provider-card" *ngIf="profileUser.role !== 'provider'">
+                            <i class="bi bi-buildings"></i>
+                            <div>
+                                <h3>Bạn chưa đăng ký Nhà cung cấp</h3>
+                                <p>Chia sẻ dịch vụ xanh của bạn đến cộng đồng du khách GreenSteps.</p>
+                                <button type="button" (click)="navigateToProviderRegistration()">Đăng ký ngay <i class="bi bi-arrow-right"></i></button>
+                            </div>
+                        </article>
+                        <article class="profile-provider-card active" *ngIf="profileUser.role === 'provider'">
+                            <i class="bi bi-shop"></i>
+                            <div>
+                                <h3>Kênh nhà cung cấp đã kích hoạt</h3>
+                                <p>Quản lý dịch vụ, đơn đặt và quảng cáo cho khách du lịch xanh.</p>
+                                <button type="button" routerLink="/partner-dashboard">Vào kênh đối tác <i class="bi bi-arrow-right"></i></button>
+                            </div>
+                        </article>
+                    </div>
+                </article>
+
+                <article class="profile-card profile-level-card">
+                    <header class="profile-card-header"><h2>{{ greenTravelLevel.title }}</h2><i class="bi bi-leaf"></i></header>
+                    <strong>{{ greenTravelLevel.level }}</strong>
+                    <div class="profile-level-progress" aria-hidden="true"><span></span></div>
+                    <p>{{ greenTravelLevel.current }}/{{ greenTravelLevel.target }} điểm xanh</p>
+                    <small>Còn {{ greenTravelLevel.target - greenTravelLevel.current }} điểm để lên {{ greenTravelLevel.nextLevel }}</small>
+                </article>
+
+                <article class="profile-card overview-preferences-card">
+                    <header class="profile-card-header"><h2>Sở thích du lịch</h2></header>
+                    <div class="overview-preference-tags">
+                        <span *ngFor="let item of travelPreferences.slice(0, 4)">
+                            <i class="bi" [ngClass]="item.icon"></i>{{ item.label }}
+                        </span>
+                    </div>
+                    <a class="profile-card-link" href="#" (click)="$event.preventDefault()">Cập nhật sở thích <i class="bi bi-arrow-right"></i></a>
+                </article>
+            </aside>
+
+            <section class="profile-dashboard__main">
+                <article class="profile-wallet-card">
+                    <div class="profile-wallet-icon"><i class="bi bi-wallet2"></i></div>
+                    <div class="profile-wallet-copy">
+                        <div>
+                            <h2>Ví GreenSteps</h2>
+                            <span class="profile-wallet-status" [class.active]="walletRegistered">{{ walletRegistered ? 'Đã kích hoạt' : 'Chưa kích hoạt' }}</span>
                         </div>
-                        <div class="form-group">
-                            <label>Ngày sinh</label>
-                            <input type="text" id="detDob" [(ngModel)]="detDob" name="detDob" [disabled]="!isEditing">
-                        </div>
-                        <div class="form-group">
-                            <label>Giới tính</label>
-                            <select id="detGender" [(ngModel)]="detGender" name="detGender" [disabled]="!isEditing">
-                                <option value="Nữ">Nữ</option>
-                                <option value="Nam">Nam</option>
-                                <option value="Khác">Khác</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Địa chỉ liên hệ</label>
-                            <input type="text" id="detAddress" [(ngModel)]="detAddress" name="detAddress" [disabled]="!isEditing">
+                        <p>Thanh toán nhanh, nhận ưu đãi và tích điểm xanh cho mỗi chuyến đi.</p>
+                        <a href="#" (click)="$event.preventDefault()">Tìm hiểu thêm về ví GreenSteps <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                    <div class="profile-wallet-action">
+                        <button type="button" *ngIf="!walletRegistered" (click)="handleWalletActivation()">Kích hoạt ví & nhận 5.000.000đ</button>
+                        <div class="profile-wallet-balance" *ngIf="walletRegistered">
+                            <span>Số dư khả dụng</span>
+                            <strong>{{ walletBalance | number:'1.0-0':'vi-VN' }}đ</strong>
                         </div>
                     </div>
-                    <button type="submit" class="btn-save-details" id="saveDetailsBtn" *ngIf="isEditing">Lưu thay đổi</button>
+                </article>
+
+                <section class="profile-stats-grid" aria-label="GreenSteps stats">
+                    <article class="profile-stat-card" *ngFor="let stat of dashboardStats">
+                        <div class="profile-stat-icon"><i class="bi" [ngClass]="stat.icon"></i></div>
+                        <strong>{{ stat.value }}</strong>
+                        <span>{{ stat.label }}</span>
+                        <a href="#" (click)="$event.preventDefault()">{{ stat.link }} <i class="bi bi-arrow-right"></i></a>
+                    </article>
+                </section>
+
+                <article class="profile-card profile-upcoming-card">
+                    <header class="profile-card-header"><h2>Lịch trình sắp tới</h2><a routerLink="/schedule">Xem tất cả <i class="bi bi-arrow-right"></i></a></header>
+                    <div class="profile-trip-row">
+                        <div class="profile-trip-image"><img [src]="tripImage" alt="Sapa Fansipan"><span>Sắp khởi hành</span></div>
+                        <div class="profile-trip-info">
+                            <h3>Sapa - Fansipan 3N2Đ</h3>
+                            <p><i class="bi bi-calendar2-week"></i>Thứ 6, 24/05/2024 - Chủ nhật, 26/05/2024</p>
+                            <p><i class="bi bi-people"></i>2 người lớn</p>
+                            <p>Tổng chi phí dự kiến: <strong>4.250.000đ</strong></p>
+                        </div>
+                        <div class="profile-trip-action"><span>Còn 2 ngày nữa</span><button type="button" routerLink="/schedule">Xem chi tiết</button></div>
+                    </div>
+                </article>
+
+                <div class="profile-lower-grid">
+                    <article class="profile-card profile-checklist-card">
+                        <header class="profile-card-header"><div><h2>Checklist trước chuyến đi</h2><span>3/7 đã hoàn thành</span></div><i class="bi bi-backpack3"></i></header>
+                        <div class="profile-checklist-progress" aria-hidden="true"><span></span></div>
+                        <ul class="profile-checklist">
+                            <li *ngFor="let item of checklistItems" [class.done]="item.done">
+                                <i class="bi" [ngClass]="item.done ? 'bi-check-square-fill' : 'bi-square'"></i>
+                                <span>{{ item.label }}</span>
+                            </li>
+                        </ul>
+                    </article>
+                    <article class="profile-card profile-account-card">
+                        <header class="profile-card-header"><h2>Quản lý tài khoản</h2></header>
+                        <button type="button" class="profile-setting-row" (click)="showPersonalInfo()"><i class="bi bi-person"></i><span><strong>Thông tin cá nhân</strong><small>Hồ sơ, liên hệ, sở thích</small></span><i class="bi bi-chevron-right"></i></button>
+                        <button type="button" class="profile-setting-row" (click)="handleRoleToggle()"><i class="bi bi-arrow-left-right"></i><span><strong>Vai trò tài khoản</strong><small>{{ profileUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</small></span><i class="bi bi-chevron-right"></i></button>
+                        <button type="button" class="profile-setting-row danger" (click)="handleLogout()"><i class="bi bi-box-arrow-right"></i><span><strong>Đăng xuất</strong><small>Thoát khỏi tài khoản hiện tại</small></span><i class="bi bi-chevron-right"></i></button>
+                    </article>
+                </div>
+
+                <article class="profile-card profile-transactions-card">
+                    <header class="profile-card-header">
+                        <h2>Lịch sử giao dịch ví</h2>
+                        <a href="#" (click)="$event.preventDefault()">Xem tất cả giao dịch <i class="bi bi-arrow-right"></i></a>
+                    </header>
+                    <div class="transactions-table-wrapper">
+                        <table class="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã giao dịch</th>
+                                    <th>Nội dung</th>
+                                    <th>Ngày giao dịch</th>
+                                    <th>Số tiền</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngIf="transactions.length === 0">
+                                    <td colspan="5">Không có giao dịch nào gần đây. Kích hoạt ví để bắt đầu.</td>
+                                </tr>
+                                <tr *ngFor="let t of transactions.slice(0, 3)">
+                                    <td><strong>{{ t.id }}</strong></td>
+                                    <td>{{ t.desc }}</td>
+                                    <td>{{ t.date }}</td>
+                                    <td [ngClass]="t.amount > 0 ? 'amt-positive' : 'amt-negative'"><strong>{{ t.amount > 0 ? '+' : '' }}{{ t.amount | number:'1.0-0':'vi-VN' }}đ</strong></td>
+                                    <td><span class="status-pill success">{{ t.status === 'success' ? 'Hoàn thành' : 'Đang xử lý' }}</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            </section>
+
+            <aside class="profile-dashboard__right">
+                <article class="profile-card profile-carbon-card">
+                    <header class="profile-card-header"><h2>Carbon Footprint</h2><button type="button">Tháng này <i class="bi bi-chevron-down"></i></button></header>
+                    <div class="profile-carbon-kpi"><strong>8.5 kg CO₂</strong><span>↓ 32% so với tháng trước</span></div>
+                    <div class="profile-carbon-stack" aria-label="Carbon breakdown"><span class="transport"></span><span class="stay"></span><span class="activity"></span></div>
+                    <div class="profile-carbon-list">
+                        <div *ngFor="let item of carbonBreakdown"><span><i class="bi" [ngClass]="item.icon"></i>{{ item.label }}</span><strong>{{ item.value }}</strong></div>
+                    </div>
+                </article>
+                <article class="profile-card profile-offer-card">
+                    <header class="profile-card-header"><h2>Ưu đãi dành riêng cho bạn</h2><a routerLink="/tours">Xem tất cả <i class="bi bi-arrow-right"></i></a></header>
+                    <div class="profile-offer-visual"><img [src]="offerImage" alt="Northern mountain trekking offer"><div><h3>Giảm 15% tour trekking miền núi phía Bắc</h3><p>Áp dụng cho booking trước 30/06</p><button type="button" routerLink="/tours">Khám phá ngay</button></div></div>
+                </article>
+                <article class="profile-card profile-weather-card">
+                    <header class="profile-card-header"><h2>Thời tiết điểm đến</h2><i class="bi bi-cloud-sun"></i></header>
+                    <strong>{{ weatherAlert.destination }} · {{ weatherAlert.range }}</strong>
+                    <p>{{ weatherAlert.description }}</p>
+                </article>
+                <article class="profile-card profile-reminder-card">
+                    <header class="profile-card-header"><h2>Nhắc nhở gần nhất</h2><a href="#" (click)="$event.preventDefault()">Xem tất cả <i class="bi bi-arrow-right"></i></a></header>
+                    <div class="profile-reminder-list">
+                        <div *ngFor="let item of tripReminders">
+                            <i class="bi" [ngClass]="item.icon"></i>
+                            <span>{{ item.label }}</span>
+                        </div>
+                    </div>
+                </article>
+            </aside>
+        </div>
+    </section>
+
+    <section class="profile-dashboard__content" *ngIf="activeSection === 'personal'">
+        <header class="personal-page-heading">
+            <h1>Thông tin cá nhân</h1>
+            <p>Quản lý hồ sơ, thông tin liên hệ và dữ liệu cá nhân hóa của bạn trên GreenSteps. Thông tin này được dùng để cá nhân hóa lịch trình, booking và hỗ trợ bạn tốt hơn.</p>
+        </header>
+
+        <div class="personal-info-grid">
+            <aside class="profile-card personal-profile-card">
+                <div class="profile-summary-cover"><img [src]="coverImage" alt="GreenSteps nature cover"></div>
+                <div class="personal-profile-body">
+                    <div class="profile-avatar-wrap">
+                        <div class="profile-avatar-large">{{ getFirstLetter(profileUser.fullname) }}</div>
+                        <button type="button" class="profile-avatar-camera" aria-label="Cập nhật ảnh đại diện"><i class="bi bi-camera"></i></button>
+                    </div>
+                    <h2>{{ profileUser.fullname || profileUser.username }}</h2>
+                    <span class="profile-role-pill">{{ profileUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</span>
+                    <p class="profile-quote">"Travel far, live green, leave only footprints."</p>
+                    <div class="profile-summary-meta">
+                        <span><i class="bi bi-envelope"></i>{{ profileUser.email }}<i class="bi bi-patch-check-fill verified"></i></span>
+                        <span><i class="bi bi-calendar2"></i>Thành viên từ 05/2024</span>
+                    </div>
+                    <div class="profile-photo-actions">
+                        <button type="button"><i class="bi bi-camera"></i>Đổi ảnh đại diện</button>
+                        <button type="button"><i class="bi bi-image"></i>Chỉnh sửa ảnh bìa</button>
+                    </div>
+                    <article class="profile-provider-card">
+                        <i class="bi" [ngClass]="profileUser.role === 'provider' ? 'bi-shop' : 'bi-buildings'"></i>
+                        <div>
+                            <h3>{{ profileUser.role === 'provider' ? 'Kênh nhà cung cấp đã kích hoạt' : 'Bạn chưa đăng ký Nhà cung cấp' }}</h3>
+                            <p>{{ profileUser.role === 'provider' ? 'Quản lý dịch vụ và đơn đặt cho khách du lịch xanh.' : 'Chia sẻ dịch vụ của bạn đến hàng ngàn du khách yêu du lịch xanh.' }}</p>
+                            <button type="button" *ngIf="profileUser.role !== 'provider'" (click)="navigateToProviderRegistration()">Đăng ký ngay <i class="bi bi-arrow-right"></i></button>
+                            <button type="button" *ngIf="profileUser.role === 'provider'" routerLink="/partner-dashboard">Vào kênh đối tác <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                    </article>
+                    <section class="profile-social-links">
+                        <h3>Liên kết với mạng xã hội</h3>
+                        <p>Kết nối tài khoản để đăng nhập nhanh và chia sẻ hành trình dễ dàng hơn.</p>
+                        <div class="social-link-grid">
+                            <button type="button" class="instagram"><i class="bi bi-instagram"></i><span>Instagram</span></button>
+                            <button type="button" class="facebook"><i class="bi bi-facebook"></i><span>Facebook</span></button>
+                            <button type="button" class="tiktok"><i class="bi bi-tiktok"></i><span>TikTok</span></button>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+
+            <article class="profile-card basic-info-card">
+                <header class="profile-card-header"><h2>Thông tin cơ bản</h2></header>
+                <form class="basic-info-form" (submit)="saveDetails($event)">
+                    <label>Họ và tên<input type="text" [(ngModel)]="detFullname" name="detFullname"></label>
+                    <label>Ngày sinh<input type="text" [(ngModel)]="detDob" name="detDob" placeholder="DD/MM/YYYY"></label>
+                    <label>Giới tính<select [(ngModel)]="detGender" name="detGender"><option value="Nữ">Nữ</option><option value="Nam">Nam</option><option value="Khác">Khác</option></select></label>
+                    <label>Mô tả ngắn (Bio)<textarea name="bio" maxlength="200">Yêu thích du lịch xanh, trekking, khám phá thiên nhiên và trải nghiệm văn hóa địa phương.</textarea><small>109/200</small></label>
+                    <button type="submit">Lưu thay đổi</button>
                 </form>
-            </div>
-        </div>
+            </article>
 
-        <!-- Right Panel: Wallet & Upgrades -->
-        <div class="profile-right-col">
-            <!-- Wallet Status Card -->
-            <div class="wallet-info-card">
-                <div class="wallet-header">
-                    <h3>Ví du lịch GreenSteps</h3>
-                    <span class="wallet-badge" [class.active]="walletRegistered">{{ walletRegistered ? 'Đã kích hoạt' : 'Chưa kích hoạt' }}</span>
+            <article class="profile-card contact-info-card">
+                <header class="profile-card-header"><h2>Thông tin liên hệ</h2></header>
+                <div class="contact-list">
+                    <div><span>Email</span><strong>{{ profileUser.email }}</strong><small><i class="bi bi-patch-check-fill"></i>Đã xác thực</small></div>
+                    <div><span>Số điện thoại</span><strong>{{ profileUser.phone || 'Chưa cập nhật' }}</strong><button type="button">+ Thêm số điện thoại</button></div>
+                    <div><span>Địa chỉ liên hệ</span><strong>{{ profileUser.address || 'Chưa cập nhật' }}</strong></div>
                 </div>
-                
-                <div class="wallet-balance-box" *ngIf="walletRegistered">
-                    <span class="bal-label">Số dư khả dụng:</span>
-                    <h2 class="bal-value">{{ walletBalance | number:'1.0-0':'vi-VN' }}đ</h2>
-                    
-                    <div class="deposit-form-inline">
-                        <input type="number" [(ngModel)]="depositAmount" placeholder="Nhập số tiền nạp..." min="20000" step="10000">
-                        <button (click)="handleDeposit()"><i class="bi bi-plus-lg"></i> Nạp tiền</button>
-                    </div>
-                </div>
+                <button type="button" class="contact-update-button">Cập nhật liên hệ</button>
+            </article>
 
-                <div class="wallet-inactive-box" *ngIf="!walletRegistered">
-                    <p>Kích hoạt Ví du lịch để thanh toán gộp lịch trình, hưởng ưu đãi giảm giá và nhận hoàn trả cọc dễ dàng hơn.</p>
-                    <button class="btn-activate-wallet" (click)="handleWalletActivation()">Kích hoạt Ví & Nhận 5.000.000đ</button>
-                </div>
-            </div>
+            <article class="profile-card travel-preferences-card">
+                <header class="profile-card-header"><div><h2>Sở thích du lịch</h2><span>GreenSteps dùng thông tin này để gợi ý hành trình, tour và ưu đãi phù hợp hơn với bạn.</span></div></header>
+                <div class="preference-persona"><i class="bi bi-compass"></i><div><span>Phong cách của bạn</span><strong>{{ travelTasteProfile.persona }}</strong><p>{{ travelTasteProfile.description }}</p></div></div>
+                <div class="preference-group"><h3>Loại hình du lịch yêu thích</h3><div class="preference-tags"><span class="selected"><i class="bi bi-check2"></i>Trekking</span><span class="selected"><i class="bi bi-check2"></i>Camping</span><span class="selected"><i class="bi bi-check2"></i>Ecotourism</span><span>Food tour</span><span>Nghỉ dưỡng</span></div></div>
+                <div class="preference-group"><h3>Ngân sách thường dùng</h3><div class="preference-tags"><span>Dưới 3 triệu</span><span class="selected"><i class="bi bi-check2"></i>3 - 5 triệu</span><span>5 - 10 triệu</span><span>Trên 10 triệu</span></div></div>
+                <div class="preference-group"><h3>Tiện nghi ưu tiên</h3><div class="preference-tags"><span class="selected"><i class="bi bi-check2"></i>Homestay</span><span>Resort</span><span class="selected"><i class="bi bi-check2"></i>Campsite</span><span>Pet-friendly</span><span class="selected"><i class="bi bi-check2"></i>Trekking route</span></div></div>
+                <div class="preference-match"><div><span>Mức độ cá nhân hóa</span><strong>{{ travelTasteProfile.match }}%</strong></div><div class="preference-progress"><span></span></div><p>Thêm ngân sách và tiện nghi yêu thích để GreenSteps gợi ý chính xác hơn.</p></div>
+                <button type="button">Lưu sở thích</button>
+            </article>
 
-            <!-- Provider Upgrades Status -->
-            <div class="provider-upgrade-card">
-                <h3>Trạng thái Nhà cung cấp</h3>
-                <div class="upgrade-status-box" *ngIf="currentUser.role !== 'provider'">
-                    <p>Bạn đang sử dụng GreenSteps với vai trò Khách du lịch. Hãy đăng ký làm Nhà cung cấp nếu muốn đăng và quản lý dịch vụ du lịch trên nền tảng.</p>
-                    <button class="btn-upgrade-provider" routerLink="/partner-register">Đăng ký làm Nhà cung cấp</button>
+            <article class="profile-card security-card">
+                <header class="profile-card-header"><div><h2>Bảo mật tài khoản</h2><span>Quản lý mật khẩu và các phương thức bảo mật tài khoản.</span></div></header>
+                <div class="security-grid">
+                    <button type="button" class="security-item"><i class="bi bi-lock"></i><span><strong>Mật khẩu</strong><small>Đã thiết lập</small></span><em>Đổi mật khẩu <i class="bi bi-arrow-right"></i></em></button>
+                    <button type="button" class="security-item"><i class="bi bi-shield-check"></i><span><strong>Xác thực OTP</strong><small>Đang bật</small></span><em>Quản lý bảo mật <i class="bi bi-arrow-right"></i></em></button>
+                    <button type="button" class="security-item"><i class="bi bi-phone"></i><span><strong>Phiên đăng nhập</strong><small>1 thiết bị đang hoạt động</small></span><em>Xem thiết bị <i class="bi bi-arrow-right"></i></em></button>
                 </div>
-                <div class="upgrade-status-box" *ngIf="currentUser.role === 'provider'">
-                    <p style="color:var(--success); font-weight:600;"><i class="bi bi-check-circle-fill"></i> Kênh nhà cung cấp đã được phê duyệt thành công.</p>
-                    <button class="btn-upgrade-provider" routerLink="/partner-dashboard">Vào kênh đối tác</button>
-                </div>
-            </div>
-
-            <!-- Account Settings (Role Switcher & Logout) -->
-            <div class="account-settings-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px;">
-                <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">Quản lý tài khoản</h3>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Chuyển đổi vai trò sử dụng hoặc đăng xuất khỏi hệ thống.</p>
-                
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <button class="role-toggle-btn" (click)="handleRoleToggle()" style="width: 100%; height: 40px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-primary);">
-                        <i class="bi bi-arrow-left-right"></i> Chuyển đổi vai trò
-                    </button>
-                    <button class="logout-btn" (click)="handleLogout()" style="width: 100%; height: 40px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #c62828;">
-                        <i class="bi bi-box-arrow-right"></i> Đăng xuất
-                    </button>
-                </div>
-            </div>
-
-            <!-- Actions Reset -->
-            <div class="reset-db-card">
-                <h3>Khôi phục trạng thái</h3>
-                <p>Đặt lại vai trò du khách, trạng thái ví chưa kích hoạt, xóa lịch trình cũ để thực hiện lại chuỗi kiểm thử.</p>
-                <button class="btn-reset-db" (click)="resetProjectState()">Đặt lại dữ liệu (Reset)</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Transactions History Table -->
-    <section class="profile-transactions-section" *ngIf="walletRegistered">
-        <h3>Lịch sử giao dịch ví</h3>
-        <div class="transactions-table-wrapper">
-            <table class="transactions-table">
-                <thead>
-                    <tr>
-                        <th>Mã giao dịch</th>
-                        <th>Nội dung</th>
-                        <th>Ngày giao dịch</th>
-                        <th>Số tiền</th>
-                        <th>Trạng thái</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngIf="transactions.length === 0">
-                        <td colspan="5" style="text-align:center; color:var(--text-muted);">Không có giao dịch nào gần đây. Nạp tiền để bắt đầu.</td>
-                    </tr>
-                    <tr *ngFor="let t of transactions">
-                        <td><strong>{{ t.id }}</strong></td>
-                        <td>{{ t.desc }}</td>
-                        <td>{{ t.date }}</td>
-                        <td [ngClass]="t.amount > 0 ? 'amt-positive' : 'amt-negative'">
-                            <strong>{{ t.amount > 0 ? '+' : '' }}{{ t.amount | number:'1.0-0':'vi-VN' }}đ</strong>
-                        </td>
-                        <td><span class="status-pill success">{{ t.status === 'success' ? 'Hoàn thành' : 'Đang xử lý' }}</span></td>
-                    </tr>
-                </tbody>
-            </table>
+            </article>
         </div>
     </section>
 </main>

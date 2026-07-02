@@ -7,7 +7,7 @@ import { Tour, Itinerary, Service, Booking, WalletInfo, WalletTransaction, Commu
   providedIn: 'root'
 })
 export class ApiService {
-  private BACKEND_URL = 'http://localhost:5055/api';
+  private BACKEND_URL = 'http://localhost:5000/api';
 
   // Fallback static preset tours if backend is offline
   private mockPresetTours: Tour[] = [
@@ -142,10 +142,11 @@ export class ApiService {
   }
 
   public async getPresetTour(id: string): Promise<Tour | null> {
-    const cleanId = String(id).replace('preset_', '');
+    const normalizeId = (value: string) => String(value).replace(/^preset[-_]/, '').replace(/-/g, '_').toLowerCase();
+    const cleanId = normalizeId(id);
     try {
       const tours = await this.getPresetTours();
-      return tours.find(t => t.id === id || String(t.id).replace('preset_', '') === cleanId) || null;
+      return tours.find(t => normalizeId(t.id) === cleanId) || null;
     } catch (e) {
       return null;
     }

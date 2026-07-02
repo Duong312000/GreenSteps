@@ -92,15 +92,20 @@
           <form class="auth-form" (submit)="verifyOtp($event)">
             <div class="otp-row" [class.invalid]="errorMessage">
               <input
+                #otpInput
                 class="otp-input"
-                *ngFor="let digit of otpDigits; let idx = index"
+                *ngFor="let digit of otpDigits; let idx = index; trackBy: trackOtpIndex"
                 inputmode="numeric"
                 maxlength="1"
                 [attr.aria-label]="'Số OTP ' + (idx + 1)"
-                [value]="digit"
-                (input)="onOtpInput($event, idx)"
+                [ngModel]="digit"
+                [ngModelOptions]="{ standalone: true }"
+                (beforeinput)="onOtpBeforeInput($event)"
+                (ngModelChange)="onOtpInput($event, idx)"
                 (keydown)="onOtpKeydown($event, idx)"
-                (paste)="onOtpPaste($event)">
+                (paste)="onOtpPaste($event, idx)"
+                (focus)="selectOtp($event)"
+                (click)="selectOtp($event)">
             </div>
             <p class="auth-alert error" *ngIf="errorMessage">{{ errorMessage }}</p>
             <p class="auth-alert success" *ngIf="successMessage">{{ successMessage }}</p>

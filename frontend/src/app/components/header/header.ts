@@ -54,6 +54,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private resizeObserver!: ResizeObserver;
   private loginModalSubscription?: Subscription;
+  private profileCloseTimer?: number;
   private updateScrollState() {
     const nextIsScrolled = window.scrollY > 0;
     if (this.isScrolled === nextIsScrolled) return;
@@ -170,6 +171,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.loginModalSubscription?.unsubscribe();
+    this.clearProfileCloseTimer();
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
@@ -274,6 +276,25 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  public openProfileMenu() {
+    this.clearProfileCloseTimer();
+    this.isProfileOpen = true;
+  }
+
+  public scheduleProfileMenuClose() {
+    this.clearProfileCloseTimer();
+    this.profileCloseTimer = window.setTimeout(() => {
+      this.isProfileOpen = false;
+      this.profileCloseTimer = undefined;
+    }, 180);
+  }
+
+  private clearProfileCloseTimer() {
+    if (!this.profileCloseTimer) return;
+    window.clearTimeout(this.profileCloseTimer);
+    this.profileCloseTimer = undefined;
+  }
+
   public openCreateItineraryModal() {
     this.isCreateModalOpen = true;
   }
@@ -356,7 +377,8 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
       { label: 'Cộng đồng', link: '/community' },
       { label: 'Lịch trình', link: '/tours' },
       { label: 'Cẩm nang', action: 'green_handbook' },
-      { label: 'AI Planner', action: 'ai_planner' }
+      { label: 'AI Planner', action: 'ai_planner' },
+      { label: 'Về GreenSteps', link: '/home' }
     ];
 
     const providerTabs = isProvider ? [

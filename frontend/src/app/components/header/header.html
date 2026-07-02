@@ -6,22 +6,22 @@
     <!-- ════════════════════════════════════════════════════════
          MAIN HEADER ROW — 3 độc lập divs: Logo | Nav | Controls
     ════════════════════════════════════════════════════════ -->
-    <div #headerWrapper class="mx-auto flex max-w-[1720px] px-6 lg:px-12" style="height: 88px;">
+    <div #headerWrapper class="mx-auto flex max-w-[1240px] px-12 max-md:px-6 max-sm:px-4" style="height: 72px;">
 
         <!-- ── DIV 1: LOGO (cố định, flex-shrink-0) ── -->
-        <div class="flex items-center flex-shrink-0" style="width: 300px;">
+        <div class="flex items-center flex-shrink-0" style="width: 250px;">
             <a routerLink="/home"
                class="flex items-center gap-3 px-1 py-1 transition-all duration-300 hover:opacity-90"
                style="text-decoration: none;">
                 <img src="image/greensteps_logo_header.png"
-                     class="h-14 w-14 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.22)] transition-all duration-300"
+                     class="h-11 w-11 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.16)] transition-all duration-300"
                      alt="GreenSteps">
                 <span class="flex flex-col leading-none">
-                    <span class="text-[20px] font-extrabold tracking-normal drop-shadow-[0_1px_3px_rgba(0,0,0,0.26)] transition-colors duration-300"
+                    <span class="text-[18px] font-extrabold tracking-normal drop-shadow-[0_1px_3px_rgba(0,0,0,0.18)] transition-colors duration-300"
                           [ngClass]="isHomeHeaderCollapsed ? 'text-white' : 'text-[#0F3F31]'">
                         GreenSteps
                     </span>
-                    <span class="mt-1 text-[11px] font-bold uppercase tracking-[0.18em] drop-shadow-[0_1px_3px_rgba(0,0,0,0.24)] transition-colors duration-300"
+                    <span class="mt-1 text-[10px] font-bold uppercase tracking-normal drop-shadow-[0_1px_3px_rgba(0,0,0,0.16)] transition-colors duration-300"
                           [ngClass]="isHomeHeaderCollapsed ? 'text-[#D9F99D]' : 'text-[#0E9F6E]'">
                         Travel
                     </span>
@@ -32,10 +32,10 @@
         <!-- ── DIV 2: NAV TABS (flex-1, overflow hidden, 1 hàng) ── -->
         <div class="flex-1 overflow-hidden transition-all duration-500 ease-out"
              [ngClass]="isHomeHeaderCollapsed ? 'opacity-0 -translate-y-3 pointer-events-none' : 'opacity-100 translate-y-0 pointer-events-auto'"
-             style="height: 88px;">
+             style="height: 72px;">
             <nav #navContainer
                  class="header-main-nav overflow-hidden items-center gap-5"
-                 style="height: 88px; flex-wrap: nowrap; width: 100%;">
+                 style="height: 72px; flex-wrap: nowrap; width: 100%;">
 
                 <ng-container *ngFor="let tab of allTabs; let i = index">
                     <a *ngIf="tab.link"
@@ -79,10 +79,10 @@
         </div>
 
         <!-- ── DIV 3: SEARCH + PROFILE (cố định, flex-shrink-0) ── -->
-        <div class="flex items-center justify-end gap-2 flex-shrink-0" style="width: 300px;">
+        <div class="flex items-center justify-end gap-2 flex-shrink-0" style="width: 320px;">
 
             <!-- Search -->
-            <div class="relative" style="width: 128px;">
+            <div class="relative" style="width: 150px;">
                 <input
                     #searchInput
                     type="text"
@@ -90,7 +90,7 @@
                            bg-white/50 text-[#184A37] placeholder-[#184A37]/40
                            focus:outline-none focus:border-[#0E9F6E] focus:bg-white
                            text-xs transition-all duration-300"
-                    placeholder="Tìm kiếm..."
+                    placeholder="Tìm tour, địa điểm..."
                     [(ngModel)]="smartSearchQuery"
                     (focus)="showSearchDropdown()"
                     (keypress)="onSearchKeypress($event)">
@@ -132,8 +132,8 @@
 
             <!-- Profile (đã đăng nhập) -->
             <div *ngIf="currentUser" class="relative"
-                 (mouseenter)="isProfileOpen = true"
-                 (mouseleave)="isProfileOpen = false">
+                 (mouseenter)="openProfileMenu()"
+                 (mouseleave)="scheduleProfileMenuClose()">
                 <button class="h-10 flex items-center gap-1.5 rounded-full bg-white/50
                                border border-[#184A37]/10 px-2 pr-3 font-bold text-[#0F3F31]
                                hover:bg-white hover:border-[#0E9F6E] transition-all duration-300
@@ -145,6 +145,10 @@
                     <i class="bi bi-chevron-down text-[10px] text-[#184A37]/50 transition-transform duration-300"
                        [style.transform]="isProfileOpen ? 'rotate(180deg)' : 'rotate(0deg)'"></i>
                 </button>
+
+                <div *ngIf="isProfileOpen"
+                     aria-hidden="true"
+                     class="absolute right-0 top-10 h-2 w-52 z-50"></div>
 
                 <div class="absolute right-0 top-12 w-52 bg-white/95 backdrop-blur-md
                             rounded-2xl shadow-xl border border-[#184A37]/10 p-2
@@ -207,9 +211,9 @@
          Chứa các tabs bị cắt (không vừa hàng nav trên)
     ════════════════════════════════════════════════════════ -->
     <div class="header-overflow-panel" [class.open]="isOverflowOpen" *ngIf="overflowTabs.length > 0">
-        <div class="mx-auto flex max-w-[1720px] px-6 lg:px-12" style="height: 52px;">
+        <div class="mx-auto flex max-w-[1240px] px-12 max-md:px-6 max-sm:px-4" style="height: 52px;">
             <!-- Left Spacer matching Logo width -->
-            <div style="width: 300px; flex-shrink: 0;"></div>
+            <div style="width: 250px; flex-shrink: 0;"></div>
 
             <!-- Center Overflow Tabs container matching main Nav flex-1 -->
             <div class="flex-1 flex items-center gap-5 overflow-hidden">
@@ -251,7 +255,7 @@
             </div>
 
             <!-- Right Spacer matching Controls width -->
-            <div style="width: 300px; flex-shrink: 0;"></div>
+            <div style="width: 320px; flex-shrink: 0;"></div>
         </div>
     </div>
 
@@ -284,7 +288,7 @@
                        class="w-full h-11 pl-10 pr-4 rounded-full border border-[#184A37]/20
                               bg-gray-50 text-[#184A37] placeholder-[#184A37]/50
                               focus:outline-none focus:border-[#0E9F6E] focus:bg-white text-sm"
-                       placeholder="Tìm Phú Yên, cắm trại..."
+                       placeholder="Tìm tour, địa điểm..."
                        [(ngModel)]="smartSearchQuery"
                        (keypress)="onSearchKeypress($event)">
                 <i class="bi bi-search absolute left-4 top-1/2 -translate-y-1/2 text-[#184A37]/50 text-sm"></i>
