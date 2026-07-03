@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { Itinerary } from '../../models/models';
 
 declare const L: any; // Leaflet mapped globally via index.html script tag
+declare const google: any; // Google Maps SDK mapped globally
 
 @Component({
   selector: 'app-schedule-editor',
@@ -25,6 +26,14 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public isCreateModalOpen: boolean = false;
   public modalDest: string = 'Đà Lạt';
   public modalDays: number = 3;
+
+  private modalMap: any = null;
+  private modalMarkers: { [key: string]: any } = {};
+  private destCoords: { [key: string]: [number, number] } = {
+    'Đà Lạt': [11.940419, 108.458313],
+    'Phú Yên': [13.088198, 109.314957],
+    'Đà Nẵng - Hội An': [16.047079, 108.206230]
+  };
 
   // Maps properties
   private map: any = null;
@@ -63,6 +72,9 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   // Sidebar Metrics Panel Resizing properties
   public metricsHeight: number = 90;
   public isMetricsResizing: boolean = false;
+  public mapSearchQuery: string = '';
+  public activeTab: 'timeline' | 'suggestions' | 'bucket' = 'timeline';
+  public dynamicRecs: any[] = [];
 
   // Custom categorized list builder properties
   public customLists: { title: string; places: { title: string }[] }[] = [
@@ -82,17 +94,43 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     "da-lat": [
       { name: "Hồ Xuân Hương", category: "Khám phá", type: "attraction", cost: 0, carbon: 1, img: "image/1dc8619487310884c9d631d689ece1e7.jpg", lat: 11.9425, lng: 108.4385 },
       { name: "Lẩu bò Ba Toa quán gỗ", category: "Ăn uống", type: "dining", cost: 150000, carbon: 3, img: "image/2eee566424c1f35fbeacf85496b4b6e7.jpg", lat: 11.9325, lng: 108.4452 },
-      { name: "Thác Datanla máng trượt", category: "Khám phá", type: "attraction", cost: 200000, carbon: 4, img: "image/2eee566424c1f35fbeacf85496b4b6e7.jpg", lat: 11.9015, lng: 108.4485 }
+      { name: "Thác Datanla máng trượt", category: "Khám phá", type: "attraction", cost: 200000, carbon: 4, img: "image/2eee566424c1f35fbeacf85496b4b6e7.jpg", lat: 11.9015, lng: 108.4485 },
+      { name: "Vườn hoa Thành phố", category: "Khám phá", type: "attraction", cost: 50000, carbon: 1, img: "image/1dc8619487310884c9d631d689ece1e7.jpg", lat: 11.9480, lng: 108.4500 },
+      { name: "Đường Hầm Điêu Khắc", category: "Khám phá", type: "attraction", cost: 90000, carbon: 3, img: "image/1dc8619487310884c9d631d689ece1e7.jpg", lat: 11.8900, lng: 108.4100 },
+      { name: "Chợ đêm Đà Lạt", category: "Khám phá", type: "attraction", cost: 0, carbon: 1, img: "image/1dc8619487310884c9d631d689ece1e7.jpg", lat: 11.9423, lng: 108.4360 },
+      { name: "An Cafe", category: "Ăn uống", type: "dining", cost: 60000, carbon: 2, img: "image/2eee566424c1f35fbeacf85496b4b6e7.jpg", lat: 11.9400, lng: 108.4335 }
     ],
     "phu-yen": [
       { name: "Gành Đá Đĩa kỳ vĩ", category: "Khám phá", type: "attraction", cost: 40000, carbon: 8, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 13.3650, lng: 109.2990 },
-      { name: "Mắt cá ngừ đại dương bà Tám", category: "Ăn uống", type: "dining", cost: 120000, carbon: 2, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 13.0882, lng: 109.3025 }
+      { name: "Mắt cá ngừ đại dương bà Tám", category: "Ăn uống", type: "dining", cost: 120000, carbon: 2, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 13.0882, lng: 109.3025 },
+      { name: "Tháp Nhạn cổ kính", category: "Khám phá", type: "attraction", cost: 20000, carbon: 1, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 13.0898, lng: 109.3005 },
+      { name: "Bãi Xép (Tôi thấy hoa vàng...)", category: "Khám phá", type: "attraction", cost: 20000, carbon: 2, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 13.2040, lng: 109.2890 },
+      { name: "Hải đăng Mũi Điện", category: "Khám phá", type: "attraction", cost: 20000, carbon: 4, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 12.8980, lng: 109.4600 },
+      { name: "Cơm gà Tuyết Nhung", category: "Ăn uống", type: "dining", cost: 45000, carbon: 2, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 13.0905, lng: 109.3032 }
     ],
     "da-nang": [
       { name: "Bà Nà Hills cáp treo", category: "Khám phá", type: "attraction", cost: 950000, carbon: 15, img: "image/Viet Nam.png", lat: 15.9960, lng: 107.9880 },
-      { name: "Bánh tráng cuốn thịt heo Trần", category: "Ăn uống", type: "dining", cost: 120000, carbon: 2, img: "image/Viet Nam.png", lat: 16.0544, lng: 108.2022 }
+      { name: "Bánh tráng cuốn thịt heo Trần", category: "Ăn uống", type: "dining", cost: 120000, carbon: 2, img: "image/Viet Nam.png", lat: 16.0544, lng: 108.2022 },
+      { name: "Chùa Linh Ứng Sơn Trà", category: "Khám phá", type: "attraction", cost: 0, carbon: 2, img: "image/Viet Nam.png", lat: 16.1000, lng: 108.2780 },
+      { name: "Ngũ Hành Sơn", category: "Khám phá", type: "attraction", cost: 40000, carbon: 1, img: "image/Viet Nam.png", lat: 16.0125, lng: 108.2635 },
+      { name: "Cầu Rồng Đà Nẵng", category: "Khám phá", type: "attraction", cost: 0, carbon: 1, img: "image/Viet Nam.png", lat: 16.0612, lng: 108.2268 },
+      { name: "Bán đảo Sơn Trà", category: "Khám phá", type: "attraction", cost: 0, carbon: 3, img: "image/Viet Nam.png", lat: 16.1200, lng: 108.2800 },
+      { name: "Mì Quảng Ếch Bếp Trang", category: "Ăn uống", type: "dining", cost: 65000, carbon: 2, img: "image/Viet Nam.png", lat: 16.0680, lng: 108.2215 }
     ]
   };
+
+  @HostListener('document:mousedown', ['$event'])
+  public onDocumentClick(event: MouseEvent) {
+    if (this.selectedPlaceDetails) {
+      const target = event.target as HTMLElement;
+      const clickedInsideSheet = target.closest('.map-details-sheet');
+      const clickedMarker = target.closest('.leaflet-marker-icon') || target.closest('.leaflet-popup');
+      
+      if (!clickedInsideSheet && !clickedMarker) {
+        this.closePlaceDetails();
+      }
+    }
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -109,6 +147,8 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       isOutgoing: false
     });
     this.cdr.detectChanges();
+
+
 
     const user = this.authService.getCurrentUser();
     if (user) {
@@ -179,11 +219,128 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public openCreateModal() {
     this.isCreateModalOpen = true;
     this.cdr.detectChanges();
+    setTimeout(() => {
+      this.initModalMap('editorModalMap');
+    }, 150);
   }
 
   public closeCreateModal() {
     this.isCreateModalOpen = false;
     this.cdr.detectChanges();
+    if (this.modalMap) {
+      try {
+        this.modalMap.remove();
+      } catch (e) {}
+      this.modalMap = null;
+      this.modalMarkers = {};
+    }
+  }
+
+  private initModalMap(containerId: string) {
+    const mapEl = document.getElementById(containerId);
+    if (!mapEl) return;
+
+    if (this.modalMap) {
+      try {
+        this.modalMap.remove();
+      } catch (e) {}
+      this.modalMap = null;
+      this.modalMarkers = {};
+    }
+
+    this.modalMap = L.map(containerId, {
+      zoomControl: true,
+      attributionControl: false
+    }).setView([14.2, 108.8], 6);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 18
+    }).addTo(this.modalMap);
+
+    Object.keys(this.destCoords).forEach(dest => {
+      const coords = this.destCoords[dest];
+      const isSelected = this.modalDest === dest;
+      
+      const markerIcon = L.divIcon({
+        className: 'custom-modal-marker',
+        html: `<div class="modal-pin ${isSelected ? 'active-pin' : ''}" style="
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background-color: ${isSelected ? '#0E9F6E' : '#9CA3AF'};
+          border: 3px solid #FFFFFF;
+          box-shadow: 0 0 10px rgba(0,0,0,0.3);
+          transition: all 0.3s;
+          transform: scale(${isSelected ? 1.4 : 1});
+        "></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+
+      const marker = L.marker(coords, { icon: markerIcon }).addTo(this.modalMap);
+      
+      marker.bindTooltip(dest, {
+        permanent: true,
+        direction: 'right',
+        className: 'modal-marker-tooltip',
+        offset: [10, 0]
+      });
+
+      marker.on('click', () => {
+        this.selectDestinationFromMap(dest);
+      });
+
+      this.modalMarkers[dest] = marker;
+    });
+
+    setTimeout(() => {
+      if (this.modalMap) {
+        this.modalMap.invalidateSize();
+      }
+    }, 200);
+  }
+
+  public selectDestinationFromMap(dest: string) {
+    this.modalDest = dest;
+    this.cdr.detectChanges();
+    this.updateModalMarkers();
+    if (this.modalMap) {
+      this.modalMap.panTo(this.destCoords[dest]);
+    }
+  }
+
+  private updateModalMarkers() {
+    Object.keys(this.modalMarkers).forEach(dest => {
+      const marker = this.modalMarkers[dest];
+      if (!marker) return;
+      
+      const isSelected = this.modalDest === dest;
+      
+      const icon = L.divIcon({
+        className: 'custom-modal-marker',
+        html: `<div class="modal-pin ${isSelected ? 'active-pin' : ''}" style="
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background-color: ${isSelected ? '#0E9F6E' : '#9CA3AF'};
+          border: 3px solid #FFFFFF;
+          box-shadow: 0 0 10px rgba(0,0,0,0.3);
+          transition: all 0.3s;
+          transform: scale(${isSelected ? 1.4 : 1});
+        "></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+      
+      marker.setIcon(icon);
+    });
+  }
+
+  public onModalDestChange() {
+    this.updateModalMarkers();
+    if (this.modalMap && this.destCoords[this.modalDest]) {
+      this.modalMap.panTo(this.destCoords[this.modalDest]);
+    }
   }
 
   public async createNewItinerary(event: Event) {
@@ -428,10 +585,72 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     this.recalculateMetrics();
     
+    // Load dynamic suggestions from backend
+    this.loadDynamicRecommendations();
+    
     // Defer Map initialization to let DOM render
     setTimeout(() => {
       this.initLeafletMap();
     }, 100);
+  }
+
+  public async loadDynamicRecommendations() {
+    if (!this.activeItinerary) return;
+    const destLabel = this.activeItinerary.destLabel || this.mapSlugToDestLabel(this.activeItinerary.dest);
+    try {
+      const services = await this.apiService.getServicesByDestination(destLabel);
+      if (services && services.length > 0) {
+        this.dynamicRecs = services.map(srv => {
+          let recType = srv.type;
+          if (recType === 'stay') recType = 'lodging';
+          else if (recType === 'food') recType = 'dining';
+          
+          return {
+            name: srv.name,
+            category: srv.current_data?.category || (srv.type === 'food' ? 'Ăn uống' : srv.type === 'stay' ? 'Lưu trú' : 'Khám phá'),
+            type: recType,
+            cost: srv.cost,
+            carbon: srv.carbon,
+            img: srv.current_data?.img || this.getServiceFallbackImage(srv.type),
+            lat: srv.current_data?.lat,
+            lng: srv.current_data?.lng,
+            badges: srv.badges || ['green']
+          };
+        });
+      } else {
+        this.loadStaticFallbackRecommendations();
+      }
+    } catch (e) {
+      console.error('Error loading dynamic recommendations', e);
+      this.loadStaticFallbackRecommendations();
+    }
+    this.cdr.detectChanges();
+    this.plotMapMarkers();
+  }
+
+  private loadStaticFallbackRecommendations() {
+    const destSlug = this.activeItinerary.dest || 'da-lat';
+    const staticList = this.samplePlacesRecs[destSlug] || [];
+    this.dynamicRecs = staticList.map(rec => ({
+      name: rec.name,
+      category: rec.category,
+      type: rec.type,
+      cost: rec.cost,
+      carbon: rec.carbon,
+      img: rec.img,
+      lat: rec.lat,
+      lng: rec.lng,
+      badges: ['green']
+    }));
+  }
+
+  private getServiceFallbackImage(type: string): string {
+    if (type === 'stay' || type === 'lodging') {
+      return 'image/1dc8619487310884c9d631d689ece1e7.jpg';
+    } else if (type === 'food' || type === 'dining') {
+      return 'image/2eee566424c1f35fbeacf85496b4b6e7.jpg';
+    }
+    return 'image/Viet Nam.png';
   }
 
   public switchActiveDay(dayIdx: number) {
@@ -595,7 +814,9 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     // Clear previous map if initialized
     if (this.map) {
-      this.map.remove();
+      try {
+        this.map.remove();
+      } catch (e) {}
       this.map = null;
     }
 
@@ -604,11 +825,14 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         zoomControl: false
       }).setView(center, 12);
 
-      L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-        maxZoom: 20,
-        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
-        attribution: 'Google Maps'
+      // CartoDB Voyager style (beautiful, premium, clean and loaded without errors)
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20
       }).addTo(this.map);
+
+      this.map.on("click", () => {
+        this.closePlaceDetails();
+      });
 
       this.plotMapMarkers();
     } catch (err) {
@@ -620,35 +844,53 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.map || !this.activeItinerary) return;
 
     // Clear previous markers
-    this.leafletMarkers.forEach(m => this.map.removeLayer(m));
+    if (this.leafletMarkers && this.leafletMarkers.length > 0) {
+      this.leafletMarkers.forEach(m => {
+        try {
+          this.map.removeLayer(m);
+        } catch (e) {}
+      });
+    }
     this.leafletMarkers = [];
 
     if (this.polyline) {
-      this.map.removeLayer(this.polyline);
+      try {
+        this.map.removeLayer(this.polyline);
+      } catch (e) {}
       this.polyline = null;
     }
 
     const activeDay = this.activeItinerary.days[this.activeDayIdx];
     const coordinates: any[] = [];
 
+    // 1. PLOT ACTIVE ITINERARY ACTIVITIES (Numbered pins)
     activeDay.activities.forEach((act: any, idx: number) => {
       if (typeof act.lat === "number" && typeof act.lng === "number") {
         const latlng: number[] = [act.lat, act.lng];
         coordinates.push(latlng);
 
         const customIcon = L.divIcon({
-          html: `<div class="map-leaflet-pin" style="background-color: var(--primary); border: 2.5px solid #FFFFFF; color: #FFFFFF; font-weight: 800; font-size: 11px; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm);">${idx + 1}</div>`,
+          html: `<div class="map-leaflet-pin" style="background-color: #184A37; border: 2.5px solid #FFFFFF; color: #FFFFFF; font-weight: 800; font-size: 11px; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm);">${idx + 1}</div>`,
           className: 'custom-div-icon',
           iconSize: [26, 26],
           iconAnchor: [13, 13]
         });
 
         const marker = L.marker(latlng, { icon: customIcon }).addTo(this.map);
-        marker.bindPopup(`<strong>${act.title}</strong><br>${act.time}`);
         
         marker.on("click", () => {
           this.focusTimelineItem(act.title);
-          this.selectedPlaceDetails = act;
+          this.selectedPlaceDetails = {
+            title: act.title,
+            type: act.type,
+            cost: act.cost,
+            carbon: act.carbon,
+            lat: act.lat,
+            lng: act.lng,
+            time: act.time,
+            isActivity: true,
+            index: idx
+          };
           this.cdr.detectChanges();
         });
 
@@ -656,9 +898,59 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       }
     });
 
+    // 2. PLOT LOCAL SUGGESTIONS (Eco recommendation markers with visual categories)
+    const recs = this.dynamicRecs;
+    
+    recs.forEach((rec: any) => {
+      const isAlreadyAdded = activeDay.activities.some((act: any) => act.title === rec.name);
+      if (isAlreadyAdded) return;
+
+      if (typeof rec.lat === "number" && typeof rec.lng === "number") {
+        const latlng: number[] = [rec.lat, rec.lng];
+        
+        let iconHtml = '<i class="bi bi-geo-alt-fill"></i>';
+        let bgColor = '#0E9F6E';
+        if (rec.type === 'dining') {
+          iconHtml = '<i class="bi bi-cup-hot-fill" style="font-size: 12px;"></i>';
+          bgColor = '#F97316'; // Orange for food
+        } else if (rec.type === 'lodging') {
+          iconHtml = '<i class="bi bi-house-door-fill" style="font-size: 12px;"></i>';
+          bgColor = '#3B82F6'; // Blue for hotel
+        } else if (rec.type === 'explore' || rec.type === 'attraction') {
+          iconHtml = '<i class="bi bi-tree-fill" style="font-size: 12px;"></i>';
+          bgColor = '#10B981'; // Green for attractions
+        }
+
+        const customIcon = L.divIcon({
+          html: `<div class="map-leaflet-rec-pin" style="background-color: ${bgColor}; border: 2px solid #FFFFFF; color: #FFFFFF; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm);">${iconHtml}</div>`,
+          className: 'custom-div-icon-rec',
+          iconSize: [26, 26],
+          iconAnchor: [13, 13]
+        });
+
+        const marker = L.marker(latlng, { icon: customIcon }).addTo(this.map);
+        
+        marker.on("click", () => {
+          this.selectedPlaceDetails = {
+            title: rec.name,
+            type: rec.type,
+            cost: rec.cost,
+            carbon: rec.carbon,
+            lat: rec.lat,
+            lng: rec.lng,
+            isActivity: false
+          };
+          this.cdr.detectChanges();
+        });
+
+        this.leafletMarkers.push(marker);
+      }
+    });
+
+    // Draw route path
     if (coordinates.length > 1) {
       this.polyline = L.polyline(coordinates, {
-        color: '#2563EB',
+        color: '#0E9F6E',
         weight: 3.5,
         dashArray: '5, 8',
         opacity: 0.8
@@ -673,21 +965,152 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   public highlightMapPin(idx: number, highlight: boolean) {
     const marker = this.leafletMarkers[idx];
-    if (!marker) return;
+    if (!marker || typeof marker.getElement !== 'function') return;
     const el = marker.getElement();
     if (!el) return;
     const pin = el.querySelector(".map-leaflet-pin");
     if (pin) {
       if (highlight) {
-        pin.style.backgroundColor = "#2563EB";
+        pin.style.backgroundColor = "#0E9F6E";
         pin.style.transform = "scale(1.25)";
-        pin.style.boxShadow = "0 4px 12px rgba(37,99,235,0.4)";
+        pin.style.boxShadow = "0 4px 12px rgba(14,159,110,0.4)";
       } else {
-        pin.style.backgroundColor = "var(--primary)";
+        pin.style.backgroundColor = "#184A37";
         pin.style.transform = "none";
         pin.style.boxShadow = "var(--shadow-sm)";
       }
     }
+  }
+
+  // OpenStreetMap Nominatim Search
+  public async searchPlaceOnMap() {
+    const query = this.mapSearchQuery.trim();
+    if (!query || !this.activeItinerary) return;
+
+    const destSlug = this.mapDestToSlug(this.activeItinerary.destination);
+    const destLabel = this.mapSlugToDestLabel(destSlug);
+    const fullQuery = `${query}, ${destLabel}`;
+
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(fullQuery)}`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        const first = data[0];
+        const lat = parseFloat(first.lat);
+        const lng = parseFloat(first.lon);
+        
+        let placeType = "attraction";
+        if (first.type === "cafe" || first.type === "restaurant" || first.class === "amenity") {
+          placeType = "dining";
+        } else if (first.type === "hotel" || first.class === "tourism") {
+          placeType = "lodging";
+        }
+
+        if (this.map) {
+          this.map.panTo([lat, lng]);
+          this.map.setZoom(15);
+        }
+
+        // Add temporary pin representing search result (Red Search Pin)
+        const tempMarker = L.marker([lat, lng], {
+          icon: L.divIcon({
+            html: `<div class="map-leaflet-rec-pin" style="background-color: #EF4444; border: 2px solid #FFFFFF; color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);"><i class="bi bi-search" style="font-size: 11px;"></i></div>`,
+            className: 'custom-div-icon-temp',
+            iconSize: [26, 26],
+            iconAnchor: [13, 13]
+          })
+        }).addTo(this.map);
+
+        this.leafletMarkers.push(tempMarker);
+
+        this.selectedPlaceDetails = {
+          title: first.name || query,
+          type: placeType,
+          cost: placeType === "dining" ? 80000 : (placeType === "lodging" ? 500000 : 30000),
+          carbon: placeType === "dining" ? 2 : 4,
+          lat: lat,
+          lng: lng,
+          isActivity: false
+        };
+        this.cdr.detectChanges();
+      } else {
+        alert('Không tìm thấy địa điểm này ở ' + destLabel);
+      }
+    } catch (e) {
+      console.error('Search error:', e);
+    }
+  }
+
+  public getBucketListCount(): number {
+    let total = 0;
+    this.customLists.forEach(l => {
+      total += l.places.length;
+    });
+    return total;
+  }
+
+  // HTML5 Drag and Drop Handlers
+  private dragSrcIdx: number | null = null;
+
+  public onDragStart(event: DragEvent, idx: number) {
+    this.dragSrcIdx = idx;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', idx.toString());
+    }
+    const target = event.target as HTMLElement;
+    target.classList.add('dragging-item');
+  }
+
+  public onDragOver(event: DragEvent, idx: number) {
+    event.preventDefault();
+    if (this.dragSrcIdx !== null && this.dragSrcIdx !== idx) {
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = 'move';
+      }
+    }
+  }
+
+  public onDrop(event: DragEvent, targetIdx: number) {
+    event.preventDefault();
+    const srcIdx = this.dragSrcIdx;
+    if (srcIdx !== null && srcIdx !== targetIdx && this.activeItinerary) {
+      const activeDay = this.activeItinerary.days[this.activeDayIdx];
+      const movedItem = activeDay.activities[srcIdx];
+      activeDay.activities.splice(srcIdx, 1);
+      activeDay.activities.splice(targetIdx, 0, movedItem);
+
+      this.reorderActivityTimes(activeDay.activities);
+      this.plotMapMarkers();
+      this.saveItineraryToDb();
+    }
+    this.dragSrcIdx = null;
+  }
+
+  public onDragEnd(event: DragEvent) {
+    const target = event.target as HTMLElement;
+    target.classList.remove('dragging-item');
+    this.dragSrcIdx = null;
+  }
+
+  private reorderActivityTimes(activities: any[]) {
+    const times = activities.map(act => act.time).sort();
+    activities.forEach((act, idx) => {
+      act.time = times[idx] || "08:00";
+    });
+  }
+
+  // Map detail card actions
+  public async addPlaceFromMap(details: any) {
+    if (!this.activeItinerary) return;
+    await this.addPoolItemToActiveDay(details.title, details.type, details.cost, details.carbon, details.lat, details.lng);
+    this.closePlaceDetails();
+  }
+
+  public async deletePlaceFromMap(index: number) {
+    if (!this.activeItinerary) return;
+    await this.deleteActivity(index);
+    this.closePlaceDetails();
   }
 
   private focusTimelineItem(name: string) {
@@ -894,7 +1317,11 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
           this.mapWidthPct = pct;
           this.cdr.detectChanges();
           if (this.map) {
-            this.map.invalidateSize();
+            if (typeof this.map.invalidateSize === 'function') {
+              this.map.invalidateSize();
+            } else if (typeof google !== 'undefined') {
+              google.maps.event.trigger(this.map, 'resize');
+            }
           }
         }
       }

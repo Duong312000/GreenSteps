@@ -31,7 +31,6 @@
 
         <!-- ── DIV 2: NAV TABS (flex-1, overflow hidden, 1 hàng) ── -->
         <div class="flex-1 overflow-hidden transition-all duration-500 ease-out"
-             [ngClass]="isHomeHeaderCollapsed ? 'opacity-0 -translate-y-3 pointer-events-none' : 'opacity-100 translate-y-0 pointer-events-auto'"
              style="height: 88px;">
             <nav #navContainer
                  class="header-main-nav overflow-hidden items-center gap-5"
@@ -43,22 +42,22 @@
                        routerLinkActive="!text-[#0E9F6E]"
                        [style.visibility]="overflowTabIndices.has(i) ? 'hidden' : 'visible'"
                        class="nav-tab-item whitespace-nowrap flex-shrink-0 text-[18px] font-semibold
-                              text-[#184A37] relative transition-colors duration-300
-                              hover:text-[#0E9F6E]
+                              relative transition-colors duration-300
                               after:absolute after:-bottom-1 after:left-0
-                              after:h-0.5 after:w-0 after:bg-[#0E9F6E]
+                              after:h-0.5 after:w-0
                               after:transition-all after:duration-300 hover:after:w-full"
+                       [ngClass]="isHomeHeaderCollapsed ? 'text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.7)] hover:text-white/90 after:bg-[#D9F99D]' : 'text-[#184A37] hover:text-[#0E9F6E] after:bg-[#0E9F6E]'"
                        style="text-decoration: none;">{{ tab.label }}</a>
 
                     <a *ngIf="tab.action === 'green_handbook'"
                        (click)="showGreenHandbookAlert()"
                        [style.visibility]="overflowTabIndices.has(i) ? 'hidden' : 'visible'"
                        class="nav-tab-item whitespace-nowrap flex-shrink-0 text-[18px] font-semibold
-                              text-[#184A37] relative cursor-pointer transition-colors duration-300
-                              hover:text-[#0E9F6E]
+                              relative cursor-pointer transition-colors duration-300
                               after:absolute after:-bottom-1 after:left-0
-                              after:h-0.5 after:w-0 after:bg-[#0E9F6E]
-                              after:transition-all after:duration-300 hover:after:w-full">
+                              after:h-0.5 after:w-0
+                              after:transition-all after:duration-300 hover:after:w-full"
+                       [ngClass]="isHomeHeaderCollapsed ? 'text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.7)] hover:text-white/90 after:bg-[#D9F99D]' : 'text-[#184A37] hover:text-[#0E9F6E] after:bg-[#0E9F6E]'">
                         {{ tab.label }}
                     </a>
 
@@ -67,11 +66,11 @@
                        [class.text-\[#0E9F6E\]]="isAiPlannerActive()"
                        [style.visibility]="overflowTabIndices.has(i) ? 'hidden' : 'visible'"
                        class="nav-tab-item whitespace-nowrap flex-shrink-0 text-[18px] font-semibold
-                              text-[#184A37] relative cursor-pointer transition-colors duration-300
-                              hover:text-[#0E9F6E]
+                              relative cursor-pointer transition-colors duration-300
                               after:absolute after:-bottom-1 after:left-0
-                              after:h-0.5 after:w-0 after:bg-[#0E9F6E]
-                              after:transition-all after:duration-300 hover:after:w-full">
+                              after:h-0.5 after:w-0
+                              after:transition-all after:duration-300 hover:after:w-full"
+                       [ngClass]="isHomeHeaderCollapsed ? 'text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.7)] hover:text-white/90 after:bg-[#D9F99D]' : 'text-[#184A37] hover:text-[#0E9F6E] after:bg-[#0E9F6E]'">
                         {{ tab.label }}
                     </a>
                 </ng-container>
@@ -158,12 +157,20 @@
                        style="text-decoration:none;">
                         <i class="bi bi-person text-lg"></i> Trang cá nhân
                     </a>
-                    <button (click)="handleRoleToggle()"
-                            class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold
-                                   text-[#184A37] hover:bg-gray-50 hover:text-[#0E9F6E] rounded-xl
-                                   transition-colors border-0 bg-transparent text-left cursor-pointer">
-                        <i class="bi bi-arrow-left-right text-lg"></i> Chuyển vai trò
-                    </button>
+                    <a *ngIf="currentUser.role === 'traveler'"
+                       routerLink="/partner-register"
+                       class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#184A37]
+                              hover:bg-gray-50 hover:text-[#0E9F6E] rounded-xl transition-colors"
+                       style="text-decoration:none;">
+                        <i class="bi bi-briefcase text-lg"></i> Hợp tác đối tác
+                    </a>
+                    <a *ngIf="currentUser.role === 'provider'"
+                       routerLink="/partner-dashboard"
+                       class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#184A37]
+                              hover:bg-gray-50 hover:text-[#0E9F6E] rounded-xl transition-colors"
+                       style="text-decoration:none;">
+                        <i class="bi bi-shop text-lg"></i> Kênh đối tác
+                    </a>
                     <div class="border-t border-[#184A37]/10 my-1"></div>
                     <button (click)="handleLogout()"
                             class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold
@@ -350,7 +357,10 @@
         <form id="createItiForm" (submit)="submitNewItinerary($event)" class="space-y-4 m-0">
             <div class="mb-4">
                 <label class="block text-sm font-semibold text-[#184A37] mb-2 text-left" for="modalDest">Điểm đến mong muốn</label>
-                <select id="modalDest" [(ngModel)]="modalDest" name="modalDest"
+                <!-- Leaflet Mini Map Container -->
+                <div id="headerModalMap" class="w-full rounded-xl border border-[#184A37]/20 mb-3 bg-gray-100" style="height: 180px; position: relative; z-index: 10;"></div>
+                
+                <select id="modalDest" [(ngModel)]="modalDest" name="modalDest" (change)="onModalDestChange()"
                         class="w-full h-11 px-3 rounded-xl border border-[#184A37]/20
                                focus:outline-none focus:border-[#0E9F6E] bg-gray-50 text-[#184A37] text-sm">
                     <option value="Đà Lạt">Đà Lạt (Du lịch xanh rừng thông)</option>

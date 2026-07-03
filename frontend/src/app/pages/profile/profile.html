@@ -92,26 +92,16 @@
                 </div>
             </div>
 
-            <!-- Account Settings (Role Switcher & Logout) -->
+            <!-- Account Settings (Logout) -->
             <div class="account-settings-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px;">
                 <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">Quản lý tài khoản</h3>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Chuyển đổi vai trò sử dụng hoặc đăng xuất khỏi hệ thống.</p>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Đăng xuất an toàn khỏi phiên làm việc hiện tại của hệ thống.</p>
                 
                 <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <button class="role-toggle-btn" (click)="handleRoleToggle()" style="width: 100%; height: 40px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-primary);">
-                        <i class="bi bi-arrow-left-right"></i> Chuyển đổi vai trò
-                    </button>
                     <button class="logout-btn" (click)="handleLogout()" style="width: 100%; height: 40px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #c62828;">
-                        <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                        <i class="bi bi-box-arrow-right"></i> Đăng xuất tài khoản
                     </button>
                 </div>
-            </div>
-
-            <!-- Actions Reset -->
-            <div class="reset-db-card">
-                <h3>Khôi phục trạng thái</h3>
-                <p>Đặt lại vai trò du khách, trạng thái ví chưa kích hoạt, xóa lịch trình cũ để thực hiện lại chuỗi kiểm thử.</p>
-                <button class="btn-reset-db" (click)="resetProjectState()">Đặt lại dữ liệu (Reset)</button>
             </div>
         </div>
     </div>

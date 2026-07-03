@@ -11,6 +11,7 @@ import { PartnerBookingsComponent } from './pages/partner/partner-bookings';
 import { PartnerAdsComponent } from './pages/partner/partner-ads';
 import { PartnerRegisterComponent } from './pages/partner/partner-register';
 import { BookingComponent } from './pages/booking/booking';
+import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -24,10 +25,10 @@ export const routes: Routes = [
   { path: 'booking', component: BookingComponent },
   { path: 'booking/payment', component: BookingComponent },
   { path: 'booking/confirm', component: BookingComponent },
-  { path: 'partner-dashboard', component: PartnerDashboardComponent },
-  { path: 'partner-services', component: PartnerServicesComponent },
-  { path: 'partner-bookings', component: PartnerBookingsComponent },
-  { path: 'partner-ads', component: PartnerAdsComponent },
+  { path: 'partner-dashboard', component: PartnerDashboardComponent, canActivate: [roleGuard] },
+  { path: 'partner-services', component: PartnerServicesComponent, canActivate: [roleGuard] },
+  { path: 'partner-bookings', component: PartnerBookingsComponent, canActivate: [roleGuard] },
+  { path: 'partner-ads', component: PartnerAdsComponent, canActivate: [roleGuard] },
   { path: 'partner-register', component: PartnerRegisterComponent },
   { path: '**', redirectTo: 'home' }
 ];

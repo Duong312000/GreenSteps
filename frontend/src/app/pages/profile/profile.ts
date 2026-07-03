@@ -132,32 +132,12 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  public async handleRoleToggle() {
-    if (!this.currentUser) return;
-    const userId = this.currentUser.id || this.currentUser._id || '';
 
-    const newRole = await this.authService.toggleRole(userId);
-    alert(`Đã chuyển đổi vai trò thành công! Vai trò hiện tại: ${newRole === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch'}`);
-    
-    if (newRole === 'provider') {
-      this.router.navigate(['/partner-dashboard']);
-    } else {
-      this.router.navigate(['/']);
-    }
-  }
 
   public handleLogout() {
     this.authService.logout();
     alert("Đã đăng xuất tài khoản!");
     this.router.navigate(['/']);
-  }
-
-  public resetProjectState() {
-    if (confirm("Bạn có chắc chắn muốn thiết lập lại toàn bộ dữ liệu dự án về trạng thái mặc định không?")) {
-      localStorage.clear();
-      this.authService.logout();
-      window.location.href = "/";
-    }
   }
 
   public getFirstLetter(name: string): string {

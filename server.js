@@ -300,7 +300,7 @@ const CommentPostSchema = new mongoose.Schema({
   _id: { type: String }, // ID_CEP PK
   id: String,
   user_id: { type: String, ref: 'User' },
-  post_id: { type: String, ref: 'CommunityPost', required: true }, // maps to ID_CUP
+  post_id: { type: String, ref: 'CommunityPost' }, // maps to ID_CUP
   parent_comment_id: { type: String, ref: 'CommentPost' }, // optional
   rating: Number,
   text: { type: String, required: true },
@@ -879,10 +879,12 @@ app.post('/api/community/posts', async (req, res) => {
 // 5. SERVICES ENDPOINTS (/api/services)
 // ==========================================================================
 
-// Get All Services
+// Get All Services (includes current_data with lat/lng for map display)
 app.get('/api/services', async (req, res) => {
   try {
-    const services = await GreenService.find();
+    const { destination } = req.query; // optional filter by destination
+    const query = destination ? { destination: { $regex: destination, $options: 'i' } } : {};
+    const services = await GreenService.find(query);
     const formatted = [];
     for (const s of services) {
       const badgeServices = await BadgeService.find({ service_id: s._id });
@@ -899,11 +901,12 @@ app.get('/api/services', async (req, res) => {
         destination: s.destination,
         cost: s.cost,
         carbon: s.carbon,
-        icon: s.type === 'lodging' || s.type === 'stay' ? 'bi-house-door-fill' : (s.type === 'dining' || s.type === 'food' ? 'bi-cup-hot-fill' : 'bi-gear-fill'),
+        icon: s.type === 'lodging' || s.type === 'stay' ? 'bi-house-door-fill' : (s.type === 'dining' || s.type === 'food' ? 'bi-cup-hot-fill' : 'bi-tree-fill'),
         status: 'active',
         rating: s.rating,
         bookings_count: s.bookings_count,
-        badges: badges
+        badges: badges,
+        current_data: s.current_data || {}
       });
     }
     res.json(formatted);
@@ -937,9 +940,9 @@ app.get('/api/services/provider/:providerId', async (req, res) => {
   }
 });
 
-// Add Service
+// Add Service (with lat/lng coordinates and badges)
 app.post('/api/services', async (req, res) => {
-  const { providerId, name, type, destination, cost, carbon, icon } = req.body;
+  const { providerId, name, type, destination, cost, carbon, icon, lat, lng, category, badges } = req.body;
   try {
     let vender = await Vender.findOne({ user_id: providerId });
     if (!vender) {
@@ -952,6 +955,13 @@ app.post('/api/services', async (req, res) => {
     }
 
     const serviceId = 'ser_' + Date.now();
+    const currentData = {
+      lat: lat ? parseFloat(lat) : null,
+      lng: lng ? parseFloat(lng) : null,
+      category: category || (type === 'food' ? 'Ăn uống' : type === 'stay' ? 'Lưu trú' : 'Khám phá'),
+      img: 'image/Viet Nam.png'
+    };
+
     const service = new GreenService({
       _id: serviceId,
       id: serviceId,
@@ -961,13 +971,21 @@ app.post('/api/services', async (req, res) => {
       destination: destination,
       cost: cost,
       carbon: carbon || 0,
-      image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
+      image_url: 'image/Viet Nam.png',
       rating: 5.0,
-      bookings_count: 0
+      bookings_count: 0,
+      current_data: currentData
     });
     await service.save();
 
-    await BadgeService.create({ badge_name: 'green', service_id: service._id });
+    // Create badge assignments
+    const badgeList = badges && badges.length > 0 ? badges : ['green'];
+    for (const b of badgeList) {
+      await BadgeService.create({ badge_name: b, service_id: service._id });
+    }
+
+    // Fetch created badges for response
+    const createdBadges = await BadgeService.find({ service_id: service._id });
 
     res.json({
       id: service._id,
@@ -977,8 +995,10 @@ app.post('/api/services', async (req, res) => {
       destination: service.destination,
       cost: service.cost,
       carbon: service.carbon,
-      icon: icon || 'bi-gear-fill',
-      status: 'active'
+      icon: icon || 'bi-tree-fill',
+      status: 'active',
+      badges: createdBadges.map(b => b.badge_name),
+      current_data: currentData
     });
   } catch (err) {
     console.error(err);
@@ -1190,6 +1210,169 @@ app.get('/api/tours/:id', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Lỗi tải chi tiết tour!' });
+  }
+});
+
+// ==========================================================================
+// 24. REVIEWS AND RATINGS API ENDPOINTS (TOUR & SERVICE REVIEW DYNAMIC INTEGRATION)
+// ==========================================================================
+
+// Post Tour Review
+app.post('/api/reviews/tour', async (req, res) => {
+  const { userId, tourId, rating, text } = req.body;
+  if (!userId || !tourId || !rating || !text) {
+    return res.status(400).json({ error: 'Thiếu thông tin đánh giá!' });
+  }
+  try {
+    const commentId = 'CEPtra' + Date.now().toString().slice(-8); // Generate unique ID
+    
+    // Create the CommentPost record (without post_id)
+    const comment = await CommentPost.create({
+      _id: commentId,
+      id: commentId,
+      user_id: userId,
+      rating: rating,
+      text: text
+    });
+
+    // Create the junction CPSS record
+    await CPSS.create({
+      comment_id: commentId,
+      schedule_sample_id: tourId
+    });
+
+    // Recalculate average rating & votes_count for ScheduleSample
+    const cpssList = await CPSS.find({ schedule_sample_id: tourId });
+    const commentIds = cpssList.map(c => c.comment_id);
+    const comments = await CommentPost.find({ _id: { $in: commentIds } });
+    
+    let totalRating = 0;
+    comments.forEach(c => {
+      totalRating += (c.rating || 5);
+    });
+    const votesCount = comments.length;
+    const avgRating = votesCount > 0 ? parseFloat((totalRating / votesCount).toFixed(1)) : 5.0;
+
+    // Update ScheduleSample
+    await ScheduleSample.findByIdAndUpdate(tourId, {
+      rating: avgRating,
+      votes_count: votesCount
+    });
+
+    res.json({ success: true, comment, rating: avgRating, votes_count: votesCount });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Lỗi gửi đánh giá tour!' });
+  }
+});
+
+// Post Service Review
+app.post('/api/reviews/service', async (req, res) => {
+  const { userId, serviceId, rating, text } = req.body;
+  if (!userId || !serviceId || !rating || !text) {
+    return res.status(400).json({ error: 'Thiếu thông tin đánh giá!' });
+  }
+  try {
+    const commentId = 'CEPser' + Date.now().toString().slice(-8); // Generate unique ID
+    
+    // Create the CommentPost record
+    const comment = await CommentPost.create({
+      _id: commentId,
+      id: commentId,
+      user_id: userId,
+      rating: rating,
+      text: text
+    });
+
+    // Create the junction CPGS record
+    await CPGS.create({
+      comment_id: commentId,
+      service_id: serviceId
+    });
+
+    // Recalculate average rating for GreenService
+    const cpgsList = await CPGS.find({ service_id: serviceId });
+    const commentIds = cpgsList.map(c => c.comment_id);
+    const comments = await CommentPost.find({ _id: { $in: commentIds } });
+    
+    let totalRating = 0;
+    comments.forEach(c => {
+      totalRating += (c.rating || 5);
+    });
+    const count = comments.length;
+    const avgRating = count > 0 ? parseFloat((totalRating / count).toFixed(1)) : 5.0;
+
+    // Update GreenService
+    await GreenService.findByIdAndUpdate(serviceId, {
+      rating: avgRating
+    });
+
+    res.json({ success: true, comment, rating: avgRating });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Lỗi gửi đánh giá dịch vụ!' });
+  }
+});
+
+// Get Tour Reviews
+app.get('/api/reviews/tour/:tourId', async (req, res) => {
+  const { tourId } = req.params;
+  try {
+    const cpssList = await CPSS.find({ schedule_sample_id: tourId });
+    const commentIds = cpssList.map(c => c.comment_id);
+    const comments = await CommentPost.find({ _id: { $in: commentIds } }).sort({ createdAt: -1 });
+    
+    const populatedReviews = [];
+    for (let comment of comments) {
+      const userObj = await User.findById(comment.user_id);
+      populatedReviews.push({
+        id: comment._id,
+        user: userObj ? {
+          id: userObj._id,
+          fullname: userObj.fullname,
+          role: userObj.role
+        } : { fullname: 'Người dùng ẩn danh' },
+        rating: comment.rating,
+        text: comment.text,
+        createdAt: comment.createdAt
+      });
+    }
+
+    res.json(populatedReviews);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Lỗi tải đánh giá tour!' });
+  }
+});
+
+// Get Service Reviews
+app.get('/api/reviews/service/:serviceId', async (req, res) => {
+  const { serviceId } = req.params;
+  try {
+    const cpgsList = await CPGS.find({ service_id: serviceId });
+    const commentIds = cpgsList.map(c => c.comment_id);
+    const comments = await CommentPost.find({ _id: { $in: commentIds } }).sort({ createdAt: -1 });
+    
+    const populatedReviews = [];
+    for (let comment of comments) {
+      const userObj = await User.findById(comment.user_id);
+      populatedReviews.push({
+        id: comment._id,
+        user: userObj ? {
+          id: userObj._id,
+          fullname: userObj.fullname,
+          role: userObj.role
+        } : { fullname: 'Người dùng ẩn danh' },
+        rating: comment.rating,
+        text: comment.text,
+        createdAt: comment.createdAt
+      });
+    }
+
+    res.json(populatedReviews);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Lỗi tải đánh giá dịch vụ!' });
   }
 });
 

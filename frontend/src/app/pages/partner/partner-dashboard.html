@@ -1,82 +1,102 @@
 <main class="min-h-screen bg-[#f8f9fa] pt-28 pb-12 px-6 font-sans">
-    <div class="max-w-[1440px] mx-auto space-y-8">
+    <div class="max-w-[1440px] mx-auto space-y-6">
         
         <!-- Header Title Row -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">Thống kê tháng này</h1>
-                <p class="text-sm text-gray-500 mt-1">Tóm tắt số liệu booking, doanh thu và carbon giảm thiểu</p>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Thống kê hoạt động</h1>
+                <p class="text-xs text-gray-500 mt-1">Báo cáo hợp nhất doanh số, số lượng booking và lượng carbon giảm thiểu của các dịch vụ</p>
             </div>
-            <button class="flex items-center gap-2 px-4 py-2 border border-gray-200 bg-white rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 hover:shadow-sm transition-all cursor-pointer">
-                <i class="bi bi-download"></i> Tải báo cáo
+            <button class="flex items-center gap-2 px-3 py-1.5 border border-gray-200 bg-white rounded text-xs font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer">
+                <i class="bi bi-download"></i> Tải báo cáo CSV
             </button>
         </div>
         
-        <!-- ROW 1: Statistical Cards Grid -->
+        <!-- ROW 1: Statistical Cards Grid (KPI Overview) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Card 1: Doanh thu -->
-            <div class="bg-[#ffe2e5] rounded-2xl p-6 flex flex-col justify-between shadow-[0_8px_20px_rgba(250,90,125,0.08)] hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                <div class="w-10 h-10 rounded-full bg-[#fa5a7d] flex items-center justify-center text-white mb-4">
-                    <i class="bi bi-wallet2 text-lg"></i>
+            <div class="bg-white border border-gray-200 rounded p-5 flex flex-col justify-between transition-all hover:shadow-sm hover:border-[#1E5631]/30">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng doanh thu</span>
+                    <div class="w-8 h-8 rounded bg-[#E8F5E9] text-[#1E5631] flex items-center justify-center">
+                        <i class="bi bi-wallet2 text-base"></i>
+                    </div>
                 </div>
                 <div>
-                    <h3 class="text-3xl font-extrabold text-gray-800">{{ totalRevenue | number:'1.0-0':'vi-VN' }}đ</h3>
-                    <p class="text-sm font-semibold text-gray-700 mt-1">Tổng doanh thu</p>
+                    <h3 class="text-2xl font-bold text-gray-900 leading-none">{{ totalRevenue | number:'1.0-0':'vi-VN' }}đ</h3>
                 </div>
-                <p class="text-[11px] text-red-600 font-bold mt-4 flex items-center gap-1">
-                    <i class="bi bi-arrow-up-right"></i> +8% so với tháng trước
-                </p>
+                <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
+                    <span class="text-[11px] text-[#1E5631] font-bold flex items-center gap-1">
+                        <i class="bi bi-arrow-up"></i> +8.0%
+                    </span>
+                    <span class="text-[10px] text-gray-400">so với tháng trước</span>
+                </div>
             </div>
             
             <!-- Card 2: Booking -->
-            <div class="bg-[#fff4de] rounded-2xl p-6 flex flex-col justify-between shadow-[0_8px_20px_rgba(255,148,122,0.08)] hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                <div class="w-10 h-10 rounded-full bg-[#ff947a] flex items-center justify-center text-white mb-4">
-                    <i class="bi bi-ticket-perforated text-lg"></i>
+            <div class="bg-white border border-gray-200 rounded p-5 flex flex-col justify-between transition-all hover:shadow-sm hover:border-[#1E5631]/30">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng Booking</span>
+                    <div class="w-8 h-8 rounded bg-gray-100 text-gray-600 flex items-center justify-center">
+                        <i class="bi bi-ticket-perforated text-base"></i>
+                    </div>
                 </div>
                 <div>
-                    <h3 class="text-3xl font-extrabold text-gray-800">{{ bookingsCount }}</h3>
-                    <p class="text-sm font-semibold text-gray-700 mt-1">Tổng Booking</p>
+                    <h3 class="text-2xl font-bold text-gray-900 leading-none">{{ bookingsCount }}</h3>
                 </div>
-                <p class="text-[11px] text-orange-600 font-bold mt-4 flex items-center gap-1">
-                    <i class="bi bi-arrow-up-right"></i> +5% so với tháng trước
-                </p>
+                <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
+                    <span class="text-[11px] text-[#1E5631] font-bold flex items-center gap-1">
+                        <i class="bi bi-arrow-up"></i> +5.0%
+                    </span>
+                    <span class="text-[10px] text-gray-400">so với tháng trước</span>
+                </div>
             </div>
             
             <!-- Card 3: Carbon Saved -->
-            <div class="bg-[#dcfce7] rounded-2xl p-6 flex flex-col justify-between shadow-[0_8px_20px_rgba(60,216,86,0.08)] hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                <div class="w-10 h-10 rounded-full bg-[#3cd856] flex items-center justify-center text-white mb-4">
-                    <i class="bi bi-tree text-lg"></i>
+            <div class="bg-white border border-gray-200 rounded p-5 flex flex-col justify-between transition-all hover:shadow-sm hover:border-[#1E5631]/30">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">CO₂ giảm thiểu</span>
+                    <div class="w-8 h-8 rounded bg-[#E8F5E9] text-[#1E5631] flex items-center justify-center">
+                        <i class="bi bi-tree text-base"></i>
+                    </div>
                 </div>
                 <div>
-                    <h3 class="text-3xl font-extrabold text-gray-800">{{ carbonSaved | number:'1.0-1' }} kg</h3>
-                    <p class="text-sm font-semibold text-gray-700 mt-1">CO₂ giảm thiểu</p>
+                    <h3 class="text-2xl font-bold text-gray-900 leading-none">{{ carbonSaved | number:'1.0-1' }} kg</h3>
                 </div>
-                <p class="text-[11px] text-green-700 font-bold mt-4 flex items-center gap-1">
-                    <i class="bi bi-tree-fill"></i> Tương đương {{ carbonSaved / 20 | number:'1.0-0' }} cây xanh
-                </p>
+                <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
+                    <span class="text-[11px] text-[#2E8B57] font-bold flex items-center gap-1">
+                        <i class="bi bi-tree-fill"></i> ~{{ carbonSaved / 20 | number:'1.0-0' }} cây xanh
+                    </span>
+                    <span class="text-[10px] text-gray-400">quy đổi sinh thái</span>
+                </div>
             </div>
             
             <!-- Card 4: New customers -->
-            <div class="bg-[#f3e8ff] rounded-2xl p-6 flex flex-col justify-between shadow-[0_8px_20px_rgba(191,131,255,0.08)] hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                <div class="w-10 h-10 rounded-full bg-[#bf83ff] flex items-center justify-center text-white mb-4">
-                    <i class="bi bi-people text-lg"></i>
+            <div class="bg-white border border-gray-200 rounded p-5 flex flex-col justify-between transition-all hover:shadow-sm hover:border-[#1E5631]/30">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Khách hàng mới</span>
+                    <div class="w-8 h-8 rounded bg-gray-100 text-gray-600 flex items-center justify-center">
+                        <i class="bi bi-people text-base"></i>
+                    </div>
                 </div>
                 <div>
-                    <h3 class="text-3xl font-extrabold text-gray-800">18</h3>
-                    <p class="text-sm font-semibold text-gray-700 mt-1">Khách hàng mới</p>
+                    <h3 class="text-2xl font-bold text-gray-900 leading-none">{{ newCustomersCount }}</h3>
                 </div>
-                <p class="text-[11px] text-purple-700 font-bold mt-4 flex items-center gap-1">
-                    <i class="bi bi-arrow-up-right"></i> +12% so với tháng trước
-                </p>
+                <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
+                    <span class="text-[11px] text-[#1E5631] font-bold flex items-center gap-1">
+                        <i class="bi bi-arrow-up"></i> +12.0%
+                    </span>
+                    <span class="text-[10px] text-gray-400">so với tháng trước</span>
+                </div>
             </div>
         </div>
 
-        <!-- ROW 2: Charts (Visitor Insights & Monthly Revenue) -->
+        <!-- ROW 2: Charts (Visitor Insights & Monthly Revenue - Pure Analytics) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- Visitor Insights -->
-            <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_4px_15px_rgba(0,0,0,0.02)] flex flex-col">
-                <h2 class="text-lg font-bold text-gray-800 mb-1">Lượt xem & Đặt chỗ</h2>
-                <p class="text-xs text-gray-400 mb-6">Số liệu phân tích lượt xem trang, booking và yêu cầu tư vấn</p>
+            <!-- Visitor Insights Chart -->
+            <div class="lg:col-span-7 bg-white rounded border border-gray-200 p-5 flex flex-col">
+                <h2 class="text-sm font-bold text-gray-950 uppercase tracking-wider">Lượt xem & Đặt chỗ</h2>
+                <p class="text-[11px] text-gray-400 mb-6">Phân tích tương quan giữa lượt truy cập dịch vụ và số lượng đặt phòng/tour thành công</p>
                 <div class="flex-1 w-full h-[250px] relative">
                     <!-- Custom SVG Line Chart -->
                     <svg class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
@@ -86,21 +106,21 @@
                         <line x1="40" y1="130" x2="580" y2="130" stroke="#f3f4f6" stroke-width="1"/>
                         <line x1="40" y1="180" x2="580" y2="180" stroke="#e5e7eb" stroke-width="1"/>
 
-                        <!-- Red Line: Views -->
-                        <path d="M 40 120 C 100 90, 160 140, 220 80 C 280 110, 340 70, 400 45 C 460 60, 520 100, 580 90" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
-                        <!-- Purple Line: Bookings -->
-                        <path d="M 40 150 C 100 130, 160 160, 220 120 C 280 140, 340 100, 400 70 C 460 90, 520 120, 580 110" fill="none" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
-                        <!-- Green Line: Inquiries -->
-                        <path d="M 40 180 C 100 160, 160 170, 220 150 C 280 160, 340 130, 400 110 C 460 120, 520 140, 580 130" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+                        <!-- Forest Green Line: Views -->
+                        <path [attr.d]="visitorPathViews" fill="none" stroke="#1E5631" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Mint Green Line: Bookings -->
+                        <path [attr.d]="visitorPathBookings" fill="none" stroke="#2E8B57" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Muted Slate Line: Inquiries -->
+                        <path [attr.d]="visitorPathInquiries" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
 
                         <!-- Axis Labels -->
-                        <text x="40" y="205" font-size="10" fill="#9ca3af" text-anchor="middle">Thg 1</text>
-                        <text x="130" y="205" font-size="10" fill="#9ca3af" text-anchor="middle">Thg 3</text>
-                        <text x="220" y="205" font-size="10" fill="#9ca3af" text-anchor="middle">Thg 5</text>
-                        <text x="310" y="205" font-size="10" fill="#9ca3af" text-anchor="middle">Thg 7</text>
-                        <text x="400" y="205" font-size="10" fill="#9ca3af" text-anchor="middle">Thg 9</text>
-                        <text x="490" y="205" font-size="10" fill="#9ca3af" text-anchor="middle">Thg 11</text>
-                        <text x="580" y="205" font-size="10" fill="#9ca3af" text-anchor="middle">Thg 12</text>
+                        <text x="40" y="205" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 1</text>
+                        <text x="130" y="205" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 3</text>
+                        <text x="220" y="205" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 5</text>
+                        <text x="310" y="205" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 7</text>
+                        <text x="400" y="205" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 9</text>
+                        <text x="490" y="205" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 11</text>
+                        <text x="580" y="205" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 12</text>
                         
                         <text x="30" y="35" font-size="9" fill="#9ca3af" text-anchor="end">400</text>
                         <text x="30" y="85" font-size="9" fill="#9ca3af" text-anchor="end">250</text>
@@ -110,22 +130,22 @@
                 </div>
                 <!-- Legend -->
                 <div class="flex justify-center items-center gap-6 mt-4">
-                    <span class="flex items-center gap-2 text-xs text-gray-500">
-                        <span class="w-3 h-1.5 bg-[#ef4444] rounded-full inline-block"></span> Lượt xem trang
+                    <span class="flex items-center gap-1.5 text-xs text-gray-500">
+                        <span class="w-3 h-1 bg-[#1E5631] inline-block"></span> Lượt xem trang
                     </span>
-                    <span class="flex items-center gap-2 text-xs text-gray-500">
-                        <span class="w-3 h-1.5 bg-[#a855f7] rounded-full inline-block"></span> Lượt đặt (Booking)
+                    <span class="flex items-center gap-1.5 text-xs text-gray-500">
+                        <span class="w-3 h-1 bg-[#2E8B57] inline-block"></span> Lượt đặt (Booking)
                     </span>
-                    <span class="flex items-center gap-2 text-xs text-gray-500">
-                        <span class="w-3 h-1.5 bg-[#10b981] rounded-full inline-block"></span> Yêu cầu tư vấn
+                    <span class="flex items-center gap-1.5 text-xs text-gray-500">
+                        <span class="w-3 h-1 bg-[#9ca3af] inline-block"></span> Yêu cầu tư vấn
                     </span>
                 </div>
             </div>
 
-            <!-- Revenue monthly -->
-            <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_4px_15px_rgba(0,0,0,0.02)] flex flex-col">
-                <h2 class="text-lg font-bold text-gray-800 mb-1">Doanh thu theo tháng</h2>
-                <p class="text-xs text-gray-400 mb-6">Tương quan doanh thu giữa Gói Tour và Dịch vụ Lưu trú</p>
+            <!-- Revenue Monthly Bar Chart -->
+            <div class="lg:col-span-5 bg-white rounded border border-gray-200 p-5 flex flex-col">
+                <h2 class="text-sm font-bold text-gray-950 uppercase tracking-wider">Doanh thu theo tháng</h2>
+                <p class="text-[11px] text-gray-400 mb-6">So sánh doanh thu trực quan giữa Gói Tour trọn gói và Dịch vụ Lưu trú lẻ</p>
                 <div class="flex-1 w-full h-[250px] relative">
                     <!-- Custom SVG Bar Chart -->
                     <svg class="w-full h-full" viewBox="0 0 400 220" preserveAspectRatio="none">
@@ -135,31 +155,12 @@
                         <line x1="35" y1="130" x2="385" y2="130" stroke="#f3f4f6" stroke-width="1"/>
                         <line x1="35" y1="180" x2="385" y2="180" stroke="#e5e7eb" stroke-width="1"/>
 
-                        <!-- Monthly Bars (Jan - Jun) -->
-                        <!-- Jan -->
-                        <rect x="60" y="100" width="10" height="80" fill="#3b82f6" rx="2"/>
-                        <rect x="73" y="110" width="10" height="70" fill="#10b981" rx="2"/>
-                        <text x="71" y="200" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 1</text>
-                        <!-- Feb -->
-                        <rect x="110" y="80" width="10" height="100" fill="#3b82f6" rx="2"/>
-                        <rect x="123" y="115" width="10" height="65" fill="#10b981" rx="2"/>
-                        <text x="121" y="200" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 2</text>
-                        <!-- Mar -->
-                        <rect x="160" y="130" width="10" height="50" fill="#3b82f6" rx="2"/>
-                        <rect x="173" y="60" width="10" height="120" fill="#10b981" rx="2"/>
-                        <text x="171" y="200" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 3</text>
-                        <!-- Apr -->
-                        <rect x="210" y="85" width="10" height="95" fill="#3b82f6" rx="2"/>
-                        <rect x="223" y="140" width="10" height="40" fill="#10b981" rx="2"/>
-                        <text x="221" y="200" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 4</text>
-                        <!-- May -->
-                        <rect x="260" y="110" width="10" height="70" fill="#3b82f6" rx="2"/>
-                        <rect x="273" y="100" width="10" height="80" fill="#10b981" rx="2"/>
-                        <text x="271" y="200" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 5</text>
-                        <!-- Jun -->
-                        <rect x="310" y="70" width="10" height="110" fill="#3b82f6" rx="2"/>
-                        <rect x="323" y="90" width="10" height="90" fill="#10b981" rx="2"/>
-                        <text x="321" y="200" font-size="9" fill="#9ca3af" text-anchor="middle">Thg 6</text>
+                        <!-- Monthly Bars (Dynamic loop) -->
+                        <ng-container *ngFor="let item of monthlyRevenueData; let idx = index">
+                            <rect [attr.x]="45 + idx * 55" [attr.y]="180 - item.tourHeight" width="10" [attr.height]="item.tourHeight" fill="#1E5631"/>
+                            <rect [attr.x]="58 + idx * 55" [attr.y]="180 - item.stayHeight" width="10" [attr.height]="item.stayHeight" fill="#2E8B57"/>
+                            <text [attr.x]="56 + idx * 55" y="200" font-size="8" fill="#9ca3af" text-anchor="middle">{{ item.month }}</text>
+                        </ng-container>
 
                         <!-- Y Axis labels -->
                         <text x="28" y="35" font-size="9" fill="#9ca3af" text-anchor="end">30M</text>
@@ -170,224 +171,94 @@
                 </div>
                 <!-- Legend -->
                 <div class="flex justify-center items-center gap-6 mt-4">
-                    <span class="flex items-center gap-2 text-xs text-gray-500">
-                        <span class="w-3 h-3 bg-[#3b82f6] rounded-sm inline-block"></span> Tour Du lịch
+                    <span class="flex items-center gap-1.5 text-xs text-gray-500">
+                        <span class="w-3 h-3 bg-[#1E5631] inline-block"></span> Gói Tour
                     </span>
-                    <span class="flex items-center gap-2 text-xs text-gray-500">
-                        <span class="w-3 h-3 bg-[#10b981] rounded-sm inline-block"></span> Khách sạn & Homestay
+                    <span class="flex items-center gap-1.5 text-xs text-gray-500">
+                        <span class="w-3 h-3 bg-[#2E8B57] inline-block"></span> Lưu trú
                     </span>
                 </div>
             </div>
         </div>
 
-        <!-- ROW 3: Interactive Workspace (Danh sách yêu cầu đặt chỗ cần duyệt) -->
-        <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_4px_15px_rgba(0,0,0,0.02)]">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h2 class="text-xl font-bold text-gray-800">Yêu cầu đặt chỗ chờ xử lý</h2>
-                    <p class="text-xs text-gray-500 mt-1">Duyệt cọc hoặc từ chối các booking mới từ khách hàng</p>
-                </div>
-                <span class="px-3 py-1 bg-yellow-50 border border-yellow-200 rounded-full text-xs font-semibold text-yellow-700">
-                    {{ bookings.length }} yêu cầu cần duyệt
-                </span>
-            </div>
-
-            <div class="overflow-x-auto rounded-xl border border-gray-100">
-                <table class="w-full text-sm text-left border-collapse">
-                    <thead class="bg-[#F7FBF4] text-gray-700 font-bold uppercase text-[11px] tracking-wider border-b border-gray-100">
-                        <tr>
-                            <th class="px-6 py-4">Mã đơn</th>
-                            <th class="px-6 py-4">Khách hàng</th>
-                            <th class="px-6 py-4">Dịch vụ yêu cầu</th>
-                            <th class="px-6 py-4">Ngày khởi hành</th>
-                            <th class="px-6 py-4 text-center">Số khách</th>
-                            <th class="px-6 py-4 text-right">Tổng tiền</th>
-                            <th class="px-6 py-4 text-center">Trạng thái</th>
-                            <th class="px-6 py-4 text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-50 text-gray-700">
-                        <tr *ngIf="bookings.length === 0">
-                            <td colspan="8" class="text-center py-10 text-gray-400 italic">Không có yêu cầu đặt chỗ nào cần xử lý.</td>
-                        </tr>
-                        <tr *ngFor="let b of bookings" class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 font-bold text-gray-800">{{ b.id }}</td>
-                            <td class="px-6 py-4 font-semibold text-gray-800">{{ b.customer || b.customer_name }}</td>
-                            <td class="px-6 py-4 font-medium text-gray-600">{{ b.service || b.service_name }}</td>
-                            <td class="px-6 py-4 text-xs text-gray-500">{{ b.date || b.booking_date }}</td>
-                            <td class="px-6 py-4 text-center">{{ b.guests }} khách</td>
-                            <td class="px-6 py-4 text-right font-extrabold text-[#0E9F6E]">{{ b.value | number:'1.0-0':'vi-VN' }}đ</td>
-                            <td class="px-6 py-4 text-center">
-                                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold"
-                                      [ngClass]="b.status === 'pending' ? 'bg-orange-50 text-orange-700 border border-orange-200' : (b.status === 'deposit' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-green-50 text-green-700 border border-green-200')">
-                                    {{ b.status === 'pending' ? 'Chờ duyệt' : (b.status === 'deposit' ? 'Đặt cọc' : 'Hoàn thành') }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center justify-center gap-2" *ngIf="b.status === 'pending'">
-                                    <button (click)="approveBooking(b.id)" class="px-3 py-1.5 bg-[#0E9F6E] text-white rounded-lg text-xs font-bold hover:bg-[#0b7f57] border-none cursor-pointer flex items-center gap-1 transition-colors">
-                                        <i class="bi bi-check-lg"></i> Duyệt cọc
-                                    </button>
-                                    <button (click)="rejectBooking(b.id)" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 border border-red-200 cursor-pointer flex items-center gap-1 transition-colors">
-                                        <i class="bi bi-x-lg"></i> Từ chối
-                                    </button>
-                                </div>
-                                <div class="text-center text-xs italic text-gray-400 font-medium" *ngIf="b.status !== 'pending'">
-                                    Đã xử lý
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ROW 4: Campaign Performance & Customer Demographics -->
+        <!-- ROW 3: Secondary Analytics (Booking Allocation & Customer Demographics) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Campaign Performance Table -->
-            <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_4px_15px_rgba(0,0,0,0.02)]">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-lg font-bold text-gray-800">Chiến dịch quảng bá nổi bật</h2>
-                        <p class="text-xs text-gray-400 mt-1">Theo dõi mức độ tiếp cận và lượng khách của gói VIP Ads</p>
-                    </div>
-                    <button class="px-3 py-1.5 bg-[#F4C76D] text-yellow-950 font-bold rounded-lg text-xs hover:bg-[#e6b553] border-none cursor-pointer">
-                        + Tạo chiến dịch
-                    </button>
-                </div>
-
-                <div class="overflow-x-auto rounded-xl border border-gray-100">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-gray-50 text-gray-600 font-bold uppercase text-[10px] tracking-wider">
-                            <tr>
-                                <th class="px-4 py-3">Tên chiến dịch</th>
-                                <th class="px-4 py-3">Trạng thái</th>
-                                <th class="px-4 py-3 text-right">Lượt xem</th>
-                                <th class="px-4 py-3 text-right">Lượt click</th>
-                                <th class="px-4 py-3 text-right">CTR</th>
-                                <th class="px-4 py-3 text-right">Doanh thu</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50 text-gray-700">
-                            <tr *ngFor="let cp of campaignPerformance" class="hover:bg-gray-50 transition-colors">
-                                <td class="px-4 py-3 font-semibold text-gray-800">{{ cp.name }}</td>
-                                <td class="px-4 py-3">
-                                    <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold"
-                                          [ngClass]="cp.status === 'Đang chạy' ? 'bg-green-100 text-green-700' : (cp.status === 'Tạm dừng' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600')">
-                                        {{ cp.status }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-right text-gray-600 text-xs">{{ cp.impressions }}</td>
-                                <td class="px-4 py-3 text-right text-gray-600 text-xs">{{ cp.clicks }}</td>
-                                <td class="px-4 py-3 text-right text-gray-600 text-xs font-semibold">{{ cp.ctr }}</td>
-                                <td class="px-4 py-3 text-right text-gray-800 font-extrabold">{{ cp.revenue }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Customer Behavior Analysis -->
-            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_4px_15px_rgba(0,0,0,0.02)] flex flex-col justify-between">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800 mb-1">Hành vi du khách</h2>
-                    <p class="text-xs text-gray-400 mb-6">Phân tích đặc điểm nhóm khách quan tâm dịch vụ</p>
-                    
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center pb-3 border-b border-gray-100 text-sm">
-                            <span class="text-gray-500 font-medium">Nhóm khách chính:</span>
-                            <span class="font-bold text-teal-600">Khách gia đình</span>
-                        </div>
-                        <div class="flex justify-between items-center pb-3 border-b border-gray-100 text-sm">
-                            <span class="text-gray-500 font-medium">Độ tuổi chính:</span>
-                            <span class="font-bold text-gray-800">22 - 35 tuổi</span>
-                        </div>
-                        <div class="flex justify-between items-center pb-3 border-b border-gray-100 text-sm">
-                            <span class="text-gray-500 font-medium">Điểm đến ưa thích:</span>
-                            <span class="font-bold text-gray-800">Đà Lạt</span>
-                        </div>
-                        <div class="flex justify-between items-center pb-3 border-b border-gray-100 text-sm">
-                            <span class="text-gray-500 font-medium">Loại hình lựa chọn:</span>
-                            <span class="font-bold text-gray-800">Tour trải nghiệm xanh</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500 font-medium">Thiết bị truy cập:</span>
-                            <span class="font-bold text-gray-800">Điện thoại di động (82%)</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
-                    <span>Cập nhật 5 phút trước</span>
-                    <span class="text-teal-600 font-bold hover:underline cursor-pointer">Xem chi tiết</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ROW 5: Best Services & Booking Allocation -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Best Services -->
-            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_4px_15px_rgba(0,0,0,0.02)]">
-                <h2 class="text-lg font-bold text-gray-800 mb-1">Dịch vụ tốt nhất</h2>
-                <p class="text-xs text-gray-400 mb-6">Các gói dịch vụ có lượt đặt cao nhất trong quý này</p>
-
-                <div class="space-y-4">
-                    <div *ngFor="let srv of bestServices" class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-all duration-300 group cursor-pointer border border-gray-50">
-                        <div class="w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100 relative">
-                            <img [src]="srv.img" [alt]="srv.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-sm font-bold text-gray-800 truncate group-hover:text-[#0E9F6E] transition-colors">{{ srv.name }}</h4>
-                            <p class="text-xs text-gray-500 mt-1 font-medium">{{ srv.bookings }} lượt đặt thành công</p>
-                        </div>
-                        <div class="shrink-0 text-right">
-                            <span class="text-xs font-bold text-teal-600 bg-teal-50 border border-teal-100 px-2 py-1 rounded-lg">
-                                CR: {{ srv.cr }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            
             <!-- Booking Allocation Stacked Chart -->
-            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_4px_15px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+            <div class="lg:col-span-2 bg-white rounded border border-gray-200 p-5 flex flex-col justify-between">
                 <div>
-                    <h2 class="text-lg font-bold text-gray-800 mb-1">Phân bổ Booking</h2>
-                    <p class="text-xs text-gray-400 mb-6">Tỷ trọng các nhóm dịch vụ trong tổng số booking</p>
+                    <h2 class="text-sm font-bold text-gray-950 uppercase tracking-wider">Cấu trúc Booking dịch vụ</h2>
+                    <p class="text-[11px] text-gray-400 mb-6">Tỷ trọng đóng góp số lượng đặt chỗ của các phân khúc sản phẩm</p>
 
-                    <div class="flex items-center gap-4 h-6 w-full rounded-full overflow-hidden bg-gray-100 mt-4 mb-8">
+                    <div class="flex items-center gap-0.5 h-4 w-full rounded overflow-hidden bg-gray-100 mt-4 mb-8">
                         <!-- Tour -->
-                        <div class="h-full bg-blue-500 flex items-center justify-center text-white text-[10px] font-bold" style="width: 56.5%">56.5%</div>
+                        <div class="h-full bg-[#1E5631] flex items-center justify-center text-white text-[9px] font-bold transition-all" [style.width.%]="allocationPct.tour" *ngIf="allocationPct.tour > 0">{{ allocationPct.tour }}%</div>
                         <!-- Hotel -->
-                        <div class="h-full bg-green-500 flex items-center justify-center text-white text-[10px] font-bold" style="width: 31.5%">31.5%</div>
+                        <div class="h-full bg-[#2E8B57] flex items-center justify-center text-white text-[9px] font-bold transition-all" [style.width.%]="allocationPct.stay" *ngIf="allocationPct.stay > 0">{{ allocationPct.stay }}%</div>
                         <!-- Experience -->
-                        <div class="h-full bg-yellow-500 flex items-center justify-center text-white text-[10px] font-bold" style="width: 12.0%">12%</div>
+                        <div class="h-full bg-gray-400 flex items-center justify-center text-white text-[9px] font-bold transition-all" [style.width.%]="allocationPct.other" *ngIf="allocationPct.other > 0">{{ allocationPct.other }}%</div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-4 text-center mt-4">
                         <div>
                             <div class="flex items-center justify-center gap-1.5 text-xs text-gray-500 mb-1">
-                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Gói Tour
+                                <span class="w-2.5 h-2.5 rounded-sm bg-[#1E5631]"></span> Gói Tour
                             </div>
-                            <p class="text-lg font-extrabold text-gray-800">1.135</p>
+                            <p class="text-base font-extrabold text-gray-900">{{ bookingAllocation.tour }}</p>
                         </div>
                         <div class="border-x border-gray-100">
                             <div class="flex items-center justify-center gap-1.5 text-xs text-gray-500 mb-1">
-                                <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span> Khách sạn
+                                <span class="w-2.5 h-2.5 rounded-sm bg-[#2E8B57]"></span> Lưu trú
                             </div>
-                            <p class="text-lg font-extrabold text-gray-800">635</p>
+                            <p class="text-base font-extrabold text-gray-900">{{ bookingAllocation.stay }}</p>
                         </div>
                         <div>
                             <div class="flex items-center justify-center gap-1.5 text-xs text-gray-500 mb-1">
-                                <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span> Trải nghiệm
+                                <span class="w-2.5 h-2.5 rounded-sm bg-gray-400"></span> Khác
                             </div>
-                            <p class="text-lg font-extrabold text-gray-800">240</p>
+                            <p class="text-base font-extrabold text-gray-900">{{ bookingAllocation.other }}</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-center">
-                    <span class="text-xs text-gray-400">Dữ liệu tính từ ngày 01/01/2026</span>
+                    <span class="text-[10px] text-gray-400">Số liệu được cập nhật tự động từ database</span>
+                </div>
+            </div>
+
+            <!-- Customer Behavior Analysis -->
+            <div class="bg-white rounded border border-gray-200 p-5 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-sm font-bold text-gray-950 uppercase tracking-wider">Khách hàng & Xu hướng</h2>
+                    <p class="text-[11px] text-gray-400 mb-6">Phân tích hành vi chính của các nhóm du khách quan tâm</p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100 text-xs">
+                            <span class="text-gray-500 font-medium">Nhóm khách chính:</span>
+                            <span class="font-bold text-[#1E5631]">Khách gia đình</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100 text-xs">
+                            <span class="text-gray-500 font-medium">Độ tuổi chính:</span>
+                            <span class="font-bold text-gray-900">22 - 35 tuổi</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100 text-xs">
+                            <span class="text-gray-500 font-medium">Điểm đến chính:</span>
+                            <span class="font-bold text-gray-900">Đà Lạt</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-3 border-b border-gray-100 text-xs">
+                            <span class="text-gray-500 font-medium">Sản phẩm ưa thích:</span>
+                            <span class="font-bold text-gray-900">Tour trải nghiệm xanh</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-gray-500 font-medium">Thiết bị truy cập:</span>
+                            <span class="font-bold text-gray-900">Điện thoại di động (82%)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+                    <span>Đồng bộ thời gian thực</span>
+                    <span class="text-[#1E5631] font-bold hover:underline cursor-pointer">Xuất báo cáo chi tiết</span>
                 </div>
             </div>
         </div>

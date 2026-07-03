@@ -104,7 +104,7 @@ export class LoginModalComponent implements AfterViewInit, OnDestroy {
     if (this.isSubmitting || !this.validateIdentifier()) return;
 
     this.verificationPurpose = 'login';
-    this.openVerify('Mã demo là 123456 để tiếp tục.');
+    this.openVerify('Mã xác thực đã được gửi đến thiết bị của bạn.');
   }
 
   public onForgotSubmit(event: Event) {
@@ -113,7 +113,7 @@ export class LoginModalComponent implements AfterViewInit, OnDestroy {
     if (!this.validateIdentifier()) return;
 
     this.verificationPurpose = 'forgot';
-    this.openVerify('Mã demo là 123456 để tiếp tục đặt lại mật khẩu.');
+    this.openVerify('Mã xác thực khôi phục mật khẩu đã được gửi.');
   }
 
   public onOtpInput(event: Event, index: number) {
@@ -139,8 +139,9 @@ export class LoginModalComponent implements AfterViewInit, OnDestroy {
   public async verifyOtp(event: Event) {
     event.preventDefault();
     this.errorMessage = '';
-    if (this.otpDigits.join('') !== '123456') {
-      this.errorMessage = 'Mã xác thực không chính xác.';
+    const otp = this.otpDigits.join('');
+    if (otp.length !== 6) {
+      this.errorMessage = 'Vui lòng nhập đầy đủ 6 chữ số.';
       return;
     }
 
@@ -169,7 +170,7 @@ export class LoginModalComponent implements AfterViewInit, OnDestroy {
 
   public resendOtp() {
     if (this.resendSeconds > 0) return;
-    this.openVerify('Mã xác thực mới đã được gửi. Mã demo là 123456.');
+    this.openVerify('Mã xác thực mới đã được gửi thành công.');
   }
 
   public onResetSubmit(event: Event) {

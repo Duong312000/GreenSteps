@@ -106,7 +106,10 @@
         <form id="createItiForm" (submit)="submitNewItinerary($event)">
             <div class="form-group">
                 <label for="modalDest">Điểm đến</label>
-                <select id="modalDest" [(ngModel)]="modalDest" name="modalDest" required>
+                <!-- Leaflet Mini Map Container -->
+                <div id="toursModalMap" style="width: 100%; height: 180px; border-radius: 12px; border: 1px solid rgba(24, 74, 55, 0.2); margin-bottom: 12px; position: relative; z-index: 10; background-color: #f3f4f6;"></div>
+                
+                <select id="modalDest" [(ngModel)]="modalDest" name="modalDest" (change)="onModalDestChange()" required>
                     <option value="Đà Lạt">Đà Lạt</option>
                     <option value="Phú Yên">Phú Yên</option>
                     <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>

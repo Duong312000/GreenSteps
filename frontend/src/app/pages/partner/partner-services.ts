@@ -24,6 +24,9 @@ export class PartnerServicesComponent implements OnInit {
   public serviceCost: number | null = null;
   public serviceCarbon: number | null = null;
   public serviceDest: string = 'Đà Lạt';
+  public serviceLat: number | null = null;
+  public serviceLng: number | null = null;
+  public selectedBadges: string[] = ['green'];
 
   // Filters State
   public searchQuery: string = '';
@@ -143,6 +146,16 @@ export class PartnerServicesComponent implements OnInit {
     this.isAddModalOpen = false;
   }
 
+  public toggleBadge(badge: string) {
+    const idx = this.selectedBadges.indexOf(badge);
+    if (idx >= 0) {
+      this.selectedBadges.splice(idx, 1);
+    } else {
+      this.selectedBadges.push(badge);
+    }
+    this.cdr.detectChanges();
+  }
+
   public exportServicesList() {
     let csv = "Tên dịch vụ,Loại hình,Khu vực,Giá dịch vụ\n";
     this.myServices.forEach(srv => {
@@ -165,6 +178,7 @@ export class PartnerServicesComponent implements OnInit {
     if (!this.currentUser) return;
 
     const providerId = this.currentUser.id || this.currentUser._id || '';
+    const categoryMap: Record<string, string> = { stay: 'Lưu trú', food: 'Ăn uống', tour: 'Khám phá', transport: 'Di chuyển', attraction: 'Khám phá' };
 
     const newService = {
       id: 'ser_' + Date.now(),
@@ -174,8 +188,11 @@ export class PartnerServicesComponent implements OnInit {
       destination: this.serviceDest,
       cost: Number(this.serviceCost),
       carbon: Number(this.serviceCarbon),
-      status: 'active',
-      badges: ['green']
+      lat: this.serviceLat,
+      lng: this.serviceLng,
+      category: categoryMap[this.serviceType] || 'Khám phá',
+      badges: this.selectedBadges.length > 0 ? this.selectedBadges : ['green'],
+      status: 'active'
     };
 
     const success = await this.apiService.addMyService(newService);
@@ -185,6 +202,9 @@ export class PartnerServicesComponent implements OnInit {
       this.serviceName = '';
       this.serviceCost = null;
       this.serviceCarbon = null;
+      this.serviceLat = null;
+      this.serviceLng = null;
+      this.selectedBadges = ['green'];
       await this.loadServices();
     } else {
       alert('Có lỗi xảy ra khi thêm dịch vụ. Vui lòng kiểm tra lại!');

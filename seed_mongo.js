@@ -314,8 +314,8 @@ async function seed() {
   console.log('Seeding Users & Wallets...');
   const defaultUsers = [
     {
-      _id: 'UG26tra0001',
-      id: 'UG26tra0001',
+      _id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
+      id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
       role: 'traveler',
       username: 'traveler',
       password_hash: '$2b$10$T8VqU8dG2C1F1JjHkL6hUe9eB5Z2D3O4P5Q6R7S8T9U0V1W2X3Y4Z', // placeholder for '123456'
@@ -328,8 +328,8 @@ async function seed() {
       job: 'Nhân viên văn phòng'
     },
     {
-      _id: 'UG26pro0001',
-      id: 'UG26pro0001',
+      _id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
       role: 'provider',
       username: 'partner',
       password_hash: '$2b$10$T8VqU8dG2C1F1JjHkL6hUe9eB5Z2D3O4P5Q6R7S8T9U0V1W2X3Y4Z', // placeholder for '123456'
@@ -375,19 +375,19 @@ async function seed() {
 
   // 4. Create Vender & VenderContract
   console.log('Seeding Vender & VenderContracts...');
-  await Vender.create({ _id: '1', id: '1', user_id: 'UG26pro0001', registration_date: '28/06/2026' });
+  await Vender.create({ _id: '1', id: '1', user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', registration_date: '28/06/2026' });
   await VenderContract.create({
     _id: 'VC26pro0001',
     id: 'VC26pro0001',
-    user_id: 'UG26pro0001',
+    user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
     name_contract: 'Hợp đồng liên kết đối tác bán hàng GreenSteps',
     text: 'Nội dung chi tiết về điều khoản chiết khấu, cam kết chất lượng xanh của hộ kinh doanh...'
   });
 
   // 5. Create Ewallet & Transactions
   console.log('Seeding Wallets & Transactions...');
-  await Wallet.create({ _id: 'EW26tra0001', id: 'EW26tra0001', user_id: 'UG26tra0001', balance: 1100000.00, registered: true });
-  await Wallet.create({ _id: 'EW26pro0001', id: 'EW26pro0001', user_id: 'UG26pro0001', balance: 0.00, registered: false });
+  await Wallet.create({ _id: 'EW26tra0001', id: 'EW26tra0001', user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d', balance: 1100000.00, registered: true });
+  await Wallet.create({ _id: 'EW26pro0001', id: 'EW26pro0001', user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', balance: 0.00, registered: false });
 
   await WalletTransaction.insertMany([
     { _id: 'GD260601010001', id: 'GD260601010001', wallet_id: 'EW26tra0001', type: 'deposit', description: 'Nạp tiền ví du lịch', amount: 2000000.00, status: 'success' },
@@ -395,11 +395,34 @@ async function seed() {
     { _id: 'GD260604030003', id: 'GD260604030003', wallet_id: 'EW26tra0001', type: 'refund', description: 'Hoàn tiền dịch vụ xe điện', amount: 300000.00, status: 'success' }
   ]);
 
-  // 6. Create Revenue
+  // 6. Create Revenue (multiple months of history for a comprehensive dashboard graph overview)
+  console.log('Seeding Revenue history (April, May, June)...');
+  await Revenue.create({
+    _id: 'REV2604pro0001',
+    id: 'REV2604pro0001',
+    user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    monthyear: '04/2026',
+    total_booking: 8,
+    total_revenue: 9800000.00,
+    service_fee: 980000.00,
+    final_profit: 8820000.00
+  });
+
+  await Revenue.create({
+    _id: 'REV2605pro0001',
+    id: 'REV2605pro0001',
+    user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    monthyear: '05/2026',
+    total_booking: 15,
+    total_revenue: 18500000.00,
+    service_fee: 1850000.00,
+    final_profit: 16650000.00
+  });
+
   await Revenue.create({
     _id: 'REV2606pro0001',
     id: 'REV2606pro0001',
-    user_id: 'UG26pro0001',
+    user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
     monthyear: '06/2026',
     total_booking: 12,
     total_revenue: 15000000.00,
@@ -517,6 +540,82 @@ async function seed() {
           { time: "12:00", name: "Mua sắm quà lưu niệm & tiễn khách", cost: 100000, carbon: 1, icon: "bi-bag-fill", type: "dining", id: "t_dn_2_11" }
         ]
       ]
+    },
+    {
+      id: "preset_dl_2",
+      title: "Chinh phục Langbiang & Thung Lũng Vàng 3N2Đ",
+      destination: "Đà Lạt",
+      days: 3,
+      cost: 1950000,
+      oldCost: 2400000,
+      carbon: 38,
+      image: "image/1dc8619487310884c9d631d689ece1e7.jpg",
+      description: "Chinh phục nóc nhà Đà Lạt Langbiang bằng xe Jeep xanh, cắm trại dạo chơi hồ Suối Vàng hoang sơ và tận hưởng rừng thông bát ngát.",
+      data: [
+        [
+          { time: "08:30", name: "Đón sân bay Liên Khương bằng xe điện", cost: 200000, carbon: 0, icon: "bi-car-front-fill", type: "transport", id: "t_dl_2_1" },
+          { time: "12:00", name: "Check-in Homestay Xanh Đà Lạt", cost: 850000, carbon: 2.5, icon: "bi-house-door-fill", type: "lodging", id: "t_dl_2_2" },
+          { time: "18:00", name: "Lẩu bò Ba Toa quán gỗ ấm áp", cost: 150000, carbon: 3, icon: "bi-cup-hot-fill", type: "dining", id: "t_dl_2_3" }
+        ],
+        [
+          { time: "08:00", name: "Xe Jeep leo đỉnh Langbiang hùng vĩ", cost: 120000, carbon: 2, icon: "bi-car-front-fill", type: "transport", id: "t_dl_2_4" },
+          { time: "11:30", name: "Tham quan khu sinh thái Thung Lũng Vàng", cost: 80000, carbon: 0.8, icon: "bi-tree-fill", type: "attraction", id: "t_dl_2_5" },
+          { time: "16:00", name: "Thưởng trà Atiso & mứt dâu tây Đà Lạt", cost: 50000, carbon: 0.2, icon: "bi-cup-hot-fill", type: "dining", id: "t_dl_2_6" }
+        ],
+        [
+          { time: "09:00", name: "Ghé An Cafe thưởng ngoạn thiên nhiên", cost: 60000, carbon: 0.4, icon: "bi-cup-hot-fill", type: "dining", id: "t_dl_2_7" },
+          { time: "14:00", name: "Mua quà đặc sản chợ đêm & tiễn khách", cost: 100000, carbon: 1, icon: "bi-bag-fill", type: "dining", id: "t_dl_2_8" }
+        ]
+      ]
+    },
+    {
+      id: "preset_py_1",
+      title: "Tuy Hòa - Đầm Ô Loan - Vịnh Xuân Đài 2N1Đ",
+      destination: "Phú Yên",
+      days: 2,
+      cost: 1290000,
+      oldCost: 1600000,
+      carbon: 12,
+      image: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg",
+      description: "Hành trình ngắn ngày cực kì thư giãn: ăn trưa hải sản Vịnh Xuân Đài, check-in đồi cát Từ Nham hoang sơ và thả mình bên rạn san hô Bãi Môn.",
+      data: [
+        [
+          { time: "08:00", name: "Xe đưa đón ga Tuy Hòa", cost: 80000, carbon: 4, icon: "bi-car-front-fill", type: "transport", id: "t_py_1_1" },
+          { time: "11:30", name: "Thưởng thức hải sản tươi rói tại Vịnh Xuân Đài", cost: 200000, carbon: 1.5, icon: "bi-cup-hot-fill", type: "dining", id: "t_py_1_2" },
+          { time: "15:00", name: "Check-in đồi cát Từ Nham", cost: 0, carbon: 0.2, icon: "bi-tree-fill", type: "attraction", id: "t_py_1_3" }
+        ],
+        [
+          { time: "08:00", name: "Ngắm bình minh sớm tại Mũi Điện", cost: 20000, carbon: 1, icon: "bi-tree-fill", type: "attraction", id: "t_py_1_4" },
+          { time: "12:00", name: "Ăn trưa cơm gà Tuyết Nhung nổi tiếng", cost: 45000, carbon: 1.2, icon: "bi-cup-hot-fill", type: "dining", id: "t_py_1_5" }
+        ]
+      ]
+    },
+    {
+      id: "preset_dn_1",
+      title: "Đà Nẵng Biển Gọi - Ngũ Hành Sơn 3N2Đ",
+      destination: "Đà Nẵng - Hội An",
+      days: 3,
+      cost: 2490000,
+      oldCost: 3100000,
+      carbon: 22,
+      image: "image/Viet Nam.png",
+      description: "Thư giãn tuyệt đối tại bãi biển Mỹ Khê cát trắng, khám phá hệ thống hang động huyền bí Ngũ Hành Sơn và xem Cầu Rồng phun lửa.",
+      data: [
+        [
+          { time: "09:00", name: "Đón sân bay Đà Nẵng về khách sạn", cost: 100000, carbon: 3, icon: "bi-car-front-fill", type: "transport", id: "t_dn_1_1" },
+          { time: "14:00", name: "Tắm biển Mỹ Khê thư giãn", cost: 0, carbon: 0, icon: "bi-tree-fill", type: "attraction", id: "t_dn_1_2" },
+          { time: "18:30", name: "Ăn tối Bánh tráng cuốn thịt heo Trần", cost: 120000, carbon: 1.8, icon: "bi-cup-hot-fill", type: "dining", id: "t_dn_1_3" }
+        ],
+        [
+          { time: "08:30", name: "Tham quan danh thắng Ngũ Hành Sơn", cost: 40000, carbon: 0.5, icon: "bi-tree-fill", type: "attraction", id: "t_dn_1_4" },
+          { time: "12:00", name: "Mì Quảng Ếch Bếp Trang trứ danh", cost: 65000, carbon: 1.2, icon: "bi-cup-hot-fill", type: "dining", id: "t_dn_1_5" },
+          { time: "20:00", name: "Xem Cầu Rồng phun lửa & phun nước", cost: 0, carbon: 0.8, icon: "bi-tree-fill", type: "attraction", id: "t_dn_1_6" }
+        ],
+        [
+          { time: "09:00", name: "Viếng Chùa Linh Ứng Sơn Trà thanh tịnh", cost: 0, carbon: 1.5, icon: "bi-tree-fill", type: "attraction", id: "t_dn_1_7" },
+          { time: "12:00", name: "Mua quà lưu niệm Chợ Hàn & tiễn khách", cost: 100000, carbon: 1, icon: "bi-bag-fill", type: "dining", id: "t_dn_1_8" }
+        ]
+      ]
     }
   ];
 
@@ -602,61 +701,161 @@ async function seed() {
     }
   }
 
-  // 9. Seed GreenServices
-  console.log('Seeding GreenServices...');
-  await GreenService.create({
-    _id: 'GSstaypro0001',
-    id: 'GSstaypro0001',
-    vender_id: '1',
-    name_service: 'Homestay Xanh Đà Lạt',
-    type: 'stay',
-    cost: 850000.00,
-    destination: 'Đà Lạt',
-    carbon: 2.50,
-    image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
-    rating: 4.8,
-    bookings_count: 42,
-    current_data: { wifi: true, parking: true }
-  });
-  await GreenService.create({
-    _id: 'GSfoodpro0001',
-    id: 'GSfoodpro0001',
-    vender_id: '1',
-    name_service: 'Cafe Săn Mây Đà Lạt',
-    type: 'food',
-    cost: 80000.00,
-    destination: 'Đà Lạt',
-    carbon: 0.50,
-    image_url: 'https://images.unsplash.com/photo-1555244162-803834f70033',
-    rating: 4.7,
-    bookings_count: 25,
-    current_data: { menu: ['cafe', 'tea'] }
-  });
+  // 9. Seed GreenServices (25+ real destinations with GPS coordinates)
+  console.log('Seeding GreenServices with real destinations...');
+  const greenServices = [
+    // === ĐÀ LẠT (9 địa điểm) ===
+    { _id: 'GS_DL_01', name_service: 'Hồ Xuân Hương', type: 'attraction', cost: 0, destination: 'Đà Lạt', carbon: 1, current_data: { lat: 11.9425, lng: 108.4385, img: 'image/1dc8619487310884c9d631d689ece1e7.jpg', category: 'Khám phá' }, rating: 4.9, bookings_count: 120 },
+    { _id: 'GS_DL_02', name_service: 'Thác Datanla máng trượt', type: 'attraction', cost: 200000, destination: 'Đà Lạt', carbon: 4, current_data: { lat: 11.9015, lng: 108.4485, img: 'image/1dc8619487310884c9d631d689ece1e7.jpg', category: 'Khám phá' }, rating: 4.7, bookings_count: 95 },
+    { _id: 'GS_DL_03', name_service: 'Vườn hoa Thành phố Đà Lạt', type: 'attraction', cost: 50000, destination: 'Đà Lạt', carbon: 1, current_data: { lat: 11.9480, lng: 108.4500, img: 'image/1dc8619487310884c9d631d689ece1e7.jpg', category: 'Khám phá' }, rating: 4.6, bookings_count: 80 },
+    { _id: 'GS_DL_04', name_service: 'Đường Hầm Điêu Khắc', type: 'attraction', cost: 90000, destination: 'Đà Lạt', carbon: 3, current_data: { lat: 11.8900, lng: 108.4100, img: 'image/1dc8619487310884c9d631d689ece1e7.jpg', category: 'Khám phá' }, rating: 4.5, bookings_count: 60 },
+    { _id: 'GS_DL_05', name_service: 'Chợ đêm Đà Lạt', type: 'attraction', cost: 0, destination: 'Đà Lạt', carbon: 1, current_data: { lat: 11.9423, lng: 108.4360, img: 'image/1dc8619487310884c9d631d689ece1e7.jpg', category: 'Khám phá' }, rating: 4.8, bookings_count: 200 },
+    { _id: 'GS_DL_06', name_service: 'Lẩu bò Ba Toa quán gỗ', type: 'food', cost: 150000, destination: 'Đà Lạt', carbon: 3, current_data: { lat: 11.9325, lng: 108.4452, img: 'image/2eee566424c1f35fbeacf85496b4b6e7.jpg', category: 'Ăn uống' }, rating: 4.6, bookings_count: 55 },
+    { _id: 'GS_DL_07', name_service: 'An Cafe - Đà Lạt', type: 'food', cost: 60000, destination: 'Đà Lạt', carbon: 2, current_data: { lat: 11.9400, lng: 108.4335, img: 'image/2eee566424c1f35fbeacf85496b4b6e7.jpg', category: 'Ăn uống' }, rating: 4.7, bookings_count: 45 },
+    { _id: 'GS_DL_08', name_service: 'Homestay Xanh Đà Lạt', type: 'stay', cost: 850000, destination: 'Đà Lạt', carbon: 2.5, current_data: { lat: 11.9450, lng: 108.4410, img: 'image/1dc8619487310884c9d631d689ece1e7.jpg', category: 'Lưu trú' }, rating: 4.8, bookings_count: 42 },
+    { _id: 'GS_DL_09', name_service: 'Thung lũng Tình Yêu', type: 'attraction', cost: 150000, destination: 'Đà Lạt', carbon: 2, current_data: { lat: 11.9620, lng: 108.4530, img: 'image/1dc8619487310884c9d631d689ece1e7.jpg', category: 'Khám phá' }, rating: 4.7, bookings_count: 110 },
 
-  await BadgeService.create({ badge_name: 'green', service_id: 'GSstaypro0001' });
-  await BadgeService.create({ badge_name: 'green', service_id: 'GSfoodpro0001' });
+    // === PHÚ YÊN (8 địa điểm) ===
+    { _id: 'GS_PY_01', name_service: 'Gành Đá Đĩa kỳ vĩ', type: 'attraction', cost: 40000, destination: 'Phú Yên', carbon: 8, current_data: { lat: 13.3650, lng: 109.2990, img: 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg', category: 'Khám phá' }, rating: 4.9, bookings_count: 150 },
+    { _id: 'GS_PY_02', name_service: 'Tháp Nhạn cổ kính', type: 'attraction', cost: 20000, destination: 'Phú Yên', carbon: 1, current_data: { lat: 13.0898, lng: 109.3005, img: 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg', category: 'Khám phá' }, rating: 4.6, bookings_count: 70 },
+    { _id: 'GS_PY_03', name_service: 'Bãi Xép (Tôi thấy hoa vàng...)', type: 'attraction', cost: 20000, destination: 'Phú Yên', carbon: 2, current_data: { lat: 13.2040, lng: 109.2890, img: 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg', category: 'Khám phá' }, rating: 4.8, bookings_count: 90 },
+    { _id: 'GS_PY_04', name_service: 'Hải đăng Mũi Điện', type: 'attraction', cost: 20000, destination: 'Phú Yên', carbon: 4, current_data: { lat: 12.8980, lng: 109.4600, img: 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg', category: 'Khám phá' }, rating: 4.7, bookings_count: 85 },
+    { _id: 'GS_PY_05', name_service: 'Mắt cá ngừ đại dương bà Tám', type: 'food', cost: 120000, destination: 'Phú Yên', carbon: 2, current_data: { lat: 13.0882, lng: 109.3025, img: 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg', category: 'Ăn uống' }, rating: 4.5, bookings_count: 40 },
+    { _id: 'GS_PY_06', name_service: 'Cơm gà Tuyết Nhung', type: 'food', cost: 45000, destination: 'Phú Yên', carbon: 2, current_data: { lat: 13.0905, lng: 109.3032, img: 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg', category: 'Ăn uống' }, rating: 4.6, bookings_count: 35 },
+    { _id: 'GS_PY_07', name_service: 'Homestay Hoa Vàng Phú Yên', type: 'stay', cost: 400000, destination: 'Phú Yên', carbon: 3, current_data: { lat: 13.0920, lng: 109.3050, img: 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg', category: 'Lưu trú' }, rating: 4.7, bookings_count: 30 },
+    { _id: 'GS_PY_08', name_service: 'Đầm Ô Loan', type: 'attraction', cost: 0, destination: 'Phú Yên', carbon: 1, current_data: { lat: 13.2550, lng: 109.2580, img: 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg', category: 'Khám phá' }, rating: 4.8, bookings_count: 100 },
 
-  // 10. Seed ServiceBooking
+    // === ĐÀ NẴNG - HỘI AN (8 địa điểm) ===
+    { _id: 'GS_DN_01', name_service: 'Bà Nà Hills cáp treo', type: 'attraction', cost: 950000, destination: 'Đà Nẵng - Hội An', carbon: 15, current_data: { lat: 15.9960, lng: 107.9880, img: 'image/Viet Nam.png', category: 'Khám phá' }, rating: 4.9, bookings_count: 300 },
+    { _id: 'GS_DN_02', name_service: 'Chùa Linh Ứng Sơn Trà', type: 'attraction', cost: 0, destination: 'Đà Nẵng - Hội An', carbon: 2, current_data: { lat: 16.1000, lng: 108.2780, img: 'image/Viet Nam.png', category: 'Khám phá' }, rating: 4.8, bookings_count: 180 },
+    { _id: 'GS_DN_03', name_service: 'Ngũ Hành Sơn', type: 'attraction', cost: 40000, destination: 'Đà Nẵng - Hội An', carbon: 1, current_data: { lat: 16.0125, lng: 108.2635, img: 'image/Viet Nam.png', category: 'Khám phá' }, rating: 4.7, bookings_count: 140 },
+    { _id: 'GS_DN_04', name_service: 'Phố cổ Hội An', type: 'attraction', cost: 120000, destination: 'Đà Nẵng - Hội An', carbon: 0, current_data: { lat: 15.8801, lng: 108.3380, img: 'image/Viet Nam.png', category: 'Khám phá' }, rating: 4.9, bookings_count: 250 },
+    { _id: 'GS_DN_05', name_service: 'Cầu Rồng Đà Nẵng', type: 'attraction', cost: 0, destination: 'Đà Nẵng - Hội An', carbon: 1, current_data: { lat: 16.0612, lng: 108.2268, img: 'image/Viet Nam.png', category: 'Khám phá' }, rating: 4.6, bookings_count: 160 },
+    { _id: 'GS_DN_06', name_service: 'Bánh tráng cuốn thịt heo Trần', type: 'food', cost: 120000, destination: 'Đà Nẵng - Hội An', carbon: 2, current_data: { lat: 16.0544, lng: 108.2022, img: 'image/Viet Nam.png', category: 'Ăn uống' }, rating: 4.5, bookings_count: 50 },
+    { _id: 'GS_DN_07', name_service: 'Mì Quảng Ếch Bếp Trang', type: 'food', cost: 65000, destination: 'Đà Nẵng - Hội An', carbon: 2, current_data: { lat: 16.0680, lng: 108.2215, img: 'image/Viet Nam.png', category: 'Ăn uống' }, rating: 4.7, bookings_count: 45 },
+    { _id: 'GS_DN_08', name_service: 'Rừng dừa Bảy Mẫu Hội An', type: 'attraction', cost: 150000, destination: 'Đà Nẵng - Hội An', carbon: 0.5, current_data: { lat: 15.8900, lng: 108.3500, img: 'image/Viet Nam.png', category: 'Khám phá' }, rating: 4.8, bookings_count: 130 }
+  ];
+
+  for (const gs of greenServices) {
+    await GreenService.create({
+      _id: gs._id,
+      id: gs._id,
+      vender_id: '1',
+      name_service: gs.name_service,
+      type: gs.type,
+      cost: gs.cost,
+      destination: gs.destination,
+      carbon: gs.carbon,
+      image_url: gs.current_data.img || 'image/Viet Nam.png',
+      rating: gs.rating,
+      bookings_count: gs.bookings_count,
+      current_data: gs.current_data
+    });
+  }
+
+  // Assign badges to all seeded services
+  for (const gs of greenServices) {
+    await BadgeService.create({ badge_name: 'green', service_id: gs._id });
+    if (gs.cost === 0 || gs.cost <= 50000) {
+      await BadgeService.create({ badge_name: 'budget', service_id: gs._id });
+    }
+    if (gs.bookings_count >= 100) {
+      await BadgeService.create({ badge_name: 'bestseller', service_id: gs._id });
+    }
+  }
+
+  // 10. Seed ServiceBooking (9 seeded bookings to populate lists/stats charts)
+  console.log('Seeding ServiceBookings...');
   await ServiceBooking.create({
     _id: 'BK2606010001',
     id: 'BK2606010001',
-    user_id: 'UG26tra0001',
-    service_id: 'GSstaypro0001',
+    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
+    service_id: 'GS_DL_08',
     fullname: 'Nguyễn Minh Anh',
     name_service: 'Homestay Xanh Đà Lạt',
     booking_date: '15/10/2026',
     guests: 4,
     value: 3400000.00,
-    status: 'deposit',
+    status: 'completed',
     votes_count: 42
+  });
+
+  await ServiceBooking.create({
+    _id: 'BK2606010002',
+    id: 'BK2606010002',
+    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
+    service_id: 'GS_DL_06',
+    fullname: 'Nguyễn Minh Anh',
+    name_service: 'Lẩu bò Ba Toa quán gỗ',
+    booking_date: '15/10/2026',
+    guests: 2,
+    value: 300000.00,
+    status: 'completed',
+    votes_count: 10
+  });
+
+  await ServiceBooking.create({
+    _id: 'BK2606010003',
+    id: 'BK2606010003',
+    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
+    service_id: 'GS_PY_01',
+    fullname: 'Nguyễn Minh Anh',
+    name_service: 'Gành Đá Đĩa kỳ vĩ',
+    booking_date: '20/10/2026',
+    guests: 3,
+    value: 120000.00,
+    status: 'deposit',
+    votes_count: 12
+  });
+
+  await ServiceBooking.create({
+    _id: 'BK2606010004',
+    id: 'BK2606010004',
+    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
+    service_id: 'GS_PY_05',
+    fullname: 'Nguyễn Minh Anh',
+    name_service: 'Mắt cá ngừ đại dương bà Tám',
+    booking_date: '21/10/2026',
+    guests: 3,
+    value: 360000.00,
+    status: 'pending',
+    votes_count: 0
+  });
+
+  await ServiceBooking.create({
+    _id: 'BK2606010005',
+    id: 'BK2606010005',
+    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
+    service_id: 'GS_DN_01',
+    fullname: 'Nguyễn Minh Anh',
+    name_service: 'Bà Nà Hills cáp treo',
+    booking_date: '25/10/2026',
+    guests: 2,
+    value: 1900000.00,
+    status: 'pending',
+    votes_count: 0
+  });
+
+  await ServiceBooking.create({
+    _id: 'BK2606010006',
+    id: 'BK2606010006',
+    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
+    service_id: 'GS_DN_04',
+    fullname: 'Nguyễn Minh Anh',
+    name_service: 'Phố cổ Hội An',
+    booking_date: '26/10/2026',
+    guests: 2,
+    value: 240000.00,
+    status: 'rejected',
+    votes_count: 0
   });
 
   // 11. Seed ad_campaigns
   await AdCampaign.create({
     _id: 'ADC0001',
     id: 'ADC0001',
-    user_id: 'UG26pro0001',
-    service_id: 'GSstaypro0001',
+    user_id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+    service_id: 'GS_DL_08',
     campaigns_type: 'top_recommend',
     campaigns_name: 'Chiến dịch mùa hè rực rỡ',
     campaigns_cost: 500000.00,
@@ -666,12 +865,12 @@ async function seed() {
     status: 'active'
   });
 
-  // 12. Seed Community & Comments
+  // 12. Seed Community & Comments (multiple posts to make the social feed look highly realistic and lively)
   console.log('Seeding Community & Comments...');
   await CommunityPost.create({
     _id: 'CUPtra000101',
     id: 'CUPtra000101',
-    user_id: 'UG26tra0001',
+    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
     rating: 5,
     text: 'Chuyến đi Phú Yên 3 ngày 2 đêm của mình siêu xanh và đáng nhớ! Nhờ thuê xe điện VinFast mà mình vi vu khắp Tuy Hòa hết rất ít tiền, lại không ồn ào. Các bạn nên ghé qua homestay Hoa Vàng nhé.',
     tour_name: 'Tour Phú Yên Biển Xanh 3N2Đ',
@@ -687,12 +886,94 @@ async function seed() {
   await CommentPost.create({
     _id: 'CEPtra00010001',
     id: 'CEPtra00010001',
-    user_id: 'UG26tra0001',
+    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
     post_id: 'CUPtra000101',
     rating: 5,
     text: 'Chuyến đi tuyệt vời quá bạn ơi!',
     image_url: null
   });
+
+  await CommunityPost.create({
+    _id: 'CUPtra000102',
+    id: 'CUPtra000102',
+    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
+    rating: 5,
+    text: 'Đà Lạt mùa này đẹp tuyệt vời các bạn ơi! Mình đã đi tour leo núi Langbiang bằng xe Jeep xanh và cắm trại qua đêm bên hồ Suối Vàng. Cảm giác vô cùng trong lành và thư giãn!',
+    tour_name: 'Chinh phục Langbiang & Thung Lũng Vàng 3N2Đ',
+    destination: 'Đà Lạt',
+    image_url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+    tour_description: 'Khám phá Langbiang Đà Lạt',
+    days: 3,
+    likes_count: 45,
+    comments_count: 12,
+    current_data: { tips: 'Nên mang áo ấm dày' }
+  });
+
+  await CommunityPost.create({
+    _id: 'CUPtra000103',
+    id: 'CUPtra000103',
+    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
+    rating: 4,
+    text: 'Trải nghiệm du lịch bền vững tại Đà Nẵng rất ấn tượng. Mình đã thuê xe đạp dạo quanh vườn rau hữu cơ Trà Quế và được chính người dân hướng dẫn làm đèn lồng giấy thủ công.',
+    tour_name: 'Đà Nẵng - Hội An Văn Hóa 4N3Đ',
+    destination: 'Đà Nẵng - Hội An',
+    image_url: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80',
+    tour_description: 'Tour di sản văn hóa miền Trung',
+    days: 4,
+    likes_count: 18,
+    comments_count: 3,
+    current_data: { tips: 'Hội An lung linh nhất từ 19:00' }
+  });
+
+  // Seed active custom itinerary to prevent 404 on refresh
+  console.log('Seeding active custom itinerary to prevent 404 on refresh...');
+  await Schedule.create({
+    _id: 'iti_1782683051702',
+    id: 'iti_1782683051702',
+    tour_name: 'Lịch trình Đà Lạt của tôi',
+    destination: 'Đà Lạt',
+    days: 3,
+    discount: 0,
+    carbon: 4.5,
+    image_url: 'image/Viet Nam.png',
+    tour_description: 'Hành trình tự thiết kế đi Đà Lạt'
+  });
+
+  await ScheduleCustom.create({
+    _id: 'iti_1782683051702',
+    id: 'iti_1782683051702',
+    user_id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
+    total_cost: 1200000
+  });
+
+  await ScheduleActivity.insertMany([
+    {
+      _id: 'act_1782683051702_1',
+      id: 'act_1782683051702_1',
+      schedule_id: 'iti_1782683051702',
+      day_number: 1,
+      time: '09:00',
+      activity_name: 'Hồ Xuân Hương',
+      activity_cost: 0,
+      carbon: 1,
+      icon: 'bi-tree-fill',
+      type: 'attraction',
+      coordinates: '11.9425, 108.4385'
+    },
+    {
+      _id: 'act_1782683051702_2',
+      id: 'act_1782683051702_2',
+      schedule_id: 'iti_1782683051702',
+      day_number: 1,
+      time: '12:00',
+      activity_name: 'Lẩu bò Ba Toa quán gỗ',
+      activity_cost: 150000,
+      carbon: 3,
+      icon: 'bi-cup-hot-fill',
+      type: 'dining',
+      coordinates: '11.9325, 108.4452'
+    }
+  ]);
 
   await CPSS.create({
     comment_id: 'CEPtra00010001',

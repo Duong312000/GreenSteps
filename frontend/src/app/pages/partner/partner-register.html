@@ -1,38 +1,38 @@
 <main class="main-viewport partner-register-viewport">
-    <div class="partner-register-card" style="max-width: 650px; margin: 40px auto; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 40px; box-shadow: var(--shadow-md);">
-        <div class="register-header" style="text-align: center; margin-bottom: 30px;">
-            <div class="leaf-icon-wrapper" style="width: 48px; height: 48px; border-radius: 50%; background-color: var(--light-mint); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 20px;">
+    <div class="partner-register-card">
+        <div class="register-header">
+            <div class="leaf-icon-wrapper">
                 <i class="bi bi-leaf-fill"></i>
             </div>
-            <h2 style="font-size: 24px; font-weight: 800; color: var(--text-primary);">Hợp tác cùng GreenSteps Travel</h2>
-            <p style="font-size: 14px; color: var(--text-muted); margin-top: 4px;">Tham gia hệ sinh thái du lịch xanh, kết nối trực tiếp với hàng ngàn du khách yêu thiên nhiên và có ý thức bảo vệ môi trường.</p>
+            <h2>Hợp tác cùng GreenSteps Travel</h2>
+            <p>Tham gia hệ sinh thái du lịch xanh, kết nối trực tiếp với hàng ngàn du khách yêu thiên nhiên và có ý thức bảo vệ môi trường.</p>
         </div>
 
         <form (submit)="registerPartner($event)">
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label for="companyName" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Tên doanh nghiệp / Hộ kinh doanh</label>
-                <input type="text" id="companyName" [(ngModel)]="companyName" name="companyName" placeholder="Ví dụ: Homestay Xanh Đà Lạt, Công ty Vận tải Xanh..." required style="width: 100%; height: 44px; padding: 0 15px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 14px; background: var(--bg-primary); color: var(--text-color);">
+            <div class="form-group">
+                <label for="companyName">Tên doanh nghiệp / Hộ kinh doanh</label>
+                <input type="text" id="companyName" [(ngModel)]="companyName" name="companyName" placeholder="Ví dụ: Homestay Xanh Đà Lạt, Công ty Vận tải Xanh..." required>
             </div>
 
-            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="form-grid">
                 <div class="form-group">
-                    <label for="bizEmail" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Email liên hệ thương mại</label>
-                    <input type="email" id="bizEmail" [(ngModel)]="bizEmail" name="bizEmail" placeholder="Ví dụ: info@greenvalley.com" required style="width: 100%; height: 44px; padding: 0 15px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 14px; background: var(--bg-primary); color: var(--text-color);">
+                    <label for="bizEmail">Email liên hệ thương mại</label>
+                    <input type="email" id="bizEmail" [(ngModel)]="bizEmail" name="bizEmail" placeholder="Ví dụ: info@greenvalley.com" required>
                 </div>
                 <div class="form-group">
-                    <label for="bizPhone" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Số điện thoại hotline</label>
-                    <input type="tel" id="bizPhone" [(ngModel)]="bizPhone" name="bizPhone" placeholder="Ví dụ: 0902 XXXXXX" required style="width: 100%; height: 44px; padding: 0 15px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 14px; background: var(--bg-primary); color: var(--text-color);">
+                    <label for="bizPhone">Số điện thoại hotline</label>
+                    <input type="tel" id="bizPhone" [(ngModel)]="bizPhone" name="bizPhone" placeholder="Ví dụ: 0902 XXXXXX" required>
                 </div>
             </div>
 
-            <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="form-grid">
                 <div class="form-group">
-                    <label for="bizLicense" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Số Giấy phép Kinh doanh (GPKD)</label>
-                    <input type="text" id="bizLicense" [(ngModel)]="bizLicense" name="bizLicense" placeholder="Mã số thuế hoặc số đăng ký" required style="width: 100%; height: 44px; padding: 0 15px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 14px; background: var(--bg-primary); color: var(--text-color);">
+                    <label for="bizLicense">Số Giấy phép Kinh doanh (GPKD)</label>
+                    <input type="text" id="bizLicense" [(ngModel)]="bizLicense" name="bizLicense" placeholder="Mã số thuế hoặc số đăng ký" required>
                 </div>
                 <div class="form-group">
-                    <label for="bizCategory" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Lĩnh vực dịch vụ cung ứng</label>
-                    <select id="bizCategory" [(ngModel)]="bizCategory" name="bizCategory" style="width: 100%; height: 44px; padding: 0 15px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 14px; background: var(--bg-primary); color: var(--text-color);">
+                    <label for="bizCategory">Lĩnh vực dịch vụ cung ứng</label>
+                    <select id="bizCategory" [(ngModel)]="bizCategory" name="bizCategory">
                         <option value="stay">Lưu trú (Homestay, Khách sạn xanh)</option>
                         <option value="food">Ẩm thực (Nhà hàng sinh thái, đồ chay)</option>
                         <option value="transport">Vận chuyển (Xe điện, xe đạp tự lái)</option>
@@ -41,17 +41,17 @@
                 </div>
             </div>
 
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label for="bizDesc" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary);">Mô tả cam kết bền vững</label>
-                <textarea id="bizDesc" [(ngModel)]="bizDesc" name="bizDesc" placeholder="Ví dụ: Cơ sở hạn chế rác thải nhựa, sử dụng nước tái chế, hỗ trợ tạo sinh kế cho 10 lao động địa phương..." style="width: 100%; height: 100px; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 14px; background: var(--bg-primary); color: var(--text-color); resize: vertical;"></textarea>
+            <div class="form-group">
+                <label for="bizDesc">Mô tả cam kết bền vững</label>
+                <textarea id="bizDesc" [(ngModel)]="bizDesc" name="bizDesc" placeholder="Ví dụ: Cơ sở hạn chế rác thải nhựa, sử dụng nước tái chế, hỗ trợ tạo sinh kế cho 10 lao động địa phương..."></textarea>
             </div>
 
-            <label class="checkbox-label" style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-secondary); margin-bottom: 30px; cursor: pointer;">
-                <input type="checkbox" [(ngModel)]="agreeTerms" name="agreeTerms" required style="margin-top: 3px;">
+            <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="agreeTerms" name="agreeTerms" required>
                 <span>Tôi đồng ý với các Quy chế hoạt động đối tác và cam kết tuân thủ các quy tắc bảo vệ môi trường, tiết kiệm năng lượng của GreenSteps Travel.</span>
             </label>
 
-            <button type="submit" class="btn-auth-submit" style="width: 100%; height: 48px; background-color: var(--primary); border: none; border-radius: var(--border-radius-sm); color: #FFFFFF; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px;">
+            <button type="submit" class="btn-auth-submit">
                 <i class="bi bi-shield-check"></i> Đăng ký thông tin và nâng cấp tài khoản
             </button>
         </form>

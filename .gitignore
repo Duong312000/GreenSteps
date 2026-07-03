@@ -49,3 +49,6 @@ Thumbs.db
 
 # Large PDF design assets
 *.pdf
+# Documentation and auxiliary scripts
+*.docx
+generate_docx.py

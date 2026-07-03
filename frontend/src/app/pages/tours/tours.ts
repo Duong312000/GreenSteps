@@ -6,6 +6,8 @@ import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { Tour, Itinerary } from '../../models/models';
 
+declare const L: any; // Leaflet mapped globally via index.html script tag
+
 @Component({
   selector: 'app-tours',
   standalone: true,
@@ -15,6 +17,14 @@ import { Tour, Itinerary } from '../../models/models';
 export class ToursComponent implements OnInit {
   public toursData: Tour[] = [];
   public filteredTours: Tour[] = [];
+
+  private modalMap: any = null;
+  private modalMarkers: { [key: string]: any } = {};
+  private destCoords: { [key: string]: [number, number] } = {
+    'Đà Lạt': [11.940419, 108.458313],
+    'Phú Yên': [13.088198, 109.314957],
+    'Đà Nẵng - Hội An': [16.047079, 108.206230]
+  };
 
   // Filter bindings
   public searchQuery: string = '';
@@ -112,10 +122,126 @@ export class ToursComponent implements OnInit {
 
   public openCreateItineraryModal() {
     this.isCreateModalOpen = true;
+    setTimeout(() => {
+      this.initModalMap('toursModalMap');
+    }, 150);
   }
 
   public closeCreateItineraryModal() {
     this.isCreateModalOpen = false;
+    if (this.modalMap) {
+      try {
+        this.modalMap.remove();
+      } catch (e) {}
+      this.modalMap = null;
+      this.modalMarkers = {};
+    }
+  }
+
+  private initModalMap(containerId: string) {
+    const mapEl = document.getElementById(containerId);
+    if (!mapEl) return;
+
+    if (this.modalMap) {
+      try {
+        this.modalMap.remove();
+      } catch (e) {}
+      this.modalMap = null;
+      this.modalMarkers = {};
+    }
+
+    this.modalMap = L.map(containerId, {
+      zoomControl: true,
+      attributionControl: false
+    }).setView([14.2, 108.8], 6);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 18
+    }).addTo(this.modalMap);
+
+    Object.keys(this.destCoords).forEach(dest => {
+      const coords = this.destCoords[dest];
+      const isSelected = this.modalDest === dest;
+      
+      const markerIcon = L.divIcon({
+        className: 'custom-modal-marker',
+        html: `<div class="modal-pin ${isSelected ? 'active-pin' : ''}" style="
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background-color: ${isSelected ? '#0E9F6E' : '#9CA3AF'};
+          border: 3px solid #FFFFFF;
+          box-shadow: 0 0 10px rgba(0,0,0,0.3);
+          transition: all 0.3s;
+          transform: scale(${isSelected ? 1.4 : 1});
+        "></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+
+      const marker = L.marker(coords, { icon: markerIcon }).addTo(this.modalMap);
+      
+      marker.bindTooltip(dest, {
+        permanent: true,
+        direction: 'right',
+        className: 'modal-marker-tooltip',
+        offset: [10, 0]
+      });
+
+      marker.on('click', () => {
+        this.selectDestinationFromMap(dest);
+      });
+
+      this.modalMarkers[dest] = marker;
+    });
+
+    setTimeout(() => {
+      if (this.modalMap) {
+        this.modalMap.invalidateSize();
+      }
+    }, 200);
+  }
+
+  public selectDestinationFromMap(dest: string) {
+    this.modalDest = dest;
+    this.updateModalMarkers();
+    if (this.modalMap) {
+      this.modalMap.panTo(this.destCoords[dest]);
+    }
+  }
+
+  private updateModalMarkers() {
+    Object.keys(this.modalMarkers).forEach(dest => {
+      const marker = this.modalMarkers[dest];
+      if (!marker) return;
+      
+      const isSelected = this.modalDest === dest;
+      
+      const icon = L.divIcon({
+        className: 'custom-modal-marker',
+        html: `<div class="modal-pin ${isSelected ? 'active-pin' : ''}" style="
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background-color: ${isSelected ? '#0E9F6E' : '#9CA3AF'};
+          border: 3px solid #FFFFFF;
+          box-shadow: 0 0 10px rgba(0,0,0,0.3);
+          transition: all 0.3s;
+          transform: scale(${isSelected ? 1.4 : 1});
+        "></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+      
+      marker.setIcon(icon);
+    });
+  }
+
+  public onModalDestChange() {
+    this.updateModalMarkers();
+    if (this.modalMap && this.destCoords[this.modalDest]) {
+      this.modalMap.panTo(this.destCoords[this.modalDest]);
+    }
   }
 
   public async submitNewItinerary(event: Event) {
