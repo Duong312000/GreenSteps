@@ -332,7 +332,7 @@
                             [class.text-gray-400]="activeSection !== 'itinerary'"
                             [class.hover:text-gray-600]="activeSection !== 'itinerary'"
                         >
-                            ITINERARY & TIMELINE
+                            LỊCH TRÌNH & TIMELINE
                         </button>
                         <button
                             (click)="activeSection = 'route'"
@@ -343,7 +343,7 @@
                             [class.text-gray-400]="activeSection !== 'route'"
                             [class.hover:text-gray-600]="activeSection !== 'route'"
                         >
-                            TREKKING ROUTE MAP
+                            BẢN ĐỒ TREKKING
                         </button>
                         <button
                             (click)="activeSection = 'campsite'"
@@ -408,7 +408,7 @@
                     <!-- SECTION: ROUTE MAP -->
                     <div class="space-y-6" *ngIf="activeSection === 'route'">
                         <div class="flex justify-between items-center bg-[#F7FBF4] border border-teal-600/10 p-4 rounded-2xl">
-                            <h3 class="text-[15px] font-bold text-teal-800">Trekking Route: LangBiang Summit Path</h3>
+                            <h3 class="text-[15px] font-bold text-teal-800">Tuyến đường Trekking: LangBiang Summit Path</h3>
                             <div class="flex gap-2">
                                 <button (click)="openRouteModal()" class="px-3 py-1.5 border border-teal-600 bg-white text-teal-700 text-xs font-semibold rounded-lg hover:bg-teal-50 shadow-sm cursor-pointer">+ Tạo route mới</button>
                             </div>
