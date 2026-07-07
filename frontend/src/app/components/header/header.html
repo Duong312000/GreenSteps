@@ -158,6 +158,22 @@
                        style="text-decoration:none;">
                         <i class="bi bi-person text-lg"></i> Trang cá nhân
                     </a>
+                    <a *ngIf="currentUser.role === 'traveler'"
+                       routerLink="/partner-register"
+                       (click)="isProfileOpen = false"
+                       class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#184A37]
+                              hover:bg-gray-50 hover:text-[#0E9F6E] rounded-xl transition-colors"
+                       style="text-decoration:none;">
+                        <i class="bi bi-briefcase text-lg"></i> Hợp tác đối tác
+                    </a>
+                    <a *ngIf="currentUser.role === 'provider'"
+                       routerLink="/partner-dashboard"
+                       (click)="isProfileOpen = false"
+                       class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#184A37]
+                              hover:bg-gray-50 hover:text-[#0E9F6E] rounded-xl transition-colors"
+                       style="text-decoration:none;">
+                        <i class="bi bi-shop text-lg"></i> Kênh đối tác
+                    </a>
                     <div class="border-t border-[#184A37]/10 my-1"></div>
                     <button (click)="isProfileOpen = false; handleLogout()"
                             class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold

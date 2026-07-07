@@ -7,15 +7,22 @@ if (!dbUri) {
   process.exit(1);
 }
 
-const sequelize = new Sequelize(dbUri, {
+const isLocalDatabase = /localhost|127\.0\.0\.1/.test(dbUri);
+
+const sequelizeOptions = {
   dialect: 'postgres',
-  logging: false,
-  dialectOptions: {
+  logging: false
+};
+
+if (!isLocalDatabase) {
+  sequelizeOptions.dialectOptions = {
     ssl: {
       require: true,
       rejectUnauthorized: false
     }
-  }
-});
+  };
+}
+
+const sequelize = new Sequelize(dbUri, sequelizeOptions);
 
 module.exports = { sequelize };

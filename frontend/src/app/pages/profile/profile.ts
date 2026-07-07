@@ -7,43 +7,267 @@ import { ApiService } from '../../services/api.service';
 import { LoginModalService } from '../../services/login-modal.service';
 import { User, WalletTransaction } from '../../models/models';
 
+type ProfileSection = 'overview' | 'personal' | 'security' | 'notifications' | 'wallet';
+
+type ProfileSidebarItem = {
+  icon: string;
+  label: string;
+  section?: ProfileSection;
+  route?: string;
+  action?: 'planner';
+  badge?: string;
+};
+
+type ProfileSidebarGroup = {
+  heading: string;
+  items: ProfileSidebarItem[];
+};
+
+type TravelPreference = {
+  label: string;
+  icon: string;
+  selected?: boolean;
+};
+
+type SmartCostSuggestion = {
+  label: string;
+  saving: string;
+};
+
+type TripReminder = {
+  icon: string;
+  label: string;
+};
+
+type PreferenceQuestionType = 'single' | 'multi' | 'text';
+
+type TravelPreferenceQuestion = {
+  key: string;
+  icon: string;
+  title: string;
+  hint: string;
+  type: PreferenceQuestionType;
+  options?: string[];
+  placeholder?: string;
+};
+
 @Component({
   selector: 'app-profile',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './profile.html',
+  styleUrls: ['./profile-dashboard.css'],
 })
 export class ProfileComponent implements OnInit {
+  public activeSection: ProfileSection = 'overview';
   public currentUser: User | null = null;
+  public profileUser: User = {
+    id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
+    username: 'kienldvk24411',
+    fullname: 'kienldvk24411',
+    email: 'kienldvk24411@st.uel.edu.vn',
+    phone: '',
+    dob: '',
+    gender: 'Nữ',
+    address: '',
+    role: 'traveler'
+  };
 
-  // Wallet info
-  public walletRegistered: boolean = false;
-  public walletBalance: number = 0;
+  public walletRegistered = false;
+  public walletBalance = 0;
   public depositAmount: number | null = null;
   public transactions: WalletTransaction[] = [];
 
-  // QR Modal info
-  public isQrModalOpen: boolean = false;
-  public qrCodeUrl: string = '';
-  public qrAmount: number = 0;
-  public qrDescription: string = '';
+  public isQrModalOpen = false;
+  public qrCodeUrl = '';
+  public qrAmount = 0;
+  public qrDescription = '';
 
-  // Edit details form fields
-  public isEditing: boolean = false;
-  public detFullname: string = '';
-  public detPhone: string = '';
-  public detEmail: string = '';
-  public detDob: string = '';
-  public detGender: string = 'Nữ';
-  public detAddress: string = '';
-  public companyName: string = '';
-  public isRegisteringProvider: boolean = false;
-
-  // Terminal Approval Modal State
   public terminalApprovalState: 'pending' | 'success' | 'error' = 'pending';
-  public terminalApprovalTitle: string = 'Đang Chờ Phê Duyệt';
-  public terminalApprovalMsg: string = '';
-  public isTerminalModalOpen: boolean = false;
+  public terminalApprovalTitle = 'Đang Chờ Phê Duyệt';
+  public terminalApprovalMsg = '';
+  public isTerminalModalOpen = false;
+
+  public isEditing = false;
+  public detFullname = '';
+  public detPhone = '';
+  public detEmail = '';
+  public detDob = '';
+  public detGender = 'Nữ';
+  public detAddress = '';
+  public detBio = 'Yêu thích du lịch xanh, trekking, khám phá thiên nhiên và trải nghiệm văn hóa địa phương.';
+  public travelPreferenceNote = '';
+  public currentPreferenceStepIndex = 0;
+  public travelPreferenceAnswers: Record<string, string | string[]> = {
+    travelStyle: ['Trekking', 'Du lịch thiên nhiên'],
+    budget: '3 - 5 triệu',
+    companion: 'Đi cùng bạn bè',
+    accommodation: ['Homestay', 'Campsite'],
+    pace: 'Vừa phải',
+    mustHave: ''
+  };
+
+  public readonly travelPreferenceQuestions: TravelPreferenceQuestion[] = [
+    {
+      key: 'travelStyle',
+      icon: 'bi-compass',
+      title: 'Bạn thích kiểu trải nghiệm nào?',
+      hint: 'Chọn một hoặc nhiều phong cách để GreenSteps hiểu gu du lịch của bạn.',
+      type: 'multi',
+      options: ['Trekking', 'Camping', 'Du lịch thiên nhiên', 'Food tour', 'Nghỉ dưỡng', 'Khám phá văn hóa']
+    },
+    {
+      key: 'budget',
+      icon: 'bi-cash-coin',
+      title: 'Ngân sách thường dùng cho một chuyến đi?',
+      hint: 'Thông tin này giúp gợi ý tour, nơi ở và lịch trình vừa túi tiền hơn.',
+      type: 'single',
+      options: ['Dưới 3 triệu', '3 - 5 triệu', '5 - 10 triệu', 'Trên 10 triệu']
+    },
+    {
+      key: 'companion',
+      icon: 'bi-people',
+      title: 'Bạn thường đi cùng ai?',
+      hint: 'Mỗi nhóm đi lại cần nhịp độ, phòng ở và hoạt động khác nhau.',
+      type: 'single',
+      options: ['Đi một mình', 'Đi cùng bạn bè', 'Đi cùng gia đình', 'Đi cùng người yêu', 'Đi theo nhóm công ty']
+    },
+    {
+      key: 'accommodation',
+      icon: 'bi-house-heart',
+      title: 'Bạn ưu tiên nơi lưu trú nào?',
+      hint: 'Có thể chọn nhiều lựa chọn nếu bạn linh hoạt về nơi ở.',
+      type: 'multi',
+      options: ['Homestay', 'Campsite', 'Resort xanh', 'Khách sạn trung tâm', 'Pet-friendly', 'Gần tuyến trekking']
+    },
+    {
+      key: 'pace',
+      icon: 'bi-speedometer2',
+      title: 'Nhịp độ chuyến đi bạn muốn?',
+      hint: 'GreenSteps sẽ cân bằng giữa nghỉ ngơi, di chuyển và hoạt động.',
+      type: 'single',
+      options: ['Chậm rãi', 'Vừa phải', 'Nhiều hoạt động', 'Linh hoạt theo thời tiết']
+    },
+    {
+      key: 'mustHave',
+      icon: 'bi-pencil-square',
+      title: 'Có điều gì bắt buộc phải có?',
+      hint: 'Nhập yêu cầu riêng như ăn chay, tránh say xe, cần phòng riêng, thích quán cà phê đẹp...',
+      type: 'text',
+      placeholder: 'Ví dụ: ưu tiên homestay yên tĩnh, có xe đưa đón, không lịch trình quá dày...'
+    }
+  ];
+
+  public readonly sidebarGroups: ProfileSidebarGroup[] = [
+    {
+      heading: 'TỔNG QUAN',
+      items: [{ icon: 'bi-house-door', label: 'Tổng quan', section: 'overview' }]
+    },
+    {
+      heading: 'CHUYẾN ĐI CỦA TÔI',
+      items: [
+        { icon: 'bi-calendar2-week', label: 'Lịch trình của tôi', route: '/schedule' },
+        { icon: 'bi-ticket-perforated', label: 'Tour đã đặt', route: '/tours' },
+        { icon: 'bi-credit-card', label: 'Vé & thanh toán' },
+        { icon: 'bi-heart', label: 'Địa điểm yêu thích' }
+      ]
+    },
+    {
+      heading: 'CÔNG CỤ HỮU ÍCH',
+      items: [
+        { icon: 'bi-stars', label: 'AI Travel Planner', action: 'planner' },
+        { icon: 'bi-geo-alt', label: 'Bản đồ tương tác' },
+        { icon: 'bi-chat-dots', label: 'Chatbot hỗ trợ', badge: 'AI' }
+      ]
+    },
+    {
+      heading: 'TÀI KHOẢN',
+      items: [
+        { icon: 'bi-person', label: 'Thông tin cá nhân', section: 'personal' },
+        { icon: 'bi-shield-lock', label: 'Bảo mật tài khoản', section: 'security' },
+        { icon: 'bi-bell', label: 'Thông báo', section: 'notifications', badge: '3' },
+        { icon: 'bi-wallet2', label: 'Ví GreenSteps', section: 'wallet' },
+        { icon: 'bi-gift', label: 'Chương trình ưu đãi' },
+        { icon: 'bi-gear', label: 'Cài đặt' }
+      ]
+    }
+  ];
+
+  public readonly dashboardStats = [
+    { icon: 'bi-luggage', value: '3', label: 'Lịch trình đã lưu', link: 'Xem tất cả' },
+    { icon: 'bi-ticket-perforated', value: '0', label: 'Tour đã đặt', link: 'Xem tất cả' },
+    { icon: 'bi-leaf', value: '120', label: 'Điểm xanh', link: 'Chi tiết' },
+    { icon: 'bi-cloud', value: '8.5 kg', label: 'CO₂ đã tiết kiệm', link: 'Chi tiết' }
+  ];
+
+  public readonly checklistItems = [
+    { label: 'Đặt vé & xác nhận lịch trình', done: true },
+    { label: 'Chuẩn bị giấy tờ tùy thân', done: true },
+    { label: 'Đặt chỗ ở', done: true },
+    { label: 'Kiểm tra thời tiết', done: false },
+    { label: 'Chuẩn bị hành lý', done: false },
+    { label: 'Mua bảo hiểm du lịch', done: false },
+    { label: 'Đổi tiền mặt', done: false }
+  ];
+
+  public readonly carbonBreakdown = [
+    { icon: 'bi-bus-front', label: 'Phương tiện', value: '5.2 kg' },
+    { icon: 'bi-house-heart', label: 'Lưu trú', value: '2.1 kg' },
+    { icon: 'bi-bicycle', label: 'Hoạt động', value: '1.2 kg' }
+  ];
+
+  public readonly greenTravelLevel = {
+    title: 'Cấp độ du lịch xanh',
+    level: 'Nature Explorer',
+    current: 120,
+    target: 200,
+    nextLevel: 'Eco Adventurer'
+  };
+
+  public readonly travelTasteProfile = {
+    persona: 'Nature Explorer',
+    description: 'Ưa trải nghiệm xanh, trekking và khám phá văn hóa địa phương.',
+    match: 72
+  };
+
+  public readonly travelPreferences: TravelPreference[] = [
+    { icon: 'bi-signpost-split', label: 'Trekking', selected: true },
+    { icon: 'bi-tree', label: 'Camping', selected: true },
+    { icon: 'bi-leaf', label: 'Ecotourism', selected: true },
+    { icon: 'bi-house-heart', label: 'Homestay', selected: true },
+    { icon: 'bi-cup-hot', label: 'Food tour' }
+  ];
+
+  public readonly carbonTrend = [
+    { month: 'Jan', value: 12 },
+    { month: 'Feb', value: 10 },
+    { month: 'Mar', value: 9.5 },
+    { month: 'Apr', value: 11 },
+    { month: 'May', value: 8.5 },
+    { month: 'Jun', value: 8.5 }
+  ];
+
+  public readonly weatherAlert = {
+    destination: 'Sapa',
+    range: '18-22°C',
+    description: 'Có thể có mưa nhẹ vào buổi chiều. Nên mang áo khoác mỏng và giày chống trượt.'
+  };
+
+  public readonly smartCostSuggestions: SmartCostSuggestion[] = [
+    { label: 'Đổi sang homestay đối tác', saving: '-450.000đ' },
+    { label: 'Đi shuttle bus thay vì xe riêng', saving: '-270.000đ' },
+    { label: 'Ghép nhóm trekking 4 người', saving: '-100.000đ' }
+  ];
+
+  public readonly tripReminders: TripReminder[] = [
+    { icon: 'bi-person-vcard', label: 'Chuẩn bị giấy tờ tùy thân' },
+    { icon: 'bi-cloud-drizzle', label: 'Kiểm tra thời tiết trước 24h' },
+    { icon: 'bi-chat-left-text', label: 'Xác nhận lịch trình với nhóm' }
+  ];
+
+  public readonly coverImage = 'image/2eee566424c1f35fbeacf85496b4b6e7.jpg';
+  public readonly tripImage = 'image/4302842f8d693c25238f2141964a64b2.jpg';
+  public readonly offerImage = 'image/1dc8619487310884c9d631d689ece1e7.jpg';
 
   constructor(
     private authService: AuthService,
@@ -54,18 +278,13 @@ export class ProfileComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    const existingUser = this.authService.getCurrentUser();
+    if (existingUser) this.applyProfileUser(existingUser);
+
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (user) {
-        this.detFullname = user.fullname;
-        this.detPhone = user.phone || '';
-        this.detEmail = user.email;
-        this.detDob = user.dob || '';
-        this.detGender = user.gender || 'Nữ';
-        this.detAddress = user.address || '';
-        this.companyName = user.companyName || '';
-        this.isRegisteringProvider = (user.role === 'provider');
-        
+        this.applyProfileUser(user);
         this.loadWalletAndTransactions();
       } else {
         this.loginModalService.open();
@@ -74,44 +293,130 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  private applyProfileUser(user: User) {
+    this.currentUser = user;
+    this.profileUser = {
+      ...this.profileUser,
+      ...user,
+      fullname: user.fullname || user.username || this.profileUser.fullname,
+      email: user.email || this.profileUser.email,
+      role: user.role || this.profileUser.role
+    };
+    this.detFullname = this.profileUser.fullname;
+    this.detPhone = this.profileUser.phone || '';
+    this.detEmail = this.profileUser.email;
+    this.detDob = this.profileUser.dob || '';
+    this.detGender = this.profileUser.gender || 'Nữ';
+    this.detAddress = this.profileUser.address || '';
+  }
+
   private async loadWalletAndTransactions() {
     if (!this.currentUser) return;
     const userId = this.currentUser.id || this.currentUser._id || '';
-
-    // Load wallet
     const wallet = await this.apiService.getWalletInfo(userId);
     this.walletRegistered = wallet.registered;
     this.walletBalance = wallet.balance;
-
-    // Load transactions
     this.transactions = await this.apiService.getTransactions(userId);
     this.cdr.detectChanges();
   }
 
-  public toggleEditDetails() {
-    this.isEditing = !this.isEditing;
+  public handleSidebarItem(item: ProfileSidebarItem) {
+    if (item.section) {
+      this.activeSection = item.section;
+      return;
+    }
+    if (item.route) {
+      this.router.navigate([item.route]);
+      return;
+    }
+    if (item.action === 'planner') this.router.navigate(['/schedule']);
+  }
+
+  public isSidebarItemActive(item: ProfileSidebarItem): boolean {
+    return item.section === this.activeSection;
+  }
+
+  public showPersonalInfo() {
+    this.activeSection = 'personal';
+  }
+
+  public showSecurityInfo() {
+    this.activeSection = 'security';
+  }
+
+  public get currentTravelPreferenceStep(): TravelPreferenceQuestion {
+    return this.travelPreferenceQuestions[this.currentPreferenceStepIndex];
+  }
+
+  public get currentTravelPreferenceOptions(): string[] {
+    return this.currentTravelPreferenceStep.options || [];
+  }
+
+  public get preferenceStepCount(): number {
+    return this.travelPreferenceQuestions.length;
+  }
+
+  public get preferenceProgress(): number {
+    return Math.round(((this.currentPreferenceStepIndex + 1) / this.preferenceStepCount) * 100);
+  }
+
+  public isTravelPreferenceSelected(key: string, option: string): boolean {
+    const answer = this.travelPreferenceAnswers[key];
+    return Array.isArray(answer) ? answer.includes(option) : answer === option;
+  }
+
+  public selectTravelPreference(key: string, option: string, type: PreferenceQuestionType) {
+    if (type === 'multi') {
+      const current = this.travelPreferenceAnswers[key];
+      const values = Array.isArray(current) ? [...current] : [];
+      this.travelPreferenceAnswers[key] = values.includes(option)
+        ? values.filter(value => value !== option)
+        : [...values, option];
+      return;
+    }
+
+    this.travelPreferenceAnswers[key] = option;
+  }
+
+  public goToPreferenceStep(index: number) {
+    if (index < 0 || index >= this.preferenceStepCount) return;
+    this.currentPreferenceStepIndex = index;
+  }
+
+  public previousPreferenceStep() {
+    this.goToPreferenceStep(this.currentPreferenceStepIndex - 1);
+  }
+
+  public nextPreferenceStep() {
+    this.goToPreferenceStep(this.currentPreferenceStepIndex + 1);
+  }
+
+  public getPreferenceSummary(key: string): string {
+    const answer = this.travelPreferenceAnswers[key];
+    if (Array.isArray(answer)) return answer.length ? answer.join(', ') : 'Chưa chọn';
+    return answer || 'Chưa nhập';
+  }
+
+  public navigateToProviderRegistration() {
+    this.router.navigate(['/partner-register']);
   }
 
   public async saveDetails(event: Event) {
     event.preventDefault();
     if (!this.currentUser) return;
     const userId = this.currentUser.id || this.currentUser._id || '';
-
-    const updateData = {
+    const res = await this.authService.updateProfile(userId, {
       fullname: this.detFullname,
       phone: this.detPhone,
       email: this.detEmail,
       dob: this.detDob,
       gender: this.detGender,
       address: this.detAddress
-    };
-
-    const res = await this.authService.updateProfile(userId, updateData);
+    });
     if (res.success) {
-      this.isEditing = false;
-      alert("Lưu thông tin thành công!");
+      alert('Lưu thông tin thành công!');
     } else {
-      alert(res.message || "Cập nhật thất bại!");
+      alert(res.message || 'Cập nhật thất bại!');
     }
     this.cdr.detectChanges();
   }
@@ -131,7 +436,7 @@ export class ProfileComponent implements OnInit {
       if (res.success) {
         this.terminalApprovalState = 'success';
         this.terminalApprovalTitle = 'Kích Hoạt Thành Công';
-        this.terminalApprovalMsg = 'Ví du lịch của bạn đã được kích hoạt thành công! Bạn nhận được quà tặng 200.000đ.';
+        this.terminalApprovalMsg = 'Ví du lịch của bạn đã được kích hoạt thành công!';
         this.loadWalletAndTransactions();
       } else {
         this.terminalApprovalState = 'error';
@@ -151,13 +456,12 @@ export class ProfileComponent implements OnInit {
     const userId = this.currentUser.id || this.currentUser._id || '';
 
     if (!this.depositAmount || this.depositAmount < 20000) {
-      alert("Vui lòng nhập số tiền nạp tối thiểu là 20.000đ!");
+      alert('Vui lòng nhập số tiền nạp tối thiểu là 20.000đ!');
       return;
     }
 
     const res = await this.apiService.depositMoney(userId, this.depositAmount);
     if (res.success) {
-      // Extract transaction ID from message or default
       const txIdMatch = res.message ? res.message.match(/#GD-\d+/) : null;
       const txId = txIdMatch ? txIdMatch[0].replace('#', '') : 'GD-' + Date.now().toString().slice(-10);
 
@@ -169,7 +473,7 @@ export class ProfileComponent implements OnInit {
       this.depositAmount = null;
       this.loadWalletAndTransactions();
     } else {
-      alert("Nạp tiền thất bại. Vui lòng thử lại!");
+      alert(res.message || 'Nạp tiền thất bại. Vui lòng thử lại!');
     }
   }
 
@@ -178,11 +482,17 @@ export class ProfileComponent implements OnInit {
     this.loadWalletAndTransactions();
   }
 
-
+  public async handleRoleToggle() {
+    if (!this.currentUser) return;
+    const userId = this.currentUser.id || this.currentUser._id || '';
+    const newRole = await this.authService.toggleRole(userId);
+    alert(`Đã chuyển đổi vai trò thành công! Vai trò hiện tại: ${newRole === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch'}`);
+    this.router.navigate([newRole === 'provider' ? '/partner-dashboard' : '/']);
+  }
 
   public handleLogout() {
     this.authService.logout();
-    alert("Đã đăng xuất tài khoản!");
+    alert('Đã đăng xuất tài khoản!');
     this.router.navigate(['/']);
   }
 

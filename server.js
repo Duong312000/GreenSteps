@@ -9,6 +9,8 @@ async function startServer() {
     console.log('Connecting to PostgreSQL database...');
     await sequelize.authenticate();
     console.log('Successfully connected to PostgreSQL database!');
+    await sequelize.sync({ alter: true });
+    console.log('PostgreSQL database schema is ready!');
 
     app.listen(PORT, () => {
       console.log(`GreenSteps Premium E-Commerce Server is running on port ${PORT}...`);

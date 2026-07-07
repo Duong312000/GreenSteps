@@ -18,10 +18,13 @@ export class TourDetailComponent implements OnInit {
   public slideImages: string[] = [];
   public activeSlideIndex: number = 0;
   public activeDayIndex: number = 0;
+  public activeInfoTab: 'overview' | 'included' | 'itinerary' | 'policy' | 'reviews' = 'overview';
 
   // Booking details
   public bookingDate: string = '2026-06-15';
   public bookingGuests: number = 2;
+  public bookingAdults: number = 2;
+  public bookingChildren: number = 0;
 
   // Fallback slider images by destination
   private destinationImages: { [key: string]: string[] } = {
@@ -29,19 +32,22 @@ export class TourDetailComponent implements OnInit {
       "image/1dc8619487310884c9d631d689ece1e7.jpg",
       "image/52627caa0015b2f833fbdc632d37dc82.jpg",
       "image/581559b0ca4ebbb8ec09d933fc7bff3d.jpg",
-      "image/2eee566424c1f35fbeacf85496b4b6e7.jpg"
+      "image/2eee566424c1f35fbeacf85496b4b6e7.jpg",
+      "image/41a413334d9e3753b26c50f3a3921309.jpg"
     ],
     "Phú Yên": [
       "image/cb4fbf769d60d911e13c255f7fb39dcc.jpg",
       "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg",
       "image/e8b896896439701c1ff79d65290703b0.jpg",
-      "image/4302842f8d693c25238f2141964a64b2.jpg"
+      "image/4302842f8d693c25238f2141964a64b2.jpg",
+      "image/68e15971da05ec82c116fe191abb8c7f.jpg"
     ],
     "Đà Nẵng - Hội An": [
       "image/da38f44902391ce9a9e4f0fd4b69fb04.jpg",
       "image/b025d2b33ebe6db7e576ff3476f9acde.jpg",
       "image/7c9e14a82698a594dd914369bfb8eaa5.jpg",
-      "image/Viet Nam.png"
+      "image/Viet Nam.png",
+      "image/Gemini_Generated_Image_szp1ouszp1ouszp1.png"
     ]
   };
 
@@ -75,13 +81,17 @@ export class TourDetailComponent implements OnInit {
     }
     
     destImgs.forEach(img => {
-      if (img !== this.activeTour?.image && this.slideImages.length < 3) {
+      if (img !== this.activeTour?.image && this.slideImages.length < 5) {
         this.slideImages.push(img);
       }
     });
 
     if (this.slideImages.length === 0) {
-      this.slideImages = destImgs.slice(0, 3);
+      this.slideImages = destImgs.slice(0, 5);
+    }
+
+    while (this.slideImages.length < 5) {
+      this.slideImages.push(destImgs[this.slideImages.length % destImgs.length]);
     }
   }
 
@@ -93,9 +103,26 @@ export class TourDetailComponent implements OnInit {
     this.activeDayIndex = index;
   }
 
+  public setInfoTab(tab: 'overview' | 'included' | 'itinerary' | 'policy' | 'reviews') {
+    this.activeInfoTab = tab;
+  }
+
   public get totalPrice(): number {
     if (!this.activeTour) return 0;
-    return this.activeTour.cost * this.bookingGuests;
+    return this.activeTour.cost * this.totalGuests;
+  }
+
+  public get totalGuests(): number {
+    return Number(this.bookingAdults) + Number(this.bookingChildren);
+  }
+
+  public get displayOldCost(): number {
+    if (!this.activeTour) return 0;
+    return this.activeTour.oldCost || this.activeTour.old_cost || Math.round(this.activeTour.cost * 1.12);
+  }
+
+  public get displayNights(): number {
+    return Math.max((this.activeTour?.days || 1) - 1, 1);
   }
 
   public async cloneAndEditTrip() {
@@ -134,7 +161,7 @@ export class TourDetailComponent implements OnInit {
       tourId: this.activeTour.id,
       checkIn,
       checkOut,
-      guestCount: Number(this.bookingGuests),
+      guestCount: this.totalGuests,
       roomCount: 1
     };
 

@@ -110,15 +110,21 @@ export class AuthService {
   public async loginOrCreateWithIdentifier(identifier: string): Promise<{ success: boolean; message?: string; user?: User }> {
     const normalized = identifier.trim();
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized);
-    const storedUsers = this.getOtpUsers();
+    const canonicalIdentifier = isEmail ? normalized.toLowerCase() : this.normalizePhone(normalized);
+    const storedUsers = this.dedupeOtpUsers(this.getOtpUsers());
     const existingStoredUser = storedUsers.find(user =>
-      (isEmail && user.email?.toLowerCase() === normalized.toLowerCase()) ||
-      (!isEmail && this.normalizePhone(user.phone || '') === this.normalizePhone(normalized))
+      (isEmail && user.email?.toLowerCase() === canonicalIdentifier) ||
+      (!isEmail && this.normalizePhone(user.phone || '') === canonicalIdentifier)
     );
 
-    if (existingStoredUser) {
-      this.setCurrentUser(existingStoredUser);
-      return { success: true, user: existingStoredUser };
+    const backendLogin = await this.login(normalized, '123456');
+    if (backendLogin.success && backendLogin.user) {
+      this.saveOtpUsers(storedUsers.filter(user =>
+        isEmail
+          ? user.email?.toLowerCase() !== canonicalIdentifier
+          : this.normalizePhone(user.phone || '') !== canonicalIdentifier
+      ));
+      return backendLogin;
     }
 
     const demoUser = this.findDemoUser(normalized, isEmail);
@@ -127,18 +133,49 @@ export class AuthService {
       return { success: true, user: demoUser };
     }
 
-    const username = isEmail ? normalized.split('@')[0] : this.normalizePhone(normalized);
+    if (existingStoredUser) {
+      this.setCurrentUser(existingStoredUser);
+      return { success: true, user: existingStoredUser };
+    }
+
+    const username = isEmail ? normalized.split('@')[0].toLowerCase() : canonicalIdentifier;
+    const registerResult = await this.register({
+      username,
+      password: '123456',
+      fullname: isEmail ? username : `GreenSteps ${canonicalIdentifier.slice(-4)}`,
+      email: isEmail ? canonicalIdentifier : `${canonicalIdentifier}@greensteps.local`,
+      phone: isEmail ? '' : normalized,
+      dob: '',
+      gender: '0',
+      address: '',
+      role: 'traveler'
+    });
+
+    if (registerResult.success && registerResult.user) {
+      this.saveOtpUsers(storedUsers.filter(user =>
+        isEmail
+          ? user.email?.toLowerCase() !== canonicalIdentifier
+          : this.normalizePhone(user.phone || '') !== canonicalIdentifier
+      ));
+      return registerResult;
+    }
+
+    const lowerMessage = registerResult.message?.toLowerCase() || '';
+    if (lowerMessage.includes('email') || lowerMessage.includes('sử dụng') || lowerMessage.includes('dụng')) {
+      const retryLogin = await this.login(normalized, '123456');
+      if (retryLogin.success && retryLogin.user) return retryLogin;
+    }
+
     const user: User = {
       id: `otp_${Date.now()}`,
       username,
-      fullname: isEmail ? username : `GreenSteps ${this.normalizePhone(normalized).slice(-4)}`,
-      email: isEmail ? normalized : `${this.normalizePhone(normalized)}@greensteps.local`,
+      fullname: isEmail ? username : `GreenSteps ${canonicalIdentifier.slice(-4)}`,
+      email: isEmail ? canonicalIdentifier : `${canonicalIdentifier}@greensteps.local`,
       phone: isEmail ? '' : normalized,
       role: 'traveler'
     };
 
-    storedUsers.push(user);
-    localStorage.setItem('greensteps_otp_users', JSON.stringify(storedUsers));
+    this.saveOtpUsers([...storedUsers, user]);
     this.setCurrentUser(user);
     return { success: true, user };
   }
@@ -202,6 +239,22 @@ export class AuthService {
       localStorage.removeItem('greensteps_otp_users');
       return [];
     }
+  }
+
+  private saveOtpUsers(users: User[]) {
+    localStorage.setItem('greensteps_otp_users', JSON.stringify(this.dedupeOtpUsers(users)));
+  }
+
+  private dedupeOtpUsers(users: User[]): User[] {
+    const seen = new Set<string>();
+    return users.filter(user => {
+      const key = user.email
+        ? `email:${user.email.toLowerCase()}`
+        : `phone:${this.normalizePhone(user.phone || '')}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }
 
   private findDemoUser(identifier: string, isEmail: boolean): User | null {

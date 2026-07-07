@@ -9,15 +9,6 @@ const {
 // Helper for terminal interactive transaction approval
 function promptTerminalApproval(message) {
   return new Promise((resolve) => {
-    // If not running in an interactive terminal (like on Render deployment)
-    if (!process.stdin.isTTY) {
-      console.log(`[GREENSTEPS ADMIN AUTO-APPROVAL (Non-TTY Environment)]`);
-      console.log(message);
-      console.log('-> Tự động DUYỆT giao dịch trên môi trường Cloud!');
-      resolve(true);
-      return;
-    }
-
     console.log('\n==================================================');
     console.log(`[GREENSTEPS ADMIN APPROVAL REQUEST]`);
     console.log(message);

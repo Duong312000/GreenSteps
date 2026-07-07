@@ -1,225 +1,832 @@
-<main class="main-viewport profile-viewport" *ngIf="currentUser">
-    <div class="profile-layout-container">
-        <!-- Left Panel: User Profile Info Card -->
-        <div class="profile-left-col">
-            <div class="user-info-card">
-                <div class="user-avatar-circle" id="profileAvatar">{{ getFirstLetter(currentUser.fullname) }}</div>
-                 <div class="user-title-row">
-                    <h2 id="profileName">{{ currentUser.fullname }}</h2>
-                    <span class="role-badge" id="profileRoleBadge">{{ currentUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</span>
-                </div>
-                <p class="user-email-text" id="profileEmail">{{ currentUser.email }}</p>
-                <p class="user-role-label">Nhà cung cấp: <strong id="profileProviderStatus">{{ currentUser.role === 'provider' ? 'Đã kích hoạt' : 'Chưa đăng ký' }}</strong></p>
-            </div>
+<main class="profile-dashboard">
+    <aside class="profile-dashboard__sidebar">
+        <nav class="profile-sidebar-nav" aria-label="Profile navigation">
+            <section class="profile-nav-group" *ngFor="let group of sidebarGroups">
+                <h2>{{ group.heading }}</h2>
+                <button type="button"
+                        *ngFor="let item of group.items"
+                        class="profile-nav-item"
+                        [class.active]="isSidebarItemActive(item)"
+                        (click)="handleSidebarItem(item)">
+                    <i class="bi" [ngClass]="item.icon"></i>
+                    <span>{{ item.label }}</span>
+                    <small *ngIf="item.badge">{{ item.badge }}</small>
+                </button>
+            </section>
+        </nav>
 
-            <!-- Personal Info Details Form -->
-            <div class="personal-details-card">
-                <div class="card-header">
-                    <h3>Thông tin cá nhân</h3>
-                    <button class="btn-edit-details" (click)="toggleEditDetails()"><i class="bi bi-pencil-square"></i> Chỉnh sửa</button>
+        <article class="profile-green-card">
+            <div class="profile-green-card__art"><i class="bi bi-tree"></i></div>
+            <h3>Du lịch xanh<br>Hành trình xanh</h3>
+            <p>Cùng GreenSteps bảo vệ thiên nhiên trong từng chuyến đi.</p>
+            <button type="button" routerLink="/home">Tìm hiểu thêm <i class="bi bi-arrow-right"></i></button>
+        </article>
+    </aside>
+
+    <section class="profile-dashboard__content overview-dashboard" *ngIf="activeSection === 'overview'">
+        <div class="overview-page">
+            <div class="overview-layout profile-overview-grid">
+                <aside class="profile-column left-column">
+                    <article class="profile-summary-card overview-profile-card">
+                        <div class="profile-summary-cover profile-cover"><img [src]="coverImage" alt="GreenSteps nature cover"></div>
+                        <div class="profile-summary-body profile-body">
+                            <div class="profile-avatar-wrap profile-avatar-wrapper">
+                                <div class="profile-avatar-large">{{ getFirstLetter(profileUser.fullname) }}</div>
+                                <button type="button" class="profile-avatar-camera" aria-label="Cập nhật ảnh đại diện"><i class="bi bi-camera"></i></button>
+                            </div>
+                            <h2>{{ profileUser.fullname || profileUser.username }}</h2>
+                            <span class="profile-role-pill">{{ profileUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</span>
+                            <div class="profile-summary-meta">
+                                <span><i class="bi bi-envelope"></i>{{ profileUser.email }}<i class="bi bi-patch-check-fill verified"></i></span>
+                                <span><i class="bi bi-calendar2"></i>Thành viên từ 05/2024</span>
+                            </div>
+                            <p class="profile-quote">"Travel far, live green, leave only footprints."</p>
+                            <div class="overview-social-links" aria-label="Liên kết mạng xã hội">
+                                <h3>Liên kết mạng xã hội</h3>
+                                <div class="overview-social-grid">
+                                    <button type="button" class="overview-social-item instagram"><i class="bi bi-instagram"></i><span><strong>Instagram</strong><small>Đã liên kết</small></span></button>
+                                    <button type="button" class="overview-social-item facebook"><i class="bi bi-facebook"></i><span><strong>Facebook</strong><small>Chưa liên kết</small></span></button>
+                                    <button type="button" class="overview-social-item tiktok"><i class="bi bi-tiktok"></i><span><strong>TikTok</strong><small>Chưa liên kết</small></span></button>
+                                </div>
+                            </div>
+                            <button type="button" class="profile-outline-button" (click)="showPersonalInfo()"><i class="bi bi-pencil"></i> Chỉnh sửa hồ sơ</button>
+                        </div>
+                    </article>
+                </aside>
+
+                <section class="main-column">
+                    <article class="profile-card dashboard-card overview-stats-card">
+                        <header class="profile-card-header stats-header">
+                            <div class="overview-stats-title">
+                                <span class="overview-stats-emblem"><i class="bi bi-compass"></i></span>
+                                <div>
+                                    <h2>Tổng quan của bạn</h2>
+                                    <p>Theo dõi hành trình xanh của bạn cùng GreenSteps. <i class="bi bi-leaf-fill"></i></p>
+                                </div>
+                            </div>
+                            <button type="button" class="overview-filter"><i class="bi bi-calendar3"></i> 7 ngày qua <i class="bi bi-chevron-down"></i></button>
+                        </header>
+                        <section class="profile-stats-grid stats-grid" aria-label="GreenSteps stats">
+                            <article class="profile-stat-card stat-item stat-item--trips">
+                                <div class="profile-stat-icon"><i class="bi bi-luggage"></i></div>
+                                <strong class="stat-number">3</strong>
+                                <span class="stat-label">Lịch trình<br>đã lưu</span>
+                                <span class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> +1 so với 7 ngày trước</span>
+                                <a href="#" (click)="$event.preventDefault()">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+                            </article>
+                            <article class="profile-stat-card stat-item stat-item--tours">
+                                <div class="profile-stat-icon"><i class="bi bi-ticket-perforated"></i></div>
+                                <strong class="stat-number">0</strong>
+                                <span class="stat-label">Tour đã đặt</span>
+                                <span class="stat-trend trend-neutral">Không thay đổi</span>
+                                <a href="#" (click)="$event.preventDefault()">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+                            </article>
+                            <article class="profile-stat-card stat-item stat-item--points">
+                                <div class="profile-stat-icon"><i class="bi bi-tree-fill"></i></div>
+                                <strong class="stat-number">120</strong>
+                                <span class="stat-label">Điểm xanh</span>
+                                <span class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> +24 điểm</span>
+                                <a href="#" (click)="$event.preventDefault()">Chi tiết <i class="bi bi-arrow-right"></i></a>
+                            </article>
+                        </section>
+                    </article>
+
+                    <article class="profile-card dashboard-card profile-upcoming-card upcoming-trip-card">
+                        <header class="profile-card-header">
+                            <h2>Lịch trình sắp tới</h2>
+                            <a routerLink="/schedule">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+                        </header>
+                        <div class="profile-trip-row upcoming-trip-content">
+                            <div class="profile-trip-image"><img [src]="tripImage" alt="Sapa Fansipan"><span>Sắp khởi hành</span></div>
+                            <div class="profile-trip-info">
+                                <h3>Sapa - Fansipan 3N2Đ</h3>
+                                <p><i class="bi bi-calendar2-week"></i>Thứ 6, 24/05/2024 - Chủ nhật, 26/05/2024</p>
+                                <p><i class="bi bi-people"></i>2 người lớn</p>
+                                <p>Tổng chi phí dự kiến: <strong>4.250.000đ</strong></p>
+                            </div>
+                            <div class="profile-trip-action"><span>Còn 2 ngày nữa</span><button type="button" routerLink="/schedule">Xem chi tiết</button></div>
+                        </div>
+                    </article>
+
+                    <article class="profile-card dashboard-card overview-green-tip-card">
+                        <div class="green-tip-icon"><img src="image/greensteps_logo.png" alt="GreenSteps"></div>
+                        <div class="green-tip-copy">
+                            <span>Gợi ý xanh hôm nay</span>
+                            <h3>Đi chung xe lên điểm tập kết để giảm phát thải.</h3>
+                            <p>Ước tính tiết kiệm 1.8 kg CO₂ cho nhóm 2 người trong hành trình Sapa.</p>
+                        </div>
+                        <a href="#" (click)="$event.preventDefault()">Xem mẹo khác <i class="bi bi-arrow-right"></i></a>
+                    </article>
+
+                </section>
+
+                <div class="profile-lower-grid middle-cards-grid main-bottom-grid overview-tools-row">
+                    <article class="profile-card middle-card overview-feature-card feature-card">
+                        <header class="profile-card-header"><h2>Tính năng nổi bật</h2></header>
+                        <div class="overview-feature-grid features-grid">
+                            <a class="overview-feature-item feature-item" href="#" (click)="$event.preventDefault(); handleSidebarItem({ icon: 'bi-stars', label: 'AI Travel Planner', action: 'planner' })"><i class="bi bi-robot feature-icon"></i><span><strong class="feature-title">AI Travel Planner</strong><small class="feature-desc">Tạo lịch trình cá nhân hóa chỉ trong vài phút</small></span></a>
+                            <a class="overview-feature-item feature-item" href="#" (click)="$event.preventDefault()"><i class="bi bi-map feature-icon"></i><span><strong class="feature-title">Bản đồ tương tác</strong><small class="feature-desc">Khám phá điểm đến với bản đồ du lịch thông minh</small></span></a>
+                            <a class="overview-feature-item feature-item" routerLink="/community"><i class="bi bi-people feature-icon"></i><span><strong class="feature-title">Cộng đồng GreenSteps</strong><small class="feature-desc">Chia sẻ hành trình và cảm hứng du lịch xanh</small></span></a>
+                            <a class="overview-feature-item feature-item" href="#" (click)="$event.preventDefault()"><i class="bi bi-chat-dots feature-icon"></i><span><strong class="feature-title">Chatbot AI</strong><small class="feature-desc">Hỗ trợ 24/7, gợi ý tour, tiết kiệm chi phí</small></span></a>
+                        </div>
+                    </article>
+
+                    <article class="profile-card middle-card profile-checklist-card checklist-card">
+                        <header class="profile-card-header checklist-header"><div><h2>Checklist trước chuyến đi</h2><span>3/7 đã hoàn thành</span></div></header>
+                        <div class="profile-checklist-progress checklist-progress" aria-hidden="true"><span class="checklist-progress-fill"></span></div>
+                        <ul class="profile-checklist checklist-list">
+                            <li class="checklist-item" *ngFor="let item of checklistItems" [class.done]="item.done">
+                                <i class="bi" [ngClass]="item.done ? 'bi-check-square-fill' : 'bi-square'"></i>
+                                <span>{{ item.label }}</span>
+                            </li>
+                        </ul>
+                        <div class="checklist-quick-questions">
+                            <span><i class="bi bi-question-circle"></i> Bạn đã lưu số liên hệ khẩn cấp?</span>
+                            <span><i class="bi bi-cloud-sun"></i> Thời tiết ngày đi có thay đổi không?</span>
+                        </div>
+                        <div class="overview-checklist-art" aria-hidden="true"><i class="bi bi-backpack3"></i></div>
+                        <a class="profile-card-link overview-checklist-link" href="#" (click)="$event.preventDefault()">Xem checklist đầy đủ <i class="bi bi-arrow-right"></i></a>
+                    </article>
+
+                    <article class="profile-card middle-card profile-account-card account-card">
+                        <header class="profile-card-header"><h2>Quản lý tài khoản</h2></header>
+                        <div class="account-actions">
+                            <button type="button" class="profile-setting-row account-action" (click)="showSecurityInfo()"><i class="bi bi-lock"></i><span><strong class="account-action-title">Bảo mật tài khoản</strong><small class="account-action-desc">Đổi mật khẩu, xác thực OTP</small></span><i class="bi bi-chevron-right"></i></button>
+                            <button type="button" class="profile-setting-row account-action" (click)="handleRoleToggle()"><i class="bi bi-shield-check"></i><span><strong class="account-action-title">Vai trò tài khoản</strong><small class="account-action-desc">{{ profileUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</small></span><i class="bi bi-chevron-right"></i></button>
+                            <button type="button" class="profile-setting-row account-action account-status-action" (click)="showPersonalInfo()"><i class="bi bi-person-check"></i><span><strong class="account-action-title">Trạng thái tài khoản</strong><small class="account-action-desc">Hồ sơ cá nhân đã xác minh</small></span><i class="bi bi-chevron-right"></i></button>
+                            <button type="button" class="profile-setting-row account-action" (click)="activeSection = 'notifications'"><i class="bi bi-bell"></i><span><strong class="account-action-title">Thông báo</strong><small class="account-action-desc">Email, ưu đãi, nhắc lịch trình</small></span><i class="bi bi-chevron-right"></i></button>
+                            <button type="button" class="profile-setting-row account-action logout danger" (click)="handleLogout()"><i class="bi bi-box-arrow-right"></i><span><strong class="account-action-title">Đăng xuất</strong><small class="account-action-desc">Thoát khỏi tài khoản hiện tại</small></span><i class="bi bi-chevron-right"></i></button>
+                        </div>
+                    </article>
                 </div>
-                <form id="personalDetailsForm" (submit)="saveDetails($event)">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Họ và tên</label>
-                            <input type="text" id="detName" [(ngModel)]="detFullname" name="detFullname" [disabled]="!isEditing">
-                        </div>
-                        <div class="form-group">
-                            <label>Số điện thoại</label>
-                            <input type="tel" id="detPhone" [(ngModel)]="detPhone" name="detPhone" [disabled]="!isEditing">
-                        </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="detEmail" [(ngModel)]="detEmail" name="detEmail" [disabled]="!isEditing">
-                        </div>
-                        <div class="form-group">
-                            <label>Ngày sinh</label>
-                            <input type="text" id="detDob" [(ngModel)]="detDob" name="detDob" [disabled]="!isEditing">
-                        </div>
-                        <div class="form-group">
-                            <label>Giới tính</label>
-                            <select id="detGender" [(ngModel)]="detGender" name="detGender" [disabled]="!isEditing">
-                                <option value="Nữ">Nữ</option>
-                                <option value="Nam">Nam</option>
-                                <option value="Khác">Khác</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Địa chỉ liên hệ</label>
-                            <input type="text" id="detAddress" [(ngModel)]="detAddress" name="detAddress" [disabled]="!isEditing">
-                        </div>
+
+                <article class="profile-card dashboard-card overview-activity-card recent-activity-card">
+                    <header class="profile-card-header"><h2>Hoạt động gần đây</h2><a href="#" (click)="$event.preventDefault()">Xem tất cả <i class="bi bi-arrow-right"></i></a></header>
+                    <div class="overview-activity-list recent-list">
+                        <div class="recent-item"><i class="bi bi-heart-fill"></i><span><strong class="recent-title">Đã lưu lịch trình Hà Giang Loop 3N2Đ</strong><small class="recent-time">Hôm nay, 09:42</small></span></div>
+                        <div class="recent-item"><i class="bi bi-star-fill"></i><span><strong class="recent-title">Đã đánh giá 5 sao cho Homestay Mộc Châu Green</strong><small class="recent-time">Hôm qua, 18:20</small></span></div>
+                        <div class="recent-item"><i class="bi bi-map"></i><span><strong class="recent-title">Vừa tạo lịch trình mới Đà Lạt 4N3Đ - Chill & Chill</strong><small class="recent-time">2 ngày trước</small></span></div>
                     </div>
-                    <button type="submit" class="btn-save-details" id="saveDetailsBtn" *ngIf="isEditing">Lưu thay đổi</button>
-                </form>
+                </article>
+
+                <aside class="right-column">
+                    <article class="profile-wallet-card overview-wallet-card side-widget wallet-card">
+                        <div class="profile-wallet-icon"><i class="bi bi-wallet2"></i></div>
+                        <div class="profile-wallet-copy">
+                            <div>
+                                <h2>GreenSteps Wallet</h2>
+                                <span class="profile-wallet-status" [class.active]="walletRegistered">{{ walletRegistered ? 'Đã kích hoạt' : 'Chưa kích hoạt' }}</span>
+                            </div>
+                            <p>Kích hoạt ví để thanh toán nhanh, nhận ưu đãi và tích điểm xanh cho mỗi chuyến đi.</p>
+                            <a href="#" (click)="$event.preventDefault()">Tìm hiểu thêm về GreenSteps <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                        <div class="profile-wallet-action">
+                            <button type="button" class="wallet-button" *ngIf="!walletRegistered" (click)="handleWalletActivation()">Kích hoạt ví & nhận 5.000.000đ</button>
+                            <div class="profile-wallet-balance" *ngIf="walletRegistered">
+                                <span>Số dư khả dụng</span>
+                                <strong>{{ walletBalance | number:'1.0-0':'vi-VN' }}đ</strong>
+                            </div>
+                            <div class="deposit-form-inline" *ngIf="walletRegistered" style="display:flex; gap:8px; margin-top:12px;">
+                                <input type="number" [(ngModel)]="depositAmount" placeholder="Nhap so tien nap..." min="20000" step="10000" style="min-width:0; flex:1; height:40px; border:1px solid #dfe3e8; border-radius:10px; padding:0 10px;">
+                                <button type="button" (click)="handleDeposit()" style="min-width:96px;"><i class="bi bi-plus-lg"></i> Nap tien</button>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="profile-provider-card overview-provider-widget side-widget provider-card" *ngIf="profileUser.role !== 'provider'">
+                        <i class="bi bi-buildings"></i>
+                        <div>
+                            <h3>Trở thành Nhà cung cấp</h3>
+                            <p>Chia sẻ dịch vụ của bạn đến hàng ngàn du khách yêu du lịch xanh.</p>
+                            <button type="button" (click)="navigateToProviderRegistration()">Đăng ký ngay <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                    </article>
+                    <article class="profile-provider-card active overview-provider-widget side-widget provider-card" *ngIf="profileUser.role === 'provider'">
+                        <i class="bi bi-shop"></i>
+                        <div>
+                            <h3>Kênh Nhà cung cấp đã kích hoạt</h3>
+                            <p>Quản lý dịch vụ, đơn đặt và quảng cáo cho khách du lịch xanh.</p>
+                            <button type="button" routerLink="/partner-dashboard">Vào kênh đối tác <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                    </article>
+
+                    <article class="profile-card profile-carbon-card side-widget carbon-card">
+                        <header class="profile-card-header"><h2>Carbon Footprint của bạn</h2><button type="button">Tháng này <i class="bi bi-chevron-down"></i></button></header>
+                        <div class="profile-carbon-chart" role="img" aria-label="Carbon Footprint 8.5 kg CO2, phương tiện 5.2 kg, lưu trú 2.1 kg, hoạt động 1.2 kg">
+                            <svg viewBox="0 0 120 120" aria-hidden="true">
+                                <circle class="carbon-track" cx="60" cy="60" r="42" pathLength="100"></circle>
+                                <circle class="carbon-segment carbon-transport" cx="60" cy="60" r="42" pathLength="100"></circle>
+                                <circle class="carbon-segment carbon-stay" cx="60" cy="60" r="42" pathLength="100"></circle>
+                                <circle class="carbon-segment carbon-activity" cx="60" cy="60" r="42" pathLength="100"></circle>
+                            </svg>
+                            <div class="profile-carbon-total"><strong>8.5</strong><span>kg CO₂</span></div>
+                        </div>
+                        <div class="profile-carbon-kpi"><span>Thấp hơn 32% so với tháng trước</span></div>
+                        <div class="profile-carbon-list">
+                            <div class="carbon-breakdown-transport"><span><i class="bi bi-bus-front"></i>Phương tiện</span><strong>5.2 kg</strong></div>
+                            <div class="carbon-breakdown-stay"><span><i class="bi bi-house-heart"></i>Lưu trú</span><strong>2.1 kg</strong></div>
+                            <div class="carbon-breakdown-activity"><span><i class="bi bi-bicycle"></i>Hoạt động</span><strong>1.2 kg</strong></div>
+                        </div>
+                        <a class="profile-card-link" href="#" (click)="$event.preventDefault()">Xem chi tiết <i class="bi bi-arrow-right"></i></a>
+                    </article>
+
+                    <article class="profile-card profile-offer-card side-widget offer-card">
+                        <header class="profile-card-header"><h2>Ưu đãi dành riêng cho bạn</h2><span class="overview-offer-badge">Mới</span></header>
+                        <div class="profile-offer-visual"><img [src]="offerImage" alt="GreenSteps homestay offer"><div><h3>Giảm đến 20% cho các homestay xanh & trải nghiệm thiên nhiên</h3><button type="button" routerLink="/tours">Xem ưu đãi</button></div></div>
+                    </article>
+                </aside>
             </div>
-        </div>
-
-        <!-- Right Panel: Wallet & Upgrades -->
-        <div class="profile-right-col">
-            <!-- Wallet Status Card -->
-            <div class="wallet-info-card">
-                <div class="wallet-header">
-                    <h3>Ví du lịch GreenSteps</h3>
-                    <span class="wallet-badge" [class.active]="walletRegistered">{{ walletRegistered ? 'Đã kích hoạt' : 'Chưa kích hoạt' }}</span>
-                </div>
-                
-                <div class="wallet-balance-box" *ngIf="walletRegistered">
-                    <span class="bal-label">Số dư khả dụng:</span>
-                    <h2 class="bal-value">{{ walletBalance | number:'1.0-0':'vi-VN' }}đ</h2>
-                    
-                    <div class="deposit-form-inline">
-                        <input type="number" [(ngModel)]="depositAmount" placeholder="Nhập số tiền nạp..." min="20000" step="10000">
-                        <button (click)="handleDeposit()"><i class="bi bi-plus-lg"></i> Nạp tiền</button>
-                    </div>
-                </div>
-
-                <div class="wallet-inactive-box" *ngIf="!walletRegistered">
-                    <p>Kích hoạt Ví du lịch để thanh toán gộp lịch trình, hưởng ưu đãi giảm giá và nhận hoàn trả cọc dễ dàng hơn.</p>
-                    <button class="btn-activate-wallet" (click)="handleWalletActivation()">Kích hoạt Ví & Nhận 200.000đ</button>
-                </div>
-            </div>
-            
-            <!-- Partner Status Card -->
-            <div class="wallet-info-card" style="margin-top: 24px; margin-bottom: 24px;">
-                <div class="wallet-header">
-                    <h3>Kênh đối tác Green Partner</h3>
-                    <span class="wallet-badge" [class.active]="currentUser.role === 'provider'">
-                        {{ currentUser.role === 'provider' ? 'Đã kích hoạt' : 'Chưa đăng ký' }}
-                    </span>
-                </div>
-                
-                <div class="wallet-balance-box" *ngIf="currentUser.role === 'provider'">
-                    <span class="bal-label">Doanh nghiệp của bạn:</span>
-                    <h2 class="bal-value" style="font-size: 18px; margin: 4px 0 12px 0; color: var(--primary-green);">
-                        {{ currentUser.companyName || 'Đối tác GreenSteps' }}
-                    </h2>
-                    
-                    <a routerLink="/partner-dashboard" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 38px; background: linear-gradient(135deg, #0E9F6E 0%, #057A55 100%); color: white; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 12px; box-shadow: var(--shadow-sm); transition: all 0.2s;">
-                        <i class="bi bi-grid-fill"></i> Vào Kênh Quản Lý Dịch Vụ
-                    </a>
-                </div>
-
-                <div class="wallet-inactive-box" *ngIf="currentUser.role !== 'provider'">
-                    <p>Đăng ký Kênh nhà cung cấp để bán dịch vụ xanh của bạn (lưu trú, ăn uống, dịch vụ) trên GreenSteps và bắt đầu kinh doanh sinh thái bền vững.</p>
-                    <a routerLink="/partner-register" class="btn-activate-wallet" style="display: flex; align-items: center; justify-content: center; text-decoration: none; background: linear-gradient(135deg, #0E9F6E 0%, #057A55 100%);">
-                        Đăng ký Kênh đối tác ngay
-                    </a>
-                </div>
-            </div>
-
-            <!-- Account Settings (Logout) -->
-            <div class="account-settings-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px;">
-                <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">Quản lý tài khoản</h3>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Đăng xuất an toàn khỏi phiên làm việc hiện tại của hệ thống.</p>
-                
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <button class="logout-btn" (click)="handleLogout()" style="width: 100%; height: 40px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: var(--border-radius-sm); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; color: #c62828;">
-                        <i class="bi bi-box-arrow-right"></i> Đăng xuất tài khoản
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Transactions History Table -->
-    <section class="profile-transactions-section" *ngIf="walletRegistered">
-        <h3>Lịch sử giao dịch ví</h3>
-        <div class="transactions-table-wrapper">
-            <table class="transactions-table">
-                <thead>
-                    <tr>
-                        <th>Mã giao dịch</th>
-                        <th>Nội dung</th>
-                        <th>Ngày giao dịch</th>
-                        <th>Số tiền</th>
-                        <th>Trạng thái</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngIf="transactions.length === 0">
-                        <td colspan="5" style="text-align:center; color:var(--text-muted);">Không có giao dịch nào gần đây. Nạp tiền để bắt đầu.</td>
-                    </tr>
-                    <tr *ngFor="let t of transactions">
-                        <td><strong>{{ t.id }}</strong></td>
-                        <td>{{ t.desc }}</td>
-                        <td>{{ t.date }}</td>
-                        <td [ngClass]="t.amount > 0 ? 'amt-positive' : 'amt-negative'">
-                            <strong>{{ t.amount > 0 ? '+' : '' }}{{ t.amount | number:'1.0-0':'vi-VN' }}đ</strong>
-                        </td>
-                        <td><span class="status-pill" [ngClass]="t.status === 'success' ? 'success' : 'pending'" style="padding: 4px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;" [style.background-color]="t.status === 'success' ? '#D1FAE5' : '#FEF3C7'" [style.color]="t.status === 'success' ? '#065F46' : '#92400E'">{{ t.status === 'success' ? 'Hoàn thành' : 'Chờ duyệt' }}</span></td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </section>
-
-    <!-- VIETQR DEPOSIT MODAL -->
-    <div class="modal-overlay" [class.active]="isQrModalOpen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; transition: all 0.3s;" [style.display]="isQrModalOpen ? 'flex' : 'none'">
-        <div class="modal-content" style="background: #FFFFFF; border-radius: 16px; padding: 24px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); animation: zoomIn 0.3s ease-out; position: relative;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1.5px solid #F3F4F6; padding-bottom: 12px;">
-                <h3 style="font-size: 1.1rem; font-weight: 700; color: #1F2937; margin: 0; display: flex; align-items: center; gap: 8px;">
-                    <i class="bi bi-qr-code-scan" style="color: #0E9F6E; font-size: 1.3rem;"></i> Quét Mã Chuyển Khoản OCB
-                </h3>
-                <button (click)="closeQrModal()" style="background: none; border: none; font-size: 1.4rem; color: #9CA3AF; cursor: pointer; padding: 0 4px;"><i class="bi bi-x-lg"></i></button>
+    <section class="profile-dashboard__content personal-dashboard" *ngIf="activeSection === 'personal'">
+        <header class="personal-page-heading">
+            <div>
+                <p>Hồ sơ du lịch</p>
+                <h1>Thông tin cá nhân</h1>
+                <span>Cập nhật hồ sơ, liên hệ và gu du lịch để GreenSteps gợi ý lịch trình đúng với bạn hơn.</span>
             </div>
-            
-            <div style="background-color: #F0FDF4; border: 1.5px dashed #10B981; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: left;">
-                <p style="font-size: 0.85rem; color: #046A38; font-weight: 600; line-height: 1.4; margin: 0 0 8px 0;">
-                    Vui lòng quét mã QR dưới đây bằng ứng dụng Ngân hàng của bạn để chuyển khoản tiền thật.
-                </p>
-                <div style="font-size: 0.95rem; color: #1F2937; margin-bottom: 4px;">Số tiền: <strong style="color: #0E9F6E; font-size: 1.1rem;">{{ qrAmount | number:'1.0-0':'vi-VN' }}đ</strong></div>
-                <div style="font-size: 0.8rem; color: #4B5563;">Nội dung: <strong style="font-family: monospace; background: #E5E7EB; padding: 2px 6px; border-radius: 4px; color: #111827;">{{ qrDescription }}</strong></div>
+            <button type="button" (click)="saveDetails($event)"><i class="bi bi-check2-circle"></i> Lưu hồ sơ</button>
+        </header>
+
+        <div class="personal-info-grid personal-redesign-grid">
+            <aside class="profile-card personal-profile-card">
+                <div class="profile-summary-cover"><img [src]="coverImage" alt="GreenSteps nature cover"></div>
+                <div class="personal-profile-body">
+                    <div class="profile-avatar-wrap">
+                        <div class="profile-avatar-large">{{ getFirstLetter(profileUser.fullname) }}</div>
+                        <button type="button" class="profile-avatar-camera" aria-label="Cập nhật ảnh đại diện"><i class="bi bi-camera"></i></button>
+                    </div>
+                    <h2>{{ profileUser.fullname || profileUser.username }}</h2>
+                    <span class="profile-role-pill">{{ profileUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</span>
+                    <p class="profile-quote">"Travel far, live green, leave only footprints."</p>
+                    <div class="profile-summary-meta">
+                        <span><i class="bi bi-envelope"></i>{{ profileUser.email }}<i class="bi bi-patch-check-fill verified"></i></span>
+                        <span><i class="bi bi-calendar2"></i>Thành viên từ 05/2024</span>
+                    </div>
+                    <div class="profile-photo-actions">
+                        <button type="button"><i class="bi bi-camera"></i>Đổi ảnh đại diện</button>
+                        <button type="button"><i class="bi bi-image"></i>Chỉnh ảnh bìa</button>
+                    </div>
+                    <article class="profile-provider-card">
+                        <i class="bi" [ngClass]="profileUser.role === 'provider' ? 'bi-shop' : 'bi-buildings'"></i>
+                        <div>
+                            <h3>{{ profileUser.role === 'provider' ? 'Kênh nhà cung cấp đã kích hoạt' : 'Bạn chưa đăng ký Nhà cung cấp' }}</h3>
+                            <p>{{ profileUser.role === 'provider' ? 'Quản lý dịch vụ và đơn đặt cho khách du lịch xanh.' : 'Chia sẻ dịch vụ của bạn đến cộng đồng du lịch xanh.' }}</p>
+                            <button type="button" *ngIf="profileUser.role !== 'provider'" (click)="navigateToProviderRegistration()">Đăng ký ngay <i class="bi bi-arrow-right"></i></button>
+                            <button type="button" *ngIf="profileUser.role === 'provider'" routerLink="/partner-dashboard">Vào kênh đối tác <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                    </article>
+                </div>
+            </aside>
+
+            <article class="profile-card basic-info-card personal-form-card">
+                <header class="profile-card-header">
+                    <div>
+                        <h2>Thông tin cần thiết</h2>
+                        <span>Các thông tin này dùng cho đặt tour, ví và hỗ trợ khách hàng.</span>
+                    </div>
+                </header>
+                <form class="basic-info-form personal-edit-form" (submit)="saveDetails($event)">
+                    <label>Họ và tên<input type="text" [(ngModel)]="detFullname" name="detFullname" placeholder="Nhập họ và tên"></label>
+                    <label>Email<input type="email" [(ngModel)]="detEmail" name="detEmail" placeholder="name@email.com"></label>
+                    <label>Số điện thoại<input type="tel" [(ngModel)]="detPhone" name="detPhone" placeholder="Nhập số điện thoại"></label>
+                    <label>Ngày sinh<input type="text" [(ngModel)]="detDob" name="detDob" placeholder="DD/MM/YYYY"></label>
+                    <label>Giới tính<select [(ngModel)]="detGender" name="detGender"><option value="Nữ">Nữ</option><option value="Nam">Nam</option><option value="Khác">Khác</option></select></label>
+                    <label>Địa chỉ liên hệ<input type="text" [(ngModel)]="detAddress" name="detAddress" placeholder="Thành phố, quận/huyện"></label>
+                    <label class="form-wide">Mô tả ngắn<textarea [(ngModel)]="detBio" name="detBio" maxlength="200" placeholder="Bạn thích kiểu du lịch nào?"></textarea><small>{{ detBio.length }}/200</small></label>
+                    <button type="submit"><i class="bi bi-check2"></i> Lưu thay đổi</button>
+                </form>
+            </article>
+
+            <article class="profile-card contact-info-card profile-completion-card">
+                <header class="profile-card-header completion-header">
+                    <div>
+                        <h2>Mức độ hoàn thiện</h2>
+                        <span>Cập nhật thêm để GreenSteps gợi ý chính xác hơn.</span>
+                    </div>
+                </header>
+                <div class="completion-hero">
+                    <div class="completion-ring"><strong>{{ travelTasteProfile.match }}%</strong><span>phù hợp gợi ý</span></div>
+                    <div class="completion-score-copy">
+                        <span class="completion-badge"><i class="bi bi-stars"></i> Sắp hoàn tất</span>
+                        <p>Hồ sơ của bạn đã đủ tốt để tạo lịch trình xanh cá nhân hóa.</p>
+                    </div>
+                </div>
+                <div class="completion-mini-stats">
+                    <span><strong>2/3</strong><small>mục xong</small></span>
+                    <span><strong>+18%</strong><small>gợi ý tốt hơn</small></span>
+                </div>
+                <div class="completion-list">
+                    <span class="done"><i class="bi bi-check-circle-fill"></i><b>Email đã xác thực</b><small>Sẵn sàng nhận xác nhận đặt tour</small></span>
+                    <span class="done"><i class="bi bi-check-circle-fill"></i><b>Hồ sơ cơ bản</b><small>Thông tin liên hệ đã được lưu</small></span>
+                    <span class="pending"><i class="bi bi-exclamation-circle-fill"></i><b>Bổ sung sở thích</b><small>Thêm gu du lịch để cá nhân hóa lịch trình</small></span>
+                </div>
+            </article>
+
+            <article class="profile-card travel-preferences-card preference-wizard-card">
+                <header class="profile-card-header">
+                    <div>
+                        <h2>Sở thích du lịch</h2>
+                        <span>Trả lời từng câu hỏi. Bạn có thể chuyển qua, chuyển lại bất cứ lúc nào.</span>
+                    </div>
+                    <strong class="wizard-count">{{ currentPreferenceStepIndex + 1 }}/{{ preferenceStepCount }}</strong>
+                </header>
+
+                <div class="wizard-progress" aria-hidden="true"><span [ngStyle]="{'width.%': preferenceProgress}"></span></div>
+                <div class="wizard-steps" aria-label="Các bước sở thích du lịch">
+                    <button type="button"
+                            *ngFor="let step of travelPreferenceQuestions; let i = index"
+                            [class.active]="i === currentPreferenceStepIndex"
+                            [class.done]="i < currentPreferenceStepIndex"
+                            (click)="goToPreferenceStep(i)">
+                        <i class="bi" [ngClass]="step.icon"></i>
+                    </button>
+                </div>
+
+                <section class="wizard-question">
+                    <div class="wizard-question-icon"><i class="bi" [ngClass]="currentTravelPreferenceStep.icon"></i></div>
+                    <div>
+                        <span>Câu hỏi {{ currentPreferenceStepIndex + 1 }}</span>
+                        <h3>{{ currentTravelPreferenceStep.title }}</h3>
+                        <p>{{ currentTravelPreferenceStep.hint }}</p>
+                    </div>
+                </section>
+
+                <div class="wizard-options" *ngIf="currentTravelPreferenceStep.type !== 'text'">
+                    <button type="button"
+                            *ngFor="let option of currentTravelPreferenceOptions"
+                            [class.selected]="isTravelPreferenceSelected(currentTravelPreferenceStep.key, option)"
+                            (click)="selectTravelPreference(currentTravelPreferenceStep.key, option, currentTravelPreferenceStep.type)">
+                        <i class="bi" [ngClass]="isTravelPreferenceSelected(currentTravelPreferenceStep.key, option) ? 'bi-check2-circle' : 'bi-circle'"></i>
+                        {{ option }}
+                    </button>
+                </div>
+
+                <label class="wizard-note" *ngIf="currentTravelPreferenceStep.type === 'text'">
+                    Yêu cầu riêng
+                    <textarea [(ngModel)]="travelPreferenceNote"
+                              name="travelPreferenceNote"
+                              [placeholder]="currentTravelPreferenceStep.placeholder"></textarea>
+                </label>
+
+                <div class="wizard-summary">
+                    <span><strong>Phong cách</strong>{{ getPreferenceSummary('travelStyle') }}</span>
+                    <span><strong>Ngân sách</strong>{{ getPreferenceSummary('budget') }}</span>
+                    <span><strong>Lưu trú</strong>{{ getPreferenceSummary('accommodation') }}</span>
+                </div>
+
+                <footer class="wizard-actions">
+                    <button type="button" class="wizard-secondary" (click)="previousPreferenceStep()" [disabled]="currentPreferenceStepIndex === 0"><i class="bi bi-arrow-left"></i> Quay lại</button>
+                    <button type="button" *ngIf="currentPreferenceStepIndex < preferenceStepCount - 1" (click)="nextPreferenceStep()">Tiếp theo <i class="bi bi-arrow-right"></i></button>
+                    <button type="button" *ngIf="currentPreferenceStepIndex === preferenceStepCount - 1"><i class="bi bi-stars"></i> Lưu sở thích</button>
+                </footer>
+            </article>
+
+            <article class="profile-card security-card">
+                <header class="profile-card-header"><div><h2>Bảo mật tài khoản</h2><span>Quản lý mật khẩu và các phương thức bảo vệ tài khoản.</span></div></header>
+                <div class="security-grid">
+                    <button type="button" class="security-item"><i class="bi bi-lock"></i><span><strong>Mật khẩu</strong><small>Đã thiết lập</small></span><em>Đổi mật khẩu <i class="bi bi-arrow-right"></i></em></button>
+                    <button type="button" class="security-item"><i class="bi bi-shield-check"></i><span><strong>Xác thực OTP</strong><small>Đang bật</small></span><em>Quản lý bảo mật <i class="bi bi-arrow-right"></i></em></button>
+                    <button type="button" class="security-item"><i class="bi bi-phone"></i><span><strong>Phiên đăng nhập</strong><small>1 thiết bị đang hoạt động</small></span><em>Xem thiết bị <i class="bi bi-arrow-right"></i></em></button>
+                </div>
+            </article>
+        </div>
+    </section>
+    <section class="profile-dashboard__content security-dashboard" *ngIf="activeSection === 'security'">
+        <header class="security-hero">
+            <div>
+                <nav class="security-breadcrumb">TÀI KHOẢN <i class="bi bi-chevron-right"></i> BẢO MẬT</nav>
+                <h1>Bảo mật tài khoản <i class="bi bi-shield-check"></i></h1>
+                <p>Kiểm soát đăng nhập, xác thực và thiết bị để bảo vệ tài khoản GreenSteps của bạn.</p>
+            </div>
+            <div class="security-hero-art" aria-hidden="true">
+                <div class="security-shield"><i class="bi bi-shield-lock-fill"></i></div>
+                <div class="security-device laptop"><i class="bi bi-laptop"></i><span></span></div>
+                <div class="security-device phone"><i class="bi bi-phone"></i></div>
+            </div>
+        </header>
+
+        <article class="profile-card security-score-card">
+            <header class="security-card-title">
+                <h2>Mức độ bảo mật tài khoản</h2>
+                <i class="bi bi-info-circle"></i>
+            </header>
+            <div class="security-score-layout">
+                <div class="security-score-ring"><strong>82</strong><span>/100</span></div>
+                <div class="security-score-copy">
+                    <h3>Tốt <i class="bi bi-check-circle-fill"></i></h3>
+                    <p>Tài khoản của bạn đang được bảo vệ tốt.</p>
+                    <div class="security-tip"><i class="bi bi-lightbulb"></i>Hãy thiết lập Passkey để tăng mức bảo mật.</div>
+                </div>
+                <div class="security-score-metrics">
+                    <span><i class="bi bi-shield-check"></i><strong>Mật khẩu mạnh</strong><small>Đang bảo vệ tốt</small></span>
+                    <span><i class="bi bi-lock"></i><strong>OTP đã bật</strong><small>Xác thực 2 lớp</small></span>
+                    <span><i class="bi bi-phone"></i><strong>3 thiết bị</strong><small>Đang đăng nhập</small></span>
+                </div>
+            </div>
+        </article>
+
+        <div class="security-content-grid">
+            <div class="security-main-stack">
+                <article class="profile-card security-panel password-panel">
+                    <header class="security-panel-head">
+                        <span class="security-panel-icon"><i class="bi bi-lock"></i></span>
+                        <div><h2>Mật khẩu & đăng nhập</h2><p>Mật khẩu của bạn đủ mạnh để bảo vệ tài khoản.</p></div>
+                    </header>
+                    <p class="security-muted">Lần đổi mật khẩu gần nhất: 24/05/2024, 09:15</p>
+                    <div class="password-strength-row"><span>Độ mạnh: <strong>Mạnh</strong></span><div><i></i></div></div>
+                    <div class="security-actions-row">
+                        <button type="button" class="security-outline-btn">Đổi mật khẩu</button>
+                        <button type="button" class="security-primary-btn"><i class="bi bi-key"></i> Thiết lập Passkey</button>
+                    </div>
+                </article>
+
+                <article class="profile-card security-panel twofa-panel">
+                    <header class="security-panel-head">
+                        <span class="security-panel-icon"><i class="bi bi-shield-check"></i></span>
+                        <div><h2>Xác thực 2 lớp (2FA)</h2><p>Lớp bảo vệ thứ hai giúp bảo vệ tài khoản ngay cả khi mật khẩu bị lộ.</p></div>
+                        <em>Đang bật</em>
+                    </header>
+                    <div class="twofa-grid">
+                        <span><small>Phương thức chính</small><strong>Ứng dụng OTP</strong></span>
+                        <span><small>Mã dự phòng còn lại</small><strong>8 mã</strong></span>
+                        <span><small>Lần bật gần nhất</small><strong>23/05/2024, 17:42</strong></span>
+                    </div>
+                    <button type="button" class="security-outline-btn">Quản lý 2FA</button>
+                </article>
+
+                <article class="profile-card security-panel activity-panel">
+                    <header class="security-panel-head compact">
+                        <div><h2>Hoạt động bảo mật gần đây</h2></div>
+                        <a href="#" (click)="$event.preventDefault()">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+                    </header>
+                    <div class="security-timeline">
+                        <div class="safe"><i class="bi bi-lock-fill"></i><span><strong>Đổi mật khẩu thành công</strong><small>Mật khẩu đã được cập nhật</small></span><time>24/05/2024, 09:15</time></div>
+                        <div class="safe"><i class="bi bi-check2-circle"></i><span><strong>Đăng nhập thành công</strong><small>Windows - Chrome - Hà Nội, Việt Nam</small></span><time>24/05/2024, 09:12</time></div>
+                        <div class="safe"><i class="bi bi-shield-check"></i><span><strong>Xác thực OTP thành công</strong><small>Ứng dụng OTP</small></span><time>24/05/2024, 09:12</time></div>
+                        <div class="new"><i class="bi bi-phone"></i><span><strong>Đăng nhập từ thiết bị mới</strong><small>iPhone 14 Pro - Safari - Đà Nẵng, Việt Nam</small></span><time>23/05/2024, 21:30</time></div>
+                        <div class="safe"><i class="bi bi-envelope-check"></i><span><strong>Cập nhật email khôi phục</strong><small>Email khôi phục đã được xác nhận</small></span><time>23/05/2024, 18:04</time></div>
+                        <div class="danger"><i class="bi bi-exclamation-triangle"></i><span><strong>Đăng nhập bị chặn</strong><small>Địa điểm không xác định - Thiết bị lạ</small></span><time>23/05/2024, 22:31</time></div>
+                    </div>
+                    <div class="security-email-toggle">
+                        <i class="bi bi-shield-check"></i>
+                        <span><strong>Nhận thông báo bảo mật qua email</strong><small>Cập nhật ngay khi có hoạt động đáng ngờ.</small></span>
+                        <button type="button" aria-label="Bật thông báo bảo mật"></button>
+                    </div>
+                </article>
             </div>
 
-            <!-- VietQR OCB Dynamic Image -->
-            <div style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 12px; display: inline-block; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                <img [src]="qrCodeUrl" alt="VietQR OCB Code" style="width: 250px; height: 250px; display: block; border-radius: 8px;">
-            </div>
+            <aside class="security-side-stack">
+                <article class="profile-card security-panel devices-panel">
+                    <header class="security-panel-head compact"><div><h2>Thiết bị đang đăng nhập</h2></div><a href="#" (click)="$event.preventDefault()">Quản lý</a></header>
+                    <div class="device-list">
+                        <div class="current"><i class="bi bi-windows"></i><span><strong>Windows - Chrome</strong><small>Hà Nội, Việt Nam - Đang hoạt động</small></span><em>Thiết bị hiện tại</em></div>
+                        <div><i class="bi bi-phone"></i><span><strong>iPhone 14 Pro - Safari</strong><small>Đà Nẵng, Việt Nam - 2 giờ trước</small></span><button type="button"><i class="bi bi-three-dots-vertical"></i></button></div>
+                        <div><i class="bi bi-laptop"></i><span><strong>MacBook Air - Safari</strong><small>TP. Hồ Chí Minh - 3 ngày trước</small></span><button type="button"><i class="bi bi-three-dots-vertical"></i></button></div>
+                        <div><i class="bi bi-tablet"></i><span><strong>iPad - Safari</strong><small>Hà Nội, Việt Nam - 12/05/2024</small></span><button type="button"><i class="bi bi-three-dots-vertical"></i></button></div>
+                    </div>
+                    <button type="button" class="security-danger-btn"><i class="bi bi-box-arrow-right"></i> Đăng xuất khỏi thiết bị khác</button>
+                </article>
 
-            <div style="font-size: 0.8rem; color: #6B7280; line-height: 1.4; margin-bottom: 16px;">
-                Sau khi chuyển khoản thành công, bạn hãy chạy lệnh <code style="background:#F3F4F6; padding:2px 6px; border-radius:4px; font-family:monospace; color:#EF4444; font-weight:700;">node approve_deposits.js</code> ở Terminal máy chủ để duyệt cộng tiền vào ví.
-            </div>
+                <article class="profile-card security-panel recovery-panel">
+                    <header class="security-panel-head compact"><div><h2>Khôi phục tài khoản</h2></div><a href="#" (click)="$event.preventDefault()">Quản lý</a></header>
+                    <div class="recovery-list">
+                        <span><small>Email khôi phục</small><strong>kienldvk24411@st.uel.edu.vn</strong><i class="bi bi-check-circle"></i></span>
+                        <span><small>Số điện thoại khôi phục</small><strong>•••• •••• 7890</strong><i class="bi bi-check-circle"></i></span>
+                        <span><small>Câu hỏi bảo mật</small><strong>Đã thiết lập</strong><i class="bi bi-check-circle"></i></span>
+                    </div>
+                    <button type="button" class="security-outline-btn">Cập nhật khôi phục</button>
+                </article>
 
-            <button (click)="closeQrModal()" style="width: 100%; height: 42px; background: #0E9F6E; border: none; border-radius: 8px; color: #FFFFFF; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-                Tôi Đã Chuyển Khoản - Đóng Popup
-            </button>
+                <article class="profile-card security-panel recommendation-panel">
+                    <header class="security-panel-head compact"><div><h2>Cảnh báo & khuyến nghị</h2></div><a href="#" (click)="$event.preventDefault()">Xem tất cả <i class="bi bi-arrow-right"></i></a></header>
+                    <div class="recommendation-list">
+                        <div><i class="bi bi-phone"></i><span><strong>Thêm số điện thoại</strong><small>Giúp khôi phục tài khoản nhanh hơn</small></span><button type="button">Thêm ngay</button></div>
+                        <div><i class="bi bi-key"></i><span><strong>Thiết lập Passkey</strong><small>Đăng nhập nhanh hơn và bảo mật hơn</small></span><button type="button">Thiết lập</button></div>
+                        <div><i class="bi bi-shield-lock"></i><span><strong>Kiểm tra mã dự phòng</strong><small>Bạn còn 8 mã dự phòng</small></span><button type="button">Xem mã</button></div>
+                    </div>
+                </article>
+            </aside>
+        </div>
+
+        <article class="profile-card security-safety-strip">
+            <div><i class="bi bi-shield-fill-check"></i><span><strong>Giữ an toàn cho tài khoản của bạn</strong><small>Dùng mật khẩu mạnh, mã OTP hoặc thiết bị tin cậy để bảo vệ dữ liệu cá nhân.</small></span></div>
+            <span><i class="bi bi-key"></i>Sử dụng mật khẩu mạnh</span>
+            <span><i class="bi bi-chat-square-dots"></i>Không chia sẻ mã OTP</span>
+            <span><i class="bi bi-phone"></i>Đăng xuất khỏi thiết bị lạ</span>
+            <span><i class="bi bi-envelope-check"></i>Cập nhật thông tin khôi phục</span>
+        </article>
+    </section>
+    <section class="profile-dashboard__content notifications-dashboard" *ngIf="activeSection === 'notifications'">
+        <header class="notifications-hero">
+            <div>
+                <h1>Thông báo</h1>
+                <p>Cập nhật mọi thông tin quan trọng từ GreenSteps</p>
+            </div>
+            <div class="notifications-hero-art" aria-hidden="true">
+                <i class="bi bi-bell-fill"></i>
+                <span class="mail-one"><i class="bi bi-envelope-fill"></i></span>
+                <span class="mail-two"><i class="bi bi-envelope-heart"></i></span>
+            </div>
+        </header>
+
+        <div class="notifications-tabs-card">
+            <nav class="notification-tabs" aria-label="Notification categories">
+                <button type="button" class="active">Tất cả</button>
+                <button type="button">Ưu đãi</button>
+                <button type="button">Lịch trình</button>
+                <button type="button">Hệ thống</button>
+                <button type="button">Cộng đồng</button>
+                <button type="button">Thanh toán</button>
+            </nav>
+            <button type="button" class="notification-settings-btn"><i class="bi bi-gear"></i> Cài đặt thông báo</button>
+        </div>
+
+        <div class="notifications-layout">
+            <main class="notifications-feed">
+                <section class="notification-day">
+                    <h2>Hôm nay</h2>
+                    <article class="notification-item unread offer"><span class="notification-icon"><i class="bi bi-gift"></i></span><div><small>ƯU ĐÃI</small><h3>Giảm 20% cho tour Đà Lạt 3N2Đ</h3><p>Chỉ áp dụng hôm nay cho khách hàng GreenSteps thân thiết.</p></div><time>09:30</time><b></b></article>
+                    <article class="notification-item unread trip"><span class="notification-icon"><i class="bi bi-calendar2-check"></i></span><div><small>LỊCH TRÌNH</small><h3>Nhắc nhở: Tour Sapa - Fansipan 3N2Đ</h3><p>Chuyến đi của bạn sẽ khởi hành vào ngày 24/05/2024.</p></div><time>08:15</time><b></b></article>
+                    <article class="notification-item unread system"><span class="notification-icon"><i class="bi bi-gear"></i></span><div><small>HỆ THỐNG</small><h3>Cập nhật tính năng mới</h3><p>Bạn có thể chia sẻ lịch trình với bạn bè và cộng đồng.</p></div><time>07:45</time><b></b></article>
+                </section>
+
+                <section class="notification-day">
+                    <h2>Hôm qua</h2>
+                    <article class="notification-item community"><span class="notification-icon"><i class="bi bi-chat-heart"></i></span><div><small>CỘNG ĐỒNG</small><h3>Nguyễn Minh đã bình luận lịch trình của bạn</h3><p>"Lịch trình tuyệt vời! Mình đã lưu lại để tham khảo 😊"</p></div><time>21:30</time></article>
+                    <article class="notification-item payment"><span class="notification-icon"><i class="bi bi-credit-card"></i></span><div><small>THANH TOÁN</small><h3>Thanh toán thành công</h3><p>Bạn đã thanh toán thành công cho tour Đà Nẵng - Hội An.</p></div><time>18:20</time></article>
+                    <article class="notification-item offer"><span class="notification-icon"><i class="bi bi-gift"></i></span><div><small>ƯU ĐÃI</small><h3>Ưu đãi dành riêng cho bạn</h3><p>Giảm đến 15% cho các tour biển hè 2024.</p></div><time>16:05</time></article>
+                </section>
+
+                <section class="notification-day">
+                    <h2>20/05/2024</h2>
+                    <article class="notification-item system"><span class="notification-icon"><i class="bi bi-shield-lock"></i></span><div><small>HỆ THỐNG</small><h3>Bảo mật tài khoản</h3><p>Thiết bị mới đã đăng nhập vào tài khoản của bạn.</p></div><time>14:30</time></article>
+                    <article class="notification-item trip"><span class="notification-icon"><i class="bi bi-journal-plus"></i></span><div><small>LỊCH TRÌNH</small><h3>Đã lưu lịch trình mới</h3><p>"Đà Lạt 4N3Đ - Chill & Relax" đã được lưu vào danh sách.</p></div><time>11:10</time></article>
+                    <article class="notification-item community"><span class="notification-icon"><i class="bi bi-envelope-heart"></i></span><div><small>CỘNG ĐỒNG</small><h3>GreenSteps chia sẻ bài viết mới</h3><p>8 mẹo du lịch xanh bạn nên biết 🌿</p></div><time>09:00</time></article>
+                </section>
+
+                <button type="button" class="load-more-notifications">Tải thêm thông báo <i class="bi bi-chevron-down"></i></button>
+            </main>
+
+            <aside class="notifications-side">
+                <article class="profile-card notification-summary-card">
+                    <h2>Tổng quan</h2>
+                    <span><i class="bi bi-bell"></i>Tất cả thông báo<strong>128</strong></span>
+                    <span><i class="bi bi-bell-fill"></i>Chưa đọc<strong>3 <b></b></strong></span>
+                    <span><i class="bi bi-check2-square"></i>Đã đọc<strong>125</strong></span>
+                </article>
+
+                <article class="profile-card notification-filter-card">
+                    <h2>Tùy chọn hiển thị</h2>
+                    <label><i class="bi bi-bell"></i>Tất cả thông báo<input type="radio" name="noticeFilter" checked></label>
+                    <label><i class="bi bi-bell"></i>Chưa đọc<input type="radio" name="noticeFilter"></label>
+                    <label><i class="bi bi-calendar-check"></i>Ưu tiên<input type="radio" name="noticeFilter"></label>
+                    <label><i class="bi bi-sliders"></i>Theo danh mục<i class="bi bi-chevron-down"></i></label>
+                </article>
+
+                <article class="profile-card notification-quick-card">
+                    <h2>Cài đặt nhanh</h2>
+                    <label>Nhận thông báo qua email<span></span></label>
+                    <label>Thông báo đẩy trên web<span></span></label>
+                    <label>Thông báo trên ứng dụng<span></span></label>
+                    <label>Nhắc nhở lịch trình<span></span></label>
+                    <label>Ưu đãi & khuyến mãi<span></span></label>
+                    <button type="button">Quản lý cài đặt chi tiết <i class="bi bi-arrow-right"></i></button>
+                </article>
+
+                <article class="profile-card notification-cta-card">
+                    <div><i class="bi bi-envelope-paper-heart"></i></div>
+                    <h2>Không bỏ lỡ thông tin quan trọng!</h2>
+                    <p>Bật tất cả thông báo để nhận ưu đãi, cập nhật lịch trình và thông tin mới nhất.</p>
+                    <button type="button">Bật tất cả</button>
+                </article>
+            </aside>
+        </div>
+    </section>
+    <section class="profile-dashboard__content wallet-dashboard" *ngIf="activeSection === 'wallet'">
+        <header class="wallet-hero">
+            <img class="wallet-hero-bg" src="image/greensteps_wallet_mountain_bg.png" alt="" aria-hidden="true">
+            <div class="wallet-hero-copy">
+                <nav>TÀI CHÍNH DU LỊCH <i class="bi bi-chevron-right"></i></nav>
+                <h1>Ví GreenSteps <i class="bi bi-shield-check"></i></h1>
+                <p>Quản lý số dư, điểm xanh, thanh toán và ưu đãi trong một nơi duy nhất.</p>
+                <article class="wallet-balance-card">
+                    <span>Số dư khả dụng</span>
+                    <strong>{{ walletRegistered ? (walletBalance | number:'1.0-0':'vi-VN') : '5.000.000' }}đ</strong>
+                    <small><i class="bi bi-clock-history"></i> Cập nhật hôm nay</small>
+                    <em><i class="bi bi-leaf"></i> +120 điểm xanh</em>
+                </article>
+            </div>
+            <div class="wallet-hero-image">
+                <img src="image/greensteps_wallet_card_art.png" alt="Ví GreenSteps">
+                <span class="wallet-float-chip chip-balance"><i class="bi bi-cash-coin"></i> Hoàn tiền 245.000đ</span>
+                <span class="wallet-float-chip chip-points"><i class="bi bi-leaf-fill"></i> 1,250 điểm xanh</span>
+            </div>
+        </header>
+
+        <div class="wallet-top-grid">
+            <article class="profile-card wallet-payment-card">
+                <header><h2>Thẻ & phương thức thanh toán</h2><a href="#" (click)="$event.preventDefault()">Quản lý <i class="bi bi-chevron-right"></i></a></header>
+                <div class="wallet-bank-card primary">
+                    <span>Thẻ GreenSteps <b>Mặc định</b></span>
+                    <strong>**** **** **** 4242</strong>
+                    <small>12/27</small>
+                    <i class="bi bi-wifi"></i>
+                </div>
+                <div class="wallet-bank-card secondary">
+                    <span>Thẻ tín dụng</span>
+                    <strong>**** **** **** 8888</strong>
+                    <small>09/26</small>
+                    <em>VISA</em>
+                </div>
+                <button type="button"><i class="bi bi-plus-lg"></i> Thêm thẻ mới</button>
+            </article>
+
+            <article class="profile-card wallet-points-card">
+                <header><h2>Điểm xanh & hoàn tiền</h2><a href="#" (click)="$event.preventDefault()">Xem chi tiết <i class="bi bi-chevron-right"></i></a></header>
+                <div class="wallet-points-layout">
+                    <div>
+                        <span>Điểm xanh hiện có</span>
+                        <strong><i class="bi bi-leaf-fill"></i> 1,250</strong>
+                        <span>Hoàn tiền tháng này</span>
+                        <strong><i class="bi bi-cash-coin"></i> 245.000đ</strong>
+                    </div>
+                    <div class="wallet-tier-ring"><b>Explorer</b><small>1.250 / 2.000 điểm</small></div>
+                </div>
+                <p>Bạn còn 750 điểm để lên hạng Explorer</p>
+                <div class="wallet-tier-progress"><span></span></div>
+            </article>
+
+            <article class="profile-card wallet-quick-card">
+                <h2>Tác vụ nhanh</h2>
+                <div>
+                    <button type="button"><i class="bi bi-wallet2"></i><span>Nạp tiền</span><small>Thêm số dư ví</small></button>
+                    <button type="button"><i class="bi bi-upload"></i><span>Rút tiền</span><small>Về tài khoản</small></button>
+                    <button type="button"><i class="bi bi-arrow-repeat"></i><span>Chuyển điểm</span><small>Tặng điểm xanh</small></button>
+                    <button type="button"><i class="bi bi-qr-code-scan"></i><span>Quét QR</span><small>Thanh toán nhanh</small></button>
+                </div>
+                <p><i class="bi bi-shield-check"></i> Giao dịch được bảo vệ bằng OTP và thiết bị tin cậy.</p>
+            </article>
+        </div>
+
+        <div class="wallet-main-grid">
+            <article class="profile-card wallet-transactions-card">
+                <header><h2>Giao dịch gần đây</h2><a href="#" (click)="$event.preventDefault()">Xem tất cả <i class="bi bi-arrow-right"></i></a></header>
+                <div class="wallet-transaction-list">
+                    <div class="minus"><i class="bi bi-bag-check"></i><span><strong>Thanh toán tour Đà Lạt 3N2Đ - Chill & Chill</strong><small>24/05/2024, 09:15 - TourID #DL12345</small></span><em>-2.850.000đ<small>Thành công</small></em></div>
+                    <div class="plus"><i class="bi bi-house-heart"></i><span><strong>Hoàn tiền Homestay Mộc Châu Green</strong><small>23/05/2024, 17:42 - Đặt phòng #MC9876</small></span><em>+245.000đ<small>Đã hoàn tiền</small></em></div>
+                    <div class="plus"><i class="bi bi-wallet2"></i><span><strong>Nạp ví từ Vietcombank</strong><small>23/05/2024, 14:30 - Ref #VCB23456</small></span><em>+1.000.000đ<small>Thành công</small></em></div>
+                    <div class="minus"><i class="bi bi-shield-check"></i><span><strong>Mua bảo hiểm du lịch Liberty</strong><small>22/05/2024, 11:08 - HD #BHS6789</small></span><em>-189.000đ<small>Thành công</small></em></div>
+                    <div class="points"><i class="bi bi-leaf"></i><span><strong>Nhận điểm xanh từ chuyến đi Sapa</strong><small>21/05/2024, 16:20 - Tour #SP11223</small></span><em>+120 điểm<small>Đã cộng điểm</small></em></div>
+                </div>
+            </article>
+
+            <article class="profile-card wallet-budget-card">
+                <header><h2>Ngân sách chuyến đi</h2><a href="#" (click)="$event.preventDefault()">Xem chi tiết <i class="bi bi-arrow-right"></i></a></header>
+                <div class="wallet-trip-card">
+                    <img [src]="tripImage" alt="Sapa Fansipan">
+                    <span><strong>Sapa - Fansipan 3N2Đ</strong><small>Khởi hành: 26/05/2024<br>Tổng ngân sách: 6.000.000đ</small></span>
+                    <em>Sắp khởi hành</em>
+                </div>
+                <div class="budget-list">
+                    <span><i class="bi bi-bus-front"></i><b>Vé xe</b><small>1.200.000đ / 1.500.000đ</small><u style="--w:80%"></u></span>
+                    <span><i class="bi bi-house-heart"></i><b>Lưu trú</b><small>1.800.000đ / 2.200.000đ</small><u style="--w:82%"></u></span>
+                    <span><i class="bi bi-cup-hot"></i><b>Ăn uống</b><small>900.000đ / 1.200.000đ</small><u style="--w:75%"></u></span>
+                    <span><i class="bi bi-bicycle"></i><b>Hoạt động</b><small>500.000đ / 1.100.000đ</small><u style="--w:45%"></u></span>
+                </div>
+                <footer>Đã chi: <strong>4.400.000đ</strong> / Còn lại: <strong>1.600.000đ</strong></footer>
+            </article>
+
+            <aside class="wallet-side-stack">
+                <article class="profile-card wallet-offer-card">
+                    <header><h2>Ưu đãi ví dành cho bạn</h2><a href="#" (click)="$event.preventDefault()">Xem tất cả <i class="bi bi-arrow-right"></i></a></header>
+                    <div><h3>Giảm 15%</h3><p>khi thanh toán tour xanh bằng Ví GreenSteps</p><button type="button">Dùng ngay <i class="bi bi-arrow-right"></i></button></div>
+                </article>
+                <article class="profile-card wallet-security-card">
+                    <h2>Bảo mật ví</h2>
+                    <span><i class="bi bi-shield-lock"></i>OTP thanh toán<em>Đã bật</em></span>
+                    <span><i class="bi bi-phone"></i>Thiết bị tin cậy<em>3 thiết bị</em></span>
+                    <span><i class="bi bi-speedometer2"></i>Giới hạn giao dịch<em>20.000.000đ/ngày</em></span>
+                    <button type="button" (click)="showSecurityInfo()"><i class="bi bi-shield-check"></i> Quản lý bảo mật</button>
+                </article>
+            </aside>
+        </div>
+    </section>
+    <section class="profile-dashboard__content" *ngIf="false && activeSection === 'personal'">
+        <header class="personal-page-heading">
+            <h1>Thông tin cá nhân</h1>
+            <p>Quản lý hồ sơ, thông tin liên hệ và dữ liệu cá nhân hóa của bạn trên GreenSteps. Thông tin này được dùng để cá nhân hóa lịch trình, booking và hỗ trợ bạn tốt hơn.</p>
+        </header>
+
+        <div class="personal-info-grid">
+            <aside class="profile-card personal-profile-card">
+                <div class="profile-summary-cover"><img [src]="coverImage" alt="GreenSteps nature cover"></div>
+                <div class="personal-profile-body">
+                    <div class="profile-avatar-wrap">
+                        <div class="profile-avatar-large">{{ getFirstLetter(profileUser.fullname) }}</div>
+                        <button type="button" class="profile-avatar-camera" aria-label="Cập nhật ảnh đại diện"><i class="bi bi-camera"></i></button>
+                    </div>
+                    <h2>{{ profileUser.fullname || profileUser.username }}</h2>
+                    <span class="profile-role-pill">{{ profileUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</span>
+                    <p class="profile-quote">"Travel far, live green, leave only footprints."</p>
+                    <div class="profile-summary-meta">
+                        <span><i class="bi bi-envelope"></i>{{ profileUser.email }}<i class="bi bi-patch-check-fill verified"></i></span>
+                        <span><i class="bi bi-calendar2"></i>Thành viên từ 05/2024</span>
+                    </div>
+                    <div class="profile-photo-actions">
+                        <button type="button"><i class="bi bi-camera"></i>Đổi ảnh đại diện</button>
+                        <button type="button"><i class="bi bi-image"></i>Chỉnh sửa ảnh bìa</button>
+                    </div>
+                    <article class="profile-provider-card">
+                        <i class="bi" [ngClass]="profileUser.role === 'provider' ? 'bi-shop' : 'bi-buildings'"></i>
+                        <div>
+                            <h3>{{ profileUser.role === 'provider' ? 'Kênh nhà cung cấp đã kích hoạt' : 'Bạn chưa đăng ký Nhà cung cấp' }}</h3>
+                            <p>{{ profileUser.role === 'provider' ? 'Quản lý dịch vụ và đơn đặt cho khách du lịch xanh.' : 'Chia sẻ dịch vụ của bạn đến hàng ngàn du khách yêu du lịch xanh.' }}</p>
+                            <button type="button" *ngIf="profileUser.role !== 'provider'" (click)="navigateToProviderRegistration()">Đăng ký ngay <i class="bi bi-arrow-right"></i></button>
+                            <button type="button" *ngIf="profileUser.role === 'provider'" routerLink="/partner-dashboard">Vào kênh đối tác <i class="bi bi-arrow-right"></i></button>
+                        </div>
+                    </article>
+                    <section class="profile-social-links">
+                        <h3>Liên kết với mạng xã hội</h3>
+                        <p>Kết nối tài khoản để đăng nhập nhanh và chia sẻ hành trình dễ dàng hơn.</p>
+                        <div class="social-link-grid">
+                            <button type="button" class="instagram"><i class="bi bi-instagram"></i><span>Instagram</span></button>
+                            <button type="button" class="facebook"><i class="bi bi-facebook"></i><span>Facebook</span></button>
+                            <button type="button" class="tiktok"><i class="bi bi-tiktok"></i><span>TikTok</span></button>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+
+            <article class="profile-card basic-info-card">
+                <header class="profile-card-header"><h2>Thông tin cơ bản</h2></header>
+                <form class="basic-info-form" (submit)="saveDetails($event)">
+                    <label>Họ và tên<input type="text" [(ngModel)]="detFullname" name="detFullname"></label>
+                    <label>Ngày sinh<input type="text" [(ngModel)]="detDob" name="detDob" placeholder="DD/MM/YYYY"></label>
+                    <label>Giới tính<select [(ngModel)]="detGender" name="detGender"><option value="Nữ">Nữ</option><option value="Nam">Nam</option><option value="Khác">Khác</option></select></label>
+                    <label>Mô tả ngắn (Bio)<textarea name="bio" maxlength="200">Yêu thích du lịch xanh, trekking, khám phá thiên nhiên và trải nghiệm văn hóa địa phương.</textarea><small>109/200</small></label>
+                    <button type="submit">Lưu thay đổi</button>
+                </form>
+            </article>
+
+            <article class="profile-card contact-info-card">
+                <header class="profile-card-header"><h2>Thông tin liên hệ</h2></header>
+                <div class="contact-list">
+                    <div><span>Email</span><strong>{{ profileUser.email }}</strong><small><i class="bi bi-patch-check-fill"></i>Đã xác thực</small></div>
+                    <div><span>Số điện thoại</span><strong>{{ profileUser.phone || 'Chưa cập nhật' }}</strong><button type="button">+ Thêm số điện thoại</button></div>
+                    <div><span>Địa chỉ liên hệ</span><strong>{{ profileUser.address || 'Chưa cập nhật' }}</strong></div>
+                </div>
+                <button type="button" class="contact-update-button">Cập nhật liên hệ</button>
+            </article>
+
+            <article class="profile-card travel-preferences-card">
+                <header class="profile-card-header"><div><h2>Sở thích du lịch</h2><span>GreenSteps dùng thông tin này để gợi ý hành trình, tour và ưu đãi phù hợp hơn với bạn.</span></div></header>
+                <div class="preference-persona"><i class="bi bi-compass"></i><div><span>Phong cách của bạn</span><strong>{{ travelTasteProfile.persona }}</strong><p>{{ travelTasteProfile.description }}</p></div></div>
+                <div class="preference-group"><h3>Loại hình du lịch yêu thích</h3><div class="preference-tags"><span class="selected"><i class="bi bi-check2"></i>Trekking</span><span class="selected"><i class="bi bi-check2"></i>Camping</span><span class="selected"><i class="bi bi-check2"></i>Ecotourism</span><span>Food tour</span><span>Nghỉ dưỡng</span></div></div>
+                <div class="preference-group"><h3>Ngân sách thường dùng</h3><div class="preference-tags"><span>Dưới 3 triệu</span><span class="selected"><i class="bi bi-check2"></i>3 - 5 triệu</span><span>5 - 10 triệu</span><span>Trên 10 triệu</span></div></div>
+                <div class="preference-group"><h3>Tiện nghi ưu tiên</h3><div class="preference-tags"><span class="selected"><i class="bi bi-check2"></i>Homestay</span><span>Resort</span><span class="selected"><i class="bi bi-check2"></i>Campsite</span><span>Pet-friendly</span><span class="selected"><i class="bi bi-check2"></i>Trekking route</span></div></div>
+                <div class="preference-match"><div><span>Mức độ cá nhân hóa</span><strong>{{ travelTasteProfile.match }}%</strong></div><div class="preference-progress"><span></span></div><p>Thêm ngân sách và tiện nghi yêu thích để GreenSteps gợi ý chính xác hơn.</p></div>
+                <button type="button">Lưu sở thích</button>
+            </article>
+
+            <article class="profile-card security-card">
+                <header class="profile-card-header"><div><h2>Bảo mật tài khoản</h2><span>Quản lý mật khẩu và các phương thức bảo mật tài khoản.</span></div></header>
+                <div class="security-grid">
+                    <button type="button" class="security-item"><i class="bi bi-lock"></i><span><strong>Mật khẩu</strong><small>Đã thiết lập</small></span><em>Đổi mật khẩu <i class="bi bi-arrow-right"></i></em></button>
+                    <button type="button" class="security-item"><i class="bi bi-shield-check"></i><span><strong>Xác thực OTP</strong><small>Đang bật</small></span><em>Quản lý bảo mật <i class="bi bi-arrow-right"></i></em></button>
+                    <button type="button" class="security-item"><i class="bi bi-phone"></i><span><strong>Phiên đăng nhập</strong><small>1 thiết bị đang hoạt động</small></span><em>Xem thiết bị <i class="bi bi-arrow-right"></i></em></button>
+                </div>
+            </article>
+        </div>
+    </section>
+    <div class="modal-overlay" [class.active]="isQrModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000;" [style.display]="isQrModalOpen ? 'flex' : 'none'">
+        <div class="modal-content" style="background:#fff; border-radius:16px; padding:24px; max-width:420px; width:90%; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.15); position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1.5px solid #f3f4f6; padding-bottom:12px;">
+                <h3 style="font-size:1.1rem; font-weight:700; color:#1f2937; margin:0; display:flex; align-items:center; gap:8px;"><i class="bi bi-qr-code-scan" style="color:#0E9F6E; font-size:1.3rem;"></i> Quet ma chuyen khoan OCB</h3>
+                <button type="button" (click)="closeQrModal()" style="background:none; border:none; font-size:1.4rem; color:#9ca3af; cursor:pointer; padding:0 4px;"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div style="background:#f0fdf4; border:1.5px dashed #10b981; border-radius:12px; padding:16px; margin-bottom:16px; text-align:left;">
+                <p style="font-size:.85rem; color:#046a38; font-weight:600; line-height:1.4; margin:0 0 8px;">Vui long quet ma QR duoi day bang ung dung ngan hang cua ban de chuyen khoan.</p>
+                <div style="font-size:.95rem; color:#1f2937; margin-bottom:4px;">So tien: <strong style="color:#0E9F6E; font-size:1.1rem;">{{ qrAmount | number:'1.0-0':'vi-VN' }}d</strong></div>
+                <div style="font-size:.8rem; color:#4b5563;">Noi dung: <strong style="font-family:monospace; background:#e5e7eb; padding:2px 6px; border-radius:4px; color:#111827;">{{ qrDescription }}</strong></div>
+            </div>
+            <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px; display:inline-block; margin-bottom:16px;">
+                <img [src]="qrCodeUrl" alt="VietQR OCB Code" style="width:250px; height:250px; display:block; border-radius:8px;">
+            </div>
+            <button type="button" (click)="closeQrModal()" style="width:100%; height:42px; background:#0E9F6E; border:none; border-radius:8px; color:#fff; font-weight:700; cursor:pointer;">Toi da chuyen khoan - Dong popup</button>
         </div>
     </div>
 
-    <!-- CUSTOM TERMINAL APPROVAL MODAL -->
-    <div class="modal-overlay" [class.active]="isTerminalModalOpen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; transition: all 0.3s;" [style.display]="isTerminalModalOpen ? 'flex' : 'none'">
-        <div class="modal-content" style="background: #FFFFFF; border-radius: 16px; padding: 32px 24px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: zoomIn 0.3s ease-out; position: relative;">
-            
-            <!-- Icon based on state -->
-            <div style="margin-bottom: 20px;">
-                <!-- Pending State Icon -->
-                <div *ngIf="terminalApprovalState === 'pending'" style="width: 64px; height: 64px; background-color: #FEF3C7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                    <i class="bi bi-terminal-fill" style="font-size: 30px; color: #D97706;"></i>
-                </div>
-                <!-- Success State Icon -->
-                <div *ngIf="terminalApprovalState === 'success'" style="width: 64px; height: 64px; background-color: #D1FAE5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                    <i class="bi bi-check-circle-fill" style="font-size: 30px; color: #057A55;"></i>
-                </div>
-                <!-- Error State Icon -->
-                <div *ngIf="terminalApprovalState === 'error'" style="width: 64px; height: 64px; background-color: #FDE8E8; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                    <i class="bi bi-x-circle-fill" style="font-size: 30px; color: #E02424;"></i>
-                </div>
+    <div class="modal-overlay" [class.active]="isTerminalModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000;" [style.display]="isTerminalModalOpen ? 'flex' : 'none'">
+        <div class="modal-content" style="background:#fff; border-radius:16px; padding:32px 24px; max-width:400px; width:90%; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+            <div style="margin-bottom:20px;">
+                <div *ngIf="terminalApprovalState === 'pending'" style="width:64px; height:64px; background:#fef3c7; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto;"><i class="bi bi-terminal-fill" style="font-size:30px; color:#d97706;"></i></div>
+                <div *ngIf="terminalApprovalState === 'success'" style="width:64px; height:64px; background:#d1fae5; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto;"><i class="bi bi-check-circle-fill" style="font-size:30px; color:#057a55;"></i></div>
+                <div *ngIf="terminalApprovalState === 'error'" style="width:64px; height:64px; background:#fde8e8; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto;"><i class="bi bi-x-circle-fill" style="font-size:30px; color:#e02424;"></i></div>
             </div>
-
-            <!-- Title & Message -->
-            <h3 style="font-size: 1.2rem; font-weight: 800; color: #1F2937; margin: 0 0 10px 0;">
-                {{ terminalApprovalTitle }}
-            </h3>
-            <p style="font-size: 0.85rem; color: #4B5563; line-height: 1.5; margin: 0 0 24px 0; text-align: center; word-break: break-word;">
-                {{ terminalApprovalMsg }}
-            </p>
-
-
-
-            <!-- Action Button -->
-            <button (click)="isTerminalModalOpen = false" style="width: 100%; height: 42px; background-color: #0E9F6E; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: background 0.2s;">
-                {{ terminalApprovalState === 'pending' ? 'Tôi Đã Hiểu' : 'Đóng' }}
-            </button>
+            <h3 style="font-size:1.2rem; font-weight:800; color:#1f2937; margin:0 0 10px;">{{ terminalApprovalTitle }}</h3>
+            <p style="font-size:.85rem; color:#4b5563; line-height:1.5; margin:0 0 24px; text-align:center; word-break:break-word;">{{ terminalApprovalMsg }}</p>
+            <button type="button" (click)="isTerminalModalOpen = false" style="width:100%; height:42px; background:#0E9F6E; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">{{ terminalApprovalState === 'pending' ? 'Toi da hieu' : 'Dong' }}</button>
         </div>
     </div>
 </main>
