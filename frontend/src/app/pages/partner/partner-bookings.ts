@@ -64,6 +64,24 @@ export class PartnerBookingsComponent implements OnInit {
   public newActivityType: string = 'experience';
   public newActivityDesc: string = '';
 
+  // New Route Waypoint bindings
+  public showRouteModal: boolean = false;
+  public newWpName: string = '';
+  public newWpTag: string = '';
+  public newWpColor: string = 'bg-teal-600';
+  public newWpType: string = 'Checkpoint';
+
+  // New Campsite Zone bindings
+  public showCampsiteModal: boolean = false;
+  public newZoneName: string = '';
+  public newZoneDesc: string = '';
+  public newZoneCapacity: number = 10;
+  public newZoneStatus: string = 'Còn trống';
+  public newZoneColor: string = 'green';
+  public newZoneIcon: string = 'Tent';
+  public newZoneTop: string = '50%';
+  public newZoneLeft: string = '50%';
+
   constructor(
     private apiService: ApiService,
     private authService: AuthService,
@@ -383,5 +401,69 @@ export class PartnerBookingsComponent implements OnInit {
     if (type === 'cancel') return 'Yêu cầu hủy đơn';
     if (type === 'guest_change') return 'Thay đổi số khách';
     return 'Thay đổi thông tin liên hệ';
+  }
+
+  // New Route Waypoint Modal Actions
+  public openRouteModal() {
+    this.newWpName = '';
+    this.newWpTag = `Ngày ${this.selectedDayIndex || 1} - 10:00`;
+    this.newWpColor = 'bg-teal-600';
+    this.newWpType = 'Checkpoint';
+    this.showRouteModal = true;
+    this.cdr.detectChanges();
+  }
+
+  public submitNewRoute() {
+    if (!this.newWpName.trim()) {
+      alert("Vui lòng nhập tên mốc waypoint!");
+      return;
+    }
+    const newWp = {
+      id: 'wp_' + Date.now(),
+      name: this.newWpName,
+      tag: this.newWpTag,
+      color: this.newWpColor,
+      lat: 12.9 + Math.random() * 0.2, // mock coords
+      lng: 108.4 + Math.random() * 0.2
+    };
+    this.waypoints = [...this.waypoints, newWp];
+    this.showRouteModal = false;
+    this.cdr.detectChanges();
+  }
+
+  // New Campsite Modal Actions
+  public openCampsiteModal() {
+    this.newZoneName = '';
+    this.newZoneDesc = '';
+    this.newZoneCapacity = 10;
+    this.newZoneStatus = 'Còn trống';
+    this.newZoneColor = 'green';
+    this.newZoneIcon = 'Tent';
+    this.newZoneTop = `${20 + Math.random() * 50}%`;
+    this.newZoneLeft = `${20 + Math.random() * 50}%`;
+    this.showCampsiteModal = true;
+    this.cdr.detectChanges();
+  }
+
+  public submitNewCampsite() {
+    if (!this.newZoneName.trim()) {
+      alert("Vui lòng nhập tên khu lều!");
+      return;
+    }
+    const newZone = {
+      id: String.fromCharCode(65 + this.zones.length), // A, B, C, D...
+      name: this.newZoneName,
+      desc: this.newZoneDesc || 'Mô tả khu lều trại mới được cấu hình.',
+      capacity: this.newZoneCapacity,
+      unit: this.newZoneIcon === 'Tent' ? 'lều' : 'bàn',
+      status: this.newZoneStatus,
+      color: this.newZoneColor,
+      top: this.newZoneTop,
+      left: this.newZoneLeft,
+      icon: this.newZoneIcon
+    };
+    this.zones = [...this.zones, newZone];
+    this.showCampsiteModal = false;
+    this.cdr.detectChanges();
   }
 }

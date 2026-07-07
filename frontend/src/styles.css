@@ -9453,7 +9453,7 @@ header .nav-hover-trigger img {
 .mobile-hamburger {
     display: grid !important;
 }
-@media (min-width: 640px) {
+@media (min-width: 1024px) {
     .header-main-nav {
         display: flex !important;
     }

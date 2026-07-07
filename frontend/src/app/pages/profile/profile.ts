@@ -96,6 +96,8 @@ export class ProfileComponent implements OnInit {
   public detGender = 'Nữ';
   public detAddress = '';
   public detBio = 'Yêu thích du lịch xanh, trekking, khám phá thiên nhiên và trải nghiệm văn hóa địa phương.';
+  public detCompanyName = '';
+  public detJobType = 'Doanh nghiệp';
   public travelPreferenceNote = '';
   public currentPreferenceStepIndex = 0;
   public travelPreferenceAnswers: Record<string, string | string[]> = {
@@ -175,7 +177,7 @@ export class ProfileComponent implements OnInit {
     {
       heading: 'CÔNG CỤ HỮU ÍCH',
       items: [
-        { icon: 'bi-stars', label: 'AI Travel Planner', action: 'planner' },
+        { icon: 'bi-stars', label: 'Thiết kế lịch trình AI', action: 'planner' },
         { icon: 'bi-geo-alt', label: 'Bản đồ tương tác' },
         { icon: 'bi-chat-dots', label: 'Chatbot hỗ trợ', badge: 'AI' }
       ]
@@ -308,6 +310,11 @@ export class ProfileComponent implements OnInit {
     this.detDob = this.profileUser.dob || '';
     this.detGender = this.profileUser.gender || 'Nữ';
     this.detAddress = this.profileUser.address || '';
+    this.detCompanyName = this.profileUser.company_name || this.profileUser.companyName || '';
+    this.detJobType = (this.profileUser as any).job || 'Doanh nghiệp';
+    if (this.profileUser.role === 'provider' && (this.profileUser as any).job) {
+      this.detBio = (this.profileUser as any).bio || this.detBio;
+    }
   }
 
   private async loadWalletAndTransactions() {
@@ -411,10 +418,17 @@ export class ProfileComponent implements OnInit {
       email: this.detEmail,
       dob: this.detDob,
       gender: this.detGender,
-      address: this.detAddress
+      address: this.detAddress,
+      company_name: this.detCompanyName,
+      job: this.detJobType,
+      bio: this.detBio
     });
     if (res.success) {
       alert('Lưu thông tin thành công!');
+      // Update local profileUser info
+      if (res.user) {
+        this.applyProfileUser(res.user);
+      }
     } else {
       alert(res.message || 'Cập nhật thất bại!');
     }

@@ -74,7 +74,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   // Resizer Panel properties
   public sidebarWidth: number = 280;
-  public mapWidthPct: number = 40;
+  public mapWidthPct: number = 60;
   private isResizing: boolean = false;
   private resizeType: 'left' | 'right' = 'left';
 
@@ -409,10 +409,19 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       rawActivities.forEach((act: any) => {
         let lat = act.lat;
         let lng = act.lng;
-        if (typeof lat !== "number" || typeof lng !== "number") {
+        
+        // Handle invalid coordinates (null, undefined, NaN, 0, or outside Vietnam)
+        if (typeof lat !== "number" || typeof lng !== "number" || isNaN(lat) || isNaN(lng) || lat < 5 || lat > 30 || lng < 100 || lng > 115) {
           const coords = this.getCoordinatesForPlace(act.name || act.title, destSlug);
           lat = coords.lat;
           lng = coords.lng;
+        }
+
+        // Ultimate fallback: Use city center
+        if (typeof lat !== "number" || typeof lng !== "number" || isNaN(lat) || isNaN(lng) || lat < 5 || lat > 30 || lng < 100 || lng > 115) {
+          const center = this.cityCenters[destSlug] || [11.9404, 108.4373];
+          lat = center[0];
+          lng = center[1];
         }
         
         const title = act.title || act.name || "Hoạt động";
@@ -799,28 +808,39 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       lat = meta.lat || undefined;
       lng = meta.lng || undefined;
     } else {
-      // Unmatched place: Try geocoding online with OpenStreetMap Nominatim API
-      const destLabel = this.activeItinerary.destLabel || this.mapSlugToDestLabel(this.activeItinerary.dest);
-      const searchQuery = `${val}, ${destLabel}, Việt Nam`;
-      
-      try {
-        const fetchPromise = fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=1`);
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000));
+      // Try samplePlacesRecs mapping first
+      const destSlug = this.activeItinerary.dest || 'da-lat';
+      const coords = this.getCoordinatesForPlace(val, destSlug);
+      lat = coords.lat;
+      lng = coords.lng;
+
+      // Geocoding online as fallback
+      if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+        const destLabel = this.activeItinerary.destLabel || this.mapSlugToDestLabel(destSlug);
+        const searchQuery = `${val}, ${destLabel}, Việt Nam`;
         
-        const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
-        const data = await response.json();
-        if (data && data.length > 0) {
-          lat = parseFloat(data[0].lat);
-          lng = parseFloat(data[0].lon);
-        } else {
-          lat = undefined;
-          lng = undefined;
+        try {
+          const fetchPromise = fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=1`);
+          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000));
+          
+          const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
+          const data = await response.json();
+          if (data && data.length > 0) {
+            lat = parseFloat(data[0].lat);
+            lng = parseFloat(data[0].lon);
+          }
+        } catch (e) {
+          console.warn("Geocoding failed or timed out:", e);
         }
-      } catch (e) {
-        console.warn("Geocoding failed or timed out, setting unlocated:", e);
-        lat = undefined;
-        lng = undefined;
       }
+    }
+
+    // Ultimate fallback: Use city center
+    const destSlug = this.activeItinerary.dest || 'da-lat';
+    if (!lat || !lng || isNaN(lat) || isNaN(lng) || lat < 5 || lat > 30 || lng < 100 || lng > 115) {
+      const center = this.cityCenters[destSlug] || [11.9404, 108.4373];
+      lat = center[0];
+      lng = center[1];
     }
 
     const newAct = {
@@ -856,8 +876,8 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     let finalCarbon = carbon;
     let finalType = type;
 
-    if (!finalLat) {
-      // Search in localServices for a match
+    // Search in localServices for a match if coordinates are not provided
+    if (!finalLat || !finalLng || isNaN(finalLat) || isNaN(finalLng)) {
       const match = this.localServices.find(s => 
         (s.name || s.name_service || '').toLowerCase().includes(name.toLowerCase()) ||
         name.toLowerCase().includes((s.name || s.name_service || '').toLowerCase())
@@ -870,10 +890,39 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         const meta = match.current_data || {};
         finalLat = meta.lat || undefined;
         finalLng = meta.lng || undefined;
-      } else {
-        finalLat = undefined;
-        finalLng = undefined;
       }
+    }
+
+    const destSlug = this.activeItinerary.dest || 'da-lat';
+
+    // Try samplePlacesRecs mapping
+    if (!finalLat || !finalLng || isNaN(finalLat) || isNaN(finalLng)) {
+      const coords = this.getCoordinatesForPlace(name, destSlug);
+      finalLat = coords.lat;
+      finalLng = coords.lng;
+    }
+
+    // Geocoding online fallback
+    if (!finalLat || !finalLng || isNaN(finalLat) || isNaN(finalLng)) {
+      const destLabel = this.activeItinerary.destLabel || this.mapSlugToDestLabel(destSlug);
+      const searchQuery = `${name}, ${destLabel}, Việt Nam`;
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=1`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+          finalLat = parseFloat(data[0].lat);
+          finalLng = parseFloat(data[0].lon);
+        }
+      } catch (e) {
+        console.warn("Geocoding fallback failed:", e);
+      }
+    }
+
+    // Ultimate fallback: Use city center
+    if (!finalLat || !finalLng || isNaN(finalLat) || isNaN(finalLng) || finalLat < 5 || finalLat > 30 || finalLng < 100 || finalLng > 115) {
+      const center = this.cityCenters[destSlug] || [11.9404, 108.4373];
+      finalLat = center[0];
+      finalLng = center[1];
     }
 
     const newAct = {
@@ -1651,6 +1700,11 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   public closeQrModal() {
     this.isQrVisible = false;
+  }
+
+  public cancelWaitingApproval() {
+    this.isWaitingApproval = false;
+    this.cdr.detectChanges();
   }
 
   public getItineraryCoverImage(): string {

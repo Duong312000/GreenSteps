@@ -410,7 +410,7 @@
                         <div class="flex justify-between items-center bg-[#F7FBF4] border border-teal-600/10 p-4 rounded-2xl">
                             <h3 class="text-[15px] font-bold text-teal-800">Trekking Route: LangBiang Summit Path</h3>
                             <div class="flex gap-2">
-                                <button class="px-3 py-1.5 border border-gray-200 bg-white text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-50 shadow-sm cursor-pointer">+ Tạo route mới</button>
+                                <button (click)="openRouteModal()" class="px-3 py-1.5 border border-teal-600 bg-white text-teal-700 text-xs font-semibold rounded-lg hover:bg-teal-50 shadow-sm cursor-pointer">+ Tạo route mới</button>
                             </div>
                         </div>
 
@@ -461,7 +461,7 @@
                                 <h3 class="text-md font-bold text-gray-800">Sơ đồ và phân bổ Campsite</h3>
                                 <p class="text-xs text-gray-400 mt-0.5">Quản lý các khu lều trại và vị trí đốt lửa trại tập trung</p>
                             </div>
-                            <button class="px-3 py-1.5 bg-[#006414] text-white text-xs font-semibold rounded-lg hover:bg-green-700 shadow-sm border-none cursor-pointer">
+                            <button (click)="openCampsiteModal()" class="px-3 py-1.5 bg-[#006414] text-white text-xs font-semibold rounded-lg hover:bg-green-700 shadow-sm border-none cursor-pointer">
                                 Thêm khu lều mới
                             </button>
                         </div>
@@ -701,6 +701,103 @@
                 </button>
                 <button (click)="submitAddActivity()" class="px-5 py-2.5 bg-[#006414] hover:bg-green-700 text-white font-extrabold text-sm rounded-xl border-none cursor-pointer" [disabled]="!newActivityTitle">
                     Lưu hoạt động
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP TẠO ROUTINE MỚI -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" *ngIf="showRouteModal">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+            <div class="p-5 border-b border-gray-100 bg-[#F7FBF4] flex justify-between items-center">
+                <h3 class="text-lg font-extrabold text-[#006414] m-0"><i class="bi bi-geo-alt-fill"></i> Tạo routine mới (Waypoint)</h3>
+                <button (click)="showRouteModal = false" class="text-2xl text-gray-400 hover:text-gray-700 bg-transparent border-0 cursor-pointer">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Tên mốc Waypoint *</label>
+                    <input type="text" [(ngModel)]="newWpName" placeholder="Ví dụ: Đỉnh núi LangBiang, Trạm dừng chân..." class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-500 uppercase">Mốc thời gian *</label>
+                        <input type="text" [(ngModel)]="newWpTag" placeholder="Ví dụ: Ngày 1 - 10:00" class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-500 uppercase">Màu sắc ghim *</label>
+                        <select [(ngModel)]="newWpColor" class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                            <option value="bg-green-700">Xanh lá (Khởi hành)</option>
+                            <option value="bg-teal-600">Xanh ngọc (Checkpoint)</option>
+                            <option value="bg-rose-600">Đỏ (Kết thúc)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
+                <button (click)="showRouteModal = false" class="px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 text-sm hover:bg-gray-50 cursor-pointer bg-white">
+                    Hủy
+                </button>
+                <button (click)="submitNewRoute()" class="px-5 py-2.5 bg-[#006414] hover:bg-green-700 text-white font-extrabold text-sm rounded-xl border-none cursor-pointer" [disabled]="!newWpName">
+                    Lưu Waypoint
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP THÊM KHU LỀU MỚI -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" *ngIf="showCampsiteModal">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-100 animate-in zoom-in-95 duration-200">
+            <div class="p-5 border-b border-gray-100 bg-[#F7FBF4] flex justify-between items-center">
+                <h3 class="text-lg font-extrabold text-[#006414] m-0"><i class="bi bi-tent"></i> Thêm khu lều mới</h3>
+                <button (click)="showCampsiteModal = false" class="text-2xl text-gray-400 hover:text-gray-700 bg-transparent border-0 cursor-pointer">&times;</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Tên khu lều *</label>
+                    <input type="text" [(ngModel)]="newZoneName" placeholder="Ví dụ: Khu Lều Nhỏ Chữ A..." class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Mô tả ngắn</label>
+                    <input type="text" [(ngModel)]="newZoneDesc" placeholder="Mô tả tiện ích, vị trí..." class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-500 uppercase">Sức chứa tối đa *</label>
+                        <input type="number" [(ngModel)]="newZoneCapacity" placeholder="10" min="1" class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-500 uppercase">Trạng thái lều *</label>
+                        <select [(ngModel)]="newZoneStatus" class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                            <option value="Còn trống">Còn trống</option>
+                            <option value="Sẵn sàng">Sẵn sàng</option>
+                            <option value="Đã kín (Full)">Đã kín (Full)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-500 uppercase">Biểu tượng ghim *</label>
+                        <select [(ngModel)]="newZoneIcon" (ngModelChange)="newZoneColor = newZoneIcon === 'Tent' ? 'green' : 'orange'" class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                            <option value="Tent">Lều (Tent)</option>
+                            <option value="Fire">Đốt lửa trại (Fire)</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-500 uppercase">Màu sắc ghim *</label>
+                        <select [(ngModel)]="newZoneColor" class="h-10 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none bg-white">
+                            <option value="green">Xanh lá (Green)</option>
+                            <option value="blue">Xanh dương (Blue)</option>
+                            <option value="orange">Màu cam (Orange)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
+                <button (click)="showCampsiteModal = false" class="px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 text-sm hover:bg-gray-50 cursor-pointer bg-white">
+                    Hủy
+                </button>
+                <button (click)="submitNewCampsite()" class="px-5 py-2.5 bg-[#006414] hover:bg-green-700 text-white font-extrabold text-sm rounded-xl border-none cursor-pointer" [disabled]="!newZoneName">
+                    Thêm khu lều
                 </button>
             </div>
         </div>

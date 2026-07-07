@@ -47,31 +47,13 @@ export class ToursComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    const allTours = await this.apiService.getPresetTours();
-
-    const user = this.authService.getCurrentUser();
-    if (user) {
-      const userId = user.id || user._id || '';
-      this.recommendedTours = await this.apiService.getRecommendedTours(userId);
-      
-      const recommendedIds = new Set(this.recommendedTours.map(r => r.id));
-      allTours.forEach(tour => {
-        tour.isRecommended = recommendedIds.has(tour.id);
-      });
-
-      // Sort: Recommended first
-      allTours.sort((a, b) => {
-        if (a.isRecommended && !b.isRecommended) return -1;
-        if (!a.isRecommended && b.isRecommended) return 1;
-        return 0;
-      });
-    }
-
+    // 1. Fetch all tours immediately to avoid blocking page render
+    const allTours = await this.apiService.getPresetTours() || [];
     this.toursData = allTours;
     this.filteredTours = [...this.toursData];
     this.cdr.detectChanges();
 
-    // Read query params from URL (from home page search or Apple-style navbar)
+    // 2. Read query params and perform initial filtering
     this.route.queryParams.subscribe(params => {
       if (params['search']) {
         this.searchQuery = params['search'];
@@ -104,6 +86,33 @@ export class ToursComponent implements OnInit {
 
       this.filterTours();
     });
+
+    // 3. Fetch recommendations asynchronously in background
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      const userId = user.id || user._id || '';
+      this.apiService.getRecommendedTours(userId).then(recommended => {
+        if (recommended && recommended.length > 0) {
+          this.recommendedTours = recommended;
+          const recommendedIds = new Set(this.recommendedTours.map(r => r.id));
+          
+          this.toursData.forEach(tour => {
+            tour.isRecommended = recommendedIds.has(tour.id);
+          });
+
+          // Sort: Recommended first
+          this.toursData.sort((a, b) => {
+            if (a.isRecommended && !b.isRecommended) return -1;
+            if (!a.isRecommended && b.isRecommended) return 1;
+            return 0;
+          });
+
+          this.filterTours();
+        }
+      }).catch(err => {
+        console.warn('Failed to load recommended tours in background:', err);
+      });
+    }
   }
 
   public filterTours() {
@@ -138,6 +147,14 @@ export class ToursComponent implements OnInit {
 
   public filterByDestination(dest: string) {
     this.filterDest = dest;
+    this.filterTours();
+  }
+
+  public resetFilters() {
+    this.searchQuery = '';
+    this.filterDest = 'all';
+    this.filterType = 'all';
+    this.filterPrice = 'all';
     this.filterTours();
   }
 

@@ -124,7 +124,7 @@
                     <article class="profile-card middle-card overview-feature-card feature-card">
                         <header class="profile-card-header"><h2>Tính năng nổi bật</h2></header>
                         <div class="overview-feature-grid features-grid">
-                            <a class="overview-feature-item feature-item" href="#" (click)="$event.preventDefault(); handleSidebarItem({ icon: 'bi-stars', label: 'AI Travel Planner', action: 'planner' })"><i class="bi bi-robot feature-icon"></i><span><strong class="feature-title">AI Travel Planner</strong><small class="feature-desc">Tạo lịch trình cá nhân hóa chỉ trong vài phút</small></span></a>
+                            <a class="overview-feature-item feature-item" href="#" (click)="$event.preventDefault(); handleSidebarItem({ icon: 'bi-stars', label: 'Thiết kế lịch trình AI', action: 'planner' })"><i class="bi bi-robot feature-icon"></i><span><strong class="feature-title">Thiết kế lịch trình AI</strong><small class="feature-desc">Tạo lịch trình cá nhân hóa chỉ trong vài phút</small></span></a>
                             <a class="overview-feature-item feature-item" href="#" (click)="$event.preventDefault()"><i class="bi bi-map feature-icon"></i><span><strong class="feature-title">Bản đồ tương tác</strong><small class="feature-desc">Khám phá điểm đến với bản đồ du lịch thông minh</small></span></a>
                             <a class="overview-feature-item feature-item" routerLink="/community"><i class="bi bi-people feature-icon"></i><span><strong class="feature-title">Cộng đồng GreenSteps</strong><small class="feature-desc">Chia sẻ hành trình và cảm hứng du lịch xanh</small></span></a>
                             <a class="overview-feature-item feature-item" href="#" (click)="$event.preventDefault()"><i class="bi bi-chat-dots feature-icon"></i><span><strong class="feature-title">Chatbot AI</strong><small class="feature-desc">Hỗ trợ 24/7, gợi ý tour, tiết kiệm chi phí</small></span></a>
@@ -148,16 +148,6 @@
                         <a class="profile-card-link overview-checklist-link" href="#" (click)="$event.preventDefault()">Xem checklist đầy đủ <i class="bi bi-arrow-right"></i></a>
                     </article>
 
-                    <article class="profile-card middle-card profile-account-card account-card">
-                        <header class="profile-card-header"><h2>Quản lý tài khoản</h2></header>
-                        <div class="account-actions">
-                            <button type="button" class="profile-setting-row account-action" (click)="showSecurityInfo()"><i class="bi bi-lock"></i><span><strong class="account-action-title">Bảo mật tài khoản</strong><small class="account-action-desc">Đổi mật khẩu, xác thực OTP</small></span><i class="bi bi-chevron-right"></i></button>
-                            <button type="button" class="profile-setting-row account-action" (click)="handleRoleToggle()"><i class="bi bi-shield-check"></i><span><strong class="account-action-title">Vai trò tài khoản</strong><small class="account-action-desc">{{ profileUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</small></span><i class="bi bi-chevron-right"></i></button>
-                            <button type="button" class="profile-setting-row account-action account-status-action" (click)="showPersonalInfo()"><i class="bi bi-person-check"></i><span><strong class="account-action-title">Trạng thái tài khoản</strong><small class="account-action-desc">Hồ sơ cá nhân đã xác minh</small></span><i class="bi bi-chevron-right"></i></button>
-                            <button type="button" class="profile-setting-row account-action" (click)="activeSection = 'notifications'"><i class="bi bi-bell"></i><span><strong class="account-action-title">Thông báo</strong><small class="account-action-desc">Email, ưu đãi, nhắc lịch trình</small></span><i class="bi bi-chevron-right"></i></button>
-                            <button type="button" class="profile-setting-row account-action logout danger" (click)="handleLogout()"><i class="bi bi-box-arrow-right"></i><span><strong class="account-action-title">Đăng xuất</strong><small class="account-action-desc">Thoát khỏi tài khoản hiện tại</small></span><i class="bi bi-chevron-right"></i></button>
-                        </div>
-                    </article>
                 </div>
 
                 <article class="profile-card dashboard-card overview-activity-card recent-activity-card">
@@ -279,7 +269,7 @@
                 </div>
             </aside>
 
-            <article class="profile-card basic-info-card personal-form-card">
+            <article class="profile-card basic-info-card personal-form-card" *ngIf="profileUser.role !== 'provider'">
                 <header class="profile-card-header">
                     <div>
                         <h2>Thông tin cần thiết</h2>
@@ -294,6 +284,41 @@
                     <label>Giới tính<select [(ngModel)]="detGender" name="detGender"><option value="Nữ">Nữ</option><option value="Nam">Nam</option><option value="Khác">Khác</option></select></label>
                     <label>Địa chỉ liên hệ<input type="text" [(ngModel)]="detAddress" name="detAddress" placeholder="Thành phố, quận/huyện"></label>
                     <label class="form-wide">Mô tả ngắn<textarea [(ngModel)]="detBio" name="detBio" maxlength="200" placeholder="Bạn thích kiểu du lịch nào?"></textarea><small>{{ detBio.length }}/200</small></label>
+                    <button type="submit"><i class="bi bi-check2"></i> Lưu thay đổi</button>
+                </form>
+            </article>
+
+            <!-- If Provider: show Thông tin đơn vị -->
+            <article class="profile-card basic-info-card personal-form-card" *ngIf="profileUser.role === 'provider'">
+                <header class="profile-card-header">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="bi bi-buildings text-emerald-600" style="font-size: 20px;"></i>
+                        <div>
+                            <h2>Thông tin đơn vị</h2>
+                            <span>Cấu hình thông tin pháp nhân và hotline CSKH của doanh nghiệp.</span>
+                        </div>
+                    </div>
+                </header>
+                <form class="basic-info-form personal-edit-form" (submit)="saveDetails($event)">
+                    <label class="form-wide">Tên nhà cung cấp *
+                        <input type="text" [(ngModel)]="detCompanyName" name="detCompanyName" required placeholder="Ví dụ: Công ty TNHH Du lịch Sinh thái GreenSteps">
+                    </label>
+                    <label>Loại hình kinh doanh *
+                        <select [(ngModel)]="detJobType" name="detJobType">
+                            <option value="Doanh nghiệp">Doanh nghiệp</option>
+                            <option value="Hộ kinh doanh">Hộ kinh doanh</option>
+                        </select>
+                    </label>
+                    <label>Hotline CSKH *
+                        <input type="tel" [(ngModel)]="detPhone" name="detPhone" required placeholder="Ví dụ: 1900 1234 56">
+                    </label>
+                    <label class="form-wide">Địa chỉ trụ sở *
+                        <input type="text" [(ngModel)]="detAddress" name="detAddress" required placeholder="Ví dụ: 123 Đường Hồ Tùng Mậu, Phường 3, TP Đà Lạt, Lâm Đồng">
+                    </label>
+                    <label class="form-wide">Mô tả ngắn về doanh nghiệp
+                        <textarea [(ngModel)]="detBio" name="detBio" maxlength="200" placeholder="Đơn vị cung cấp các trải nghiệm du lịch bền vững và khám phá văn hóa bản địa..."></textarea>
+                        <small>{{ detBio.length }}/200</small>
+                    </label>
                     <button type="submit"><i class="bi bi-check2"></i> Lưu thay đổi</button>
                 </form>
             </article>

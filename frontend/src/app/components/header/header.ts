@@ -509,7 +509,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
       { label: 'Cộng đồng', link: '/community' },
       { label: 'Lịch trình', link: '/tours' },
       { label: 'Cẩm nang', action: 'green_handbook' },
-      { label: 'AI Planner', action: 'ai_planner' }
+      { label: 'Thiết kế AI', action: 'ai_planner' }
     ];
 
     if (this.currentUser && this.currentUser.role === 'provider') {

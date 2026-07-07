@@ -54,9 +54,12 @@ export class AuthService {
     // 1. Try to connect to backend NodeJS
     try {
       const res = await firstValueFrom(
-        this.http.post<{ success: boolean; user?: any; message?: string }>(`${this.BACKEND_URL}/login`, { username, password }, { withCredentials: true })
+        this.http.post<{ success: boolean; user?: any; token?: string; message?: string }>(`${this.BACKEND_URL}/login`, { username, password }, { withCredentials: true })
       );
       if (res && res.success && res.user) {
+        if (res.token) {
+          localStorage.setItem('greensteps_token', res.token);
+        }
         const mappedUser: User = {
           id: res.user.id || res.user._id,
           username: res.user.username,
@@ -82,9 +85,12 @@ export class AuthService {
   public async register(formData: any): Promise<{ success: boolean; message?: string; user?: User }> {
     try {
       const res = await firstValueFrom(
-        this.http.post<{ success: boolean; user?: any; message?: string }>(`${this.BACKEND_URL}/register`, formData, { withCredentials: true })
+        this.http.post<{ success: boolean; user?: any; token?: string; message?: string }>(`${this.BACKEND_URL}/register`, formData, { withCredentials: true })
       );
       if (res && res.success && res.user) {
+        if (res.token) {
+          localStorage.setItem('greensteps_token', res.token);
+        }
         const mappedUser: User = {
           id: res.user.id || res.user._id,
           username: res.user.username,
@@ -230,6 +236,7 @@ export class AuthService {
 
   public logout() {
     this.setCurrentUser(null);
+    localStorage.removeItem('greensteps_token');
   }
 
   private getOtpUsers(): User[] {

@@ -173,15 +173,6 @@ exports.deposit = async (req, res, next) => {
       await t.rollback();
       throw err;
     }
-      res.json({
-        success: true,
-        message: `Đã nạp thành công ${amount.toLocaleString('vi-VN')}đ vào ví!`,
-        balance: lockedWallet.balance
-      });
-    } catch (error) {
-      await t.rollback();
-      throw error;
-    }
   } catch (error) {
     next(error);
   }
