@@ -123,7 +123,7 @@ export class PartnerServicesComponent implements OnInit {
   }
 
   public get rejectedCount(): number {
-    return this.myServices.filter(s => s.status === 'rejected' || s.status === 'hidden').length;
+    return this.myServices.filter(s => s.status === 'rejected' || s.status === 'hidden' || s.status === 'sold_out' || s.status === 'inactive').length;
   }
 
   public getServiceImage(srv: Service): string {

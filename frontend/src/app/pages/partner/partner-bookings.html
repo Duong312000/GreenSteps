@@ -1,6 +1,14 @@
 <main class="min-h-screen bg-[#fcfdfc] pt-28 pb-12 px-6 font-sans">
     <div class="max-w-[1440px] mx-auto space-y-6">
         
+        <!-- Sub-navigation Bar for Partner Dashboard -->
+        <div class="flex flex-wrap items-center gap-6 border-b border-gray-200 pb-2 mb-6">
+            <a routerLink="/partner-dashboard" routerLinkActive="border-b-2 border-[#0E9F6E] text-[#0E9F6E] font-bold" [routerLinkActiveOptions]="{exact: true}" class="text-sm text-gray-600 hover:text-[#0E9F6E] pb-2 transition-all" style="text-decoration:none;">Tổng quan nhà cung cấp</a>
+            <a routerLink="/partner-services" routerLinkActive="border-b-2 border-[#0E9F6E] text-[#0E9F6E] font-bold" class="text-sm text-gray-600 hover:text-[#0E9F6E] pb-2 transition-all" style="text-decoration:none;">Dịch vụ</a>
+            <a routerLink="/partner-bookings" routerLinkActive="border-b-2 border-[#0E9F6E] text-[#0E9F6E] font-bold" class="text-sm text-gray-600 hover:text-[#0E9F6E] pb-2 transition-all" style="text-decoration:none;">Quản lý booking</a>
+            <a routerLink="/partner-ads" routerLinkActive="border-b-2 border-[#0E9F6E] text-[#0E9F6E] font-bold" class="text-sm text-gray-600 hover:text-[#0E9F6E] pb-2 transition-all" style="text-decoration:none;">Tiếp thị và chăm sóc</a>
+        </div>
+        
         <!-- Header -->
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Quản lý booking & vận hành</h1>

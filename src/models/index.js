@@ -136,7 +136,9 @@ const GreenService = sequelize.define('GreenService', {
   rating: { type: DataTypes.DOUBLE, defaultValue: 5.0 },
   bookings_count: { type: DataTypes.INTEGER, defaultValue: 0 },
   current_data: { type: DataTypes.JSONB },
-  max_capacity: { type: DataTypes.INTEGER, defaultValue: 10 }
+  max_capacity: { type: DataTypes.INTEGER, defaultValue: 10 },
+  status: { type: DataTypes.ENUM('active', 'inactive', 'sold_out', 'pending'), defaultValue: 'active', allowNull: false },
+  views_count: { type: DataTypes.INTEGER, defaultValue: 0 }
 }, { timestamps: true });
 
 // 17. BadgeService Junction

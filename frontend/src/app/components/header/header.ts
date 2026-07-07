@@ -513,17 +513,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
       { label: 'Về GreenSteps', link: '/home' }
     ];
 
-    const providerTabs = [
-      { label: 'Kênh đối tác', link: '/partner-dashboard' },
-      { label: 'Dịch vụ xanh', link: '/partner-services' },
-      { label: 'Đơn đặt chỗ', link: '/partner-bookings' }
-    ];
-
-    if (this.currentUser && this.currentUser.role === 'provider') {
-      this.allTabs = [...travelerTabs, ...providerTabs];
-    } else {
-      this.allTabs = [...travelerTabs];
-    }
+    this.allTabs = [...travelerTabs];
     this.overflowTabs = [];
   }
 }

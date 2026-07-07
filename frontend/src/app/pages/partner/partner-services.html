@@ -1,6 +1,14 @@
 <main class="min-h-screen bg-[#fcfdfc] pt-28 pb-12 px-6 font-sans">
     <div class="max-w-[1440px] mx-auto space-y-6">
         
+        <!-- Sub-navigation Bar for Partner Dashboard -->
+        <div class="flex flex-wrap items-center gap-6 border-b border-gray-200 pb-2 mb-6">
+            <a routerLink="/partner-dashboard" routerLinkActive="border-b-2 border-[#0E9F6E] text-[#0E9F6E] font-bold" [routerLinkActiveOptions]="{exact: true}" class="text-sm text-gray-600 hover:text-[#0E9F6E] pb-2 transition-all" style="text-decoration:none;">Tổng quan nhà cung cấp</a>
+            <a routerLink="/partner-services" routerLinkActive="border-b-2 border-[#0E9F6E] text-[#0E9F6E] font-bold" class="text-sm text-gray-600 hover:text-[#0E9F6E] pb-2 transition-all" style="text-decoration:none;">Dịch vụ</a>
+            <a routerLink="/partner-bookings" routerLinkActive="border-b-2 border-[#0E9F6E] text-[#0E9F6E] font-bold" class="text-sm text-gray-600 hover:text-[#0E9F6E] pb-2 transition-all" style="text-decoration:none;">Quản lý booking</a>
+            <a routerLink="/partner-ads" routerLinkActive="border-b-2 border-[#0E9F6E] text-[#0E9F6E] font-bold" class="text-sm text-gray-600 hover:text-[#0E9F6E] pb-2 transition-all" style="text-decoration:none;">Tiếp thị và chăm sóc</a>
+        </div>
+        
         <!-- Header Section -->
         <div>
             <h1 class="text-3xl font-bold text-gray-900">Dịch vụ của tôi</h1>
@@ -136,11 +144,17 @@
                                 </div>
                                 <span class="text-xs text-gray-600 font-semibold">Chờ duyệt</span>
                             </label>
-                            <label class="flex items-center gap-2.5 cursor-pointer group" (click)="toggleStatusFilter('hidden')">
-                                <div class="w-4 h-4 rounded border flex items-center justify-center transition-colors" [ngClass]="selectedStatuses.includes('hidden') ? 'bg-teal-600 border-teal-600' : 'border-gray-300 group-hover:border-teal-500'">
-                                    <i class="bi bi-check text-white text-xs" *ngIf="selectedStatuses.includes('hidden')"></i>
+                            <label class="flex items-center gap-2.5 cursor-pointer group" (click)="toggleStatusFilter('sold_out')">
+                                <div class="w-4 h-4 rounded border flex items-center justify-center transition-colors" [ngClass]="selectedStatuses.includes('sold_out') ? 'bg-teal-600 border-teal-600' : 'border-gray-300 group-hover:border-teal-500'">
+                                    <i class="bi bi-check text-white text-xs" *ngIf="selectedStatuses.includes('sold_out')"></i>
                                 </div>
-                                <span class="text-xs text-gray-600 font-semibold">Hết chỗ / Tạm ẩn</span>
+                                <span class="text-xs text-gray-600 font-semibold">Hết chỗ</span>
+                            </label>
+                            <label class="flex items-center gap-2.5 cursor-pointer group" (click)="toggleStatusFilter('inactive')">
+                                <div class="w-4 h-4 rounded border flex items-center justify-center transition-colors" [ngClass]="selectedStatuses.includes('inactive') ? 'bg-teal-600 border-teal-600' : 'border-gray-300 group-hover:border-teal-500'">
+                                    <i class="bi bi-check text-white text-xs" *ngIf="selectedStatuses.includes('inactive')"></i>
+                                </div>
+                                <span class="text-xs text-gray-600 font-semibold">Tạm ẩn</span>
                             </label>
                         </div>
                     </div>
@@ -157,14 +171,19 @@
                             <!-- Left Badge: Type -->
                             <div class="absolute top-3 left-3">
                                 <span class="bg-white/90 backdrop-blur-sm text-gray-800 text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm uppercase tracking-wide">
-                                    {{ srv.type }}
+                                    {{ srv.type === 'stay' ? 'Lưu trú' : (srv.type === 'food' ? 'Ăn uống' : (srv.type === 'transport' ? 'Di chuyển' : 'Giải trí')) }}
                                 </span>
                             </div>
                             <!-- Right Badge: Status -->
                             <div class="absolute top-3 right-3">
                                 <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm uppercase tracking-wide border"
-                                      [ngClass]="(!srv.status || srv.status === 'active') ? 'bg-teal-50 text-teal-700 border-teal-200' : (srv.status === 'pending' ? 'bg-orange-50 text-orange-700 border-orange-200' : 'bg-red-50 text-red-700 border-red-200')">
-                                    {{ (!srv.status || srv.status === 'active') ? 'Đang chạy' : (srv.status === 'pending' ? 'Chờ duyệt' : 'Tạm ẩn') }}
+                                      [ngClass]="srv.status === 'active' ? 'bg-teal-50 text-teal-700 border-teal-200' : 
+                                                 (srv.status === 'pending' ? 'bg-orange-50 text-orange-700 border-orange-200' : 
+                                                 (srv.status === 'sold_out' ? 'bg-red-50 text-red-700 border-red-200' : 
+                                                 'bg-gray-50 text-gray-700 border-gray-200'))">
+                                    {{ srv.status === 'active' ? 'Đang hoạt động' : 
+                                       (srv.status === 'pending' ? 'Chờ duyệt' : 
+                                       (srv.status === 'sold_out' ? 'Hết chỗ' : 'Tạm ẩn')) }}
                                 </span>
                             </div>
                         </div>

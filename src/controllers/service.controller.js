@@ -39,7 +39,8 @@ exports.getServices = async (req, res, next) => {
         cost: s.cost,
         carbon: s.carbon,
         icon: s.type === 'lodging' || s.type === 'stay' ? 'bi-house-door-fill' : (s.type === 'dining' || s.type === 'food' ? 'bi-cup-hot-fill' : 'bi-tree-fill'),
-        status: 'active',
+        status: s.status || 'active',
+        views_count: s.views_count || 0,
         rating: s.rating,
         bookings_count: s.bookings_count,
         max_capacity: s.max_capacity || 10,
@@ -68,7 +69,8 @@ exports.getProviderServices = async (req, res, next) => {
       type: s.type,
       dest: s.destination,
       cost: s.cost,
-      status: 'active',
+      status: s.status || 'active',
+      views_count: s.views_count || 0,
       bookingsCount: s.bookings_count
     }));
 

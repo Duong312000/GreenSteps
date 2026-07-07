@@ -71,7 +71,8 @@ export interface Service {
   cost: number;
   carbon: number;
   icon?: string;
-  status: 'active' | 'inactive' | 'pending' | 'rejected' | 'hidden';
+  status: 'active' | 'inactive' | 'pending' | 'rejected' | 'hidden' | 'sold_out';
+  views_count?: number;
   rating?: number;
   bookings_count?: number;
   bookingsCount?: number;
