@@ -518,7 +518,8 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
         { label: 'Tổng quan nhà cung cấp', link: '/partner-dashboard' },
         { label: 'Dịch vụ', link: '/partner-services' },
         { label: 'Quản lý booking', link: '/partner-bookings' },
-        { label: 'Tiếp thị và chăm sóc', link: '/partner-ads' }
+        { label: 'Tiếp thị và chăm sóc', link: '/partner-ads' },
+        { label: 'Quảng bá', link: '/partner-promotions' }
       ];
     } else if (this.currentUser && this.currentUser.role === 'admin') {
       this.allTabs = [

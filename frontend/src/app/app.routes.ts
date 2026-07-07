@@ -9,6 +9,7 @@ import { PartnerDashboardComponent } from './pages/partner/partner-dashboard';
 import { PartnerServicesComponent } from './pages/partner/partner-services';
 import { PartnerBookingsComponent } from './pages/partner/partner-bookings';
 import { PartnerAdsComponent } from './pages/partner/partner-ads';
+import { PartnerPromotionsComponent } from './pages/partner/partner-promotions';
 import { PartnerRegisterComponent } from './pages/partner/partner-register';
 import { BookingComponent } from './pages/booking/booking';
 import { AdminComponent } from './pages/admin/admin';
@@ -30,6 +31,7 @@ export const routes: Routes = [
   { path: 'partner-services', component: PartnerServicesComponent, canActivate: [roleGuard] },
   { path: 'partner-bookings', component: PartnerBookingsComponent, canActivate: [roleGuard] },
   { path: 'partner-ads', component: PartnerAdsComponent, canActivate: [roleGuard] },
+  { path: 'partner-promotions', component: PartnerPromotionsComponent, canActivate: [roleGuard] },
   { path: 'partner-register', component: PartnerRegisterComponent },
   { path: 'admin', component: AdminComponent },
   { path: '**', redirectTo: 'home' }
