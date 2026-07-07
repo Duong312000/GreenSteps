@@ -3,29 +3,38 @@
     <div class="leaflet-map-wrapper">
         <!-- Floating Map Search Bar -->
         <div class="map-search-overlay" [style.left.px]="sidebarWidth + 30" style="position: absolute; top: 20px; z-index: 1000; width: 320px; display: flex; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px; overflow: hidden; background-color: var(--bg-secondary); border: 1px solid var(--border-color); pointer-events: auto;">
-            <input type="text" [(ngModel)]="mapSearchQuery" (keypress)="$event.key === 'Enter' && searchPlaceOnMap()" placeholder="Tìm địa điểm trên bản đồ..." style="flex-grow: 1; border: none; padding: 10px 14px; font-size: 13px; outline: none; background: transparent; color: var(--text-primary);">
+            <input type="text" [(ngModel)]="mapSearchQuery" (keyup.enter)="searchPlaceOnMap()" placeholder="Tìm địa điểm trên bản đồ..." style="flex-grow: 1; border: none; padding: 10px 14px; font-size: 13px; outline: none; background: transparent; color: var(--text-primary);">
             <button (click)="searchPlaceOnMap()" style="background-color: var(--primary-green); color: white; border: none; padding: 0 14px; cursor: pointer; transition: all 0.2s;"><i class="bi bi-search"></i></button>
         </div>
+
+        <!-- Floating Locate Mode Banner -->
+        <div *ngIf="locatingActivityIdx !== null"
+             [style.left.px]="sidebarWidth + 30"
+             style="position: absolute; top: 80px; z-index: 1000; display: flex; align-items: center; justify-content: space-between; background-color: #EF4444; color: white; padding: 10px 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-size: 13px; font-weight: 700; gap: 12px; pointer-events: auto; width: 320px; box-sizing: border-box;">
+            <span style="display: flex; align-items: center; gap: 6px;"><i class="bi bi-geo-alt-fill"></i> Nhấp lên bản đồ để chọn vị trí</span>
+            <button (click)="cancelLocatingActivity()" style="background: rgba(255,255,255,0.2); border: 1px solid white; border-radius: 4px; color: white; padding: 2px 8px; font-size: 11px; cursor: pointer; font-weight: 700;">Hủy</button>
+        </div>
+
         <div id="leafletMap" style="width:100%; height:100%;"></div>
     </div>
 
     <!-- 1. LEFT SIDEBAR: Professional Days & Navigation Panel -->
-    <aside class="sidebar-panel" [style.width.px]="sidebarWidth" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 20px 0 20px 20px;">
-        <div style="display: flex; flex-direction: column; gap: 20px; overflow-y: auto; flex-grow: 1; min-height: 0; padding-right: 20px;">
-            <div class="sidebar-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
-                <button class="btn-back-tours" (click)="goBackToList()" style="background: none; border: none; color: var(--text-muted); font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 10px; font-weight: 600;"><i class="bi bi-arrow-left"></i> Quay lại</button>
-                <h3 id="coverItineraryTitle" style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0;">{{ activeItinerary.title }}</h3>
-                <span class="cover-dates" id="coverItineraryDates" style="font-size: 12px; color: var(--text-muted);">{{ activeItinerary.destLabel }} • {{ activeItinerary.days.length }} ngày</span>
+    <aside class="sidebar-panel" [style.width.px]="sidebarWidth" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 20px 0 20px 12px; overflow: visible !important;">
+        <!-- Fixed Header & AI Button Area (Overflow Visible) -->
+        <div style="display: flex; flex-direction: column; padding-right: 12px; margin-bottom: 20px; overflow: visible !important; position: relative; z-index: 20;">
+            <div class="sidebar-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px;">
+                <button class="btn-back-tours" (click)="goBackToList()"><i class="bi bi-arrow-left"></i> Quay lại</button>
             </div>
+            
+            <button class="btn-ai-assistant" (click)="toggleAiChat()">
+                <i class="bi bi-magic"></i> AI Assistant
+            </button>
+        </div>
 
+        <!-- Scrollable content -->
+        <div style="display: flex; flex-direction: column; gap: 20px; overflow-y: auto; flex-grow: 1; min-height: 0; padding-right: 12px;">
             <!-- Sidebar Sections -->
             <div class="sidebar-menu-list" id="sidebarDaysList" style="display: flex; flex-direction: column; gap: 15px;">
-                <!-- Section 1: AI Assistant Magic Button -->
-                <div>
-                    <button (click)="toggleAiChat()" style="width: 100%; border: none; border-radius: var(--border-radius-md); background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color: white; font-weight: 700; padding: 12px; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: var(--transition-smooth); box-shadow: 0 4px 12px rgba(124,58,237,0.3);">
-                        <i class="bi bi-robot"></i> Trợ lý AI đồng hành
-                    </button>
-                </div>
 
                 <!-- Section 2: Overview Group -->
                 <div class="menu-group" style="display: flex; flex-direction: column; gap: 4px;">
@@ -45,12 +54,21 @@
                          class="sidebar-menu-item" 
                          [class.active]="activeDayIdx === idx" 
                          (click)="switchActiveDay(idx)"
-                         style="padding: 10px 15px; border-radius: var(--border-radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; gap: 2px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <i class="bi bi-calendar-event"></i>
-                            <span>{{ day.title }}</span>
+                         style="padding: 10px 15px; border-radius: var(--border-radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; gap: 2px; position: relative;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <i class="bi bi-calendar-event"></i>
+                                <span>{{ day.title }}</span>
+                            </div>
+                            <button *ngIf="activeItinerary.days.length > 1"
+                                    (click)="deleteDay(idx, $event)"
+                                    class="delete-day-btn"
+                                    style="background: none; border: none; padding: 4px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color 0.2s;"
+                                    title="Xóa ngày này">
+                                <i class="bi bi-trash-fill" style="font-size: 12px;"></i>
+                            </button>
                         </div>
-                        <span class="sidebar-menu-item-preview" style="font-size: 11px; color: var(--text-muted); font-weight: 400; padding-left: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">
+                        <span class="sidebar-menu-item-preview" style="font-size: 11px; color: var(--text-muted); font-weight: 400; padding-left: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
                             {{ getDayPreviewText(day) }}
                         </span>
                     </div>
@@ -98,21 +116,34 @@
     <section class="editor-main-panel">
         <div class="timeline-cover-container">
             <img id="timelineCoverImg" 
-                 [src]="activeItinerary.dest === 'da-lat' ? 'image/cb4fbf769d60d911e13c255f7fb39dcc.jpg' : (activeItinerary.dest === 'phu-yen' ? 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg' : 'image/Viet Nam.png')" 
+                 [src]="getItineraryCoverImage()" 
                  alt="Dest Cover" 
                  class="cover-bg-img">
             <div class="cover-overlay">
-                <span class="badge-ai-assist"><i class="bi bi-robot"></i> Trợ lý AI đồng hành</span>
-                <h2>GreenSteps AI Itinerary Planner</h2>
+                <h2>{{ activeItinerary.title }}</h2>
+                <span class="cover-dates" style="font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.85); margin-top: 4px;">
+                    {{ activeItinerary.destLabel }} • {{ activeItinerary.days.length }} ngày
+                </span>
             </div>
         </div>
 
         <div class="active-day-header">
             <h3 id="activeDayTitle">{{ activeItinerary.days[activeDayIdx]?.title }}</h3>
             
-            <div class="place-search-inline">
-                <input type="text" [(ngModel)]="customPlaceTitle" placeholder="Thêm địa điểm tùy chỉnh..." (keypress)="$event.key === 'Enter' && addCustomPlaceToActiveDay()">
+            <div class="place-search-inline" style="position: relative;">
+                <input type="text" [(ngModel)]="customPlaceTitle" (input)="onCustomPlaceTyping()" placeholder="Thêm địa điểm tùy chỉnh..." (keyup.enter)="addCustomPlaceToActiveDay()">
                 <button (click)="addCustomPlaceToActiveDay()"><i class="bi bi-plus-lg"></i> Thêm</button>
+                
+                <!-- Autocomplete suggestions dropdown -->
+                <div class="autocomplete-dropdown" *ngIf="customSearchSuggestions.length > 0" 
+                     style="position: absolute; top: 40px; left: 0; width: 220px; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-height: 200px; overflow-y: auto; pointer-events: auto;">
+                    <div *ngFor="let sug of customSearchSuggestions" 
+                         (click)="selectSearchSuggestion(sug)"
+                         style="padding: 8px 12px; font-size: 12px; cursor: pointer; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-weight: 600; display: flex; flex-direction: column; gap: 2px;">
+                        <span>{{ sug.name_service }}</span>
+                        <span style="font-size: 10px; color: var(--text-muted); font-weight: 400;">{{ sug.current_data?.category || 'Dịch vụ' }}</span>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -135,26 +166,28 @@
                      (dragend)="onDragEnd($event)"
                      (mouseenter)="highlightMapPin(idx, true)" 
                      (mouseleave)="highlightMapPin(idx, false)">
-                    <!-- Drag Grip Handle -->
-                    <div class="drag-handle text-gray-400 hover:text-gray-600 flex items-center justify-center pr-1" style="cursor: grab;">
-                        <i class="bi bi-grip-vertical" style="font-size: 16px;"></i>
-                    </div>
+
                     <div class="timeline-time-node">
-                        <span class="time">{{ act.time }}</span>
-                        <div class="node-icon-bullet">
+                        <input type="time" [(ngModel)]="act.time" (change)="onActivityTimeChanged()" style="font-size: 9px; font-weight: 700; color: var(--primary-green); background-color: var(--light-mint); border: none; padding: 2px 2px; border-radius: var(--border-radius-sm); z-index: 2; width: 82px; outline: none; text-align: center; cursor: pointer;">
+                        <div class="node-icon-bullet" style="margin-top: 4px;">
                             <i class="bi" [ngClass]="act.type === 'lodging' ? 'bi-house-door-fill' : (act.type === 'dining' ? 'bi-cup-hot-fill' : (act.type === 'transport' ? 'bi-scooter' : 'bi-tree-fill'))"></i>
                         </div>
                     </div>
-                    <div class="activity-card">
-                        <div class="activity-icon-indicator">
-                            <i class="bi" [ngClass]="act.type === 'lodging' ? 'bi-house-door-fill' : (act.type === 'dining' ? 'bi-cup-hot-fill' : (act.type === 'transport' ? 'bi-scooter' : 'bi-tree-fill'))"></i>
-                        </div>
+                    <div class="activity-card" [class.positioning-active]="locatingActivityIdx === idx">
                         <div class="activity-card-body">
                             <div class="activity-card-header">
                                 <h4 class="activity-card-title">{{ act.title }}</h4>
                                 <div class="activity-card-controls">
                                     <button class="activity-control-btn" (click)="moveActivity(idx, -1)" title="Di chuyển lên"><i class="bi bi-arrow-up"></i></button>
                                     <button class="activity-control-btn" (click)="moveActivity(idx, 1)" title="Di chuyển xuống"><i class="bi bi-arrow-down"></i></button>
+                                    <button class="activity-control-btn" 
+                                            [style.color]="act.lat && act.lng ? 'var(--primary-green)' : '#EF4444'" 
+                                            [style.border-color]="act.lat && act.lng ? 'var(--primary-green)' : '#FCA5A5'"
+                                            [style.background-color]="act.lat && act.lng ? 'var(--light-mint)' : '#FEF2F2'"
+                                            (click)="startLocatingActivity(idx, $event)" 
+                                            [title]="act.lat && act.lng ? 'Đã định vị (Click để đổi vị trí trên bản đồ)' : 'Chưa định vị (Click để chọn vị trí trên bản đồ)'">
+                                        <i class="bi" [ngClass]="act.lat && act.lng ? 'bi-geo-alt-fill' : 'bi-geo-alt'"></i>
+                                    </button>
                                     <button class="activity-control-btn btn-delete" (click)="deleteActivity(idx)" title="Xóa"><i class="bi bi-trash-fill"></i></button>
                                 </div>
                             </div>
@@ -170,7 +203,7 @@
                 <!-- Travel Gap visualizer -->
                 <div class="travel-gap-item" *ngIf="idx < activeItinerary.days[activeDayIdx].activities.length - 1">
                     <i class="bi bi-compass-fill"></i>
-                    <span>15 phút di chuyển (khoảng 3.2 km)</span>
+                    <span>{{ getTravelGapText(idx) }}</span>
                 </div>
             </ng-container>
         </div>
@@ -184,7 +217,7 @@
                 <div class="suggestion-card" *ngFor="let rec of dynamicRecs">
                     <div class="sugg-img-container">
                         <img class="sugg-img" [src]="rec.img" [alt]="rec.name">
-                        <span class="sugg-badge" style="background-color: #0E9F6E; font-size: 10px; font-weight: 700; border-radius: 4px;">{{ rec.category }}</span>
+                        <span class="sugg-badge" style="background-color: var(--primary-green); font-size: 10px; font-weight: 700; border-radius: 4px;">{{ rec.category }}</span>
                     </div>
                     <div class="sugg-content" style="padding: 12px; display: flex; flex-direction: column; gap: 8px;">
                         <h4 class="sugg-title" style="margin: 0; font-size: 13px; font-weight: 700; color: #1F2937; line-clamp: 2;">{{ rec.name }}</h4>
@@ -199,7 +232,7 @@
 
                         <div class="sugg-meta" style="display: flex; justify-content: space-between; font-size: 11px; color: #6B7280; font-weight: 600;">
                             <span>{{ rec.cost === 0 ? 'Miễn phí' : (rec.cost | number:'1.0-0':'vi-VN') + 'đ' }}</span>
-                            <span style="color: #0E9F6E;"><i class="bi bi-leaf-fill"></i> {{ rec.carbon }} kg</span>
+                            <span style="color: var(--primary-green);"><i class="bi bi-leaf-fill"></i> {{ rec.carbon }} kg</span>
                         </div>
                         <button class="sugg-add-btn" (click)="addPoolItemToActiveDay(rec.name, rec.type, rec.cost, rec.carbon, rec.lat, rec.lng)" style="margin-top: auto;">
                             <i class="bi bi-plus-lg"></i> Thêm vào ngày
@@ -223,7 +256,7 @@
 
                     <!-- Add Place in List -->
                     <div class="place-search-inline" style="margin-bottom: 15px; display: flex; gap: 8px;">
-                        <input type="text" #bucketInput placeholder="Thêm địa điểm vào danh mục..." (keypress)="$event.key === 'Enter' && addPlaceToCustomList(lIdx, bucketInput.value); $event.key === 'Enter' && bucketInput.value = ''" style="flex-grow: 1; height: 34px; border-radius: 4px; border: 1px solid var(--border-color); padding: 0 10px; font-size: 12px;">
+                        <input type="text" #bucketInput placeholder="Thêm địa điểm vào danh mục..." (keyup.enter)="addPlaceToCustomList(lIdx, bucketInput.value); bucketInput.value = ''" style="flex-grow: 1; height: 34px; border-radius: 4px; border: 1px solid var(--border-color); padding: 0 10px; font-size: 12px;">
                         <button (click)="addPlaceToCustomList(lIdx, bucketInput.value); bucketInput.value = ''" style="height: 34px; background-color: var(--primary-green); color: white; border: none; border-radius: 4px; padding: 0 15px; font-size: 12px; font-weight: 700; cursor: pointer;">Thêm</button>
                     </div>
 
@@ -252,61 +285,7 @@
             </div>
         </section>
 
-    </section>
-
-    <div class="layout-resizer" (mousedown)="startResizing($event, 'right')"></div>
-
-    <!-- 3. RIGHT PANEL: LEAFLET MAP & AI ROBOT CHAT -->
-    <aside class="right-map-panel" [style.width.%]="mapWidthPct" style="position: relative; display: flex; flex-direction: column;">
-        <!-- Map Place Details Sheet (Layer overlay sliding vertically) -->
-        <div class="map-details-sheet" *ngIf="selectedPlaceDetails" [style.height.px]="sheetHeight" style="position: absolute; bottom: 0; left: 0; right: 0; background-color: var(--bg-secondary); border-top: 1px solid var(--border-color); box-shadow: 0 -4px 16px rgba(0,0,0,0.15); z-index: 1000; display: flex; flex-direction: column; transition: height 0.05s ease-out; pointer-events: auto;">
-                <!-- Resizer Handle -->
-                <div class="sheet-resizer" (mousedown)="startSheetResizing($event)" style="height: 14px; width: 100%; cursor: ns-resize; display: flex; align-items: center; justify-content: center; background-color: var(--bg-tertiary); flex-shrink: 0;">
-                    <div style="width: 36px; height: 4px; background-color: var(--text-muted); border-radius: 2px; opacity: 0.6;"></div>
-                </div>
-
-                <!-- Sheet Content Header -->
-                <div style="padding: 12px 18px 8px 18px; display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0;">
-                    <div>
-                        <span style="font-size: 9px; font-weight: 700; color: var(--primary-green); text-transform: uppercase; background-color: var(--light-mint); padding: 2px 6px; border-radius: 4px;">{{ getCategoryLabel(selectedPlaceDetails.type) }}</span>
-                        <h4 style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin: 4px 0 0 0;">{{ selectedPlaceDetails.title }}</h4>
-                    </div>
-                    <button (click)="closePlaceDetails()" style="background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; line-height: 1; padding: 0 4px;">&times;</button>
-                </div>
-
-                <!-- Sheet Content Tabs -->
-                <div style="display: flex; border-bottom: 1px solid var(--border-color); padding: 0 18px; gap: 12px; font-size: 12px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0;">
-                    <span style="padding-bottom: 6px; border-bottom: 2px solid var(--primary-green); color: var(--primary-green); cursor: pointer;">Tổng quan</span>
-                    <span style="padding-bottom: 6px; color: var(--text-muted); cursor: pointer;">Đánh giá</span>
-                    <span style="padding-bottom: 6px; color: var(--text-muted); cursor: pointer;">Hình ảnh</span>
-                </div>
-
-                <!-- Sheet Scrollable Description Body -->
-                <div style="padding: 14px 18px; overflow-y: auto; flex-grow: 1; display: flex; gap: 12px;">
-                    <div style="flex-grow: 1; font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
-                        <p style="margin: 0;">{{ getPlaceWikiDescription(selectedPlaceDetails.title) }}</p>
-                        <div style="display: flex; gap: 12px; margin-top: 12px; font-size: 11px; color: var(--text-muted);">
-                            <span><i class="bi bi-cash"></i> Giá: <strong>{{ selectedPlaceDetails.cost === 0 ? 'Miễn phí' : (selectedPlaceDetails.cost | number:'1.0-0':'vi-VN') + 'đ' }}</strong></span>
-                            <span><i class="bi bi-leaf-fill" style="color:var(--mint-accent);"></i> Phát thải: <strong>{{ selectedPlaceDetails.carbon }} kg CO₂</strong></span>
-                        </div>
-                    </div>
-                    <img [src]="getPlacePlaceholderImage(selectedPlaceDetails.title)" style="width: 80px; height: 80px; border-radius: 6px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-color);" alt="Thumb">
-                </div>
-
-                <!-- Sheet Footer Actions -->
-                <div style="padding: 12px 18px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; background-color: var(--bg-primary);">
-                    <button *ngIf="!selectedPlaceDetails.isActivity" (click)="addPlaceFromMap(selectedPlaceDetails)" 
-                            style="background-color: var(--primary-green); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                        <i class="bi bi-plus-lg"></i> Thêm vào lịch trình
-                    </button>
-                    <button *ngIf="selectedPlaceDetails.isActivity" (click)="deletePlaceFromMap(selectedPlaceDetails.index)" 
-                            style="background-color: #EF4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.2s;">
-                        <i class="bi bi-trash-fill"></i> Xóa khỏi lịch trình
-                    </button>
-                </div>
-            </div>
-
-        <!-- Expandable Floating AI Chat Box -->
+        <!-- Expandable Floating AI Chat Box (Overlays Timeline like Wanderlog) -->
         <div class="ai-chat-panel" id="aiChatPanel" *ngIf="isAiChatOpen">
             <div class="chat-header">
                 <h3><i class="bi bi-robot"></i> Trợ lý Lịch trình AI</h3>
@@ -338,10 +317,85 @@
             </div>
             
             <div class="chat-input-row">
-                <input type="text" [(ngModel)]="aiInputText" (keypress)="$event.key === 'Enter' && sendAiMessage()" placeholder="Hỏi AI thêm quán ăn, cafe...">
+                <input type="text" [(ngModel)]="aiInputText" (keyup.enter)="sendAiMessage()" placeholder="Hỏi AI thêm quán ăn, cafe...">
                 <button (click)="sendAiMessage()"><i class="bi bi-send-fill"></i></button>
             </div>
         </div>
+    </section>
+
+    <div class="layout-resizer" (mousedown)="startResizing($event, 'right')"></div>
+
+    <!-- 3. RIGHT PANEL: LEAFLET MAP & AI ROBOT CHAT -->
+    <aside class="right-map-panel" [style.width.%]="mapWidthPct" style="position: relative; display: flex; flex-direction: column;">
+        <!-- Map Place Details Sheet (Layer overlay sliding vertically) -->
+        <div class="map-details-sheet" *ngIf="selectedPlaceDetails" [style.height.px]="sheetHeight" style="position: absolute; bottom: 0; left: 0; right: 0; background-color: var(--bg-secondary); border-top: 1px solid var(--border-color); box-shadow: 0 -4px 16px rgba(0,0,0,0.15); z-index: 1000; display: flex; flex-direction: column; transition: height 0.05s ease-out; pointer-events: auto;">
+                <!-- Resizer Handle -->
+                <div class="sheet-resizer" (mousedown)="startSheetResizing($event)" style="height: 14px; width: 100%; cursor: ns-resize; display: flex; align-items: center; justify-content: center; background-color: var(--bg-tertiary); flex-shrink: 0;">
+                    <div style="width: 36px; height: 4px; background-color: var(--text-muted); border-radius: 2px; opacity: 0.6;"></div>
+                </div>
+
+                <!-- Sheet Content Header -->
+                <div style="padding: 12px 18px 8px 18px; display: flex; justify-content: space-between; align-items: flex-start; flex-shrink: 0;">
+                    <div>
+                        <span style="font-size: 9px; font-weight: 700; color: var(--primary-green); text-transform: uppercase; background-color: var(--light-mint); padding: 2px 6px; border-radius: 4px;">{{ getCategoryLabel(selectedPlaceDetails.type) }}</span>
+                        <h4 style="font-size: 14px; font-weight: 800; color: var(--text-primary); margin: 4px 0 0 0;">{{ selectedPlaceDetails.title }}</h4>
+                    </div>
+                    <button (click)="closePlaceDetails()" style="background: none; border: none; font-size: 18px; color: var(--text-muted); cursor: pointer; line-height: 1; padding: 0 4px;">&times;</button>
+                </div>
+
+                <ng-container *ngIf="!selectedPlaceDetails.isCustomMapClick">
+                    <!-- Sheet Content Tabs -->
+                    <div style="display: flex; border-bottom: 1px solid var(--border-color); padding: 0 18px; gap: 12px; font-size: 12px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0;">
+                        <span style="padding-bottom: 6px; border-bottom: 2px solid var(--primary-green); color: var(--primary-green); cursor: pointer;">Tổng quan</span>
+                        <span style="padding-bottom: 6px; color: var(--text-muted); cursor: pointer;">Đánh giá</span>
+                        <span style="padding-bottom: 6px; color: var(--text-muted); cursor: pointer;">Hình ảnh</span>
+                    </div>
+
+                    <!-- Sheet Scrollable Description Body -->
+                    <div style="padding: 14px 18px; overflow-y: auto; flex-grow: 1; display: flex; gap: 12px;">
+                        <div style="flex-grow: 1; font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+                            <p style="margin: 0;">{{ getPlaceWikiDescription(selectedPlaceDetails.title) }}</p>
+                            <div style="display: flex; gap: 12px; margin-top: 12px; font-size: 11px; color: var(--text-muted);">
+                                <span><i class="bi bi-cash"></i> Giá: <strong>{{ selectedPlaceDetails.cost === 0 ? 'Miễn phí' : (selectedPlaceDetails.cost | number:'1.0-0':'vi-VN') + 'đ' }}</strong></span>
+                                <span><i class="bi bi-leaf-fill" style="color:var(--mint-accent);"></i> Phát thải: <strong>{{ selectedPlaceDetails.carbon }} kg CO₂</strong></span>
+                            </div>
+                        </div>
+                        <img [src]="getPlacePlaceholderImage(selectedPlaceDetails.title)" style="width: 80px; height: 80px; border-radius: 6px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-color);" alt="Thumb">
+                    </div>
+
+                    <!-- Sheet Footer Actions -->
+                    <div style="padding: 12px 18px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; background-color: var(--bg-primary);">
+                        <button *ngIf="!selectedPlaceDetails.isActivity" (click)="addPlaceFromMap(selectedPlaceDetails)" 
+                                style="background-color: var(--primary-green); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                            <i class="bi bi-plus-lg"></i> Thêm vào lịch trình
+                        </button>
+                        <button *ngIf="selectedPlaceDetails.isActivity" (click)="deletePlaceFromMap(selectedPlaceDetails.index)" 
+                                style="background-color: #EF4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                            <i class="bi bi-trash-fill"></i> Xóa khỏi lịch trình
+                        </button>
+                    </div>
+                </ng-container>
+
+                <ng-container *ngIf="selectedPlaceDetails.isCustomMapClick">
+                    <div style="padding: 14px 18px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 8px;">
+                        <span style="font-size: 11px; color: var(--text-secondary);">Tọa độ đã chọn: <strong>{{ selectedPlaceDetails.lat | number:'1.4-4' }}, {{ selectedPlaceDetails.lng | number:'1.4-4' }}</strong></span>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 11px; font-weight: 700; color: var(--text-primary);">Tên địa điểm tùy chỉnh:</label>
+                            <input type="text" [(ngModel)]="mapClickPlaceName" (keyup.enter)="addMapClickPlace()" placeholder="Ví dụ: Homestay trong rừng, Quán nướng ven hồ..."
+                                   style="height: 34px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--border-color); background-color: var(--bg-primary); color: var(--text-primary); font-size: 12px; outline: none; pointer-events: auto !important; user-select: text !important;">
+                        </div>
+                    </div>
+
+                    <div style="padding: 10px 18px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; background-color: var(--bg-primary);">
+                        <button (click)="closePlaceDetails()" style="background-color: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer;">Hủy</button>
+                        <button (click)="addMapClickPlace()" 
+                                style="background-color: var(--primary-green); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11px; cursor: pointer; transition: all 0.2s;">
+                            <i class="bi bi-plus-lg"></i> Thêm vào Lịch trình
+                        </button>
+                    </div>
+                </ng-container>
+            </div>
+
     </aside>
 </div>
 
@@ -356,7 +410,7 @@
             </h1>
             <p class="text-sm text-[#184A37]/60 mt-2 font-medium">Quản lý và tùy chỉnh các lịch trình du lịch xanh cá nhân hóa của bạn</p>
         </div>
-        <button (click)="openCreateModal()" class="h-12 px-6 rounded-xl bg-[#0E9F6E] hover:bg-[#0F6B4C] text-white font-bold text-sm shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 border-0 cursor-pointer">
+        <button *ngIf="savedItineraries.length > 0" (click)="createItineraryDirectly()" class="h-12 px-6 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-800 text-white font-bold text-sm shadow-lg hover:shadow-emerald-700/20 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 border-0 cursor-pointer">
             <i class="bi bi-plus-lg"></i>
             Tạo Lịch Trình Mới
         </button>
@@ -370,12 +424,12 @@
 
     <!-- Empty State -->
     <div class="bg-white/80 backdrop-blur-md rounded-3xl border border-[#184A37]/10 p-12 text-center shadow-sm" *ngIf="!isLoadingList && savedItineraries.length === 0">
-        <div class="w-16 h-16 bg-[#E8F5E9] rounded-full flex items-center justify-center mx-auto mb-6">
+        <div class="w-16 h-16 bg-[#ECFDF5] rounded-full flex items-center justify-center mx-auto mb-6">
             <i class="bi bi-calendar-x text-3xl text-[#0E9F6E]"></i>
         </div>
         <h3 class="text-xl font-bold text-[#184A37]">Chưa có lịch trình nào</h3>
         <p class="text-sm text-[#184A37]/60 mt-2 max-w-md mx-auto">Bạn chưa lưu lịch trình tự thiết kế nào trên GreenSteps. Hãy bắt đầu hành trình xanh đầu tiên của mình ngay bây giờ!</p>
-        <button (click)="openCreateModal()" class="mt-6 h-11 px-6 rounded-xl bg-[#0E9F6E] hover:bg-[#0F6B4C] text-white font-bold text-sm shadow-md transition-all duration-300 border-0 cursor-pointer">Bắt đầu thiết kế</button>
+        <button (click)="createItineraryDirectly()" class="mt-6 h-11 px-6 rounded-xl bg-[#0E9F6E] hover:bg-[#0F6B4C] text-white font-bold text-sm shadow-md transition-all duration-300 border-0 cursor-pointer">Bắt đầu thiết kế</button>
     </div>
 
     <!-- List of Saved Itineraries Grid -->
@@ -425,7 +479,7 @@
                     <button (click)="deleteSavedItinerary(iti.id, $event)" class="h-9 w-9 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-colors border-0 cursor-pointer" title="Xóa lịch trình">
                         <i class="bi bi-trash"></i>
                     </button>
-                    <button (click)="openItinerary(iti.id)" class="h-9 px-4 rounded-lg bg-[#E8F5E9] hover:bg-[#C8E6C9] text-[#1B5E20] text-xs font-bold transition-all border-0 cursor-pointer">
+                    <button (click)="openItinerary(iti.id)" class="h-9 px-4 rounded-lg bg-[#ECFDF5] hover:bg-[#CCFBF1] text-[#0F6B4C] text-xs font-bold transition-all border-0 cursor-pointer">
                         Mở biên tập
                     </button>
                 </div>
@@ -434,45 +488,7 @@
     </div>
 </div>
 
-<!-- IN-PAGE CREATE MODAL FOR LIST MODE -->
-<div class="modal-overlay" [class.active]="isCreateModalOpen" style="z-index: 1000; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); background-color: rgba(0, 0, 0, 0.45);" *ngIf="isListMode">
-    <div class="custom-modal-card bg-white p-8 rounded-2xl max-w-md w-full shadow-2xl relative" (click)="$event.stopPropagation()">
-        <div class="modal-header flex justify-between items-center border-b border-[#184A37]/10 pb-4 mb-6">
-            <h3 class="text-xl font-bold text-[#184A37] flex items-center gap-2 m-0">
-                <i class="bi bi-robot text-[#0E9F6E]"></i>
-                Thiết lập Hành Trình Mới
-            </h3>
-            <button class="text-2xl text-[#184A37]/50 hover:text-[#184A37] font-semibold bg-transparent border-0 focus:outline-none cursor-pointer" (click)="closeCreateModal()">&times;</button>
-        </div>
-        <form (submit)="createNewItinerary($event)" class="space-y-4 m-0">
-            <div class="mb-4">
-                <label class="block text-sm font-semibold text-[#184A37] mb-2 text-left" for="modalListDest">Điểm đến mong muốn</label>
-                <!-- Leaflet Mini Map Container -->
-                <div id="editorModalMap" class="w-full rounded-xl border border-[#184A37]/20 mb-3 bg-gray-100" style="height: 180px; position: relative; z-index: 10;"></div>
-                
-                <select id="modalListDest" [(ngModel)]="modalDest" name="modalDest" (change)="onModalDestChange()" class="w-full h-11 px-3 rounded-xl border border-[#184A37]/20 focus:outline-none focus:border-[#0E9F6E] bg-gray-50 text-[#184A37] text-sm">
-                    <option value="Đà Lạt">Đà Lạt (Du lịch xanh rừng thông)</option>
-                    <option value="Phú Yên">Phú Yên (Khám phá Gành Đá Đĩa)</option>
-                    <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An (Di sản Phố Cổ)</option>
-                </select>
-            </div>
-            <div class="mb-5">
-                <label class="block text-sm font-semibold text-[#184A37] mb-2 text-left" for="modalListDays">Số ngày khám phá</label>
-                <select id="modalListDays" [(ngModel)]="modalDays" name="modalDays" class="w-full h-11 px-3 rounded-xl border border-[#184A37]/20 focus:outline-none focus:border-[#0E9F6E] bg-gray-50 text-[#184A37] text-sm">
-                    <option [value]="2">2 ngày 1 đêm</option>
-                    <option [value]="3">3 ngày 2 đêm</option>
-                    <option [value]="4">4 ngày 3 đêm</option>
-                </select>
-            </div>
-            <div class="pt-2 text-center">
-                <button type="submit" class="w-full h-12 bg-[#0E9F6E] hover:bg-[#0F6B4C] text-white font-bold rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center gap-2 border-0 cursor-pointer">
-                    <i class="bi bi-magic"></i>
-                    Bắt đầu Thiết kế AI
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
+<!-- IN-PAGE CREATE MODAL REMOVED FOR DIRECT FRICTION-FREE WORKSPACE ACCESS -->
 
 <!-- CHECKOUT / WALLET MODAL -->
 <div class="modal-overlay" [class.active]="isCheckoutModalOpen">
@@ -483,9 +499,53 @@
         </div>
         
         <div class="modal-body">
-            <div class="wallet-balance-row">
-                <span>Số dư ví của bạn:</span>
-                <strong id="modalWalletBalance">{{ walletBalance | number:'1.0-0':'vi-VN' }}đ</strong>
+            <!-- Premium Virtual Card for Wallet Balance -->
+            <div class="relative w-full h-44 rounded-2xl p-6 bg-gradient-to-br from-[#115E59] to-[#047857] text-white shadow-xl flex flex-col justify-between overflow-hidden mb-6" style="box-sizing: border-box; text-align: left;">
+                <!-- Decorative Circle Overlays -->
+                <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/5 rounded-full pointer-events-none"></div>
+                <div class="absolute -right-2 -top-12 w-28 h-28 bg-white/5 rounded-full pointer-events-none"></div>
+                
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="text-[10px] uppercase tracking-widest text-emerald-200 font-bold">Ví du lịch GreenSteps</div>
+                        <div class="text-sm font-semibold opacity-90 mt-1">Thẻ tích lũy carbon xanh</div>
+                    </div>
+                    <i class="bi bi-cpu-fill text-2xl text-emerald-200"></i>
+                </div>
+                
+                <div class="my-3">
+                    <div class="text-[10px] text-emerald-200 uppercase tracking-wider font-semibold">Số dư khả dụng</div>
+                    <div class="text-3xl font-extrabold tracking-tight mt-1">{{ walletBalance | number:'1.0-0':'vi-VN' }}đ</div>
+                </div>
+                
+                <div class="flex justify-between items-center text-xs opacity-80">
+                    <span class="tracking-widest">**** **** **** 8888</span>
+                    <span class="font-semibold">ECO MEMBER</span>
+                </div>
+            </div>
+
+            <!-- Dynamic Deposit Section inside Wallet Modal -->
+            <div class="bg-gray-50 border border-gray-100 p-5 rounded-2xl mb-6 text-left" *ngIf="walletRegistered && !isItineraryPay">
+                <h4 class="text-sm font-bold text-[#184A37] mb-3 flex items-center gap-1.5"><i class="bi bi-wallet2 text-[#0E9F6E]"></i> Nạp thêm tiền vào ví</h4>
+                
+                <!-- Deposit input first -->
+                <div class="relative flex items-center mb-3">
+                    <input type="number" [(ngModel)]="depositAmount" name="depositAmount" class="w-full h-11 px-4 pr-12 rounded-xl border border-gray-200 focus:outline-none focus:border-emerald-600 bg-white text-[#184A37] text-sm font-bold shadow-sm" placeholder="Nhập số tiền nạp...">
+                    <span class="absolute right-4 text-xs font-bold text-gray-400">VND</span>
+                </div>
+
+                <!-- Quick Select Pills -->
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <button type="button" (click)="setDepositAmount(100000)" class="px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 bg-white text-gray-600 cursor-pointer transition-all">+ 100k</button>
+                    <button type="button" (click)="setDepositAmount(500000)" class="px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 bg-white text-gray-600 cursor-pointer transition-all">+ 500k</button>
+                    <button type="button" (click)="setDepositAmount(1000000)" class="px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 bg-white text-gray-600 cursor-pointer transition-all">+ 1M</button>
+                    <button type="button" (click)="setDepositAmount(2000000)" class="px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 bg-white text-gray-600 cursor-pointer transition-all">+ 2M</button>
+                    <button type="button" (click)="setDepositAmount(5000000)" class="px-3 py-1.5 rounded-full text-xs font-semibold border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50 bg-white text-gray-600 cursor-pointer transition-all">+ 5M</button>
+                </div>
+
+                <button type="button" (click)="qrFlowType = 'deposit'; showDepositQr();" class="w-full h-11 bg-gradient-to-r from-emerald-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-800 text-white font-bold rounded-xl shadow-md transition-all border-0 cursor-pointer flex items-center justify-center gap-2">
+                    <i class="bi bi-qr-code"></i> Tạo mã QR Nạp tiền
+                </button>
             </div>
 
             <!-- Billing Items -->
@@ -505,17 +565,73 @@
                     <span>Tổng tiền thanh toán gộp:</span>
                     <strong id="checkoutTotalVal">{{ checkoutTotal | number:'1.0-0':'vi-VN' }}đ</strong>
                 </div>
-            </div>
 
-            <div class="billing-container" *ngIf="!isItineraryPay">
-                <p style="font-size:13px; color:var(--text-muted); text-align:center; padding: 20px 0;">Ví điện tử của bạn đang hoạt động bình thường. Bạn có thể sử dụng để thanh toán các dịch vụ và hoạt động xanh trong lịch trình của mình.</p>
+                <!-- Promo Banner for Wallet Activation inside Checkout -->
+                <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl mt-4 text-center" *ngIf="!walletRegistered">
+                    <p class="text-xs text-emerald-800 font-bold mb-0">💡 Ví GreenSteps chưa kích hoạt. Vui lòng vào trang cá nhân để gửi yêu cầu kích hoạt ví & nhận quà tặng chào mừng 200.000đ!</p>
+                </div>
             </div>
         </div>
 
-        <div class="form-actions">
+        <div class="form-actions" style="border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);">
             <button class="btn-secondary" (click)="closeCheckout()">Đóng</button>
-            <button class="btn-secondary" style="background-color: var(--bg-hover);" (click)="modalDepositWallet()"><i class="bi bi-plus-lg"></i> Nạp 2 Triệu</button>
-            <button class="btn-primary" *ngIf="isItineraryPay" (click)="payCheckoutItinerary()"><i class="bi bi-check-circle-fill"></i> Thanh Toán Ngay</button>
+            <button class="btn-primary" *ngIf="walletRegistered && isItineraryPay" (click)="payCheckoutItinerary()"><i class="bi bi-wallet-fill"></i> Trừ Số Dư Ví</button>
+            <button class="btn-primary" style="background: linear-gradient(135deg, #059669 0%, #115E59 100%); border:0;" *ngIf="isItineraryPay" (click)="showPaymentQr(); qrFlowType = 'payment';"><i class="bi bi-qr-code"></i> Quét QR Trực Tiếp</button>
         </div>
+    </div>
+</div>
+
+<!-- QR CODE OVERLAY MODAL -->
+<div class="modal-overlay" [class.active]="isQrVisible" style="z-index: 3000; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); background-color: rgba(0, 0, 0, 0.55);">
+    <div class="custom-modal-card bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl text-center relative" (click)="$event.stopPropagation()">
+        <div class="modal-header border-b border-gray-100 pb-3 mb-4 flex justify-between items-center">
+            <h3 class="text-lg font-bold text-[#184A37] m-0 flex items-center gap-2"><i class="bi bi-qr-code-scan text-[#0E9F6E]"></i> Cổng Thanh Toán QR</h3>
+            <button class="text-2xl text-gray-400 hover:text-gray-600 bg-transparent border-0 cursor-pointer" (click)="closeQrModal()">&times;</button>
+        </div>
+        <div class="space-y-4">
+            <p class="text-xs text-gray-500 font-medium leading-relaxed m-0 text-left">
+                Vui lòng quét mã QR dưới đây bằng ứng dụng ngân hàng của bạn để hoàn tất giao dịch.
+            </p>
+            
+            <!-- Static QR code image -->
+            <div class="qr-container bg-gray-50 p-4 rounded-2xl border border-gray-100 flex items-center justify-center">
+                <img [src]="qrCodeUrl" alt="VietQR Code" class="w-48 h-64 rounded-xl shadow-inner border border-gray-200 object-contain">
+            </div>
+            
+            <div class="p-3.5 bg-[#ECFDF5] rounded-2xl text-left border border-teal-100 flex flex-col gap-2.5">
+                <div>
+                    <div class="text-[9px] font-bold text-teal-800 uppercase tracking-wider">Thông tin tài khoản nhận</div>
+                    <div class="text-xs text-teal-950 font-bold mt-0.5">Ngân hàng OCB (Phương Đông) • STK: 0392851304</div>
+                    <div class="text-xs text-teal-900 font-medium">Tên TK: KIEU HOANG DUONG</div>
+                </div>
+                <div class="border-t border-teal-200/50 pt-2.5 flex justify-between items-center">
+                    <div>
+                        <div class="text-[9px] font-bold text-teal-800 uppercase tracking-wider">Số tiền chuyển khoản</div>
+                        <div class="text-sm font-extrabold text-teal-950 mt-0.5">{{ (qrFlowType === 'deposit' ? depositAmount : checkoutTotal) | number:'1.0-0':'vi-VN' }}đ</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[9px] font-bold text-teal-800 uppercase tracking-wider">Nội dung ghi</div>
+                        <div class="text-xs font-mono font-bold text-teal-950 mt-0.5">{{ qrPaymentNote }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Waiting indicator for both flows (no manual button) -->
+            <div class="w-full py-3 px-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3">
+                <div class="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
+                <div class="text-left">
+                    <div class="text-xs font-bold text-amber-800">Đang chờ xác nhận thanh toán...</div>
+                    <div class="text-[10px] text-amber-600 mt-0.5">Hệ thống sẽ tự động cập nhật khi nhận được tiền</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- WAITING FOR APPROVAL SCREEN LOADER -->
+<div class="modal-overlay" [class.active]="isWaitingApproval" style="z-index: 3100; background-color: rgba(0,0,0,0.65); backdrop-filter: blur(4px);">
+    <div class="bg-white/95 backdrop-blur-md p-8 rounded-3xl max-w-xs w-full shadow-2xl text-center border border-teal-50 flex flex-col items-center gap-4" style="margin: 0 auto; box-sizing: border-box;">
+        <div class="spinner-border animate-spin inline-block w-10 h-10 border-4 rounded-full text-emerald-600 mb-2" role="status" style="border-right-color: transparent; border-top-color: #047857; border-left-color: #10B981; border-bottom-color: transparent;"></div>
+        <h4 class="text-base font-bold text-[#184A37] m-0">Chờ xác nhận giao dịch...</h4>
     </div>
 </div>

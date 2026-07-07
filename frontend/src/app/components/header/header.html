@@ -1,7 +1,7 @@
 <header
-    [class.glass-panel]="isScrolled || !isHomePage() || isOverflowOpen"
+    [class.glass-panel]="!isHeaderTransparent"
     [class.provider-header]="currentUser && currentUser.role === 'provider'"
-    class="fixed inset-x-0 top-0 z-50">
+    class="fixed inset-x-0 top-0 z-[1050]">
 
     <!-- ════════════════════════════════════════════════════════
          MAIN HEADER ROW — 3 độc lập divs: Logo | Nav | Controls
@@ -18,11 +18,11 @@
                      alt="GreenSteps">
                 <span class="flex flex-col leading-none">
                     <span class="text-[20px] font-extrabold tracking-normal drop-shadow-[0_1px_3px_rgba(0,0,0,0.26)] transition-colors duration-300"
-                          [ngClass]="isHomeHeaderCollapsed ? 'text-white' : 'text-[#0F3F31]'">
+                          [ngClass]="isHeaderTransparent ? 'text-white' : 'text-[#0F6B4C]'">
                         GreenSteps
                     </span>
                     <span class="mt-1 text-[11px] font-bold uppercase tracking-[0.18em] drop-shadow-[0_1px_3px_rgba(0,0,0,0.24)] transition-colors duration-300"
-                          [ngClass]="isHomeHeaderCollapsed ? 'text-[#D9F99D]' : 'text-[#0E9F6E]'">
+                          [ngClass]="isHeaderTransparent ? 'text-[#D9F99D]' : 'text-[#0E9F6E]'">
                         Travel
                     </span>
                 </span>
@@ -46,7 +46,7 @@
                               after:absolute after:-bottom-1 after:left-0
                               after:h-0.5 after:w-0
                               after:transition-all after:duration-300 hover:after:w-full"
-                       [ngClass]="isHomeHeaderCollapsed ? 'text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.7)] hover:text-white/90 after:bg-[#D9F99D]' : 'text-[#184A37] hover:text-[#0E9F6E] after:bg-[#0E9F6E]'"
+                       [ngClass]="isHeaderTransparent ? 'text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.7)] hover:text-white/90 after:bg-[#D9F99D]' : 'text-[#184A37] hover:text-[#0E9F6E] after:bg-[#0E9F6E]'"
                        style="text-decoration: none;">{{ tab.label }}</a>
 
                     <a *ngIf="tab.action === 'green_handbook'"
@@ -57,7 +57,7 @@
                               after:absolute after:-bottom-1 after:left-0
                               after:h-0.5 after:w-0
                               after:transition-all after:duration-300 hover:after:w-full"
-                       [ngClass]="isHomeHeaderCollapsed ? 'text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.7)] hover:text-white/90 after:bg-[#D9F99D]' : 'text-[#184A37] hover:text-[#0E9F6E] after:bg-[#0E9F6E]'">
+                       [ngClass]="isHeaderTransparent ? 'text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.7)] hover:text-white/90 after:bg-[#D9F99D]' : 'text-[#184A37] hover:text-[#0E9F6E] after:bg-[#0E9F6E]'">
                         {{ tab.label }}
                     </a>
 
@@ -70,7 +70,7 @@
                               after:absolute after:-bottom-1 after:left-0
                               after:h-0.5 after:w-0
                               after:transition-all after:duration-300 hover:after:w-full"
-                       [ngClass]="isHomeHeaderCollapsed ? 'text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.7)] hover:text-white/90 after:bg-[#D9F99D]' : 'text-[#184A37] hover:text-[#0E9F6E] after:bg-[#0E9F6E]'">
+                       [ngClass]="isHeaderTransparent ? 'text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,0.7)] hover:text-white/90 after:bg-[#D9F99D]' : 'text-[#184A37] hover:text-[#0E9F6E] after:bg-[#0E9F6E]'">
                         {{ tab.label }}
                     </a>
                 </ng-container>
@@ -130,14 +130,13 @@
             </div>
 
             <!-- Profile (đã đăng nhập) -->
-            <div *ngIf="currentUser" class="relative"
-                 (mouseenter)="isProfileOpen = true"
-                 (mouseleave)="isProfileOpen = false">
-                <button class="h-10 flex items-center gap-1.5 rounded-full bg-white/50
-                               border border-[#184A37]/10 px-2 pr-3 font-bold text-[#0F3F31]
+            <div *ngIf="currentUser" class="relative">
+                <button (click)="toggleProfileOpen($event)"
+                        class="h-10 flex items-center gap-1.5 rounded-full bg-white/50
+                               border border-[#184A37]/10 px-2 pr-3 font-bold text-[#0F6B4C]
                                hover:bg-white hover:border-[#0E9F6E] transition-all duration-300
                                focus:outline-none cursor-pointer">
-                    <span class="grid h-7 w-7 place-items-center rounded-full bg-[#0E7A59] text-xs text-white flex-shrink-0">
+                    <span class="grid h-7 w-7 place-items-center rounded-full bg-[#0E9F6E] text-xs text-white flex-shrink-0">
                         {{ getFirstLetter(currentUser.fullname) }}
                     </span>
                     <span class="max-w-[90px] truncate text-xs">{{ currentUser.fullname }}</span>
@@ -147,32 +146,20 @@
 
                 <div class="absolute right-0 top-12 w-52 bg-white/95 backdrop-blur-md
                             rounded-2xl shadow-xl border border-[#184A37]/10 p-2
-                            transition-all duration-200 z-50"
+                            transition-all duration-200 z-[1060]"
                      [style.opacity]="isProfileOpen ? '1' : '0'"
                      [style.pointer-events]="isProfileOpen ? 'auto' : 'none'"
-                     [style.transform]="isProfileOpen ? 'translateY(0)' : 'translateY(-8px)'">
+                     [style.transform]="isProfileOpen ? 'translateY(0)' : 'translateY(-8px)'"
+                     (click)="$event.stopPropagation()">
                     <a routerLink="/profile"
+                       (click)="isProfileOpen = false"
                        class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#184A37]
                               hover:bg-gray-50 hover:text-[#0E9F6E] rounded-xl transition-colors"
                        style="text-decoration:none;">
                         <i class="bi bi-person text-lg"></i> Trang cá nhân
                     </a>
-                    <a *ngIf="currentUser.role === 'traveler'"
-                       routerLink="/partner-register"
-                       class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#184A37]
-                              hover:bg-gray-50 hover:text-[#0E9F6E] rounded-xl transition-colors"
-                       style="text-decoration:none;">
-                        <i class="bi bi-briefcase text-lg"></i> Hợp tác đối tác
-                    </a>
-                    <a *ngIf="currentUser.role === 'provider'"
-                       routerLink="/partner-dashboard"
-                       class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#184A37]
-                              hover:bg-gray-50 hover:text-[#0E9F6E] rounded-xl transition-colors"
-                       style="text-decoration:none;">
-                        <i class="bi bi-shop text-lg"></i> Kênh đối tác
-                    </a>
                     <div class="border-t border-[#184A37]/10 my-1"></div>
-                    <button (click)="handleLogout()"
+                    <button (click)="isProfileOpen = false; handleLogout()"
                             class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold
                                    text-red-600 hover:bg-red-50 rounded-xl transition-colors
                                    border-0 bg-transparent text-left cursor-pointer">
@@ -184,23 +171,23 @@
             <!-- Đăng ký / Đăng nhập (chưa đăng nhập) -->
             <div *ngIf="!currentUser" class="flex items-center gap-2">
                 <button type="button"
-                   (click)="openLoginModal()"
+                   (click)="openLoginModal('register')"
                    class="flex h-9 min-w-[78px] items-center justify-center whitespace-nowrap rounded-full bg-white/70
-                          px-3 text-xs font-bold text-[#0E7A59]
+                          px-3 text-xs font-bold text-[#0E9F6E]
                           transition-all duration-300 hover:-translate-y-0.5 hover:bg-white
-                          border border-[#0E7A59] cursor-pointer">Đăng ký</button>
+                          border border-[#0E9F6E] cursor-pointer">Đăng ký</button>
                 <button type="button"
-                   (click)="openLoginModal()"
+                   (click)="openLoginModal('login')"
                    class="flex h-9 min-w-[88px] items-center justify-center whitespace-nowrap rounded-full bg-[#184A37]
                           px-3 text-xs font-bold text-white
-                          transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#143e2e]
+                          transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#184A37]
                           border-0 cursor-pointer">Đăng nhập</button>
             </div>
 
             <!-- Hamburger mobile -->
             <button type="button"
                     class="mobile-hamburger h-9 w-9 place-items-center rounded-full
-                           bg-white/70 text-lg text-[#0F3F31]
+                           bg-white/70 text-lg text-[#0F6B4C]
                            transition-all duration-300 hover:bg-white cursor-pointer"
                     aria-label="Open menu"
                     (click)="toggleMobileMenu()">
@@ -317,20 +304,20 @@
 
         <div class="border-t border-[#184A37]/10 pt-6">
             <div *ngIf="!currentUser" class="grid grid-cols-2 gap-3">
-                <button type="button" (click)="openLoginModal()"
+                <button type="button" (click)="openLoginModal('register')"
                    class="h-[52px] flex items-center justify-center whitespace-nowrap rounded-[16px]
-                          bg-white text-[16px] font-bold text-[#0E7A59] hover:bg-[#F4FAF6]
-                          transition-all border border-[#0E7A59] cursor-pointer">Đăng ký</button>
-                <button type="button" (click)="openLoginModal()"
+                          bg-white text-[16px] font-bold text-[#0E9F6E] hover:bg-[#F4FAF6]
+                          transition-all border border-[#0E9F6E] cursor-pointer">Đăng ký</button>
+                <button type="button" (click)="openLoginModal('login')"
                    class="h-[52px] flex items-center justify-center whitespace-nowrap rounded-[16px]
-                          bg-[#184A37] text-[16px] font-bold text-white shadow-md hover:bg-[#143e2e]
+                          bg-[#184A37] text-[16px] font-bold text-white shadow-md hover:bg-[#184A37]
                           transition-all border-0 cursor-pointer">Đăng nhập</button>
             </div>
             <a *ngIf="currentUser" routerLink="/profile" (click)="toggleMobileMenu()"
                class="w-full h-14 flex items-center gap-3 rounded-full bg-gray-50 px-4 py-2
-                      text-sm font-bold text-[#0F3F31]"
+                      text-sm font-bold text-[#0F6B4C]"
                style="text-decoration:none;">
-                <span class="grid h-9 w-9 place-items-center rounded-full bg-[#0E7A59] text-xs text-white">
+                <span class="grid h-9 w-9 place-items-center rounded-full bg-[#0E9F6E] text-xs text-white">
                     {{ getFirstLetter(currentUser.fullname) }}
                 </span>
                 <span class="truncate">{{ currentUser.fullname }}</span>
@@ -339,7 +326,7 @@
     </div>
 </div>
 
-<app-login-modal *ngIf="isLoginModalOpen" (close)="closeLoginModal()"></app-login-modal>
+<app-login-modal *ngIf="isLoginModalOpen" [initialMode]="loginModalMode" (close)="closeLoginModal()"></app-login-modal>
 
 <!-- AI PLANNER MODAL -->
 <div class="modal-overlay" [class.active]="isCreateModalOpen"

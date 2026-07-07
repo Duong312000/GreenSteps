@@ -103,7 +103,7 @@
 
   .gs-reference-button:hover {
     transform: translateY(-3px);
-    background: #0E7A59;
+    background: #0E9F6E;
     box-shadow: 0 22px 44px rgba(15, 53, 36, 0.28);
   }
 
@@ -508,84 +508,159 @@
       </button>
     </div>
 
-    <div class="relative mx-auto mt-9 max-w-6xl">
-      <div class="w-full rounded-3xl bg-white/88 p-7 shadow-[0_20px_60px_rgba(15,23,42,0.08)] ring-1 ring-slate-100 backdrop-blur lg:w-[74%]">
-        <h3 class="text-base font-black text-slate-900">Trip highlights</h3>
-        <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="flex items-center gap-3 rounded-2xl bg-white px-4 py-4 shadow-lg shadow-slate-900/5 ring-1 ring-slate-100">
-            <span class="grid h-11 w-11 place-items-center rounded-full bg-emerald-50 text-xl text-emerald-600"><i class="bi bi-leaf"></i></span>
-            <span class="text-sm font-extrabold text-slate-800">Eco stays</span>
-          </div>
-          <div class="flex items-center gap-3 rounded-2xl bg-white px-4 py-4 shadow-lg shadow-slate-900/5 ring-1 ring-slate-100">
-            <span class="grid h-11 w-11 place-items-center rounded-full bg-emerald-50 text-xl text-emerald-600"><i class="bi bi-people-fill"></i></span>
-            <span class="text-sm font-extrabold text-slate-800">Local guides</span>
-          </div>
-          <div class="flex items-center gap-3 rounded-2xl bg-white px-4 py-4 shadow-lg shadow-slate-900/5 ring-1 ring-slate-100">
-            <span class="grid h-11 w-11 place-items-center rounded-full bg-emerald-50 text-xl text-emerald-600"><i class="bi bi-calendar3"></i></span>
-            <span class="text-sm font-extrabold text-slate-800">Flexible dates</span>
-          </div>
-          <div class="flex items-center gap-3 rounded-2xl bg-white px-4 py-4 shadow-lg shadow-slate-900/5 ring-1 ring-slate-100">
-            <span class="grid h-11 w-11 place-items-center rounded-full bg-emerald-50 text-xl text-emerald-600"><i class="bi bi-stars"></i></span>
-            <span class="text-sm font-extrabold text-slate-800">AI itinerary</span>
+    <!-- Asymmetric & Responsive Flex Container -->
+    <div class="mx-auto mt-9 max-w-6xl flex flex-col lg:flex-row gap-6 items-start">
+      
+      <!-- Left Column (Highlights + Indicators) -->
+      <div class="w-full lg:flex-1 flex flex-col gap-6">
+        
+        <!-- Main Content Card: Trip Highlights (Asymmetrical Grid Layout) -->
+        <div class="w-full rounded-3xl bg-white/88 p-7 shadow-[0_20px_60px_rgba(15,23,42,0.08)] ring-1 ring-slate-100 backdrop-blur">
+          <h3 class="text-base font-black text-slate-900">Trip highlights</h3>
+          
+          <!-- Organic Asymmetric Grid -->
+          <div class="mt-5 grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            
+            <!-- Tile 1: Eco stays (Col-span 2) -->
+            <div 
+              (click)="selectHighlight('eco')"
+              class="group cursor-pointer rounded-2xl p-5 transition-all duration-300 transform border lg:col-span-2 flex flex-col justify-between h-[115px] hover:-translate-y-1 hover:shadow-lg"
+              [class.bg-gradient-to-br]="activeHighlight === 'eco'"
+              [class.from-emerald-600]="activeHighlight === 'eco'"
+              [class.to-teal-700]="activeHighlight === 'eco'"
+              [class.text-white]="activeHighlight === 'eco'"
+              [class.shadow-[0_15px_30px_rgba(16,185,129,0.25)]]="activeHighlight === 'eco'"
+              [class.border-emerald-500]="activeHighlight === 'eco'"
+              [class.bg-white]="activeHighlight !== 'eco'"
+              [class.text-slate-800]="activeHighlight !== 'eco'"
+              [class.border-slate-100]="activeHighlight !== 'eco'"
+            >
+              <div class="flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-full text-lg transition-colors"
+                      [class.bg-white]="activeHighlight === 'eco'"
+                      [class.text-emerald-700]="activeHighlight === 'eco'"
+                      [class.bg-emerald-50]="activeHighlight !== 'eco'"
+                      [class.text-emerald-600]="activeHighlight !== 'eco'"><i class="bi bi-leaf"></i></span>
+                <span class="text-sm font-extrabold">Eco stays</span>
+              </div>
+              <p class="text-[11px] leading-relaxed mt-2" [class.text-white/80]="activeHighlight === 'eco'" [class.text-slate-400]="activeHighlight !== 'eco'">
+                Hệ thống lưu trú sinh thái bảo tồn tự nhiên, giảm thiểu phát thải nhựa tối đa.
+              </p>
+            </div>
+
+            <!-- Tile 2: Local guides (Row-span 2) -->
+            <div 
+              (click)="selectHighlight('guides')"
+              class="group cursor-pointer rounded-2xl p-5 transition-all duration-300 transform border lg:col-span-1 lg:row-span-2 flex flex-col justify-between h-auto lg:h-[250px] hover:-translate-y-1 hover:shadow-lg"
+              [class.bg-emerald-50/50]="activeHighlight === 'guides'"
+              [class.border-emerald-500]="activeHighlight === 'guides'"
+              [class.shadow-[0_15px_30px_rgba(16,185,129,0.1)]]="activeHighlight === 'guides'"
+              [class.bg-white]="activeHighlight !== 'guides'"
+              [class.border-slate-100]="activeHighlight !== 'guides'"
+              [class.text-slate-800]="true"
+            >
+              <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                  <span class="grid h-10 w-10 place-items-center rounded-full bg-emerald-50 text-lg text-emerald-600"><i class="bi bi-people-fill"></i></span>
+                  <span class="text-sm font-extrabold text-slate-800">Local guides</span>
+                </div>
+                <p class="text-[11px] leading-relaxed text-slate-400">
+                  Kết nối trực tiếp du khách với người kể chuyện bản xứ, hỗ trợ sinh kế và bảo tồn di sản văn hóa địa phương.
+                </p>
+              </div>
+              <!-- Custom illustration block for asymmetry -->
+              <div class="mt-4 hidden lg:block relative overflow-hidden rounded-xl bg-slate-100 h-20 bg-cover bg-center transition-all duration-500 group-hover:scale-[1.02]" style="background-image: url('image/b025d2b33ebe6db7e576ff3476f9acde.jpg');">
+                <div class="absolute inset-0 bg-emerald-950/20 backdrop-blur-[1px]"></div>
+                <span class="absolute bottom-2 left-2 text-[10px] font-bold text-white uppercase tracking-wider">Bản địa hóa</span>
+              </div>
+            </div>
+
+            <!-- Tile 3: Flexible dates -->
+            <div 
+              (click)="selectHighlight('dates')"
+              class="group cursor-pointer rounded-2xl p-5 transition-all duration-300 transform border flex flex-col justify-between h-[115px] hover:-translate-y-1 hover:shadow-lg"
+              [class.bg-emerald-50/50]="activeHighlight === 'dates'"
+              [class.border-emerald-500]="activeHighlight === 'dates'"
+              [class.shadow-[0_15px_30px_rgba(16,185,129,0.1)]]="activeHighlight === 'dates'"
+              [class.bg-white]="activeHighlight !== 'dates'"
+              [class.border-slate-100]="activeHighlight !== 'dates'"
+              [class.text-slate-800]="true"
+            >
+              <div class="flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-full bg-emerald-50 text-lg text-emerald-600"><i class="bi bi-calendar3"></i></span>
+                <span class="text-sm font-extrabold text-slate-800">Flexible dates</span>
+              </div>
+              <p class="text-[11px] leading-relaxed text-slate-400 mt-2">
+                Dễ dàng đổi ngày khởi hành hoặc hủy lịch, giữ cọc bảo chứng an toàn.
+              </p>
+            </div>
+
+            <!-- Tile 4: AI itinerary -->
+            <div 
+              (click)="selectHighlight('ai')"
+              class="group cursor-pointer rounded-2xl p-5 transition-all duration-300 transform border flex flex-col justify-between h-[115px] hover:-translate-y-1 hover:shadow-lg"
+              [class.bg-emerald-50/50]="activeHighlight === 'ai'"
+              [class.border-emerald-500]="activeHighlight === 'ai'"
+              [class.shadow-[0_15px_30px_rgba(16,185,129,0.1)]]="activeHighlight === 'ai'"
+              [class.bg-white]="activeHighlight !== 'ai'"
+              [class.border-slate-100]="activeHighlight !== 'ai'"
+              [class.text-slate-800]="true"
+            >
+              <div class="flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-full bg-emerald-50 text-lg text-emerald-600"><i class="bi bi-stars"></i></span>
+                <span class="text-sm font-extrabold text-slate-800">AI itinerary</span>
+              </div>
+              <p class="text-[11px] leading-relaxed text-slate-400 mt-2">
+                Thuật toán Gemini AI tự thiết kế lịch trình xanh tối ưu hóa lượng khí thải.
+              </p>
+            </div>
+
           </div>
         </div>
+
+        <!-- Bottom Indicators + Explore Button inside left flex column -->
+        <div class="flex flex-col items-center gap-5 lg:flex-row w-full">
+          <div class="grid w-full gap-0 overflow-hidden rounded-3xl bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)] ring-1 ring-slate-100 sm:grid-cols-2">
+            <div class="flex items-center gap-4 px-6 py-4">
+              <span class="grid h-12 w-12 place-items-center rounded-full bg-emerald-600 text-xl text-white"><i class="bi bi-people-fill"></i></span>
+              <p><b class="text-lg text-slate-900">50K+ travelers</b><br><span class="text-xs font-semibold text-slate-500">Trusted by explorers worldwide</span></p>
+            </div>
+            <div class="flex items-center gap-4 border-t border-slate-100 px-6 py-4 sm:border-l sm:border-t-0">
+              <span class="grid h-12 w-12 place-items-center rounded-full bg-sky-500 text-xl text-white"><i class="bi bi-emoji-smile-fill"></i></span>
+              <p><b class="text-lg text-slate-900">98% satisfaction</b><br><span class="text-xs font-semibold text-slate-500">From real GreenSteps travelers</span></p>
+            </div>
+          </div>
+          <a routerLink="/tours" class="inline-flex shrink-0 items-center gap-3 rounded-full bg-emerald-600 px-9 py-4 text-lg font-black text-white shadow-[0_18px_40px_rgba(5,150,105,0.32)] transition-all duration-300 hover:-translate-y-1 hover:bg-emerald-700">
+            Explore all tours <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+
       </div>
 
-      <aside class="mt-6 rounded-3xl bg-emerald-50/85 p-5 shadow-[0_20px_60px_rgba(15,118,110,0.13)] ring-1 ring-emerald-100 backdrop-blur lg:absolute lg:right-0 lg:top-[-3.2rem] lg:mt-0 lg:w-[285px]">
+      <!-- Right Column: Trip Preview Card (Interactive, 360px stable width) -->
+      <aside class="w-full lg:w-[360px] shrink-0 rounded-3xl bg-emerald-50/85 p-6 shadow-[0_20px_60px_rgba(15,118,110,0.13)] ring-1 ring-emerald-100 backdrop-blur">
         <div class="flex items-start gap-3">
           <span class="text-2xl text-emerald-600"><i class="bi bi-stars"></i></span>
           <div>
             <h3 class="text-sm font-black text-emerald-800">Your trip preview</h3>
-            <p class="text-xs font-semibold text-slate-500">5 days in Central Vietnam</p>
+            <p class="text-xs font-semibold text-slate-500">{{ currentPreview.title }}</p>
           </div>
         </div>
-        <div class="mt-5 space-y-3">
-          <div class="grid grid-cols-[46px_1fr_54px] items-center gap-3">
-            <span class="rounded-full bg-emerald-100 px-2 py-1 text-center text-[10px] font-black text-emerald-700">Day 1</span>
-            <p class="text-[11px] leading-4 text-slate-500"><b class="text-slate-900">Da Nang Arrival</b><br>Beach & city sights</p>
-            <img src="image/Viet Nam.png" class="h-11 w-14 rounded-xl object-cover" alt="Da Nang">
-          </div>
-          <div class="grid grid-cols-[46px_1fr_54px] items-center gap-3">
-            <span class="rounded-full bg-emerald-100 px-2 py-1 text-center text-[10px] font-black text-emerald-700">Day 2</span>
-            <p class="text-[11px] leading-4 text-slate-500"><b class="text-slate-900">Hoi An Ancient Town</b><br>Heritage & lantern night</p>
-            <img src="image/b025d2b33ebe6db7e576ff3476f9acde.jpg" class="h-11 w-14 rounded-xl object-cover" alt="Hoi An">
-          </div>
-          <div class="grid grid-cols-[46px_1fr_54px] items-center gap-3">
-            <span class="rounded-full bg-emerald-100 px-2 py-1 text-center text-[10px] font-black text-emerald-700">Day 3</span>
-            <p class="text-[11px] leading-4 text-slate-500"><b class="text-slate-900">Marble Mountains</b><br>Nature & culture</p>
-            <img src="image/7c9e14a82698a594dd914369bfb8eaa5.jpg" class="h-11 w-14 rounded-xl object-cover" alt="Marble Mountains">
-          </div>
-          <div class="grid grid-cols-[46px_1fr_54px] items-center gap-3">
-            <span class="rounded-full bg-emerald-100 px-2 py-1 text-center text-[10px] font-black text-emerald-700">Day 4</span>
-            <p class="text-[11px] leading-4 text-slate-500"><b class="text-slate-900">Ba Na Hills</b><br>Scenic views & fun</p>
-            <img src="image/da38f44902391ce9a9e4f0fd4b69fb04.jpg" class="h-11 w-14 rounded-xl object-cover" alt="Ba Na Hills">
-          </div>
-          <div class="grid grid-cols-[46px_1fr_54px] items-center gap-3">
-            <span class="rounded-full bg-emerald-100 px-2 py-1 text-center text-[10px] font-black text-emerald-700">Day 5</span>
-            <p class="text-[11px] leading-4 text-slate-500"><b class="text-slate-900">Departure</b><br>Memories to last</p>
-            <img src="image/68e15971da05ec82c116fe191abb8c7f.jpg" class="h-11 w-14 rounded-xl object-cover" alt="Departure">
+        
+        <!-- Live Preview Content -->
+        <div class="mt-6 space-y-4">
+          <div *ngFor="let day of currentPreview.days" class="grid grid-cols-[52px_1fr_64px] items-center gap-3 animate-[fadeIn_0.3s_ease-out]">
+            <span class="rounded-full bg-emerald-100 px-2 py-1.5 text-center text-[10px] font-black text-emerald-700 shadow-sm">{{ day.label }}</span>
+            <p class="text-[11px] leading-relaxed text-slate-500"><b class="text-xs font-extrabold text-slate-900 leading-tight block">{{ day.title }}</b>{{ day.desc }}</p>
+            <img [src]="day.img" class="h-12 w-16 rounded-xl object-cover shadow-sm bg-slate-200" [alt]="day.title">
           </div>
         </div>
-        <a routerLink="/schedule/new" class="mt-5 flex items-center justify-center gap-3 rounded-full bg-white px-5 py-3 text-xs font-black text-emerald-700 shadow-inner ring-1 ring-emerald-100 transition-all duration-300 hover:bg-emerald-600 hover:text-white">
+        
+        <a routerLink="/schedule/new" class="mt-6 flex items-center justify-center gap-3 rounded-full bg-white px-5 py-3 text-xs font-black text-emerald-700 shadow-inner ring-1 ring-emerald-100 transition-all duration-300 hover:bg-emerald-600 hover:text-white">
           Preview itinerary <i class="bi bi-arrow-right"></i>
         </a>
       </aside>
 
-      <div class="mt-8 flex flex-col items-center gap-5 lg:w-[74%] lg:flex-row">
-        <div class="grid w-full gap-0 overflow-hidden rounded-3xl bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)] ring-1 ring-slate-100 sm:grid-cols-2">
-          <div class="flex items-center gap-4 px-6 py-4">
-            <span class="grid h-12 w-12 place-items-center rounded-full bg-emerald-600 text-xl text-white"><i class="bi bi-people-fill"></i></span>
-            <p><b class="text-lg text-slate-900">50K+ travelers</b><br><span class="text-xs font-semibold text-slate-500">Trusted by explorers worldwide</span></p>
-          </div>
-          <div class="flex items-center gap-4 border-t border-slate-100 px-6 py-4 sm:border-l sm:border-t-0">
-            <span class="grid h-12 w-12 place-items-center rounded-full bg-sky-500 text-xl text-white"><i class="bi bi-emoji-smile-fill"></i></span>
-            <p><b class="text-lg text-slate-900">98% satisfaction</b><br><span class="text-xs font-semibold text-slate-500">From real GreenSteps travelers</span></p>
-          </div>
-        </div>
-        <a routerLink="/tours" class="inline-flex shrink-0 items-center gap-3 rounded-full bg-emerald-600 px-9 py-4 text-lg font-black text-white shadow-[0_18px_40px_rgba(5,150,105,0.32)] transition-all duration-300 hover:-translate-y-1 hover:bg-emerald-700">
-          Explore all tours <i class="bi bi-arrow-right"></i>
-        </a>
-      </div>
     </div>
     </div>
   </section>
@@ -593,14 +668,14 @@
   <section class="relative overflow-hidden bg-[#fbfcfb] px-6 py-20 md:py-28">
     <div class="pointer-events-none absolute -left-32 top-1/3 h-96 w-96 rounded-full bg-emerald-200/70 blur-3xl"></div>
     <div class="pointer-events-none absolute -right-36 bottom-0 h-96 w-96 rounded-full bg-sky-200/70 blur-3xl"></div>
-    <div class="mx-auto grid w-full max-w-7xl gap-8 rounded-[28px] border border-emerald-100/80 bg-gradient-to-br from-emerald-100 via-white to-sky-100 p-6 shadow-[0_28px_80px_rgba(15,118,110,0.18)] md:grid-cols-[0.8fr_1.4fr] md:p-9">
+    <div class="mx-auto grid w-full max-w-7xl gap-8 rounded-[28px] border border-emerald-100/80 bg-gradient-to-br from-emerald-100 via-white to-sky-100 p-6 shadow-[0_28px_80px_rgba(15,118,110,0.18)] md:grid-cols-[0.8fr_1.4fr] md:p-9 relative z-10">
       <div>
         <h2 class="font-serif text-5xl font-semibold text-slate-900">AI Travel Planner</h2>
         <p class="mt-2 text-sm font-semibold text-slate-600">Your intelligent travel companion.</p>
 
         <div class="mt-7 flex rounded-xl bg-white p-3 shadow-[0_16px_40px_rgba(15,118,110,0.16)] ring-1 ring-emerald-100">
-          <input value="Where do you want to go?" class="min-w-0 flex-1 px-3 text-sm font-semibold text-slate-700 outline-none">
-          <button class="grid h-10 w-10 place-items-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-900/20"><i class="bi bi-arrow-right"></i></button>
+          <input [(ngModel)]="aiPlannerDest" (keyup.enter)="generateAiItinerary(true)" placeholder="Bạn muốn đi du lịch ở đâu?" class="min-w-0 flex-1 px-3 text-sm font-semibold text-slate-700 outline-none">
+          <button (click)="generateAiItinerary(true)" class="grid h-10 w-10 place-items-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-900/20"><i class="bi bi-arrow-right" [class.animate-spin]="isAiLoading"></i></button>
         </div>
 
         <div class="mt-7 rounded-2xl bg-white p-6 shadow-[0_18px_50px_rgba(15,118,110,0.14)] ring-1 ring-emerald-100/80">
@@ -611,37 +686,31 @@
               <p class="text-xs font-semibold text-slate-500">Your travel assistant</p>
             </div>
           </div>
-          <p class="mt-5 text-sm font-medium leading-7 text-slate-700">Hi there! I'm GreenSteps AI. Tell me your travel preferences, and I'll create the perfect itinerary just for you.</p>
+          <p class="mt-5 text-sm font-medium leading-7 text-slate-700">{{ aiAssistantMessage }}</p>
           <div class="mt-5 flex items-center gap-2 text-emerald-600">
             <span class="grid h-8 w-8 place-items-center rounded-full bg-emerald-50"><i class="bi bi-stars"></i></span>
-            <span class="h-2 w-2 rounded-full bg-emerald-300"></span>
-            <span class="h-2 w-2 rounded-full bg-emerald-300"></span>
-            <span class="h-2 w-2 rounded-full bg-emerald-300"></span>
+            <span class="h-2 w-2 rounded-full bg-emerald-300" [class.animate-bounce]="isAiLoading"></span>
+            <span class="h-2 w-2 rounded-full bg-emerald-300" [class.animate-bounce]="isAiLoading" style="animation-delay: 0.15s"></span>
+            <span class="h-2 w-2 rounded-full bg-emerald-300" [class.animate-bounce]="isAiLoading" style="animation-delay: 0.3s"></span>
           </div>
         </div>
       </div>
 
       <div>
         <div class="mb-4 flex items-center justify-between">
-          <h3 class="text-sm font-extrabold text-emerald-600"><i class="bi bi-stars"></i> Suggested Itinerary</h3>
-          <button class="rounded-full bg-white px-5 py-2 text-xs font-extrabold text-slate-600 shadow-md ring-1 ring-slate-100">Regenerate <i class="bi bi-arrow-repeat text-emerald-600"></i></button>
+          <h3 class="text-sm font-extrabold text-emerald-600"><i class="bi bi-stars"></i> {{ aiSuggestedTitle }}</h3>
+          <button (click)="generateAiItinerary(true)" class="rounded-full bg-white px-5 py-2 text-xs font-extrabold text-slate-600 shadow-md ring-1 ring-slate-100 hover:bg-slate-50 transition-colors">
+            Generate <i class="bi bi-stars text-emerald-600" [class.animate-spin]="isAiLoading"></i>
+          </button>
         </div>
         <div class="grid gap-4 md:grid-cols-4">
-          <article class="overflow-hidden rounded-xl bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1">
-            <img src="image/Viet Nam.png" alt="Day 1" class="h-40 w-full object-cover">
-            <div class="p-4"><p class="text-xs font-extrabold text-emerald-600">Day 1</p><h4 class="mt-2 font-extrabold text-slate-900">Explore Da Nang</h4><p class="mt-2 text-xs font-medium leading-5 text-slate-600">Visit Marble Mountains, My Khe Beach and enjoy local seafood.</p></div>
-          </article>
-          <article class="overflow-hidden rounded-xl bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1">
-            <img src="image/b025d2b33ebe6db7e576ff3476f9acde.jpg" alt="Day 2" class="h-40 w-full object-cover">
-            <div class="p-4"><p class="text-xs font-extrabold text-emerald-600">Day 2</p><h4 class="mt-2 font-extrabold text-slate-900">Hoi An Ancient Town</h4><p class="mt-2 text-xs font-medium leading-5 text-slate-600">Wander the lantern-lit streets and join a cooking class.</p></div>
-          </article>
-          <article class="overflow-hidden rounded-xl bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1">
-            <img src="image/7c9e14a82698a594dd914369bfb8eaa5.jpg" alt="Day 3" class="h-40 w-full object-cover">
-            <div class="p-4"><p class="text-xs font-extrabold text-emerald-600">Day 3</p><h4 class="mt-2 font-extrabold text-slate-900">Ba Na Hills</h4><p class="mt-2 text-xs font-medium leading-5 text-slate-600">Ride the cable car and enjoy mountain views.</p></div>
-          </article>
-          <article class="overflow-hidden rounded-xl bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1">
-            <img src="image/da38f44902391ce9a9e4f0fd4b69fb04.jpg" alt="Day 4" class="h-40 w-full object-cover">
-            <div class="p-4"><p class="text-xs font-extrabold text-emerald-600">Day 4</p><h4 class="mt-2 font-extrabold text-slate-900">Relax & Depart</h4><p class="mt-2 text-xs font-medium leading-5 text-slate-600">Morning at leisure before your smooth departure.</p></div>
+          <article *ngFor="let day of aiSuggestedDays" class="overflow-hidden rounded-xl bg-white shadow-[0_16px_40px_rgba(15,23,42,0.12)] ring-1 ring-slate-100 transition-all duration-300 hover:-translate-y-1">
+            <img [src]="day.img" [alt]="day.day" class="h-40 w-full object-cover bg-slate-100">
+            <div class="p-4">
+              <p class="text-xs font-extrabold text-emerald-600">{{ day.day }}</p>
+              <h4 class="mt-2 font-extrabold text-slate-900 text-sm leading-tight line-clamp-1" [title]="day.title">{{ day.title }}</h4>
+              <p class="mt-2 text-xs font-medium leading-5 text-slate-600 line-clamp-2" [title]="day.desc">{{ day.desc }}</p>
+            </div>
           </article>
         </div>
       </div>

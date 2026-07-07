@@ -236,7 +236,7 @@
                     
                     <div class="flex flex-col gap-1.5">
                         <label for="srvType" class="text-xs font-bold text-gray-600 uppercase tracking-wider">Loại hình *</label>
-                        <select id="srvType" [(ngModel)]="serviceType" name="serviceType" required class="h-11 px-3 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
+                        <select id="srvType" [(ngModel)]="serviceType" (ngModelChange)="onCostOrTypeChange()" name="serviceType" required class="h-11 px-3 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
                             <option value="stay">Lưu trú (stay)</option>
                             <option value="food">Ăn uống (food)</option>
                             <option value="attraction">Khám phá (attraction)</option>
@@ -248,48 +248,19 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1.5">
                         <label for="srvCost" class="text-xs font-bold text-gray-600 uppercase tracking-wider">Giá niêm yết (VNĐ) *</label>
-                        <input type="number" id="srvCost" [(ngModel)]="serviceCost" name="serviceCost" required placeholder="500000" min="0" class="h-11 px-4 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
+                        <input type="number" id="srvCost" [(ngModel)]="serviceCost" (ngModelChange)="onCostOrTypeChange()" name="serviceCost" required placeholder="500000" min="0" class="h-11 px-4 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
                     </div>
                     
                     <div class="flex flex-col gap-1.5">
-                        <label for="srvCarbon" class="text-xs font-bold text-gray-600 uppercase tracking-wider">Lượng CO₂ giảm (kg) *</label>
-                        <input type="number" id="srvCarbon" [(ngModel)]="serviceCarbon" name="serviceCarbon" required placeholder="1.5" min="0" step="0.1" class="h-11 px-4 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
+                        <label for="srvCarbon" class="text-xs font-bold text-gray-600 uppercase tracking-wider">Lượng CO₂ giảm (kg) (Hệ thống tự tính) *</label>
+                        <input type="number" id="srvCarbon" [(ngModel)]="serviceCarbon" name="serviceCarbon" readonly required placeholder="Tự động tính..." class="h-11 px-4 rounded-lg border border-gray-200 text-sm text-gray-500 bg-gray-50 cursor-not-allowed focus:outline-none">
                     </div>
                 </div>
 
-                <!-- Tọa độ GPS -->
-                <div>
-                    <label class="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-2">Tọa độ GPS <span class="text-gray-400 normal-case font-normal">(không bắt buộc)</span></label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-1">
-                            <input type="number" [(ngModel)]="serviceLat" name="serviceLat" placeholder="Vĩ độ (vd: 11.9425)" step="0.0001" class="h-10 px-4 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <input type="number" [(ngModel)]="serviceLng" name="serviceLng" placeholder="Kinh độ (vd: 108.4385)" step="0.0001" class="h-10 px-4 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gán nhãn dịch vụ (Badges) -->
-                <div>
-                    <label class="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-3">Gán nhãn dịch vụ</label>
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" (click)="toggleBadge('green')"
-                            class="px-4 py-2 text-xs font-bold rounded-lg border cursor-pointer transition-colors"
-                            [ngClass]="selectedBadges.includes('green') ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-gray-600 border-gray-200 hover:border-teal-400'">
-                            🌿 Eco Green
-                        </button>
-                        <button type="button" (click)="toggleBadge('budget')"
-                            class="px-4 py-2 text-xs font-bold rounded-lg border cursor-pointer transition-colors"
-                            [ngClass]="selectedBadges.includes('budget') ? 'bg-amber-500 text-white border-amber-500' : 'bg-white text-gray-600 border-gray-200 hover:border-amber-400'">
-                            💰 Giá tiết kiệm
-                        </button>
-                        <button type="button" (click)="toggleBadge('bestseller')"
-                            class="px-4 py-2 text-xs font-bold rounded-lg border cursor-pointer transition-colors"
-                            [ngClass]="selectedBadges.includes('bestseller') ? 'bg-rose-500 text-white border-rose-500' : 'bg-white text-gray-600 border-gray-200 hover:border-rose-400'">
-                            🔥 Bán chạy
-                        </button>
-                    </div>
+                <!-- Địa chỉ chi tiết -->
+                <div class="flex flex-col gap-1.5">
+                    <label for="srvAddress" class="text-xs font-bold text-gray-600 uppercase tracking-wider">Địa chỉ chi tiết *</label>
+                    <input type="text" id="srvAddress" [(ngModel)]="serviceAddress" name="serviceAddress" required placeholder="Ví dụ: 12 Hùng Vương, Phường 10" class="h-11 px-4 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
                 </div>
 
                 <div class="pt-5 border-t border-gray-100 flex justify-end gap-3">

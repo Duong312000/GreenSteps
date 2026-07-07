@@ -73,7 +73,11 @@
 
             <!-- Tour Cards rendered dynamically -->
             <div class="tour-card" *ngFor="let tour of filteredTours" [routerLink]="['/tours', tour.id]" style="cursor: pointer;">
-                <div class="tour-img-container">
+                <div class="tour-img-container" style="position: relative;">
+                    <!-- Premium "Recommended" badge on the top-left of the image -->
+                    <div *ngIf="tour.isRecommended" style="position: absolute; top: 12px; left: 12px; background: linear-gradient(135deg, #059669 0%, #10B981 100%); color: white; padding: 4px 10px; font-size: 0.65rem; font-weight: 700; border-radius: 4px; box-shadow: 0 4px 8px rgba(4,120,87,0.25); display: flex; align-items: center; gap: 4px; z-index: 10; text-transform: uppercase;">
+                        <i class="bi bi-patch-check-fill"></i> Đề xuất cho bạn
+                    </div>
                     <img [src]="tour.image" [alt]="tour.title">
                     <div class="price-pill-overlay">
                         <span class="price-new">{{ tour.cost | number:'1.0-0':'vi-VN' }}đ</span>
@@ -106,10 +110,7 @@
         <form id="createItiForm" (submit)="submitNewItinerary($event)">
             <div class="form-group">
                 <label for="modalDest">Điểm đến</label>
-                <!-- Leaflet Mini Map Container -->
-                <div id="toursModalMap" style="width: 100%; height: 180px; border-radius: 12px; border: 1px solid rgba(24, 74, 55, 0.2); margin-bottom: 12px; position: relative; z-index: 10; background-color: #f3f4f6;"></div>
-                
-                <select id="modalDest" [(ngModel)]="modalDest" name="modalDest" (change)="onModalDestChange()" required>
+                <select id="modalDest" [(ngModel)]="modalDest" name="modalDest" required>
                     <option value="Đà Lạt">Đà Lạt</option>
                     <option value="Phú Yên">Phú Yên</option>
                     <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>

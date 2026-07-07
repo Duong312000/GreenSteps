@@ -24,8 +24,7 @@ export class PartnerServicesComponent implements OnInit {
   public serviceCost: number | null = null;
   public serviceCarbon: number | null = null;
   public serviceDest: string = 'Đà Lạt';
-  public serviceLat: number | null = null;
-  public serviceLng: number | null = null;
+  public serviceAddress: string = '';
   public selectedBadges: string[] = ['green'];
 
   // Filters State
@@ -140,6 +139,10 @@ export class PartnerServicesComponent implements OnInit {
 
   public openAddModal() {
     this.isAddModalOpen = true;
+    this.serviceName = '';
+    this.serviceCost = null;
+    this.serviceCarbon = null;
+    this.serviceAddress = '';
   }
 
   public closeAddModal() {
@@ -180,6 +183,29 @@ export class PartnerServicesComponent implements OnInit {
     const providerId = this.currentUser.id || this.currentUser._id || '';
     const categoryMap: Record<string, string> = { stay: 'Lưu trú', food: 'Ăn uống', tour: 'Khám phá', transport: 'Di chuyển', attraction: 'Khám phá' };
 
+    let resolvedLat: number | null = null;
+    let resolvedLng: number | null = null;
+
+    // Resolve address to GPS coordinates using Nominatim API behind the scenes
+    if (this.serviceAddress) {
+      try {
+        const query = `${this.serviceAddress}, ${this.serviceDest}, Vietnam`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+        
+        const res = await Promise.race([
+          fetch(url, { headers: { 'User-Agent': 'GreenStepsApp/1.0' } }).then(r => r.json()),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1200))
+        ]) as any[];
+
+        if (res && res.length > 0) {
+          resolvedLat = parseFloat(res[0].lat);
+          resolvedLng = parseFloat(res[0].lon);
+        }
+      } catch (e) {
+        console.warn('Geocoding failed, falling back to null', e);
+      }
+    }
+
     const newService = {
       id: 'ser_' + Date.now(),
       providerId: providerId,
@@ -188,10 +214,11 @@ export class PartnerServicesComponent implements OnInit {
       destination: this.serviceDest,
       cost: Number(this.serviceCost),
       carbon: Number(this.serviceCarbon),
-      lat: this.serviceLat,
-      lng: this.serviceLng,
+      lat: resolvedLat,
+      lng: resolvedLng,
+      address: this.serviceAddress,
       category: categoryMap[this.serviceType] || 'Khám phá',
-      badges: this.selectedBadges.length > 0 ? this.selectedBadges : ['green'],
+      badges: ['green'], // Assigned by system/admin by default
       status: 'active'
     };
 
@@ -202,9 +229,7 @@ export class PartnerServicesComponent implements OnInit {
       this.serviceName = '';
       this.serviceCost = null;
       this.serviceCarbon = null;
-      this.serviceLat = null;
-      this.serviceLng = null;
-      this.selectedBadges = ['green'];
+      this.serviceAddress = '';
       await this.loadServices();
     } else {
       alert('Có lỗi xảy ra khi thêm dịch vụ. Vui lòng kiểm tra lại!');
@@ -217,5 +242,31 @@ export class PartnerServicesComponent implements OnInit {
     if (type === "food" || type === "dining") return "Ăn uống";
     if (type === "transport") return "Di chuyển";
     return "Trải nghiệm / Tour";
+  }
+
+  public onCostOrTypeChange() {
+    if (this.serviceCost === null || this.serviceCost === undefined || this.serviceCost <= 0) {
+      this.serviceCarbon = null;
+      return;
+    }
+    const cost = Number(this.serviceCost);
+    let calculated = 0;
+    switch (this.serviceType) {
+      case 'stay':
+        calculated = 2.5 + Math.min(7.5, cost / 500000);
+        break;
+      case 'food':
+        calculated = 1.0 + Math.min(4.0, cost / 300000);
+        break;
+      case 'transport':
+        calculated = 0.5 + Math.min(7.5, cost / 200000);
+        break;
+      case 'attraction':
+      default:
+        calculated = 1.0 + Math.min(14.0, cost / 200000);
+        break;
+    }
+    this.serviceCarbon = Math.round(calculated * 10) / 10;
+    this.cdr.detectChanges();
   }
 }

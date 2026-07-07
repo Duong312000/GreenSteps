@@ -52,7 +52,7 @@ export class AuthService {
     // 1. Try to connect to backend NodeJS
     try {
       const res = await firstValueFrom(
-        this.http.post<{ success: boolean; user?: any; message?: string }>(`${this.BACKEND_URL}/login`, { username, password })
+        this.http.post<{ success: boolean; user?: any; message?: string }>(`${this.BACKEND_URL}/login`, { username, password }, { withCredentials: true })
       );
       if (res && res.success && res.user) {
         const mappedUser: User = {
@@ -72,45 +72,15 @@ export class AuthService {
       } else {
         return { success: false, message: res?.message || 'Sai tên đăng nhập hoặc mật khẩu!' };
       }
-    } catch (err) {
-      console.warn('Backend authentication failed/offline. Falling back to local offline check...', err);
-      // Offline fallback check
-      if (username === 'traveler' && password === '123456') {
-        const user: User = {
-          id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
-          username: 'traveler',
-          fullname: 'Nguyễn Minh Anh',
-          email: 'minhanh.greentravel@gmail.com',
-          phone: '0901 234 567',
-          dob: '12/08/1996',
-          gender: 'Nữ',
-          address: 'Quận 1, TP. Hồ Chí Minh',
-          role: 'traveler'
-        };
-        this.setCurrentUser(user);
-        return { success: true, user };
-      } else if (username === 'partner' && password === '123456') {
-        const user: User = {
-          id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-          username: 'partner',
-          fullname: 'Trần Văn A',
-          companyName: 'Green Valley Travel',
-          email: 'partner.greentravel@gmail.com',
-          phone: '0902 987 654',
-          address: 'Quận 3, TP. Hồ Chí Minh',
-          role: 'provider'
-        };
-        this.setCurrentUser(user);
-        return { success: true, user };
-      }
-      return { success: false, message: 'Sai tên đăng nhập hoặc mật khẩu!' };
+    } catch (err: any) {
+      return { success: false, message: err?.error?.message || 'Sai tên đăng nhập hoặc mật khẩu!' };
     }
   }
 
   public async register(formData: any): Promise<{ success: boolean; message?: string; user?: User }> {
     try {
       const res = await firstValueFrom(
-        this.http.post<{ success: boolean; user?: any; message?: string }>(`${this.BACKEND_URL}/register`, formData)
+        this.http.post<{ success: boolean; user?: any; message?: string }>(`${this.BACKEND_URL}/register`, formData, { withCredentials: true })
       );
       if (res && res.success && res.user) {
         const mappedUser: User = {
@@ -174,7 +144,7 @@ export class AuthService {
   public async updateProfile(userId: string, profileData: any): Promise<{ success: boolean; message?: string; user?: User }> {
     try {
       const res = await firstValueFrom(
-        this.http.put<{ success: boolean; user?: any; message?: string }>(`${this.BACKEND_URL}/profile/${userId}`, profileData)
+        this.http.put<{ success: boolean; user?: any; message?: string }>(`${this.BACKEND_URL}/profile/${userId}`, profileData, { withCredentials: true })
       );
       if (res && res.success && res.user) {
         const mappedUser: User = {
@@ -205,21 +175,18 @@ export class AuthService {
 
     try {
       const res = await firstValueFrom(
-        this.http.post<{ success: boolean; role: 'traveler' | 'provider' }>(`${this.BACKEND_URL}/role/${userId}`, {})
+        this.http.post<{ success: boolean; role: 'traveler' | 'provider' }>(`${this.BACKEND_URL}/role/${userId}`, {}, { withCredentials: true })
       );
       if (res && res.success) {
         user.role = res.role;
         this.setCurrentUser(user);
         return res.role;
       }
-    } catch (err) {
-      console.warn('Backend toggle role offline, doing it locally...', err);
+      return null;
+    } catch (err: any) {
+      console.error('Backend toggle role failed:', err);
+      return null;
     }
-
-    // Local fallback
-    user.role = user.role === 'traveler' ? 'provider' : 'traveler';
-    this.setCurrentUser(user);
-    return user.role;
   }
 
   public logout() {

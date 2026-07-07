@@ -52,3 +52,6 @@ Thumbs.db
 # Documentation and auxiliary scripts
 *.docx
 generate_docx.py
+
+# User uploads
+uploads/

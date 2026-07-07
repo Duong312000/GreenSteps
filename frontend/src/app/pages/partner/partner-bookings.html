@@ -51,27 +51,27 @@
             <!-- Stats -->
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
-                    <div class="text-2xl font-black text-blue-600">12</div>
+                    <div class="text-2xl font-black text-blue-600">{{ newBookingsCount }}</div>
                     <div class="text-[11px] font-bold text-gray-400 mt-1 uppercase">Booking mới</div>
                 </div>
                 <div class="bg-[#FFF3CD] border border-[#ffeeb5] p-4 rounded-xl text-center">
-                    <div class="text-2xl font-black text-[#856404]">5</div>
+                    <div class="text-2xl font-black text-[#856404]">{{ pendingCount }}</div>
                     <div class="text-[11px] font-bold text-[#856404]/75 mt-1 uppercase">Chờ xác nhận</div>
                 </div>
                 <div class="bg-teal-50 border border-teal-100 p-4 rounded-xl text-center">
-                    <div class="text-2xl font-black text-teal-700">24</div>
+                    <div class="text-2xl font-black text-teal-700">{{ confirmedCount }}</div>
                     <div class="text-[11px] font-bold text-teal-600/75 mt-1 uppercase">Đã xác nhận</div>
                 </div>
                 <div class="bg-purple-50 border border-purple-100 p-4 rounded-xl text-center">
-                    <div class="text-2xl font-black text-purple-700">8</div>
+                    <div class="text-2xl font-black text-purple-700">{{ ongoingCount }}</div>
                     <div class="text-[11px] font-bold text-purple-600/75 mt-1 uppercase">Đang diễn ra</div>
                 </div>
                 <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl text-center">
-                    <div class="text-2xl font-black text-gray-700">145</div>
+                    <div class="text-2xl font-black text-gray-700">{{ completedCount }}</div>
                     <div class="text-[11px] font-bold text-gray-400 mt-1 uppercase">Hoàn thành</div>
                 </div>
                 <div class="bg-red-50 border border-red-100 p-4 rounded-xl text-center">
-                    <div class="text-2xl font-black text-red-700">18</div>
+                    <div class="text-2xl font-black text-red-700">{{ cancelledCount }}</div>
                     <div class="text-[11px] font-bold text-red-600/75 mt-1 uppercase">Đã hủy</div>
                 </div>
             </div>
@@ -163,23 +163,23 @@
             <!-- Quick Stats -->
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-center">
-                    <div class="text-2xl font-black text-orange-600">3</div>
+                    <div class="text-2xl font-black text-orange-600">{{ changePendingCount }}</div>
                     <div class="text-[11px] font-bold text-gray-400 mt-1 uppercase">Chờ xử lý</div>
                 </div>
                 <div class="bg-teal-50 border border-teal-100 p-4 rounded-xl text-center">
-                    <div class="text-2xl font-black text-teal-700">12</div>
+                    <div class="text-2xl font-black text-teal-700">{{ changeApprovedCount }}</div>
                     <div class="text-[11px] font-bold text-teal-600/75 mt-1 uppercase">Đã duyệt</div>
                 </div>
                 <div class="bg-red-50 border border-red-100 p-4 rounded-xl text-center">
-                    <div class="text-2xl font-black text-red-700">2</div>
+                    <div class="text-2xl font-black text-red-700">{{ changeRejectedCount }}</div>
                     <div class="text-[11px] font-bold text-red-600/75 mt-1 uppercase">Từ chối</div>
                 </div>
                 <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl text-center">
-                    <div class="text-2xl font-black text-blue-700">8</div>
+                    <div class="text-2xl font-black text-blue-700">{{ changeProposedCount }}</div>
                     <div class="text-[11px] font-bold text-blue-600/75 mt-1 uppercase">Đổi ngày</div>
                 </div>
                 <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl text-center">
-                    <div class="text-2xl font-black text-gray-700">5</div>
+                    <div class="text-2xl font-black text-gray-700">{{ changeCancelCount }}</div>
                     <div class="text-[11px] font-bold text-gray-400 mt-1 uppercase">Yêu cầu hủy</div>
                 </div>
             </div>
@@ -303,7 +303,7 @@
             </div>
 
             <!-- Right Main Area: Settings Editor -->
-            <div class="flex-1 w-full bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden h-[750px] flex flex-col">
+            <div *ngIf="selectedTour && selectedTour.id" class="flex-1 w-full bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden h-[750px] flex flex-col">
                 <!-- Detail Header -->
                 <div class="p-5 border-b border-gray-100 flex justify-between items-start bg-gradient-to-r from-[#F7FBF4] to-white">
                     <div>
@@ -414,31 +414,26 @@
 
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <!-- SVG Map -->
-                            <div class="lg:col-span-2 bg-[#EAF4E4] border border-teal-600/20 rounded-2xl h-[380px] relative overflow-hidden flex-shrink-0 shadow-inner">
+                            <div *ngIf="waypoints && waypoints.length > 0" class="lg:col-span-2 bg-[#EAF4E4] border border-teal-600/20 rounded-2xl h-[380px] relative overflow-hidden flex-shrink-0 shadow-inner">
                                 <svg class="absolute inset-0 w-full h-full" viewBox="0 0 600 400" preserveAspectRatio="none">
                                     <path d="M 80,300 L 180,240 L 260,200 L 380,150 L 500,80" fill="none" stroke="#006414" stroke-width="4" stroke-linecap="round" stroke-dasharray="8,8" />
                                 </svg>
                                 
-                                <div class="absolute left-[80px] top-[300px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                                    <div class="w-4 h-4 bg-green-700 rounded-full border-2 border-white shadow-md"></div>
-                                    <span class="mt-1 px-2 py-0.5 bg-green-700 text-white text-[9px] font-bold rounded shadow">Đón khách</span>
+                                <!-- Dynamic Waypoint Pins -->
+                                <div *ngFor="let wp of waypoints; let idx = index" 
+                                     [style.left.%]="10 + idx * 20" 
+                                     [style.top.%]="80 - idx * 18" 
+                                     class="absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                                    <div class="w-4 h-4 rounded-full border-2 border-white shadow-md" [ngClass]="wp.color || 'bg-teal-600'"></div>
+                                    <span class="mt-1 px-2 py-0.5 text-white text-[9px] font-bold rounded shadow shrink-0 whitespace-nowrap" [ngClass]="wp.color || 'bg-teal-600'">{{ wp.name }}</span>
                                 </div>
-                                <div class="absolute left-[180px] top-[240px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                                    <div class="w-4 h-4 bg-blue-600 rounded-full border-2 border-white shadow-md"></div>
-                                    <span class="mt-1 px-2 py-0.5 bg-blue-600 text-white text-[9px] font-bold rounded shadow">Checkpoint 1</span>
-                                </div>
-                                <div class="absolute left-[260px] top-[200px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                                    <div class="w-4 h-4 bg-blue-700 rounded-full border-2 border-white shadow-md"></div>
-                                    <span class="mt-1 px-2 py-0.5 bg-blue-700 text-white text-[9px] font-bold rounded shadow">Nghỉ trưa</span>
-                                </div>
-                                <div class="absolute left-[380px] top-[150px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                                    <div class="w-4 h-4 bg-red-700 rounded-full border-2 border-white shadow-md"></div>
-                                    <span class="mt-1 px-2 py-0.5 bg-red-700 text-white text-[9px] font-bold rounded shadow">Vách dốc</span>
-                                </div>
-                                <div class="absolute left-[500px] top-[80px] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
-                                    <div class="w-4 h-4 bg-orange-500 rounded-full border-2 border-white shadow-md"></div>
-                                    <span class="mt-1 px-2 py-0.5 bg-orange-500 text-white text-[9px] font-bold rounded shadow">Đỉnh 2167m</span>
-                                </div>
+                            </div>
+
+                            <!-- Empty Route Map Placeholder -->
+                            <div *ngIf="!waypoints || waypoints.length === 0" class="lg:col-span-2 bg-gray-50 border border-gray-150 rounded-2xl h-[380px] flex flex-col items-center justify-center text-center p-6">
+                                <i class="bi bi-map text-3xl text-gray-300 mb-2"></i>
+                                <h4 class="text-sm font-bold text-gray-500">Chưa cấu hình bản đồ hành trình</h4>
+                                <p class="text-xs text-gray-400 mt-1 max-w-xs">Gói trải nghiệm này chưa có mốc tọa độ nào được thiết lập trong cơ sở dữ liệu để vẽ tuyến đường đi.</p>
                             </div>
 
                             <!-- Waypoints List -->
@@ -471,19 +466,26 @@
 
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <!-- campsite map visual -->
-                            <div class="lg:col-span-2 bg-gray-50 rounded-2xl h-[380px] relative overflow-hidden border border-gray-200 shadow-inner flex items-center justify-center bg-cover" style="background-image: url('image/1dc8619487310884c9d631d689ece1e7.jpg'); background-blend-mode: multiply; background-color: rgba(0,0,0,0.3);">
+                            <div *ngIf="zones && zones.length > 0" class="lg:col-span-2 bg-gray-50 rounded-2xl h-[380px] relative overflow-hidden border border-gray-200 shadow-inner flex items-center justify-center bg-cover" style="background-image: url('image/1dc8619487310884c9d631d689ece1e7.jpg'); background-blend-mode: multiply; background-color: rgba(0,0,0,0.3);">
                                 <div class="absolute inset-0 backdrop-blur-sm bg-black/10"></div>
                                 <!-- Zones Pins -->
-                                <div *ngFor="let zone of zones" style="top: zone.top; left: zone.left;" class="absolute flex flex-col items-center cursor-pointer transform -translate-x-1/2 -translate-y-1/2 group">
+                                <div *ngFor="let zone of zones" [style.top]="zone.top" [style.left]="zone.left" class="absolute flex flex-col items-center cursor-pointer transform -translate-x-1/2 -translate-y-1/2 group">
                                     <div class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white relative z-10 transition-transform group-hover:scale-110"
                                          [ngClass]="zone.color === 'green' ? 'bg-green-600' : (zone.color === 'blue' ? 'bg-blue-600' : 'bg-orange-500')">
-                                        <i class="bi bi-tent" *ngIf="zone.icon === 'Tent'"></i>
-                                        <i class="bi bi-fire" *ngIf="zone.icon !== 'Tent'"></i>
+                                         <i class="bi bi-tent" *ngIf="zone.icon === 'Tent'"></i>
+                                         <i class="bi bi-fire" *ngIf="zone.icon !== 'Tent'"></i>
                                     </div>
                                     <span class="mt-2 px-2.5 py-1 bg-white border border-gray-100 rounded-lg text-[10px] font-extrabold text-gray-700 shadow opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                                         Khu {{ zone.id }} ({{ zone.name }})
                                     </span>
                                 </div>
+                            </div>
+
+                            <!-- Empty Campsite Placeholder -->
+                            <div *ngIf="!zones || zones.length === 0" class="lg:col-span-2 bg-gray-50 border border-gray-150 rounded-2xl h-[380px] flex flex-col items-center justify-center text-center p-6">
+                                <i class="bi bi-tent text-3xl text-gray-300 mb-2"></i>
+                                <h4 class="text-sm font-bold text-gray-500">Chưa cấu hình sơ đồ Campsite</h4>
+                                <p class="text-xs text-gray-400 mt-1 max-w-xs">Gói trải nghiệm này chưa có sơ đồ cắm trại nào được thiết lập trong hệ thống.</p>
                             </div>
 
                             <!-- campsite grid cards -->
@@ -513,6 +515,15 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Empty state when no tour is selected / available -->
+            <div *ngIf="!selectedTour || !selectedTour.id" class="flex-grow w-full bg-white border border-gray-100 rounded-2xl shadow-sm h-[750px] flex flex-col items-center justify-center text-center p-8">
+                <div class="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mb-4">
+                    <i class="bi bi-calendar-x text-3xl text-teal-600"></i>
+                </div>
+                <h3 class="text-lg font-bold text-gray-800">Không có lịch trình vận hành</h3>
+                <p class="text-sm text-gray-400 max-w-sm mt-2">Doanh nghiệp của bạn chưa sở hữu gói trải nghiệm nào. Lịch trình vận hành chi tiết và sơ đồ quản lý bãi trại sẽ tự động xuất hiện khi bạn có gói trải nghiệm.</p>
             </div>
         </div>
     </div>

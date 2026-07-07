@@ -81,8 +81,9 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @HostListener('mouseenter')
   onMouseEnter() {
-    if (this.isHomeHeaderCollapsed) return;
-    this.isOverflowOpen = true;
+    if (this.overflowTabs.length > 0) {
+      this.isOverflowOpen = true;
+    }
   }
 
   @HostListener('mouseleave')
@@ -101,6 +102,10 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public get isHomeHeaderCollapsed(): boolean {
     return this.isHomePage() && !this.isScrolled;
+  }
+
+  public get isHeaderTransparent(): boolean {
+    return this.isHomeHeaderCollapsed && !this.isOverflowOpen;
   }
 
   constructor(
@@ -125,8 +130,11 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
 
-  public openLoginModal() {
+  public loginModalMode: 'login' | 'register' = 'login';
+
+  public openLoginModal(mode: 'login' | 'register' = 'login') {
     this.isMobileMenuOpen = false;
+    this.loginModalMode = mode;
     this.isLoginModalOpen = true;
   }
 
@@ -225,6 +233,17 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       this.navStartX = 0;
     }
+  }
+
+  @HostListener('document:click', ['$event'])
+  public onDocumentClick(event: MouseEvent) {
+    this.isProfileOpen = false;
+    this.isSearchDropdownActive = false;
+  }
+
+  public toggleProfileOpen(event: Event) {
+    event.stopPropagation();
+    this.isProfileOpen = !this.isProfileOpen;
   }
 
   public toggleTheme() {
@@ -465,8 +484,6 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public updateNavigation() {
-    const isProvider = this.currentUser && this.currentUser.role === 'provider';
-
     const travelerTabs = [
       { label: 'Cộng đồng', link: '/community' },
       { label: 'Lịch trình', link: '/tours' },
@@ -474,15 +491,17 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
       { label: 'AI Planner', action: 'ai_planner' }
     ];
 
-    const providerTabs = isProvider ? [
-      { label: 'Thống kê', link: '/partner-dashboard' },
-      { label: 'Dịch vụ', link: '/partner-services' },
-      { label: 'Đơn đặt', link: '/partner-bookings' },
-      { label: 'Quảng cáo', link: '/partner-ads' }
-    ] : [];
+    const providerTabs = [
+      { label: 'Kênh đối tác', link: '/partner-dashboard' },
+      { label: 'Dịch vụ xanh', link: '/partner-services' },
+      { label: 'Đơn đặt chỗ', link: '/partner-bookings' }
+    ];
 
-    // All tabs compete equally for space in the main nav row
-    this.allTabs = [...travelerTabs, ...providerTabs];
+    if (this.currentUser && this.currentUser.role === 'provider') {
+      this.allTabs = [...travelerTabs, ...providerTabs];
+    } else {
+      this.allTabs = [...travelerTabs];
+    }
     this.overflowTabs = [];
   }
 }

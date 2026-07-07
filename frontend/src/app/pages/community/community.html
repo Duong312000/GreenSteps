@@ -1,124 +1,347 @@
 <main class="main-viewport community-viewport">
-    <div class="community-layout">
-        <!-- Main Feed (Left) -->
-        <div class="feed-col">
-            <!-- Create Post Card -->
-            <div class="create-post-card">
-                <h3>Chia sẻ hành trình xanh của bạn</h3>
-                <form (submit)="submitPost($event)">
-                    <textarea 
-                        [(ngModel)]="postText" 
-                        name="postText" 
-                        placeholder="Hãy chia sẻ trải nghiệm giảm thiểu carbon, homestay sinh thái hay xe điện thân thiện môi trường của bạn..." 
-                        required></textarea>
+  <div class="community-layout">
+    <!-- Left Sidebar: shortcuts & user card -->
+    <aside class="fb-left-sidebar">
+      <div class="fb-user-card" *ngIf="currentUser">
+        <div class="fb-user-avatar">{{ getFirstLetter(currentUser.fullname) }}</div>
+        <div class="fb-user-meta">
+          <h4>{{ currentUser.fullname }}</h4>
+          <span class="badge-green-member"><i class="bi bi-shield-check"></i> Thành viên xanh</span>
+        </div>
+      </div>
+      <div class="fb-user-card anonymous" *ngIf="!currentUser">
+        <div class="fb-user-avatar"><i class="bi bi-person-fill"></i></div>
+        <div class="fb-user-meta">
+          <h4>Khách du lịch</h4>
+          <span class="badge-anonymous">Đăng nhập để chia sẻ</span>
+        </div>
+      </div>
+
+      <nav class="fb-nav-links">
+        <a class="nav-link-item active" style="cursor: pointer;"><i class="bi bi-newspaper" style="color: #0E9F6E;"></i> Bản tin xanh</a>
+        <a class="nav-link-item" style="cursor: pointer;" (click)="showCommunityFeature('Thách thức xanh', 'Tham gia các thử thách như trồng cây, dọn rác bãi biển hoặc sử dụng bình nước cá nhân để tích lũy thêm 500 điểm xanh vào ví thưởng!')"><i class="bi bi-trophy-fill" style="color: #F59E0B;"></i> Thách thức tuần</a>
+        <a class="nav-link-item" style="cursor: pointer;" (click)="showCommunityFeature('Xếp hạng Carbon', 'Bảng vinh danh các cá nhân và tập thể đã cắt giảm lượng CO₂ phát thải nhiều nhất trong tháng qua trên hệ thống!')"><i class="bi bi-bar-chart-line-fill" style="color: #3B82F6;"></i> Xếp hạng Carbon</a>
+        <a class="nav-link-item" style="cursor: pointer;" (click)="showCommunityFeature('Nhóm tình nguyện', 'Nơi hội tụ các câu lạc bộ vì môi trường, cùng nhau lên kế hoạch thực hiện các hoạt động bảo vệ hệ sinh thái địa phương.')"><i class="bi bi-people-fill" style="color: #8B5CF6;"></i> Nhóm tình nguyện</a>
+        <a class="nav-link-item" style="cursor: pointer;" (click)="showCommunityFeature('Sự kiện xanh', 'Theo dõi và đăng ký tham gia các chiến dịch trồng rừng bản địa, dọn sạch đại dương và nâng cao nhận thức sắp diễn ra quanh bạn!')"><i class="bi bi-calendar2-event-fill" style="color: #EC4899;"></i> Sự kiện xanh</a>
+      </nav>
+
+      <div class="fb-sidebar-divider"></div>
+
+      <div class="fb-shortcuts-section">
+        <h3>Điểm đến nổi bật</h3>
+        <a class="shortcut-item-link" routerLink="/tours" [queryParams]="{dest: 'Đà Lạt'}"><i class="bi bi-pin-map-fill text-red-500" style="color: #EF4444;"></i> Đà Lạt mộng mơ</a>
+        <a class="shortcut-item-link" routerLink="/tours" [queryParams]="{dest: 'Phú Yên'}"><i class="bi bi-pin-map-fill text-red-500" style="color: #EF4444;"></i> Phú Yên hoang sơ</a>
+        <a class="shortcut-item-link" routerLink="/tours" [queryParams]="{dest: 'Đà Nẵng'}"><i class="bi bi-pin-map-fill text-red-500" style="color: #EF4444;"></i> Đà Nẵng - Hội An</a>
+      </div>
+    </aside>
+
+    <!-- Main Feed (Center) -->
+    <div class="feed-col fb-main-feed">
+      <!-- Facebook Composer Card -->
+      <div class="create-post-card fb-composer-card">
+        <div class="composer-top-row">
+          <div class="post-author-avatar">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</div>
+          <button type="button" class="composer-input-trigger" (click)="showPostDetails = !showPostDetails">
+            {{ currentUser ? currentUser.fullname + ' ơi, bạn đang nghĩ gì thế?' : 'Bạn đang nghĩ gì thế?' }}
+          </button>
+        </div>
+
+        <div class="fb-composer-divider" *ngIf="showPostDetails || postText"></div>
+
+        <form (submit)="submitPost($event)" *ngIf="showPostDetails || postText">
+          <textarea 
+            [(ngModel)]="postText" 
+            name="postText" 
+            placeholder="Hãy chia sẻ trải nghiệm giảm thiểu carbon, homestay sinh thái hay xe điện thân thiện môi trường của bạn..." 
+            required></textarea>
+          
+          <div class="post-controls-row">
+            <!-- Select Dest (Bắt buộc) -->
+            <div class="control-group">
+              <label><i class="bi bi-geo-alt-fill text-red-500" style="color: #EF4444;"></i> Điểm đến *:</label>
+              <select [(ngModel)]="postDest" name="postDest" required>
+                <option value="Đà Lạt">Đà Lạt</option>
+                <option value="Phú Yên">Phú Yên</option>
+                <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>
+              </select>
+            </div>
+
+            <!-- Select Days (Tùy chọn) -->
+            <div class="control-group">
+              <label><i class="bi bi-calendar-event text-blue-500" style="color: #3B82F6;"></i> Số ngày:</label>
+              <select [(ngModel)]="postDays" name="postDays">
+                <option [value]="0">Không có</option>
+                <option [value]="1">1 ngày</option>
+                <option [value]="2">2 ngày</option>
+                <option [value]="3">3 ngày</option>
+                <option [value]="4">4 ngày</option>
+                <option [value]="5">5 ngày</option>
+              </select>
+            </div>
+
+            <!-- Star Rating Selection (Bắt buộc) -->
+            <div class="control-group rating-stars-select">
+              <label><i class="bi bi-star-fill text-yellow-500" style="color: #F59E0B;"></i> Đánh giá *:</label>
+              <div class="stars-row">
+                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 1" (click)="setRating(1)"></i>
+                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 2" (click)="setRating(2)"></i>
+                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 3" (click)="setRating(3)"></i>
+                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 4" (click)="setRating(4)"></i>
+                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 5" (click)="setRating(5)"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Image Selection/Upload Field -->
+          <div class="composer-media-upload-section">
+            <label class="media-upload-label">
+              <i class="bi bi-image" style="color: #10B981;"></i> Ảnh đính kèm chuyến đi (Tùy chọn):
+            </label>
+            
+            <div style="display: flex; gap: 12px; align-items: center; width: 100%;">
+              <!-- File input selector -->
+              <label class="custom-file-upload">
+                <i class="bi bi-cloud-arrow-up-fill" style="color: #0E9F6E; font-size: 14px;"></i> Tải ảnh từ máy
+                <input type="file" (change)="onFileSelected($event)" accept="image/*" style="display: none;">
+              </label>
+              
+              <!-- Or paste URL text option -->
+              <input type="text" [(ngModel)]="postImage" name="postImage" placeholder="Hoặc dán URL ảnh tại đây..." class="url-input-box">
+            </div>
+
+            <!-- Upload progress indicator -->
+            <div *ngIf="isUploading" class="upload-loader">
+              <div class="spinner-small"></div>
+              Đang tải ảnh lên máy chủ...
+            </div>
+
+            <!-- Image Preview Thumbnail -->
+            <div *ngIf="postImage" class="composer-image-preview">
+              <img [src]="postImage">
+              <button (click)="postImage = ''" type="button" class="btn-remove-preview"><i class="bi bi-x"></i></button>
+            </div>
+          </div>
+
+          <div class="form-actions-right">
+            <button type="button" class="btn-cancel-post" (click)="showPostDetails = false; postText = ''">Hủy</button>
+            <button type="submit" class="btn-post-submit">Đăng bài viết</button>
+          </div>
+        </form>
+
+        <div class="composer-bottom-actions" *ngIf="!showPostDetails && !postText">
+          <button class="action-btn" (click)="showPostDetails = true"><i class="bi bi-image text-emerald-500" style="color: #10B981;"></i> Ảnh/Video</button>
+          <button class="action-btn" (click)="showPostDetails = true"><i class="bi bi-geo-alt-fill text-red-500" style="color: #EF4444;"></i> Check-in</button>
+          <button class="action-btn" (click)="showPostDetails = true"><i class="bi bi-emoji-smile-fill text-yellow-500" style="color: #F59E0B;"></i> Đánh giá sao</button>
+        </div>
+      </div>
+
+      <!-- Feed Posts List -->
+      <div class="posts-feed-container">
+        <div class="feed-post-card fb-post-card" *ngFor="let post of posts">
+          <div class="post-header">
+            <div class="post-author-avatar">{{ getFirstLetter(post.author) }}</div>
+            <div class="post-author-info">
+              <h4>{{ post.author }}</h4>
+              <div class="post-meta-subline">
+                <span class="post-time">{{ post.time || 'Vừa xong' }}</span>
+                <span class="meta-dot">•</span>
+                <span class="post-dest-badge"><i class="bi bi-geo-alt-fill"></i> {{ post.dest }}</span>
+                <span class="meta-dot" *ngIf="post.days > 0">•</span>
+                <span class="post-days-badge" *ngIf="post.days > 0">{{ post.days }} ngày</span>
+              </div>
+            </div>
+            <div class="post-stars-rating" *ngIf="post.rating > 0">
+              <i class="bi bi-star-fill" *ngFor="let s of [1,2,3,4,5]" [ngStyle]="{'color': s <= post.rating ? '#ffb300' : '#e0e0e0'}"></i>
+            </div>
+          </div>
+
+          <div class="post-body">
+            <p class="post-text-content">{{ post.text }}</p>
+            
+            <!-- Embedded Trip Banner -->
+            <div class="post-trip-banner-pill" *ngIf="post.tripName">
+              <span class="trip-name-text"><i class="bi bi-leaf-fill"></i> {{ post.tripName }}</span>
+            </div>
+
+            <!-- Post Image if available -->
+            <div class="post-media-container" *ngIf="post.image">
+              <img [src]="post.image" [alt]="post.tripName || 'Community Image'" class="post-image-embed">
+            </div>
+          </div>
+
+          <!-- Likes and Comments count status -->
+          <div class="fb-post-stats">
+            <span class="likes-count"><i class="bi bi-hand-thumbs-up-fill text-blue-500" style="color: #1877F2;"></i> {{ post.likes }} lượt thích</span>
+            <span class="comments-count">{{ post.comments }} bình luận</span>
+          </div>
+
+          <div class="fb-post-actions-divider"></div>
+
+          <div class="post-footer-actions fb-footer-actions">
+            <button class="post-action-btn fb-action-btn" (click)="handleLike(post)" [class.active-like]="likedPostsSet.has(post.id)">
+              <i class="bi" [ngClass]="likedPostsSet.has(post.id) ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'"></i> Thích
+            </button>
+            <button class="post-action-btn fb-action-btn" (click)="toggleComments(post)">
+              <i class="bi bi-chat-text"></i> Bình luận
+            </button>
+          </div>
+
+          <!-- Comments dropdown container -->
+          <div class="comments-section-container fb-comments-section" *ngIf="expandedComments[post.id]">
+            
+            <!-- List of Comments -->
+            <div class="comments-list">
+              <div class="comment-item-row" *ngFor="let comment of postComments[post.id]">
+                <div class="comment-avatar">{{ getFirstLetter(comment.user?.fullname || 'U') }}</div>
+                
+                <div class="comment-block-wrapper">
+                  <div class="comment-content-card fb-speech-bubble">
+                    <strong>{{ comment.user?.fullname || 'Khách du lịch' }}</strong>
+                    <p>{{ comment.text }}</p>
                     
-                    <div class="post-controls-row">
-                        <!-- Select Dest -->
-                        <div class="control-group">
-                            <label><i class="bi bi-geo-alt-fill"></i> Điểm đến:</label>
-                            <select [(ngModel)]="postDest" name="postDest">
-                                <option value="Đà Lạt">Đà Lạt</option>
-                                <option value="Phú Yên">Phú Yên</option>
-                                <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>
-                            </select>
-                        </div>
-
-                        <!-- Select Days -->
-                        <div class="control-group">
-                            <label><i class="bi bi-calendar-event"></i> Số ngày:</label>
-                            <select [(ngModel)]="postDays" name="postDays">
-                                <option [value]="1">1 ngày</option>
-                                <option [value]="2">2 ngày</option>
-                                <option [value]="3">3 ngày</option>
-                                <option [value]="4">4 ngày</option>
-                                <option [value]="5">5 ngày</option>
-                            </select>
-                        </div>
-
-                        <!-- Star Rating Selection -->
-                        <div class="control-group rating-stars-select">
-                            <label>Đánh giá chuyến đi:</label>
-                            <div class="stars-row">
-                                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 1" (click)="setRating(1)"></i>
-                                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 2" (click)="setRating(2)"></i>
-                                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 3" (click)="setRating(3)"></i>
-                                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 4" (click)="setRating(4)"></i>
-                                <i class="bi bi-star-fill star-icon" [class.active]="postRating >= 5" (click)="setRating(5)"></i>
-                            </div>
-                        </div>
+                    <!-- Embedded Comment Image -->
+                    <div class="comment-media-embed" *ngIf="comment.imageUrl">
+                      <img [src]="comment.imageUrl" alt="Comment image attachment">
                     </div>
+                  </div>
+                  
+                  <div class="comment-actions-meta">
+                    <span class="comment-time">{{ comment.createdAt | date:'HH:mm dd/MM' }}</span>
+                    <button class="btn-reply-link" (click)="toggleReplyBox(comment.id)"><i class="bi bi-reply-fill"></i> Trả lời</button>
+                  </div>
 
-                    <div class="form-actions-right">
-                        <button type="submit" class="btn-post-submit">Đăng bài viết</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Feed Posts List -->
-            <div class="posts-feed-container">
-                <div class="feed-post-card" *ngFor="let post of posts">
-                    <div class="post-header">
-                        <div class="post-author-avatar">{{ getFirstLetter(post.author) }}</div>
-                        <div class="post-author-info">
-                            <h4>{{ post.author }}</h4>
-                            <span class="post-time">{{ post.time || 'Vừa xong' }}</span>
+                  <!-- Nested Replies (Level 2) -->
+                  <div class="replies-list" *ngIf="comment.replies && comment.replies.length > 0">
+                    <div class="reply-item-row" *ngFor="let reply of comment.replies">
+                      <div class="reply-avatar">{{ getFirstLetter(reply.user?.fullname || 'U') }}</div>
+                      
+                      <div class="reply-block-wrapper">
+                        <div class="reply-content-card fb-speech-bubble">
+                          <strong>{{ reply.user?.fullname || 'Khách du lịch' }}</strong>
+                          <p>{{ reply.text }}</p>
                         </div>
-                        <div class="post-stars-rating">
-                            <i class="bi bi-star-fill" *ngFor="let s of [1,2,3,4,5]" [ngStyle]="{'color': s <= post.rating ? '#ffb300' : '#e0e0e0'}"></i>
+                        <div class="reply-actions-meta">
+                          <span class="reply-time">{{ reply.createdAt | date:'HH:mm dd/MM' }}</span>
                         </div>
+                      </div>
                     </div>
+                  </div>
 
-                    <div class="post-body">
-                        <p class="post-text-content">{{ post.text }}</p>
-                        
-                        <!-- Embedded Trip Banner -->
-                        <div class="post-trip-banner-pill" *ngIf="post.tripName">
-                            <span class="trip-dest-badge"><i class="bi bi-geo-alt-fill"></i> {{ post.dest }}</span>
-                            <span class="trip-name-text">{{ post.tripName }} • {{ post.days }} ngày</span>
-                        </div>
-
-                        <!-- Post Image if available -->
-                        <div class="post-media-container" *ngIf="post.image">
-                            <img [src]="post.image" [alt]="post.tripName" class="post-image-embed">
-                        </div>
-                    </div>
-
-                    <div class="post-footer-actions">
-                        <button class="post-action-btn" (click)="handleLike(post)">
-                            <i class="bi bi-hand-thumbs-up"></i> Thích ({{ post.likes }})
-                        </button>
-                        <button class="post-action-btn">
-                            <i class="bi bi-chat-text"></i> Bình luận ({{ post.comments }})
-                        </button>
-                    </div>
+                  <!-- Nested Reply Input box -->
+                  <div *ngIf="activeReplyTarget[comment.id]" class="nested-reply-input-box">
+                    <input 
+                      type="text" 
+                      [(ngModel)]="replyInputs[comment.id]" 
+                      placeholder="Viết phản hồi..." 
+                    (keyup.enter)="submitComment(post.id, comment.id)">
+                    <button (click)="submitComment(post.id, comment.id)"><i class="bi bi-send-fill"></i></button>
+                  </div>
                 </div>
+              </div>
+              
+              <div *ngIf="!postComments[post.id] || postComments[post.id].length === 0" class="no-comments-placeholder">
+                Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ cảm nghĩ!
+              </div>
             </div>
-        </div>
 
-        <!-- Sidebar Widgets (Right) -->
-        <div class="sidebar-col">
-            <!-- Sustainable Tips Widget -->
-            <div class="community-widget tip-widget">
-                <h3>Mẹo Du Lịch Xanh</h3>
-                <ul>
-                    <li>
-                        <div class="bullet-icon"><i class="bi bi-water"></i></div>
-                        <p>Mang theo bình nước cá nhân để hạn chế tối đa chai nhựa dùng một lần.</p>
-                    </li>
-                    <li>
-                        <div class="bullet-icon"><i class="bi bi-bicycle"></i></div>
-                        <p>Ưu tiên đi bộ, thuê xe đạp hoặc xe máy điện VinFast khi di chuyển nội đô.</p>
-                    </li>
-                    <li>
-                        <div class="bullet-icon"><i class="bi bi-house-door"></i></div>
-                        <p>Lựa chọn nghỉ chân tại Homestay bản địa hoặc Eco-resort sử dụng năng lượng mặt trời.</p>
-                    </li>
-                    <li>
-                        <div class="bullet-icon"><i class="bi bi-trash"></i></div>
-                        <p>Luôn thu dọn rác thải sạch sẽ khi cắm trại hoang dã hoặc trekking đồi núi.</p>
-                    </li>
-                </ul>
+            <!-- Add Root Comment Input with Photo Upload -->
+            <div class="add-comment-row fb-add-comment-row">
+              <div class="comment-avatar-small">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</div>
+              
+              <div class="comment-input-container">
+                <!-- Image attachment thumb preview -->
+                <div class="comment-image-draft-preview" *ngIf="commentImageDrafts[post.id]">
+                  <img [src]="commentImageDrafts[post.id]">
+                  <button type="button" class="btn-clear-comment-img" (click)="removeCommentImage(post.id)">&times;</button>
+                </div>
+
+                <div class="comment-input-main-line">
+                  <input 
+                    type="text" 
+                    [(ngModel)]="commentInputs[post.id]" 
+                    placeholder="Viết bình luận công khai..." 
+                    (keyup.enter)="submitComment(post.id)">
+                  
+                  <!-- Photo attachment button -->
+                  <label class="comment-photo-attach-btn">
+                    <i class="bi bi-camera-fill"></i>
+                    <input type="file" (change)="onCommentFileSelected($event, post.id)" accept="image/*" style="display: none;">
+                  </label>
+                  
+                  <button type="button" class="btn-comment-submit-arrow" (click)="submitComment(post.id)"><i class="bi bi-send-fill"></i></button>
+                </div>
+                
+                <!-- Comment upload loader -->
+                <div *ngIf="isCommentUploading[post.id]" class="comment-upload-loader">
+                  Đang tải ảnh bình luận lên...
+                </div>
+              </div>
             </div>
+
+          </div>
         </div>
+      </div>
     </div>
+
+    <!-- Sidebar Widgets (Right) -->
+    <aside class="fb-right-sidebar">
+      <!-- Sustainable Tips Widget -->
+      <div class="community-widget tip-widget fb-widget">
+        <h3>Mẹo Du Lịch Xanh</h3>
+        <ul>
+          <li>
+            <div class="bullet-icon"><i class="bi bi-water"></i></div>
+            <p>Mang theo bình nước cá nhân để hạn chế tối đa chai nhựa dùng một lần.</p>
+          </li>
+          <li>
+            <div class="bullet-icon"><i class="bi bi-bicycle"></i></div>
+            <p>Ưu tiên đi bộ, thuê xe đạp hoặc xe máy điện VinFast khi di chuyển nội đô.</p>
+          </li>
+          <li>
+            <div class="bullet-icon"><i class="bi bi-house-door"></i></div>
+            <p>Lựa chọn nghỉ chân tại Homestay bản địa hoặc Eco-resort sử dụng năng lượng mặt trời.</p>
+          </li>
+          <li>
+            <div class="bullet-icon"><i class="bi bi-trash"></i></div>
+            <p>Luôn thu dọn rác thải sạch sẽ khi cắm trại hoang dã hoặc trekking đồi núi.</p>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Featured Partners Widget -->
+      <div class="community-widget partners-widget fb-widget">
+        <h3>Nhà Cung Cấp Nổi Bật</h3>
+        <div class="sidebar-partners-list">
+          <div class="partner-row-item">
+            <div class="partner-avatar"><i class="bi bi-building"></i></div>
+            <div class="partner-info">
+              <h5>Dahlia Hotel Dalat</h5>
+              <span>Khách sạn xanh tiêu chuẩn Co₂</span>
+            </div>
+          </div>
+          <div class="partner-row-item">
+            <div class="partner-avatar"><i class="bi bi-egg-fried"></i></div>
+            <div class="partner-info">
+              <h5>Lẩu gà Tao Ngộ</h5>
+              <span>Ẩm thực bản địa hữu cơ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Custom Premium Alert Dialog Modal (Center Screen) -->
+  <div class="custom-alert-overlay" *ngIf="alertVisible">
+    <div class="custom-alert-card">
+      <div class="custom-alert-icon" [ngClass]="alertType">
+        <i class="bi" [ngClass]="alertIcon"></i>
+      </div>
+      <h3>{{ alertTitle }}</h3>
+      <p>{{ alertMessage }}</p>
+      <div class="custom-alert-actions">
+        <button type="button" class="btn-alert-ok" (click)="closeAlert()">Đã hiểu</button>
+      </div>
+    </div>
+  </div>
 </main>

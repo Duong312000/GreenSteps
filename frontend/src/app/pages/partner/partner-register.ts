@@ -24,6 +24,12 @@ export class PartnerRegisterComponent implements OnInit {
   public bizDesc: string = '';
   public agreeTerms: boolean = false;
 
+  // Terminal Approval Modal State
+  public terminalApprovalState: 'pending' | 'success' | 'error' = 'pending';
+  public terminalApprovalTitle: string = 'Đang Chờ Phê Duyệt';
+  public terminalApprovalMsg: string = '';
+  public isTerminalModalOpen: boolean = false;
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -62,12 +68,30 @@ export class PartnerRegisterComponent implements OnInit {
       phone: this.bizPhone || this.currentUser.phone
     };
 
-    const res = await this.authService.updateProfile(userId, updateData);
-    if (res.success) {
-      alert('Đăng ký Kênh nhà cung cấp đối tác thành công! Hệ thống đã kích hoạt phân hệ Quản lý dịch vụ.');
-      this.router.navigate(['/partner-dashboard']);
-    } else {
-      alert(res.message || 'Đăng ký đối tác thất bại. Vui lòng thử lại!');
+    this.terminalApprovalState = 'pending';
+    this.terminalApprovalTitle = 'Đang Chờ Phê Duyệt';
+    this.terminalApprovalMsg = 'Yêu cầu đăng ký Nhà cung cấp đối tác đang chờ Quản trị viên duyệt trên Terminal máy chủ.';
+    this.isTerminalModalOpen = true;
+
+    try {
+      const res = await this.authService.updateProfile(userId, updateData);
+      if (res.success) {
+        this.terminalApprovalState = 'success';
+        this.terminalApprovalTitle = 'Đăng Ký Thành Công';
+        this.terminalApprovalMsg = 'Chúc mừng! Đăng ký Kênh nhà cung cấp đối tác thành công. Phân hệ Quản lý dịch vụ đã được kích hoạt.';
+        setTimeout(() => {
+          this.isTerminalModalOpen = false;
+          this.router.navigate(['/partner-dashboard']);
+        }, 2000);
+      } else {
+        this.terminalApprovalState = 'error';
+        this.terminalApprovalTitle = 'Đăng Ký Thất Bại';
+        this.terminalApprovalMsg = res.message || 'Đăng ký đối tác bị từ chối hoặc thất bại.';
+      }
+    } catch (err) {
+      this.terminalApprovalState = 'error';
+      this.terminalApprovalTitle = 'Đăng Ký Thất Bại';
+      this.terminalApprovalMsg = 'Đăng ký đối tác thất bại hoặc bị từ chối.';
     }
   }
 }

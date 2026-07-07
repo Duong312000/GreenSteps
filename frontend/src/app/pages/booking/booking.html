@@ -155,34 +155,37 @@
 
       <article class="payment-card">
         <h2>Chọn cách thanh toán</h2>
-        <label class="pay-choice" [class.active]="payTiming === 'now'">
-          <input type="radio" name="payTiming" value="now" [(ngModel)]="payTiming">
-          <span>
+        <div class="pay-choice" [class.active]="payTiming === 'now'" (click)="payTiming = 'now'">
+          <input type="radio" name="payTiming" value="now" [(ngModel)]="payTiming" id="payTimingNow" (click)="$event.stopPropagation()">
+          <label for="payTimingNow" (click)="$event.stopPropagation()" style="cursor:pointer; display:grid; gap:4px;">
             <b>Thanh toán đặt cọc ngay</b>
             <small>Giữ chỗ nhanh hơn, xác nhận đặt cọc ngay sau khi thanh toán.</small>
-          </span>
-        </label>
-        <label class="pay-choice" [class.active]="payTiming === 'later'">
-          <input type="radio" name="payTiming" value="later" [(ngModel)]="payTiming">
-          <span>
+          </label>
+        </div>
+        <div class="pay-choice" [class.active]="payTiming === 'later'" (click)="payTiming = 'later'">
+          <input type="radio" name="payTiming" value="later" [(ngModel)]="payTiming" id="payTimingLater" (click)="$event.stopPropagation()">
+          <label for="payTimingLater" (click)="$event.stopPropagation()" style="cursor:pointer; display:grid; gap:4px;">
             <b>Thanh toán sau / giữ chỗ tạm thời</b>
             <small>GreenSteps sẽ liên hệ xác nhận trước khi thanh toán.</small>
-          </span>
-        </label>
+          </label>
+        </div>
       </article>
 
       <article class="payment-card">
         <h2>Phương thức thanh toán</h2>
         <p class="payment-method-error" *ngIf="paymentError('paymentMethod')">{{ paymentError('paymentMethod') }}</p>
         <div class="payment-method-list">
-          <label class="payment-method-card" *ngFor="let method of paymentMethods" [class.active]="paymentMethod === method.id">
-            <input type="radio" name="paymentMethod" [value]="method.id" [(ngModel)]="paymentMethod">
+          <div class="payment-method-card" *ngFor="let method of paymentMethods" [class.active]="paymentMethod === method.id" [style.opacity]="method.id === 'wallet' && !walletRegistered ? '0.85' : '1'" (click)="paymentMethod = method.id" style="cursor:pointer;">
+            <input type="radio" name="paymentMethod" [value]="method.id" [(ngModel)]="paymentMethod" [id]="'payMethod_' + method.id" (click)="$event.stopPropagation()">
             <i class="bi" [ngClass]="method.icon"></i>
-            <span>
-              <b>{{ method.label }}</b>
+            <label [for]="'payMethod_' + method.id" (click)="$event.stopPropagation()" style="cursor:pointer; display:grid; gap:4px; text-align:left;">
+              <b style="display:flex; align-items:center; gap:8px;">
+                {{ method.label }}
+                <span style="font-size: 10px; font-weight: 700; background-color: #FEF3C7; color: #B45309; padding: 2px 6px; border-radius: 4px; display: inline-block; border: 1px solid #FDE68A;" *ngIf="method.id === 'wallet' && !walletRegistered">Chưa kích hoạt</span>
+              </b>
               <small>{{ method.desc }}</small>
-            </span>
-          </label>
+            </label>
+          </div>
         </div>
 
         <div class="card-form" *ngIf="paymentMethod === 'card'">
@@ -213,10 +216,10 @@
       </article>
 
       <article class="payment-card final-payment-card">
-        <label class="terms-check" [class.invalid]="paymentError('acceptedTerms')">
-          <input type="checkbox" name="acceptedTerms" [(ngModel)]="acceptedTerms">
-          <span>Tôi đồng ý với điều kiện đặt cọc, chính sách hủy và điều khoản của GreenSteps.</span>
-        </label>
+        <div class="terms-check" [class.invalid]="paymentError('acceptedTerms')" (click)="acceptedTerms = !acceptedTerms" style="cursor:pointer; display:flex; align-items:flex-start; gap:10px;">
+          <input type="checkbox" name="acceptedTerms" [(ngModel)]="acceptedTerms" id="acceptedTermsCheck" (click)="$event.stopPropagation()">
+          <label for="acceptedTermsCheck" (click)="$event.stopPropagation()" style="font-weight: 800; color: #30443c; cursor: pointer; text-align:left;">Tôi đồng ý với điều kiện đặt cọc, chính sách hủy và điều khoản của GreenSteps.</label>
+        </div>
         <small class="terms-error" *ngIf="paymentError('acceptedTerms')">{{ paymentError('acceptedTerms') }}</small>
         <button type="button" class="booking-submit" [disabled]="!paymentReady" (click)="completeDeposit()">Hoàn tất đặt cọc <i class="bi bi-lock-fill"></i></button>
       </article>
@@ -325,4 +328,19 @@
   </ng-template>
 
   <div class="booking-toast" *ngIf="toastMessage">{{ toastMessage }}</div>
+
+  <!-- Custom Premium Alert Dialog Modal (Center Screen) -->
+  <div class="custom-alert-overlay" *ngIf="alertVisible" (click)="closeAlert()">
+    <div class="custom-alert-card" (click)="$event.stopPropagation()">
+      <div class="custom-alert-icon" [ngClass]="alertType">
+        <i class="bi" [ngClass]="alertIcon"></i>
+      </div>
+      <h3>{{ alertTitle }}</h3>
+      <p>{{ alertMessage }}</p>
+      <div class="custom-alert-actions">
+        <button class="btn-alert-ok" (click)="closeAlert()">Đóng</button>
+        <button class="btn-alert-action" *ngIf="alertActionUrl" (click)="triggerAlertAction()">{{ alertActionUrl === '/booking/confirm' ? 'Xác nhận' : 'Trang cá nhân' }}</button>
+      </div>
+    </div>
+  </div>
 </main>

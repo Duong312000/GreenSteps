@@ -45,6 +45,7 @@ export interface Tour {
   badges?: string[];
   tags?: string[];
   data: Activity[][];
+  isRecommended?: boolean;
 }
 
 export interface Itinerary {

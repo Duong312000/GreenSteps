@@ -1,12 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, OnDestroy, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 type AuthStep = 'login' | 'forgot' | 'verify' | 'reset' | 'resetDone';
 type VerifyMethod = 'email' | 'phone';
-type VerifyPurpose = 'login' | 'forgot';
 type PasswordField = 'reset' | 'resetConfirm';
 
 @Component({
@@ -16,24 +15,39 @@ type PasswordField = 'reset' | 'resetConfirm';
   templateUrl: './login-modal.html',
   styleUrls: ['./login-modal.css']
 })
-export class LoginModalComponent implements AfterViewInit, OnDestroy {
+export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
+  @Input() initialMode: 'login' | 'register' = 'login';
   @Output() close = new EventEmitter<void>();
   @ViewChild('loginDialog') loginDialog!: ElementRef<HTMLElement>;
   @ViewChild('firstField') firstField?: ElementRef<HTMLInputElement>;
 
+  // Component state
+  public mode: 'login' | 'register' = 'login';
   public authStep: AuthStep = 'login';
-  public verificationMethod: VerifyMethod = 'email';
-  public verificationPurpose: VerifyPurpose = 'login';
-  public identifier = '';
-  public otpDigits = ['', '', '', '', '', ''];
-  public resendSeconds = 59;
-
-  public showResetPassword = false;
-  public showResetConfirm = false;
   public isSubmitting = false;
   public errorMessage = '';
   public successMessage = '';
+  
+  // Login Form
+  public loginUsername = '';
+  public loginPassword = '';
+  public showPassword = false;
+  public rememberMe = false;
 
+  // Register Form
+  public registerUsername = '';
+  public registerFullname = '';
+  public registerEmail = '';
+  public registerPhone = '';
+  public registerPassword = '';
+
+  // Password Recovery / OTP
+  public identifier = ''; // Recovery email
+  public otpDigits = ['', '', '', '', '', ''];
+  public resendSeconds = 59;
+  public verificationMethod: VerifyMethod = 'email';
+  public showResetPassword = false;
+  public showResetConfirm = false;
   public resetForm = {
     password: '',
     confirmPassword: ''
@@ -46,6 +60,10 @@ export class LoginModalComponent implements AfterViewInit, OnDestroy {
     private authService: AuthService,
     private router: Router
   ) {}
+
+  ngOnInit() {
+    this.mode = this.initialMode;
+  }
 
   ngAfterViewInit() {
     document.body.style.overflow = 'hidden';
@@ -75,45 +93,100 @@ export class LoginModalComponent implements AfterViewInit, OnDestroy {
     this.focusFirstField();
   }
 
-  public openRecovery() {
-    this.identifier = '';
-    this.verificationMethod = 'email';
-    this.verificationPurpose = 'forgot';
-    this.setStep('forgot');
-  }
-
-  public chooseRecoveryMethod(method: VerifyMethod) {
-    this.verificationMethod = method;
-    this.identifier = '';
+  public setMode(mode: 'login' | 'register') {
+    this.mode = mode;
     this.errorMessage = '';
+    this.successMessage = '';
     this.focusFirstField();
   }
 
-  public togglePassword(field: PasswordField) {
-    if (field === 'reset') this.showResetPassword = !this.showResetPassword;
-    if (field === 'resetConfirm') this.showResetConfirm = !this.showResetConfirm;
-  }
-
-  public alertSocial(provider: string) {
-    alert(`GreenSteps đang tích hợp đăng nhập ${provider}. Vui lòng sử dụng email hoặc số điện thoại trước nhé.`);
-  }
-
-  public onContinueSubmit(event: Event) {
+  // Handle Standard Password-based Login
+  public async onLoginSubmit(event: Event) {
     event.preventDefault();
     this.errorMessage = '';
-    if (this.isSubmitting || !this.validateIdentifier()) return;
 
-    this.verificationPurpose = 'login';
-    this.openVerify('Mã xác thực đã được gửi đến thiết bị của bạn.');
+    if (!this.loginUsername.trim() || !this.loginPassword.trim()) {
+      this.errorMessage = 'Vui lòng điền đầy đủ thông tin đăng nhập.';
+      return;
+    }
+
+    this.isSubmitting = true;
+    const res = await this.authService.login(this.loginUsername.trim(), this.loginPassword.trim());
+    this.isSubmitting = false;
+
+    if (res.success && res.user) {
+      this.requestClose();
+      this.router.navigate(['/profile']);
+      return;
+    }
+
+    this.errorMessage = res.message || 'Sai tên đăng nhập hoặc mật khẩu!';
+  }
+
+  // Handle Standard Password-based Register
+  public async onRegisterSubmit(event: Event) {
+    event.preventDefault();
+    this.errorMessage = '';
+
+    const username = this.registerUsername.trim();
+    const fullname = this.registerFullname.trim();
+    const email = this.registerEmail.trim();
+    const phone = this.registerPhone.trim();
+    const password = this.registerPassword;
+
+    if (!username || !fullname || !email || !phone || !password) {
+      this.errorMessage = 'Vui lòng điền đầy đủ tất cả các trường.';
+      return;
+    }
+
+    if (username.length < 3) {
+      this.errorMessage = 'Tên đăng nhập phải chứa ít nhất 3 ký tự.';
+      return;
+    }
+
+    if (password.length < 6) {
+      this.errorMessage = 'Mật khẩu phải chứa ít nhất 6 ký tự.';
+      return;
+    }
+
+    this.isSubmitting = true;
+    const res = await this.authService.register({
+      username,
+      fullname,
+      email,
+      phone,
+      password,
+      role: 'traveler'
+    });
+    this.isSubmitting = false;
+
+    if (res.success && res.user) {
+      this.requestClose();
+      this.router.navigate(['/profile']);
+      return;
+    }
+
+    this.errorMessage = res.message || 'Đăng ký tài khoản thất bại. Vui lòng thử lại!';
+  }
+
+  // Recovery Flows
+  public openRecovery() {
+    this.identifier = '';
+    this.verificationMethod = 'email';
+    this.setStep('forgot');
   }
 
   public onForgotSubmit(event: Event) {
     event.preventDefault();
     this.errorMessage = '';
-    if (!this.validateIdentifier()) return;
+    const email = this.identifier.trim();
 
-    this.verificationPurpose = 'forgot';
-    this.openVerify('Mã xác thực khôi phục mật khẩu đã được gửi.');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.errorMessage = 'Vui lòng nhập địa chỉ email hợp lệ.';
+      return;
+    }
+
+    this.openVerify('Mã xác thực khôi phục mật khẩu đã được gửi đến email của bạn.');
   }
 
   public onOtpInput(event: Event, index: number) {
@@ -146,26 +219,13 @@ export class LoginModalComponent implements AfterViewInit, OnDestroy {
     }
 
     this.clearCountdown();
-    if (this.verificationPurpose === 'forgot') {
+    
+    // Accept mock OTP code '123456' for verification bypass
+    if (otp === '123456' || otp === '000000') {
       this.setStep('reset');
-      return;
+    } else {
+      this.errorMessage = 'Mã xác thực không hợp lệ. Vui lòng nhập mã thử nghiệm 123456.';
     }
-
-    this.isSubmitting = true;
-    const res = await this.authService.loginOrCreateWithIdentifier(this.identifier);
-    this.isSubmitting = false;
-
-    if (res.success && res.user) {
-      this.requestClose();
-      this.router.navigate(['/profile']);
-      return;
-    }
-
-    this.errorMessage = res.message || 'Không thể đăng nhập lúc này. Vui lòng thử lại.';
-  }
-
-  public goBackFromVerify() {
-    this.setStep(this.verificationPurpose === 'forgot' ? 'forgot' : 'login');
   }
 
   public resendOtp() {
@@ -176,65 +236,22 @@ export class LoginModalComponent implements AfterViewInit, OnDestroy {
   public onResetSubmit(event: Event) {
     event.preventDefault();
     this.errorMessage = '';
-    if (!this.validateReset()) return;
+    
+    if (this.resetForm.password.length < 6) {
+      this.errorMessage = 'Mật khẩu mới phải chứa ít nhất 6 ký tự.';
+      return;
+    }
+
+    if (this.resetForm.password !== this.resetForm.confirmPassword) {
+      this.errorMessage = 'Mật khẩu xác nhận không khớp.';
+      return;
+    }
+
     this.setStep('resetDone');
   }
 
-  public get identifierIcon() {
-    if (!this.identifier.trim()) return 'bi-person';
-    return this.isEmail(this.identifier) ? 'bi-envelope' : 'bi-telephone';
-  }
-
-  public get passwordStrength() {
-    const password = this.resetForm.password;
-    let score = 0;
-    if (password.length >= 8) score++;
-    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
-    if (/\d/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
-    return score >= 4 ? 'Mạnh' : score >= 2 ? 'Trung bình' : 'Yếu';
-  }
-
-  private validateIdentifier() {
-    const value = this.identifier.trim();
-    if (!value) {
-      this.errorMessage = 'Vui lòng nhập email hoặc số điện thoại.';
-      return false;
-    }
-
-    const method: VerifyMethod = this.isEmail(value) ? 'email' : 'phone';
-    this.verificationMethod = method;
-    this.identifier = value;
-
-    if (method === 'phone' && !this.isPhone(value)) {
-      this.errorMessage = 'Email hoặc số điện thoại không hợp lệ.';
-      return false;
-    }
-    return true;
-  }
-
-  private validateReset() {
-    if (!this.isStrongEnough(this.resetForm.password)) {
-      this.errorMessage = 'Mật khẩu phải có ít nhất 8 ký tự.';
-      return false;
-    }
-    if (this.resetForm.password !== this.resetForm.confirmPassword) {
-      this.errorMessage = 'Xác nhận mật khẩu không khớp.';
-      return false;
-    }
-    return true;
-  }
-
-  private isEmail(value: string) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-  }
-
-  private isPhone(value: string) {
-    return /^(0|\+84)[0-9\s.-]{8,13}$/.test(value.trim());
-  }
-
-  private isStrongEnough(value: string) {
-    return value.length >= 8;
+  public alertSocial(provider: string) {
+    alert(`GreenSteps đang tích hợp đăng nhập ${provider}. Vui lòng đăng ký tài khoản trước nhé.`);
   }
 
   private openVerify(message: string) {
@@ -276,11 +293,11 @@ export class LoginModalComponent implements AfterViewInit, OnDestroy {
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
     if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
       last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
       event.preventDefault();
+    } else if (!event.shiftKey && document.activeElement === last) {
       first.focus();
+      event.preventDefault();
     }
   }
 }

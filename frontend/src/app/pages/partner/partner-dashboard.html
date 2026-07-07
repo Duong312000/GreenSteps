@@ -15,10 +15,10 @@
         <!-- ROW 1: Statistical Cards Grid (KPI Overview) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Card 1: Doanh thu -->
-            <div class="bg-white border border-gray-200 rounded p-5 flex flex-col justify-between transition-all hover:shadow-sm hover:border-[#1E5631]/30">
+            <div class="bg-white border border-gray-200 rounded p-5 flex flex-col justify-between transition-all hover:shadow-sm hover:border-[#0E9F6E]/30">
                 <div class="flex items-center justify-between mb-3">
                     <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng doanh thu</span>
-                    <div class="w-8 h-8 rounded bg-[#E8F5E9] text-[#1E5631] flex items-center justify-center">
+                    <div class="w-8 h-8 rounded bg-[#ECFDF5] text-[#0E9F6E] flex items-center justify-center">
                         <i class="bi bi-wallet2 text-base"></i>
                     </div>
                 </div>
@@ -26,7 +26,7 @@
                     <h3 class="text-2xl font-bold text-gray-900 leading-none">{{ totalRevenue | number:'1.0-0':'vi-VN' }}đ</h3>
                 </div>
                 <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-                    <span class="text-[11px] text-[#1E5631] font-bold flex items-center gap-1">
+                    <span class="text-[11px] text-[#0E9F6E] font-bold flex items-center gap-1">
                         <i class="bi bi-arrow-up"></i> +8.0%
                     </span>
                     <span class="text-[10px] text-gray-400">so với tháng trước</span>
@@ -34,7 +34,7 @@
             </div>
             
             <!-- Card 2: Booking -->
-            <div class="bg-white border border-gray-200 rounded p-5 flex flex-col justify-between transition-all hover:shadow-sm hover:border-[#1E5631]/30">
+            <div class="bg-white border border-gray-200 rounded p-5 flex flex-col justify-between transition-all hover:shadow-sm hover:border-[#0E9F6E]/30">
                 <div class="flex items-center justify-between mb-3">
                     <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tổng Booking</span>
                     <div class="w-8 h-8 rounded bg-gray-100 text-gray-600 flex items-center justify-center">
@@ -45,7 +45,7 @@
                     <h3 class="text-2xl font-bold text-gray-900 leading-none">{{ bookingsCount }}</h3>
                 </div>
                 <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-                    <span class="text-[11px] text-[#1E5631] font-bold flex items-center gap-1">
+                    <span class="text-[11px] text-[#0E9F6E] font-bold flex items-center gap-1">
                         <i class="bi bi-arrow-up"></i> +5.0%
                     </span>
                     <span class="text-[10px] text-gray-400">so với tháng trước</span>
@@ -53,10 +53,10 @@
             </div>
             
             <!-- Card 3: Carbon Saved -->
-            <div class="bg-white border border-gray-200 rounded p-5 flex flex-col justify-between transition-all hover:shadow-sm hover:border-[#1E5631]/30">
+            <div class="bg-white border border-gray-200 rounded p-5 flex flex-col justify-between transition-all hover:shadow-sm hover:border-[#0E9F6E]/30">
                 <div class="flex items-center justify-between mb-3">
                     <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">CO₂ giảm thiểu</span>
-                    <div class="w-8 h-8 rounded bg-[#E8F5E9] text-[#1E5631] flex items-center justify-center">
+                    <div class="w-8 h-8 rounded bg-[#ECFDF5] text-[#0E9F6E] flex items-center justify-center">
                         <i class="bi bi-tree text-base"></i>
                     </div>
                 </div>
@@ -64,7 +64,7 @@
                     <h3 class="text-2xl font-bold text-gray-900 leading-none">{{ carbonSaved | number:'1.0-1' }} kg</h3>
                 </div>
                 <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-                    <span class="text-[11px] text-[#2E8B57] font-bold flex items-center gap-1">
+                    <span class="text-[11px] text-[#10B981] font-bold flex items-center gap-1">
                         <i class="bi bi-tree-fill"></i> ~{{ carbonSaved / 20 | number:'1.0-0' }} cây xanh
                     </span>
                     <span class="text-[10px] text-gray-400">quy đổi sinh thái</span>
@@ -72,7 +72,7 @@
             </div>
             
             <!-- Card 4: New customers -->
-            <div class="bg-white border border-gray-200 rounded p-5 flex flex-col justify-between transition-all hover:shadow-sm hover:border-[#1E5631]/30">
+            <div class="bg-white border border-gray-200 rounded p-5 flex flex-col justify-between transition-all hover:shadow-sm hover:border-[#0E9F6E]/30">
                 <div class="flex items-center justify-between mb-3">
                     <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Khách hàng mới</span>
                     <div class="w-8 h-8 rounded bg-gray-100 text-gray-600 flex items-center justify-center">
@@ -83,7 +83,7 @@
                     <h3 class="text-2xl font-bold text-gray-900 leading-none">{{ newCustomersCount }}</h3>
                 </div>
                 <div class="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-                    <span class="text-[11px] text-[#1E5631] font-bold flex items-center gap-1">
+                    <span class="text-[11px] text-[#0E9F6E] font-bold flex items-center gap-1">
                         <i class="bi bi-arrow-up"></i> +12.0%
                     </span>
                     <span class="text-[10px] text-gray-400">so với tháng trước</span>
@@ -107,9 +107,9 @@
                         <line x1="40" y1="180" x2="580" y2="180" stroke="#e5e7eb" stroke-width="1"/>
 
                         <!-- Forest Green Line: Views -->
-                        <path [attr.d]="visitorPathViews" fill="none" stroke="#1E5631" stroke-width="2" stroke-linecap="round"/>
+                        <path [attr.d]="visitorPathViews" fill="none" stroke="#0E9F6E" stroke-width="2" stroke-linecap="round"/>
                         <!-- Mint Green Line: Bookings -->
-                        <path [attr.d]="visitorPathBookings" fill="none" stroke="#2E8B57" stroke-width="2" stroke-linecap="round"/>
+                        <path [attr.d]="visitorPathBookings" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
                         <!-- Muted Slate Line: Inquiries -->
                         <path [attr.d]="visitorPathInquiries" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/>
 
@@ -131,10 +131,10 @@
                 <!-- Legend -->
                 <div class="flex justify-center items-center gap-6 mt-4">
                     <span class="flex items-center gap-1.5 text-xs text-gray-500">
-                        <span class="w-3 h-1 bg-[#1E5631] inline-block"></span> Lượt xem trang
+                        <span class="w-3 h-1 bg-[#0E9F6E] inline-block"></span> Lượt xem trang
                     </span>
                     <span class="flex items-center gap-1.5 text-xs text-gray-500">
-                        <span class="w-3 h-1 bg-[#2E8B57] inline-block"></span> Lượt đặt (Booking)
+                        <span class="w-3 h-1 bg-[#10B981] inline-block"></span> Lượt đặt (Booking)
                     </span>
                     <span class="flex items-center gap-1.5 text-xs text-gray-500">
                         <span class="w-3 h-1 bg-[#9ca3af] inline-block"></span> Yêu cầu tư vấn
@@ -157,8 +157,8 @@
 
                         <!-- Monthly Bars (Dynamic loop) -->
                         <ng-container *ngFor="let item of monthlyRevenueData; let idx = index">
-                            <rect [attr.x]="45 + idx * 55" [attr.y]="180 - item.tourHeight" width="10" [attr.height]="item.tourHeight" fill="#1E5631"/>
-                            <rect [attr.x]="58 + idx * 55" [attr.y]="180 - item.stayHeight" width="10" [attr.height]="item.stayHeight" fill="#2E8B57"/>
+                            <rect [attr.x]="45 + idx * 55" [attr.y]="180 - item.tourHeight" width="10" [attr.height]="item.tourHeight" fill="#0E9F6E"/>
+                            <rect [attr.x]="58 + idx * 55" [attr.y]="180 - item.stayHeight" width="10" [attr.height]="item.stayHeight" fill="#10B981"/>
                             <text [attr.x]="56 + idx * 55" y="200" font-size="8" fill="#9ca3af" text-anchor="middle">{{ item.month }}</text>
                         </ng-container>
 
@@ -172,10 +172,10 @@
                 <!-- Legend -->
                 <div class="flex justify-center items-center gap-6 mt-4">
                     <span class="flex items-center gap-1.5 text-xs text-gray-500">
-                        <span class="w-3 h-3 bg-[#1E5631] inline-block"></span> Gói Tour
+                        <span class="w-3 h-3 bg-[#0E9F6E] inline-block"></span> Gói Tour
                     </span>
                     <span class="flex items-center gap-1.5 text-xs text-gray-500">
-                        <span class="w-3 h-3 bg-[#2E8B57] inline-block"></span> Lưu trú
+                        <span class="w-3 h-3 bg-[#10B981] inline-block"></span> Lưu trú
                     </span>
                 </div>
             </div>
@@ -192,9 +192,9 @@
 
                     <div class="flex items-center gap-0.5 h-4 w-full rounded overflow-hidden bg-gray-100 mt-4 mb-8">
                         <!-- Tour -->
-                        <div class="h-full bg-[#1E5631] flex items-center justify-center text-white text-[9px] font-bold transition-all" [style.width.%]="allocationPct.tour" *ngIf="allocationPct.tour > 0">{{ allocationPct.tour }}%</div>
+                        <div class="h-full bg-[#0E9F6E] flex items-center justify-center text-white text-[9px] font-bold transition-all" [style.width.%]="allocationPct.tour" *ngIf="allocationPct.tour > 0">{{ allocationPct.tour }}%</div>
                         <!-- Hotel -->
-                        <div class="h-full bg-[#2E8B57] flex items-center justify-center text-white text-[9px] font-bold transition-all" [style.width.%]="allocationPct.stay" *ngIf="allocationPct.stay > 0">{{ allocationPct.stay }}%</div>
+                        <div class="h-full bg-[#10B981] flex items-center justify-center text-white text-[9px] font-bold transition-all" [style.width.%]="allocationPct.stay" *ngIf="allocationPct.stay > 0">{{ allocationPct.stay }}%</div>
                         <!-- Experience -->
                         <div class="h-full bg-gray-400 flex items-center justify-center text-white text-[9px] font-bold transition-all" [style.width.%]="allocationPct.other" *ngIf="allocationPct.other > 0">{{ allocationPct.other }}%</div>
                     </div>
@@ -202,13 +202,13 @@
                     <div class="grid grid-cols-3 gap-4 text-center mt-4">
                         <div>
                             <div class="flex items-center justify-center gap-1.5 text-xs text-gray-500 mb-1">
-                                <span class="w-2.5 h-2.5 rounded-sm bg-[#1E5631]"></span> Gói Tour
+                                <span class="w-2.5 h-2.5 rounded-sm bg-[#0E9F6E]"></span> Gói Tour
                             </div>
                             <p class="text-base font-extrabold text-gray-900">{{ bookingAllocation.tour }}</p>
                         </div>
                         <div class="border-x border-gray-100">
                             <div class="flex items-center justify-center gap-1.5 text-xs text-gray-500 mb-1">
-                                <span class="w-2.5 h-2.5 rounded-sm bg-[#2E8B57]"></span> Lưu trú
+                                <span class="w-2.5 h-2.5 rounded-sm bg-[#10B981]"></span> Lưu trú
                             </div>
                             <p class="text-base font-extrabold text-gray-900">{{ bookingAllocation.stay }}</p>
                         </div>
@@ -235,7 +235,7 @@
                     <div class="space-y-4">
                         <div class="flex justify-between items-center pb-3 border-b border-gray-100 text-xs">
                             <span class="text-gray-500 font-medium">Nhóm khách chính:</span>
-                            <span class="font-bold text-[#1E5631]">Khách gia đình</span>
+                            <span class="font-bold text-[#0E9F6E]">Khách gia đình</span>
                         </div>
                         <div class="flex justify-between items-center pb-3 border-b border-gray-100 text-xs">
                             <span class="text-gray-500 font-medium">Độ tuổi chính:</span>
@@ -258,7 +258,7 @@
                 
                 <div class="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
                     <span>Đồng bộ thời gian thực</span>
-                    <span class="text-[#1E5631] font-bold hover:underline cursor-pointer">Xuất báo cáo chi tiết</span>
+                    <span class="text-[#0E9F6E] font-bold hover:underline cursor-pointer">Xuất báo cáo chi tiết</span>
                 </div>
             </div>
         </div>

@@ -4,7 +4,7 @@
         <div class="profile-left-col">
             <div class="user-info-card">
                 <div class="user-avatar-circle" id="profileAvatar">{{ getFirstLetter(currentUser.fullname) }}</div>
-                <div class="user-title-row">
+                 <div class="user-title-row">
                     <h2 id="profileName">{{ currentUser.fullname }}</h2>
                     <span class="role-badge" id="profileRoleBadge">{{ currentUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</span>
                 </div>
@@ -75,20 +75,35 @@
 
                 <div class="wallet-inactive-box" *ngIf="!walletRegistered">
                     <p>Kích hoạt Ví du lịch để thanh toán gộp lịch trình, hưởng ưu đãi giảm giá và nhận hoàn trả cọc dễ dàng hơn.</p>
-                    <button class="btn-activate-wallet" (click)="handleWalletActivation()">Kích hoạt Ví & Nhận 5.000.000đ</button>
+                    <button class="btn-activate-wallet" (click)="handleWalletActivation()">Kích hoạt Ví & Nhận 200.000đ</button>
                 </div>
             </div>
-
-            <!-- Provider Upgrades Status -->
-            <div class="provider-upgrade-card">
-                <h3>Trạng thái Nhà cung cấp</h3>
-                <div class="upgrade-status-box" *ngIf="currentUser.role !== 'provider'">
-                    <p>Bạn đang sử dụng GreenSteps với vai trò Khách du lịch. Hãy đăng ký làm Nhà cung cấp nếu muốn đăng và quản lý dịch vụ du lịch trên nền tảng.</p>
-                    <button class="btn-upgrade-provider" routerLink="/partner-register">Đăng ký làm Nhà cung cấp</button>
+            
+            <!-- Partner Status Card -->
+            <div class="wallet-info-card" style="margin-top: 24px; margin-bottom: 24px;">
+                <div class="wallet-header">
+                    <h3>Kênh đối tác Green Partner</h3>
+                    <span class="wallet-badge" [class.active]="currentUser.role === 'provider'">
+                        {{ currentUser.role === 'provider' ? 'Đã kích hoạt' : 'Chưa đăng ký' }}
+                    </span>
                 </div>
-                <div class="upgrade-status-box" *ngIf="currentUser.role === 'provider'">
-                    <p style="color:var(--success); font-weight:600;"><i class="bi bi-check-circle-fill"></i> Kênh nhà cung cấp đã được phê duyệt thành công.</p>
-                    <button class="btn-upgrade-provider" routerLink="/partner-dashboard">Vào kênh đối tác</button>
+                
+                <div class="wallet-balance-box" *ngIf="currentUser.role === 'provider'">
+                    <span class="bal-label">Doanh nghiệp của bạn:</span>
+                    <h2 class="bal-value" style="font-size: 18px; margin: 4px 0 12px 0; color: var(--primary-green);">
+                        {{ currentUser.companyName || 'Đối tác GreenSteps' }}
+                    </h2>
+                    
+                    <a routerLink="/partner-dashboard" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 38px; background: linear-gradient(135deg, #0E9F6E 0%, #057A55 100%); color: white; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 12px; box-shadow: var(--shadow-sm); transition: all 0.2s;">
+                        <i class="bi bi-grid-fill"></i> Vào Kênh Quản Lý Dịch Vụ
+                    </a>
+                </div>
+
+                <div class="wallet-inactive-box" *ngIf="currentUser.role !== 'provider'">
+                    <p>Đăng ký Kênh nhà cung cấp để bán dịch vụ xanh của bạn (lưu trú, ăn uống, dịch vụ) trên GreenSteps và bắt đầu kinh doanh sinh thái bền vững.</p>
+                    <a routerLink="/partner-register" class="btn-activate-wallet" style="display: flex; align-items: center; justify-content: center; text-decoration: none; background: linear-gradient(135deg, #0E9F6E 0%, #057A55 100%);">
+                        Đăng ký Kênh đối tác ngay
+                    </a>
                 </div>
             </div>
 
@@ -131,10 +146,80 @@
                         <td [ngClass]="t.amount > 0 ? 'amt-positive' : 'amt-negative'">
                             <strong>{{ t.amount > 0 ? '+' : '' }}{{ t.amount | number:'1.0-0':'vi-VN' }}đ</strong>
                         </td>
-                        <td><span class="status-pill success">{{ t.status === 'success' ? 'Hoàn thành' : 'Đang xử lý' }}</span></td>
+                        <td><span class="status-pill" [ngClass]="t.status === 'success' ? 'success' : 'pending'" style="padding: 4px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;" [style.background-color]="t.status === 'success' ? '#D1FAE5' : '#FEF3C7'" [style.color]="t.status === 'success' ? '#065F46' : '#92400E'">{{ t.status === 'success' ? 'Hoàn thành' : 'Chờ duyệt' }}</span></td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </section>
+
+    <!-- VIETQR DEPOSIT MODAL -->
+    <div class="modal-overlay" [class.active]="isQrModalOpen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; transition: all 0.3s;" [style.display]="isQrModalOpen ? 'flex' : 'none'">
+        <div class="modal-content" style="background: #FFFFFF; border-radius: 16px; padding: 24px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15); animation: zoomIn 0.3s ease-out; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1.5px solid #F3F4F6; padding-bottom: 12px;">
+                <h3 style="font-size: 1.1rem; font-weight: 700; color: #1F2937; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-qr-code-scan" style="color: #0E9F6E; font-size: 1.3rem;"></i> Quét Mã Chuyển Khoản OCB
+                </h3>
+                <button (click)="closeQrModal()" style="background: none; border: none; font-size: 1.4rem; color: #9CA3AF; cursor: pointer; padding: 0 4px;"><i class="bi bi-x-lg"></i></button>
+            </div>
+            
+            <div style="background-color: #F0FDF4; border: 1.5px dashed #10B981; border-radius: 12px; padding: 16px; margin-bottom: 16px; text-align: left;">
+                <p style="font-size: 0.85rem; color: #046A38; font-weight: 600; line-height: 1.4; margin: 0 0 8px 0;">
+                    Vui lòng quét mã QR dưới đây bằng ứng dụng Ngân hàng của bạn để chuyển khoản tiền thật.
+                </p>
+                <div style="font-size: 0.95rem; color: #1F2937; margin-bottom: 4px;">Số tiền: <strong style="color: #0E9F6E; font-size: 1.1rem;">{{ qrAmount | number:'1.0-0':'vi-VN' }}đ</strong></div>
+                <div style="font-size: 0.8rem; color: #4B5563;">Nội dung: <strong style="font-family: monospace; background: #E5E7EB; padding: 2px 6px; border-radius: 4px; color: #111827;">{{ qrDescription }}</strong></div>
+            </div>
+
+            <!-- VietQR OCB Dynamic Image -->
+            <div style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 12px; display: inline-block; margin-bottom: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                <img [src]="qrCodeUrl" alt="VietQR OCB Code" style="width: 250px; height: 250px; display: block; border-radius: 8px;">
+            </div>
+
+            <div style="font-size: 0.8rem; color: #6B7280; line-height: 1.4; margin-bottom: 16px;">
+                Sau khi chuyển khoản thành công, bạn hãy chạy lệnh <code style="background:#F3F4F6; padding:2px 6px; border-radius:4px; font-family:monospace; color:#EF4444; font-weight:700;">node approve_deposits.js</code> ở Terminal máy chủ để duyệt cộng tiền vào ví.
+            </div>
+
+            <button (click)="closeQrModal()" style="width: 100%; height: 42px; background: #0E9F6E; border: none; border-radius: 8px; color: #FFFFFF; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+                Tôi Đã Chuyển Khoản - Đóng Popup
+            </button>
+        </div>
+    </div>
+
+    <!-- CUSTOM TERMINAL APPROVAL MODAL -->
+    <div class="modal-overlay" [class.active]="isTerminalModalOpen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; transition: all 0.3s;" [style.display]="isTerminalModalOpen ? 'flex' : 'none'">
+        <div class="modal-content" style="background: #FFFFFF; border-radius: 16px; padding: 32px 24px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); animation: zoomIn 0.3s ease-out; position: relative;">
+            
+            <!-- Icon based on state -->
+            <div style="margin-bottom: 20px;">
+                <!-- Pending State Icon -->
+                <div *ngIf="terminalApprovalState === 'pending'" style="width: 64px; height: 64px; background-color: #FEF3C7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <i class="bi bi-terminal-fill" style="font-size: 30px; color: #D97706;"></i>
+                </div>
+                <!-- Success State Icon -->
+                <div *ngIf="terminalApprovalState === 'success'" style="width: 64px; height: 64px; background-color: #D1FAE5; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <i class="bi bi-check-circle-fill" style="font-size: 30px; color: #057A55;"></i>
+                </div>
+                <!-- Error State Icon -->
+                <div *ngIf="terminalApprovalState === 'error'" style="width: 64px; height: 64px; background-color: #FDE8E8; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                    <i class="bi bi-x-circle-fill" style="font-size: 30px; color: #E02424;"></i>
+                </div>
+            </div>
+
+            <!-- Title & Message -->
+            <h3 style="font-size: 1.2rem; font-weight: 800; color: #1F2937; margin: 0 0 10px 0;">
+                {{ terminalApprovalTitle }}
+            </h3>
+            <p style="font-size: 0.85rem; color: #4B5563; line-height: 1.5; margin: 0 0 24px 0; text-align: center; word-break: break-word;">
+                {{ terminalApprovalMsg }}
+            </p>
+
+
+
+            <!-- Action Button -->
+            <button (click)="isTerminalModalOpen = false" style="width: 100%; height: 42px; background-color: #0E9F6E; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: background 0.2s;">
+                {{ terminalApprovalState === 'pending' ? 'Tôi Đã Hiểu' : 'Đóng' }}
+            </button>
+        </div>
+    </div>
 </main>

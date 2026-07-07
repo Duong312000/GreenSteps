@@ -17,6 +17,7 @@ declare const L: any; // Leaflet mapped globally via index.html script tag
 export class ToursComponent implements OnInit {
   public toursData: Tour[] = [];
   public filteredTours: Tour[] = [];
+  public recommendedTours: Tour[] = [];
 
   private modalMap: any = null;
   private modalMarkers: { [key: string]: any } = {};
@@ -46,7 +47,27 @@ export class ToursComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
-    this.toursData = await this.apiService.getPresetTours();
+    const allTours = await this.apiService.getPresetTours();
+
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      const userId = user.id || user._id || '';
+      this.recommendedTours = await this.apiService.getRecommendedTours(userId);
+      
+      const recommendedIds = new Set(this.recommendedTours.map(r => r.id));
+      allTours.forEach(tour => {
+        tour.isRecommended = recommendedIds.has(tour.id);
+      });
+
+      // Sort: Recommended first
+      allTours.sort((a, b) => {
+        if (a.isRecommended && !b.isRecommended) return -1;
+        if (!a.isRecommended && b.isRecommended) return 1;
+        return 0;
+      });
+    }
+
+    this.toursData = allTours;
     this.filteredTours = [...this.toursData];
     this.cdr.detectChanges();
 

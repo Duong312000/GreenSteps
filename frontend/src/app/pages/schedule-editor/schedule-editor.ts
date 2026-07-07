@@ -19,6 +19,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public activeItinerary: any = null; // Internal Editor representation
   public activeDayIdx: number = 0;
   public walletBalance: number = 5000000;
+  public walletRegistered: boolean = false;
   public customPlaceTitle: string = '';
   public isListMode: boolean = false;
   public savedItineraries: any[] = [];
@@ -39,18 +40,31 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   private map: any = null;
   private leafletMarkers: any[] = [];
   private polyline: any = null;
+  private positioningMarker: any = null;
 
   // AI chat properties
   public isAiChatOpen: boolean = false;
   public aiMessages: { text: string; isOutgoing: boolean; rec?: any }[] = [];
   public aiInputText: string = '';
   public isAiThinking: boolean = false;
+  public mapClickPlaceName: string = '';
+  public locatingActivityIdx: number | null = null;
+  public customSearchSuggestions: any[] = [];
 
   // Checkout modal properties
   public isCheckoutModalOpen: boolean = false;
   public isItineraryPay: boolean = false;
   public checkoutItems: { title: string; cost: number }[] = [];
   public checkoutTotal: number = 0;
+
+  // QR & Wallet Redesign properties
+  public isQrVisible: boolean = false;
+  public qrCodeUrl: string = '';
+  public qrPaymentNote: string = 'NAP VI';
+  public isWaitingApproval: boolean = false;
+  public depositAmount: number = 500000;
+  public qrFlowType: 'deposit' | 'payment' = 'deposit';
+  private pollingInterval: any = null;
 
   // Metrics progress calculations
   public totalCost: number = 0;
@@ -75,6 +89,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public mapSearchQuery: string = '';
   public activeTab: 'timeline' | 'suggestions' | 'bucket' = 'timeline';
   public dynamicRecs: any[] = [];
+  public localServices: any[] = [];
 
   // Custom categorized list builder properties
   public customLists: { title: string; places: { title: string }[] }[] = [
@@ -154,6 +169,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     if (user) {
       this.apiService.getWalletInfo(user.id || user._id || '').then(wallet => {
         this.walletBalance = wallet.balance;
+        this.walletRegistered = wallet.registered;
         this.cdr.detectChanges();
       });
     }
@@ -216,23 +232,35 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.router.navigate(['/schedule', id]);
   }
 
-  public openCreateModal() {
-    this.isCreateModalOpen = true;
-    this.cdr.detectChanges();
-    setTimeout(() => {
-      this.initModalMap('editorModalMap');
-    }, 150);
-  }
+  public async createItineraryDirectly() {
+    const user = this.authService.getCurrentUser();
+    const userId = user ? (user.id || user._id || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d') : '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d';
 
-  public closeCreateModal() {
-    this.isCreateModalOpen = false;
+    const daysData = Array.from({ length: 3 }, () => []);
+
+    const newIti = {
+      id: 'iti_' + Date.now(),
+      name: `Lịch trình tự thiết kế Đà Lạt`,
+      user_id: userId,
+      destination: 'Đà Lạt',
+      days: 3,
+      totalCost: 0,
+      totalCarbon: 0,
+      daysData: daysData
+    };
+
+    this.isLoadingList = true;
     this.cdr.detectChanges();
-    if (this.modalMap) {
-      try {
-        this.modalMap.remove();
-      } catch (e) {}
-      this.modalMap = null;
-      this.modalMarkers = {};
+
+    const success = await this.apiService.saveItinerary(newIti);
+    this.isLoadingList = false;
+    this.cdr.detectChanges();
+
+    if (success) {
+      localStorage.setItem('greensteps_working_itinerary_id', newIti.id);
+      this.router.navigate(['/schedule', newIti.id]);
+    } else {
+      alert('Không thể khởi tạo lịch trình mới!');
     }
   }
 
@@ -336,66 +364,6 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     });
   }
 
-  public onModalDestChange() {
-    this.updateModalMarkers();
-    if (this.modalMap && this.destCoords[this.modalDest]) {
-      this.modalMap.panTo(this.destCoords[this.modalDest]);
-    }
-  }
-
-  public async createNewItinerary(event: Event) {
-    event.preventDefault();
-    this.isCreateModalOpen = false;
-    
-    const user = this.authService.getCurrentUser();
-    const userId = user ? (user.id || user._id || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d') : '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d';
-
-    const presets = await this.apiService.getPresetTours();
-    const matchedPreset = presets.find(t => 
-      t.destination.toLowerCase().includes(this.modalDest.toLowerCase()) || 
-      this.modalDest.toLowerCase().includes(t.destination.toLowerCase())
-    );
-
-    let daysData: any[][] = [];
-    let totalCost = 0;
-    let totalCarbon = 0;
-
-    if (matchedPreset) {
-      const rawData = matchedPreset.data || [];
-      for (let i = 0; i < Number(this.modalDays); i++) {
-        const dayActivities = rawData[i] || [];
-        daysData.push(JSON.parse(JSON.stringify(dayActivities)));
-      }
-      daysData.forEach(day => {
-        day.forEach(act => {
-          totalCost += act.cost || 0;
-          totalCarbon += act.carbon || 0;
-        });
-      });
-    } else {
-      daysData = Array.from({ length: Number(this.modalDays) }, () => []);
-    }
-
-    const newIti = {
-      id: 'iti_' + Date.now(),
-      name: `Lịch trình tự thiết kế ${this.modalDest}`,
-      user_id: userId,
-      destination: this.modalDest,
-      days: Number(this.modalDays),
-      totalCost: totalCost,
-      totalCarbon: totalCarbon,
-      daysData: daysData
-    };
-
-    const success = await this.apiService.saveItinerary(newIti);
-    if (success) {
-      localStorage.setItem('greensteps_working_itinerary_id', newIti.id);
-      this.router.navigate(['/schedule', newIti.id]);
-    } else {
-      alert('Không thể khởi tạo lịch trình mới!');
-    }
-  }
-
   public goBackToList() {
     localStorage.removeItem('greensteps_working_itinerary_id');
     this.router.navigate(['/schedule']);
@@ -417,17 +385,13 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     return "Đà Lạt";
   }
 
-  private getCoordinatesForPlace(name: string, destSlug: string): { lat: number; lng: number } {
+  private getCoordinatesForPlace(name: string, destSlug: string): { lat: number | undefined; lng: number | undefined } {
     const recs = this.samplePlacesRecs[destSlug] || [];
     const foundRec = recs.find(r => r.name.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(r.name.toLowerCase()));
     if (foundRec) {
       return { lat: foundRec.lat, lng: foundRec.lng };
     }
-    const center = this.cityCenters[destSlug] || [11.9404, 108.4373];
-    return {
-      lat: center[0] + (Math.random() - 0.5) * 0.04,
-      lng: center[1] + (Math.random() - 0.5) * 0.04
-    };
+    return { lat: undefined, lng: undefined };
   }
 
   private convertApiToEditorItinerary(apiIti: any): any {
@@ -471,6 +435,13 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
           lat: lat,
           lng: lng
         });
+      });
+      
+      // Sort activities chronologically by time
+      activities.sort((a: any, b: any) => {
+        const timeA = a.time || "00:00";
+        const timeB = b.time || "00:00";
+        return timeA.localeCompare(timeB);
       });
       
       days.push({
@@ -535,10 +506,28 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     };
   }
 
-  private async saveItineraryToDb() {
+  public async saveItineraryToDb() {
     if (!this.activeItinerary) return;
+    console.log("Saving itinerary with editor data:", this.activeItinerary);
     const apiIti = this.convertEditorToApiItinerary(this.activeItinerary);
+    console.log("Saving itinerary payload converted to API:", apiIti);
     await this.apiService.saveItinerary(apiIti);
+  }
+
+  public sortActivitiesByTime(dayIdx: number) {
+    if (!this.activeItinerary || !this.activeItinerary.days[dayIdx]) return;
+    this.activeItinerary.days[dayIdx].activities.sort((a: any, b: any) => {
+      const timeA = a.time || "00:00";
+      const timeB = b.time || "00:00";
+      return timeA.localeCompare(timeB);
+    });
+  }
+
+  public async onActivityTimeChanged() {
+    this.sortActivitiesByTime(this.activeDayIdx);
+    this.plotMapMarkers();
+    this.recalculateMetrics();
+    await this.saveItineraryToDb();
   }
 
   private async loadItineraryToEditor(tourId: string) {
@@ -551,7 +540,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         days: [
           {
             dayNum: 1,
-            title: "Ngày khởi đầu",
+            title: "Ngày 1",
             activities: []
           }
         ]
@@ -575,6 +564,9 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       const cloned = this.convertApiToEditorItinerary(preset);
       cloned.title = preset.title;
       this.openEditorWithItinerary(cloned);
+    } else {
+      alert("Không tìm thấy lịch trình này, đang quay về danh sách!");
+      this.router.navigate(['/schedule']);
     }
     this.cdr.detectChanges();
   }
@@ -587,6 +579,12 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     
     // Load dynamic suggestions from backend
     this.loadDynamicRecommendations();
+
+    // Fetch all destination services for local lookup
+    const destLabel = itinerary.destLabel || this.mapSlugToDestLabel(itinerary.dest);
+    this.apiService.getServicesByDestination(destLabel).then(services => {
+      this.localServices = services || [];
+    });
     
     // Defer Map initialization to let DOM render
     setTimeout(() => {
@@ -598,7 +596,19 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.activeItinerary) return;
     const destLabel = this.activeItinerary.destLabel || this.mapSlugToDestLabel(this.activeItinerary.dest);
     try {
-      const services = await this.apiService.getServicesByDestination(destLabel);
+      const user = this.authService.getCurrentUser();
+      let services: any[] = [];
+      if (user) {
+        const userId = user.id || user._id || '';
+        const allRecommended = await this.apiService.getRecommendedServices(userId);
+        // Filter recommended services to match the active itinerary's destination
+        services = allRecommended.filter(srv => 
+          srv.destination.toLowerCase().includes(destLabel.toLowerCase()) || 
+          destLabel.toLowerCase().includes(srv.destination.toLowerCase())
+        );
+      } else {
+        services = await this.apiService.getServicesByDestination(destLabel);
+      }
       if (services && services.length > 0) {
         this.dynamicRecs = services.map(srv => {
           let recType = srv.type;
@@ -606,7 +616,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
           else if (recType === 'food') recType = 'dining';
           
           return {
-            name: srv.name,
+            name: srv.name || srv.name_service,
             category: srv.current_data?.category || (srv.type === 'food' ? 'Ăn uống' : srv.type === 'stay' ? 'Lưu trú' : 'Khám phá'),
             type: recType,
             cost: srv.cost,
@@ -670,12 +680,39 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     const newDayNum = this.activeItinerary.days.length + 1;
     this.activeItinerary.days.push({
       dayNum: newDayNum,
-      title: "Khám phá mới",
+      title: "Ngày " + newDayNum,
       activities: []
     });
     this.activeDayIdx = newDayNum - 1;
 
     this.plotMapMarkers();
+    await this.saveItineraryToDb();
+  }
+
+  public async deleteDay(idx: number, event: MouseEvent) {
+    event.stopPropagation();
+    if (!this.activeItinerary || this.activeItinerary.days.length <= 1) return;
+
+    const confirmed = confirm(`Bạn có chắc chắn muốn xóa Ngày ${idx + 1} khỏi lịch trình không?`);
+    if (!confirmed) return;
+
+    this.activeItinerary.days.splice(idx, 1);
+
+    // Re-index remaining days
+    this.activeItinerary.days.forEach((day: any, i: number) => {
+      day.dayNum = i + 1;
+      day.title = `Ngày ${i + 1}`;
+    });
+
+    // Reset activeDayIdx if out of range
+    if (this.activeDayIdx >= this.activeItinerary.days.length) {
+      this.activeDayIdx = this.activeItinerary.days.length - 1;
+    } else if (this.activeDayIdx === idx && this.activeDayIdx > 0) {
+      this.activeDayIdx = idx - 1;
+    }
+
+    this.plotMapMarkers();
+    this.recalculateMetrics();
     await this.saveItineraryToDb();
   }
 
@@ -716,61 +753,265 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     await this.saveItineraryToDb();
   }
 
+  public onCustomPlaceTyping() {
+    const val = this.customPlaceTitle.trim().toLowerCase();
+    if (!val) {
+      this.customSearchSuggestions = [];
+      return;
+    }
+    this.customSearchSuggestions = this.localServices.filter(s => 
+      (s.name || s.name_service || '').toLowerCase().includes(val)
+    ).slice(0, 5);
+  }
+
+  public selectSearchSuggestion(sug: any) {
+    this.customPlaceTitle = sug.name || sug.name_service;
+    this.customSearchSuggestions = [];
+    this.addCustomPlaceToActiveDay();
+  }
+
   public async addCustomPlaceToActiveDay() {
     const val = this.customPlaceTitle.trim();
     if (!val || !this.activeItinerary) return;
 
+    this.customSearchSuggestions = [];
+
+    // Search in localServices for a match (case-insensitive)
+    const match = this.localServices.find(s => 
+      (s.name || s.name_service || '').toLowerCase().includes(val.toLowerCase()) ||
+      val.toLowerCase().includes((s.name || s.name_service || '').toLowerCase())
+    );
+
     const time = this.getNextSuggestedTime();
-    const center = this.cityCenters[this.activeItinerary.dest] || [11.9404, 108.4373];
-    const randLat = center[0] + (Math.random() - 0.5) * 0.05;
-    const randLng = center[1] + (Math.random() - 0.5) * 0.05;
+    let title = val;
+    let type = "explore";
+    let cost = 50000;
+    let carbon = 3;
+    let lat: number | undefined;
+    let lng: number | undefined;
+
+    if (match) {
+      title = match.name || match.name_service;
+      type = match.type || "explore";
+      cost = match.cost || 0;
+      carbon = match.carbon || 0;
+      const meta = match.current_data || {};
+      lat = meta.lat || undefined;
+      lng = meta.lng || undefined;
+    } else {
+      // Unmatched place: Try geocoding online with OpenStreetMap Nominatim API
+      const destLabel = this.activeItinerary.destLabel || this.mapSlugToDestLabel(this.activeItinerary.dest);
+      const searchQuery = `${val}, ${destLabel}, Việt Nam`;
+      
+      try {
+        const fetchPromise = fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=1`);
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000));
+        
+        const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
+        const data = await response.json();
+        if (data && data.length > 0) {
+          lat = parseFloat(data[0].lat);
+          lng = parseFloat(data[0].lon);
+        } else {
+          lat = undefined;
+          lng = undefined;
+        }
+      } catch (e) {
+        console.warn("Geocoding failed or timed out, setting unlocated:", e);
+        lat = undefined;
+        lng = undefined;
+      }
+    }
 
     const newAct = {
       time: time,
-      title: val,
-      type: "attraction",
-      cost: 50000,
-      carbon: 3,
-      lat: randLat,
-      lng: randLng
+      title: title,
+      type: type,
+      cost: cost,
+      carbon: carbon,
+      lat: lat,
+      lng: lng
     };
 
     this.activeItinerary.days[this.activeDayIdx].activities.push(newAct);
     this.customPlaceTitle = '';
 
+    this.sortActivitiesByTime(this.activeDayIdx);
     this.plotMapMarkers();
     this.recalculateMetrics();
     await this.saveItineraryToDb();
   }
 
   public async addPoolItemToActiveDay(name: string, type: string, cost: number, carbon: number, lat?: number, lng?: number) {
-    if (!this.activeItinerary) return;
+    console.log("addPoolItemToActiveDay called with:", { name, type, cost, carbon, lat, lng });
+    if (!this.activeItinerary || !name || !name.trim()) {
+      console.warn("addPoolItemToActiveDay validation failed, activeItinerary:", this.activeItinerary, "name:", name);
+      return;
+    }
     const time = this.getNextSuggestedTime();
 
     let finalLat = lat;
     let finalLng = lng;
+    let finalCost = cost;
+    let finalCarbon = carbon;
+    let finalType = type;
+
     if (!finalLat) {
-      const center = this.cityCenters[this.activeItinerary.dest] || [11.9404, 108.4373];
-      finalLat = center[0] + (Math.random() - 0.5) * 0.04;
-      finalLng = center[1] + (Math.random() - 0.5) * 0.04;
+      // Search in localServices for a match
+      const match = this.localServices.find(s => 
+        (s.name || s.name_service || '').toLowerCase().includes(name.toLowerCase()) ||
+        name.toLowerCase().includes((s.name || s.name_service || '').toLowerCase())
+      );
+
+      if (match) {
+        finalType = match.type || type;
+        finalCost = match.cost || 0;
+        finalCarbon = match.carbon || 0;
+        const meta = match.current_data || {};
+        finalLat = meta.lat || undefined;
+        finalLng = meta.lng || undefined;
+      } else {
+        finalLat = undefined;
+        finalLng = undefined;
+      }
     }
 
     const newAct = {
       time: time,
       title: name,
-      type: type,
-      cost: cost,
-      carbon: carbon,
+      type: finalType,
+      cost: finalCost,
+      carbon: finalCarbon,
       lat: finalLat,
       lng: finalLng
     };
     
     this.activeItinerary.days[this.activeDayIdx].activities.push(newAct);
 
+    this.sortActivitiesByTime(this.activeDayIdx);
     this.plotMapMarkers();
     this.recalculateMetrics();
     await this.saveItineraryToDb();
   }
+
+  public handleMapClick(lat: number, lng: number) {
+    this.mapClickPlaceName = '';
+    this.selectedPlaceDetails = {
+      title: "Địa điểm chọn từ bản đồ",
+      type: "explore",
+      cost: 0,
+      carbon: 1,
+      lat: lat,
+      lng: lng,
+      isActivity: false,
+      isCustomMapClick: true
+    };
+    this.cdr.detectChanges();
+  }
+
+  public async addMapClickPlace() {
+    const name = this.mapClickPlaceName.trim();
+    if (!name || !this.selectedPlaceDetails) return;
+    const lat = this.selectedPlaceDetails.lat;
+    const lng = this.selectedPlaceDetails.lng;
+    await this.addPoolItemToActiveDay(name, "explore", 0, 1, lat, lng);
+    this.closePlaceDetails();
+  }
+
+  public startLocatingActivity(idx: number, event: MouseEvent) {
+    event.stopPropagation();
+    this.locatingActivityIdx = idx;
+    
+    if (!this.map) return;
+    
+    // Remove previous temporary marker if any
+    if (this.positioningMarker) {
+      try {
+        this.map.removeLayer(this.positioningMarker);
+      } catch (e) {}
+    }
+    
+    // Place draggable marker at map center
+    const center = this.map.getCenter();
+    
+    // Define a nice red draggable pin (cây kim)
+    const redPinIcon = L.divIcon({
+      html: `<div style="background-color: #EF4444; border: 2.5px solid #FFFFFF; color: #FFFFFF; font-weight: 800; font-size: 16px; width: 32px; height: 32px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-left: -16px; margin-top: -32px;">
+              <i class="bi bi-geo-alt-fill" style="transform: rotate(45deg); display: block; font-size: 14px;"></i>
+             </div>`,
+      className: 'custom-draggable-pin',
+      iconSize: [32, 32],
+      iconAnchor: [0, 0]
+    });
+    
+    this.positioningMarker = L.marker(center, {
+      draggable: true,
+      icon: redPinIcon
+    }).addTo(this.map);
+    
+    // Open popup instructions inside it
+    const popupContent = `
+      <div style="padding: 6px; text-align: center; font-family: sans-serif; pointer-events: auto;">
+        <p style="margin: 0 0 6px 0; font-weight: 700; font-size: 11px; color: #1F2937;">📍 Kéo ghim đến vị trí</p>
+        <button id="btnConfirmLeafletPos" style="background-color: #0E9F6E; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 10px; cursor: pointer;">Xác nhận</button>
+      </div>
+    `;
+    
+    this.positioningMarker.bindPopup(popupContent, {
+      closeOnClick: false,
+      closeButton: false,
+      autoClose: false
+    }).openPopup();
+    
+    this.positioningMarker.on("popupopen", () => {
+      const btn = document.getElementById("btnConfirmLeafletPos");
+      if (btn) {
+        btn.onclick = () => {
+          this.confirmPositioningLocation();
+        };
+      }
+    });
+    
+    this.cdr.detectChanges();
+  }
+
+  public confirmPositioningLocation() {
+    if (this.locatingActivityIdx === null || !this.positioningMarker) return;
+    const latlng = this.positioningMarker.getLatLng();
+    
+    const activeDay = this.activeItinerary.days[this.activeDayIdx];
+    const act = activeDay.activities[this.locatingActivityIdx];
+    if (act) {
+      act.lat = latlng.lat;
+      act.lng = latlng.lng;
+    }
+    
+    // Clean up
+    if (this.map && this.positioningMarker) {
+      try {
+        this.map.removeLayer(this.positioningMarker);
+      } catch (e) {}
+    }
+    this.positioningMarker = null;
+    this.locatingActivityIdx = null;
+    
+    this.plotMapMarkers();
+    this.recalculateMetrics();
+    this.saveItineraryToDb();
+  }
+
+  public cancelLocatingActivity() {
+    if (this.map && this.positioningMarker) {
+      try {
+        this.map.removeLayer(this.positioningMarker);
+      } catch (e) {}
+    }
+    this.positioningMarker = null;
+    this.locatingActivityIdx = null;
+    this.cdr.detectChanges();
+  }
+
+
 
   private getNextSuggestedTime(): string {
     if (!this.activeItinerary) return "08:00";
@@ -830,8 +1071,23 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         maxZoom: 20
       }).addTo(this.map);
 
-      this.map.on("click", () => {
-        this.closePlaceDetails();
+      this.map.on("click", (e: any) => {
+        if (this.locatingActivityIdx !== null && e.latlng) {
+          const idx = this.locatingActivityIdx;
+          const activeDay = this.activeItinerary.days[this.activeDayIdx];
+          if (activeDay && activeDay.activities[idx]) {
+            activeDay.activities[idx].lat = e.latlng.lat;
+            activeDay.activities[idx].lng = e.latlng.lng;
+            this.locatingActivityIdx = null;
+            this.plotMapMarkers();
+            this.recalculateMetrics();
+            this.saveItineraryToDb();
+          }
+        } else if (e.latlng) {
+          this.handleMapClick(e.latlng.lat, e.latlng.lng);
+        } else {
+          this.closePlaceDetails();
+        }
       });
 
       this.plotMapMarkers();
@@ -918,7 +1174,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
           bgColor = '#3B82F6'; // Blue for hotel
         } else if (rec.type === 'explore' || rec.type === 'attraction') {
           iconHtml = '<i class="bi bi-tree-fill" style="font-size: 12px;"></i>';
-          bgColor = '#10B981'; // Green for attractions
+          bgColor = '#14B8A6'; // Teal accent for attractions
         }
 
         const customIcon = L.divIcon({
@@ -947,20 +1203,82 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       }
     });
 
-    // Draw route path
+    // Draw route path using OSRM
     if (coordinates.length > 1) {
-      this.polyline = L.polyline(coordinates, {
-        color: '#0E9F6E',
-        weight: 3.5,
-        dashArray: '5, 8',
-        opacity: 0.8
-      }).addTo(this.map);
+      const coordsQuery = coordinates.map(c => `${c[1]},${c[0]}`).join(';');
+      fetch(`https://router.project-osrm.org/route/v1/driving/${coordsQuery}?overview=full&geometries=geojson`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.routes && data.routes[0]) {
+            const routeGeo = data.routes[0].geometry;
+            if (this.polyline) {
+              try { this.map.removeLayer(this.polyline); } catch (e) {}
+            }
+            this.polyline = L.geoJSON(routeGeo, {
+              style: {
+                color: '#0E9F6E',
+                weight: 4,
+                opacity: 0.8
+              }
+            }).addTo(this.map);
+          } else {
+            this.drawStraightPolyline(coordinates);
+          }
+        })
+        .catch(err => {
+          console.error("OSRM Routing error, falling back to straight lines:", err);
+          this.drawStraightPolyline(coordinates);
+        });
     }
 
     if (coordinates.length > 0) {
       const bounds = L.latLngBounds(coordinates);
       this.map.fitBounds(bounds, { padding: [40, 40] });
     }
+  }
+
+  private drawStraightPolyline(coordinates: any[]) {
+    if (this.polyline) {
+      try { this.map.removeLayer(this.polyline); } catch (e) {}
+    }
+    this.polyline = L.polyline(coordinates, {
+      color: '#0E9F6E',
+      weight: 3.5,
+      dashArray: '5, 8',
+      opacity: 0.8
+    }).addTo(this.map);
+  }
+
+  public getTravelGapText(idx: number): string {
+    if (!this.activeItinerary) return '';
+    const activeDay = this.activeItinerary.days[this.activeDayIdx];
+    if (!activeDay || !activeDay.activities || idx >= activeDay.activities.length - 1) return '';
+
+    const act1 = activeDay.activities[idx];
+    const act2 = activeDay.activities[idx + 1];
+
+    if (typeof act1.lat !== 'number' || typeof act1.lng !== 'number' ||
+        typeof act2.lat !== 'number' || typeof act2.lng !== 'number') {
+      return '15 phút di chuyển';
+    }
+
+    // Haversine formula to calculate distance between two GPS coordinates
+    const R = 6371; // Radius of the Earth in km
+    const dLat = (act2.lat - act1.lat) * Math.PI / 180;
+    const dLng = (act2.lng - act1.lng) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(act1.lat * Math.PI / 180) * Math.cos(act2.lat * Math.PI / 180) * 
+      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+
+    // Estimate travel time: average speed 30 km/h for driving, min 5 minutes
+    const speedKmh = 30;
+    let durationMins = Math.round((distance / speedKmh) * 60);
+    if (durationMins < 5) durationMins = 5;
+
+    return `${durationMins} phút di chuyển (khoảng ${distance.toFixed(1)} km)`;
   }
 
   public highlightMapPin(idx: number, highlight: boolean) {
@@ -971,9 +1289,9 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     const pin = el.querySelector(".map-leaflet-pin");
     if (pin) {
       if (highlight) {
-        pin.style.backgroundColor = "#0E9F6E";
+        pin.style.backgroundColor = "#14B8A6";
         pin.style.transform = "scale(1.25)";
-        pin.style.boxShadow = "0 4px 12px rgba(14,159,110,0.4)";
+        pin.style.boxShadow = "0 4px 12px rgba(20,184,166,0.4)";
       } else {
         pin.style.backgroundColor = "#184A37";
         pin.style.transform = "none";
@@ -992,7 +1310,10 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     const fullQuery = `${query}, ${destLabel}`;
 
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(fullQuery)}`);
+      const fetchPromise = fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(fullQuery)}`);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1500));
+      
+      const res = await Promise.race([fetchPromise, timeoutPromise]) as Response;
       const data = await res.json();
       if (data && data.length > 0) {
         const first = data[0];
@@ -1139,64 +1460,94 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.isAiChatOpen = !this.isAiChatOpen;
   }
 
-  public sendAiMessage() {
+  public async sendAiMessage() {
     const text = this.aiInputText.trim();
-    if (!text) return;
+    if (!text || !this.activeItinerary) return;
 
     this.aiMessages.push({ text: text, isOutgoing: true });
     this.aiInputText = '';
     this.isAiThinking = true;
+    this.cdr.detectChanges();
 
-    // Simulate AI recommendations
-    setTimeout(() => {
-      this.isAiThinking = false;
-      const query = text.toLowerCase();
-      const dest = this.activeItinerary ? this.activeItinerary.dest : 'da-lat';
-      
-      let replyText = "Tôi đã gợi ý thêm một số địa điểm xanh quanh khu vực của bạn:";
-      let rec: any = null;
-
-      if (query.includes("cafe") || query.includes("cà phê")) {
-        if (dest === "da-lat") {
-          replyText = "Đà Lạt có các quán cafe ngắm thông rất thơ mộng. Gợi ý cho bạn:";
-          rec = { name: 'Cafe Túi Mơ To', type: 'dining', cost: 65000, carbon: 1, lat: 11.9567, lng: 108.4715 };
-        } else {
-          replyText = "Gợi ý quán cafe mang phong cách hoài cổ ven sông Hàn:";
-          rec = { name: 'Cộng Cà Phê Bạch Đằng', type: 'dining', cost: 45000, carbon: 1, lat: 16.0680, lng: 108.2235 };
-        }
-      } else if (query.includes("ăn") || query.includes("nhà hàng")) {
-        if (dest === "da-lat") {
-          replyText = "Gợi ý quán ăn địa phương nổi tiếng ấm cúng:";
-          rec = { name: 'Lẩu gà lá é Tao Ngộ', type: 'dining', cost: 100000, carbon: 2, lat: 11.9325, lng: 108.4452 };
-        } else {
-          replyText = "Địa điểm thưởng thức hải sản Tuy Hòa cực ngon:";
-          rec = { name: 'Mắt cá ngừ bà Tám', type: 'dining', cost: 80000, carbon: 2, lat: 13.0882, lng: 109.3025 };
-        }
-      } else {
-        replyText = "Địa điểm tham quan có lượng khí thải cực thấp được đề xuất:";
-        rec = { name: 'Tháp Nghinh Phong', type: 'attraction', cost: 0, carbon: 0.5, lat: 13.1090, lng: 109.3175 };
-      }
-
+    try {
+      const activeDay = this.activeItinerary.days[this.activeDayIdx];
+      const res = await this.apiService.sendAiMessage(
+        text,
+        this.activeItinerary.destLabel || this.activeItinerary.destination || 'Đà Lạt',
+        activeDay ? activeDay.activities : []
+      );
       this.aiMessages.push({
-        text: replyText,
+        text: res.reply,
         isOutgoing: false,
-        rec: rec
+        rec: res.recommendation
       });
-    }, 1000);
+    } catch (e) {
+      console.error('Gemini error:', e);
+      this.aiMessages.push({
+        text: "Xin lỗi, trợ lý AI đang bận hoặc gặp lỗi kết nối. Hãy thử lại sau nhé!",
+        isOutgoing: false
+      });
+    } finally {
+      this.isAiThinking = false;
+      this.cdr.detectChanges();
+      
+      // Auto scroll to bottom
+      setTimeout(() => {
+        const area = document.getElementById('aiMessagesArea');
+        if (area) {
+          area.scrollTop = area.scrollHeight;
+        }
+      }, 100);
+    }
   }
 
   // WALLET & CHECKOUT MODAL
+  public async reloadWalletInfo() {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      const wallet = await this.apiService.getWalletInfo(user.id || user._id || '');
+      this.walletBalance = wallet.balance;
+      this.walletRegistered = wallet.registered;
+      this.cdr.detectChanges();
+    }
+  }
+
+  public async handleActivateWallet() {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      alert("Vui lòng đăng nhập!");
+      return;
+    }
+    const userId = user.id || user._id || '';
+    const res = await this.apiService.activateWallet(userId);
+    if (res && res.success) {
+      this.walletBalance = res.balance;
+      this.walletRegistered = true;
+      alert("Kích hoạt ví GreenSteps thành công! Bạn nhận được quà tặng chào mừng 200.000đ.");
+      this.cdr.detectChanges();
+    } else {
+      alert("Kích hoạt ví thất bại!");
+    }
+  }
+
   public openCheckout() {
+    if (!this.walletRegistered) {
+      alert("Ví GreenSteps của bạn chưa được kích hoạt! Vui lòng vào trang Quản lý trang cá nhân để thực hiện yêu cầu kích hoạt ví.");
+      return;
+    }
+
     this.isCheckoutModalOpen = true;
     this.isItineraryPay = false;
     this.checkoutItems = [];
     this.checkoutTotal = 0;
+    this.reloadWalletInfo();
   }
 
   public triggerCheckout() {
     if (!this.activeItinerary) return;
     this.isCheckoutModalOpen = true;
     this.isItineraryPay = true;
+    this.reloadWalletInfo();
 
     this.checkoutItems = [];
     let total = 0;
@@ -1216,18 +1567,108 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.isCheckoutModalOpen = false;
   }
 
-  public async modalDepositWallet() {
+  public setDepositAmount(amount: number) {
+    this.depositAmount = amount;
+  }
+
+  public async showDepositQr() {
+    if (!this.depositAmount || this.depositAmount <= 0) {
+      alert("Vui lòng nhập số tiền nạp hợp lệ!");
+      return;
+    }
     const user = this.authService.getCurrentUser();
     if (!user) {
-      alert("Vui lòng đăng nhập để nạp tiền!");
+      alert("Vui lòng đăng nhập!");
       return;
     }
     const userId = user.id || user._id || '';
-    const res = await this.apiService.depositMoney(userId, 2000000);
-    if (res.success) {
-      this.walletBalance = res.balance;
-      alert("Nạp thành công 2.000.000đ vào Ví du lịch!");
+    const username = user.username || 'USER';
+
+    this.qrPaymentNote = `NAP VI ${username}`.toUpperCase();
+    this.qrCodeUrl = `https://img.vietqr.io/image/970422-0392851304-compact.jpg?amount=${this.depositAmount}&addInfo=${encodeURIComponent(this.qrPaymentNote)}&accountName=KIEU%20HOANG%20DUONG`;
+
+    // Step 1: Show QR immediately so customer can scan
+    this.isQrVisible = true;
+    this.cdr.detectChanges();
+
+    // Step 2: Call deposit API in background (blocks until admin approves in terminal)
+    try {
+      const res = await this.apiService.depositMoney(userId, this.depositAmount);
+      if (res.success) {
+        // Admin approved -> auto-close QR and update balance
+        this.isQrVisible = false;
+        this.walletBalance = res.balance;
+        alert(`Nạp tiền thành công! Số dư ví: ${res.balance.toLocaleString("vi-VN")}đ`);
+      } else {
+        this.isQrVisible = false;
+        alert(res.message || "Giao dịch bị từ chối.");
+      }
+    } catch (e: any) {
+      this.isQrVisible = false;
+      alert("Giao dịch bị từ chối hoặc có lỗi xảy ra.");
     }
+    this.cdr.detectChanges();
+  }
+
+  public async showPaymentQr() {
+    if (this.checkoutTotal === 0) {
+      alert("Lịch trình trống hoặc toàn bộ dịch vụ đều miễn phí!");
+      return;
+    }
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      alert("Vui lòng đăng nhập!");
+      return;
+    }
+    const userId = user.id || user._id || '';
+    const username = user.username || 'USER';
+
+    this.qrPaymentNote = `THANH TOAN ${username}`.toUpperCase();
+    this.qrCodeUrl = `https://img.vietqr.io/image/970422-0392851304-compact.jpg?amount=${this.checkoutTotal}&addInfo=${encodeURIComponent(this.qrPaymentNote)}&accountName=KIEU%20HOANG%20DUONG`;
+
+    // Step 1: Show QR immediately so customer can scan
+    this.isQrVisible = true;
+    this.cdr.detectChanges();
+
+    // Step 2: Call pay API in background (blocks until admin approves in terminal)
+    try {
+      const res = await this.apiService.payItineraryQr(userId, this.activeItinerary.id, this.checkoutTotal);
+      if (res.success) {
+        this.isQrVisible = false;
+        this.walletBalance = res.balance;
+        this.closeCheckout();
+        alert(`Thanh toán thành công ${this.checkoutTotal.toLocaleString("vi-VN")}đ!`);
+      } else {
+        this.isQrVisible = false;
+        alert(res.message || "Giao dịch bị từ chối.");
+      }
+    } catch (e: any) {
+      this.isQrVisible = false;
+      alert("Giao dịch bị từ chối hoặc có lỗi xảy ra.");
+    }
+    this.cdr.detectChanges();
+  }
+
+  public closeQrModal() {
+    this.isQrVisible = false;
+  }
+
+  public getItineraryCoverImage(): string {
+    if (!this.activeItinerary) return 'image/Viet Nam.png';
+    const dest = (this.activeItinerary.dest || '').toLowerCase();
+    const destLabel = (this.activeItinerary.destLabel || this.activeItinerary.destination || '').toLowerCase();
+    
+    if (dest.includes('da-lat') || dest.includes('dalat') || destLabel.includes('đà lạt') || destLabel.includes('da lat')) {
+      return 'image/cb4fbf769d60d911e13c255f7fb39dcc.jpg';
+    }
+    if (dest.includes('phu-yen') || dest.includes('phuyen') || destLabel.includes('phú yên') || destLabel.includes('phu yen')) {
+      return 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg';
+    }
+    if (dest.includes('da-nang') || dest.includes('danang') || destLabel.includes('đà nẵng') || destLabel.includes('da nang') ||
+        dest.includes('hoi-an') || dest.includes('hoian') || destLabel.includes('hội an') || destLabel.includes('hoi an')) {
+      return 'image/da38f44902391ce9a9e4f0fd4b69fb04.jpg';
+    }
+    return 'image/Viet Nam.png';
   }
 
   public async payCheckoutItinerary() {
@@ -1239,7 +1680,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     if (this.walletBalance < this.checkoutTotal) {
-      alert("Số dư ví không đủ! Vui lòng nạp thêm tiền gộp.");
+      alert("Số dư ví không đủ! Vui lòng quét mã QR thanh toán trực tiếp.");
       return;
     }
 
@@ -1248,15 +1689,26 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       alert("Vui lòng đăng nhập để thanh toán!");
       return;
     }
+    
+    // Call pay direct (triggers backend console approval)
+    this.isWaitingApproval = true;
+    this.cdr.detectChanges();
     const userId = user.id || user._id || '';
 
-    const res = await this.apiService.payItinerary(userId, this.activeItinerary.id, this.checkoutTotal);
-    if (res.success) {
-      this.walletBalance = res.balance;
-      this.closeCheckout();
-      alert(`Thanh toán đặt chỗ thành công! Đã trừ gộp ${this.checkoutTotal.toLocaleString("vi-VN")}đ từ Ví du lịch của bạn.`);
-    } else {
-      alert(res.message || "Thanh toán thất bại!");
+    try {
+      const res = await this.apiService.payItinerary(userId, this.activeItinerary.id, this.checkoutTotal);
+      if (res.success) {
+        this.walletBalance = res.balance;
+        this.closeCheckout();
+        alert(`Thanh toán thành công! Đã trừ ${this.checkoutTotal.toLocaleString("vi-VN")}đ từ số dư ví.`);
+      } else {
+        alert(res.message || "Thanh toán bị từ chối.");
+      }
+    } catch (e: any) {
+      alert(e.error?.message || "Thanh toán bị từ chối hoặc hết hạn phê duyệt.");
+    } finally {
+      this.isWaitingApproval = false;
+      this.cdr.detectChanges();
     }
   }
 
