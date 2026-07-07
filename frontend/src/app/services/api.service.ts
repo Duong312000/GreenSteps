@@ -469,4 +469,75 @@ export class ApiService {
       return { success: false, url: '' };
     }
   }
+
+  // Admin APIs
+  public async getPendingProviders(): Promise<any[]> {
+    try {
+      return await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/partner/pending`, { withCredentials: true }));
+    } catch (e) {
+      return [];
+    }
+  }
+
+  public async approveProvider(targetUserId: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/partner/approve`, { targetUserId }, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async getPendingDeposits(): Promise<any[]> {
+    try {
+      return await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/wallet/deposits/pending`, { withCredentials: true }));
+    } catch (e) {
+      return [];
+    }
+  }
+
+  public async approveDeposit(id: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/wallet/deposits/${id}/approve`, {}, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async rejectDeposit(id: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/wallet/deposits/${id}/reject`, {}, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async getPendingWithdrawals(): Promise<any[]> {
+    try {
+      const all = await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/wallet/withdrawals`, { withCredentials: true }));
+      return all.filter(w => w.status === 'pending');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  public async approveWithdrawal(id: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/wallet/withdrawals/${id}/approve`, {}, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async rejectWithdrawal(id: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/wallet/withdrawals/${id}/reject`, {}, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

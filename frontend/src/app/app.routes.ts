@@ -11,6 +11,7 @@ import { PartnerBookingsComponent } from './pages/partner/partner-bookings';
 import { PartnerAdsComponent } from './pages/partner/partner-ads';
 import { PartnerRegisterComponent } from './pages/partner/partner-register';
 import { BookingComponent } from './pages/booking/booking';
+import { AdminComponent } from './pages/admin/admin';
 import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
@@ -30,5 +31,6 @@ export const routes: Routes = [
   { path: 'partner-bookings', component: PartnerBookingsComponent, canActivate: [roleGuard] },
   { path: 'partner-ads', component: PartnerAdsComponent, canActivate: [roleGuard] },
   { path: 'partner-register', component: PartnerRegisterComponent },
+  { path: 'admin', component: AdminComponent },
   { path: '**', redirectTo: 'home' }
 ];

@@ -116,7 +116,11 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (res.success && res.user) {
       this.requestClose();
-      this.router.navigate(['/profile']);
+      if (res.user.role === 'admin') {
+        this.router.navigate(['/admin']);
+      } else {
+        this.router.navigate(['/profile']);
+      }
       return;
     }
 

@@ -1,0 +1,150 @@
+<main class="min-h-screen bg-[#f8f9fa] pt-28 pb-12 px-6 font-sans">
+    <div class="max-w-[1200px] mx-auto space-y-6">
+        
+        <!-- Header -->
+        <div class="border-b border-gray-200 pb-4 mb-6">
+            <h1 class="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
+                <i class="bi bi-shield-lock-fill text-[#0E9F6E]"></i> Phân hệ Quản trị viên (Admin Panel)
+            </h1>
+            <p class="text-xs text-gray-500 mt-1">Phê duyệt yêu cầu đăng ký đối tác, nạp tiền ví du khách và đối soát rút tiền đối tác.</p>
+        </div>
+
+        <!-- Tab Selector -->
+        <div class="flex flex-wrap items-center gap-6 border-b border-gray-200 pb-2 mb-6">
+            <button (click)="setActiveTab('providers')" 
+                    [ngClass]="activeTab === 'providers' ? 'border-b-2 border-[#0E9F6E] text-[#0E9F6E] font-bold' : 'text-gray-500'"
+                    class="text-sm pb-2 transition-all bg-transparent border-none cursor-pointer">
+                Duyệt nhà cung cấp ({{ pendingProviders.length }})
+            </button>
+            <button (click)="setActiveTab('deposits')" 
+                    [ngClass]="activeTab === 'deposits' ? 'border-b-2 border-[#0E9F6E] text-[#0E9F6E] font-bold' : 'text-gray-500'"
+                    class="text-sm pb-2 transition-all bg-transparent border-none cursor-pointer">
+                Duyệt nạp tiền ({{ pendingDeposits.length }})
+            </button>
+            <button (click)="setActiveTab('withdrawals')" 
+                    [ngClass]="activeTab === 'withdrawals' ? 'border-b-2 border-[#0E9F6E] text-[#0E9F6E] font-bold' : 'text-gray-500'"
+                    class="text-sm pb-2 transition-all bg-transparent border-none cursor-pointer">
+                Duyệt rút tiền ({{ pendingWithdrawals.length }})
+            </button>
+        </div>
+
+        <!-- TAB 1: Provider Applications -->
+        <div *ngIf="activeTab === 'providers'" class="space-y-4">
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Yêu cầu đăng ký nhà cung cấp</h3>
+                    <button (click)="loadProviders()" class="text-xs text-[#0E9F6E] hover:underline bg-transparent border-none cursor-pointer font-semibold"><i class="bi bi-arrow-clockwise"></i> Tải lại</button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100/50 text-gray-500 font-bold border-b border-gray-100">
+                                <th class="px-6 py-3.5">Mã Hợp Đồng</th>
+                                <th class="px-6 py-3.5">Họ Tên Đăng Ký</th>
+                                <th class="px-6 py-3.5">Tên Tài Khoản</th>
+                                <th class="px-6 py-3.5">Hợp Đồng Ký Kết</th>
+                                <th class="px-6 py-3.5 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of pendingProviders" class="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4 font-mono font-bold text-gray-700">{{ item.id }}</td>
+                                <td class="px-6 py-4 font-bold text-gray-900">{{ item.User?.fullname }}</td>
+                                <td class="px-6 py-4 text-gray-600">@{{ item.User?.username }}</td>
+                                <td class="px-6 py-4 text-gray-500 truncate max-w-[250px]" [title]="item.text">{{ item.text }}</td>
+                                <td class="px-6 py-4 text-right flex justify-end gap-2">
+                                    <button (click)="approveProvider(item.User?.id)" class="px-3 py-1.5 bg-[#0E9F6E] hover:bg-[#0c875d] text-white font-bold rounded-lg border-none text-[11px] transition-colors cursor-pointer shadow-sm">Phê Duyệt</button>
+                                </td>
+                            </tr>
+                            <tr *ngIf="pendingProviders.length === 0">
+                                <td colspan="5" class="text-center py-12 text-gray-400 font-medium">Không có yêu cầu đăng ký nhà cung cấp nào đang chờ duyệt.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Deposit Approvals -->
+        <div *ngIf="activeTab === 'deposits'" class="space-y-4">
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Yêu cầu nạp tiền ví điện tử</h3>
+                    <button (click)="loadDeposits()" class="text-xs text-[#0E9F6E] hover:underline bg-transparent border-none cursor-pointer font-semibold"><i class="bi bi-arrow-clockwise"></i> Tải lại</button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100/50 text-gray-500 font-bold border-b border-gray-100">
+                                <th class="px-6 py-3.5">Mã Giao Dịch</th>
+                                <th class="px-6 py-3.5">Người Yêu Cầu</th>
+                                <th class="px-6 py-3.5">Số Tiền Nạp</th>
+                                <th class="px-6 py-3.5">Nội Dung</th>
+                                <th class="px-6 py-3.5 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let tx of pendingDeposits" class="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4 font-mono font-bold text-gray-700">{{ tx.id }}</td>
+                                <td class="px-6 py-4 font-bold text-gray-900">{{ tx.Wallet?.User?.fullname || 'Khách hàng' }} (@{{ tx.Wallet?.User?.username }})</td>
+                                <td class="px-6 py-4 font-black text-[#0E9F6E] text-sm">{{ tx.amount | number:'1.0-0':'vi-VN' }} đ</td>
+                                <td class="px-6 py-4 text-gray-500">{{ tx.description }}</td>
+                                <td class="px-6 py-4 text-right flex justify-end gap-2">
+                                    <button (click)="approveDeposit(tx.id)" class="px-3 py-1.5 bg-[#0E9F6E] hover:bg-[#0c875d] text-white font-bold rounded-lg border-none text-[11px] transition-colors cursor-pointer shadow-sm">Duyệt</button>
+                                    <button (click)="rejectDeposit(tx.id)" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-lg border border-red-200 text-[11px] transition-colors cursor-pointer">Từ Chối</button>
+                                </td>
+                            </tr>
+                            <tr *ngIf="pendingDeposits.length === 0">
+                                <td colspan="5" class="text-center py-12 text-gray-400 font-medium">Không có yêu cầu nạp tiền nào đang chờ duyệt.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: Withdrawal Approvals -->
+        <div *ngIf="activeTab === 'withdrawals'" class="space-y-4">
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Yêu cầu rút tiền từ ví đối tác</h3>
+                    <button (click)="loadWithdrawals()" class="text-xs text-[#0E9F6E] hover:underline bg-transparent border-none cursor-pointer font-semibold"><i class="bi bi-arrow-clockwise"></i> Tải lại</button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100/50 text-gray-500 font-bold border-b border-gray-100">
+                                <th class="px-6 py-3.5">Mã Yêu Cầu</th>
+                                <th class="px-6 py-3.5">Đối Tác Rút Tiền</th>
+                                <th class="px-6 py-3.5">Số Tiền</th>
+                                <th class="px-6 py-3.5">Ngân Hàng / Số Tài Khoản</th>
+                                <th class="px-6 py-3.5 text-right">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let wd of pendingWithdrawals" class="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4 font-mono font-bold text-gray-700">{{ wd.id }}</td>
+                                <td class="px-6 py-4 font-bold text-gray-900">{{ wd.User?.fullname || 'Đối tác' }}</td>
+                                <td class="px-6 py-4 font-black text-red-600 text-sm">{{ wd.amount | number:'1.0-0':'vi-VN' }} đ</td>
+                                <td class="px-6 py-4 text-gray-600">
+                                    <span class="font-semibold">{{ wd.bank_name }}</span> - <code class="bg-gray-100 px-1 py-0.5 rounded font-mono">{{ wd.bank_account }}</code>
+                                </td>
+                                <td class="px-6 py-4 text-right flex justify-end gap-2">
+                                    <button (click)="approveWithdrawal(wd.id)" class="px-3 py-1.5 bg-[#0E9F6E] hover:bg-[#0c875d] text-white font-bold rounded-lg border-none text-[11px] transition-colors cursor-pointer shadow-sm">Duyệt Rút</button>
+                                    <button (click)="rejectWithdrawal(wd.id)" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-lg border border-red-200 text-[11px] transition-colors cursor-pointer">Từ Chối</button>
+                                </td>
+                            </tr>
+                            <tr *ngIf="pendingWithdrawals.length === 0">
+                                <td colspan="5" class="text-center py-12 text-gray-400 font-medium">Không có yêu cầu rút tiền nào đang chờ duyệt.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>

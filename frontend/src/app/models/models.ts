@@ -8,7 +8,7 @@ export interface User {
   dob?: string;
   gender?: string;
   address?: string;
-  role: 'traveler' | 'provider';
+  role: 'traveler' | 'provider' | 'admin';
   companyName?: string;
   company_name?: string;
   avatarUrl?: string;

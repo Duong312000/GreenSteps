@@ -157,3 +157,20 @@ exports.getMonthlyStats = async (req, res, next) => {
     next(error);
   }
 };
+
+// List pending provider registration contracts (Admin only)
+exports.listPendingProviders = async (req, res, next) => {
+  try {
+    const pendingContracts = await VenderContract.findAll({
+      include: [{
+        model: User,
+        where: { role: 'traveler' },
+        attributes: ['id', 'fullname', 'username']
+      }],
+      order: [['createdAt', 'DESC']]
+    });
+    res.json(pendingContracts);
+  } catch (error) {
+    next(error);
+  }
+};

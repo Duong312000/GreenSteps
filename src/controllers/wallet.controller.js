@@ -136,14 +136,8 @@ exports.deposit = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Ví của bạn chưa được kích hoạt. Vui lòng kích hoạt ví trước khi sử dụng tính năng này!' });
     }
 
-    // Call terminal approval
-    const userDisplay = req.user ? req.user.fullname : `Khách hàng #${userId}`;
-    const msg = `Du khách #${userId} (${userDisplay}) yêu cầu NẠP TIỀN VÍ: ${Number(amount).toLocaleString('vi-VN')} đ`;
-    const approved = await promptTerminalApproval(msg);
-
-    if (!approved) {
-      return res.status(400).json({ success: false, message: 'Yêu cầu nạp tiền bị từ chối bởi Quản trị viên.' });
-    }
+    const isCloud = !process.stdin.isTTY;
+    const status = isCloud ? 'success' : 'pending';
 
     const t = await sequelize.transaction();
     try {
@@ -153,20 +147,32 @@ exports.deposit = async (req, res, next) => {
         lock: t.LOCK.UPDATE
       });
 
-      lockedWallet.balance += parseFloat(amount);
-      await lockedWallet.save({ transaction: t });
+      if (isCloud) {
+        lockedWallet.balance += parseFloat(amount);
+        await lockedWallet.save({ transaction: t });
+      }
 
       const txId = 'GD-' + Date.now();
       await WalletTransaction.create({
         id: txId,
         wallet_id: lockedWallet.id,
         type: 'deposit',
-        description: `Nạp tiền tài khoản thành công #${txId}`,
+        description: isCloud ? `Nạp tiền tài khoản thành công #${txId}` : `Yêu cầu nạp tiền tài khoản đang chờ phê duyệt #${txId}`,
         amount: parseFloat(amount),
-        status: 'success'
+        status: status
       }, { transaction: t });
 
       await t.commit();
+      
+      if (isCloud) {
+        res.json({ success: true, balance: lockedWallet.balance, message: `Nạp thành công ${amount.toLocaleString('vi-VN')}đ` });
+      } else {
+        res.json({ success: true, pending: true, balance: lockedWallet.balance, message: `Yêu cầu nạp tiền đã được gửi. Vui lòng phê duyệt trên trang Quản trị viên.` });
+      }
+    } catch (err) {
+      await t.rollback();
+      throw err;
+    }
       res.json({
         success: true,
         message: `Đã nạp thành công ${amount.toLocaleString('vi-VN')}đ vào ví!`,
@@ -235,8 +241,14 @@ exports.approveWithdrawal = async (req, res, next) => {
     }
 
     // Call terminal approval
-    const msg = `Đối tác #${withdrawal.user_id} yêu cầu RÚT TIỀN: ${withdrawal.amount.toLocaleString('vi-VN')} đ về ngân hàng ${withdrawal.bank_name}`;
-    const approved = await promptTerminalApproval(msg);
+    const isCloud = !process.stdin.isTTY;
+    const isAdminRequest = req.user && req.user.role === 'admin';
+    let approved = isCloud || isAdminRequest;
+
+    if (!approved) {
+      const msg = `Đối tác #${withdrawal.user_id} yêu cầu RÚT TIỀN: ${withdrawal.amount.toLocaleString('vi-VN')} đ về ngân hàng ${withdrawal.bank_name}`;
+      approved = await promptTerminalApproval(msg);
+    }
 
     if (!approved) {
       // Set withdrawal status to rejected
@@ -435,6 +447,100 @@ exports.payItineraryQr = async (req, res, next) => {
       await t.rollback();
       throw txErr;
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get pending deposits (Admin only)
+exports.listPendingDeposits = async (req, res, next) => {
+  try {
+    const deposits = await WalletTransaction.findAll({
+      where: { type: 'deposit', status: 'pending' },
+      include: [{
+        model: Wallet,
+        include: [{ model: User, attributes: ['id', 'fullname', 'username'] }]
+      }],
+      order: [['createdAt', 'DESC']]
+    });
+    res.json(deposits);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Approve deposit (Admin only)
+exports.approveDeposit = async (req, res, next) => {
+  const { id } = req.params;
+  const t = await sequelize.transaction();
+  try {
+    const tx = await WalletTransaction.findByPk(id, { transaction: t });
+    if (!tx) {
+      await t.rollback();
+      return res.status(404).json({ success: false, message: 'Giao dịch không tồn tại!' });
+    }
+    if (tx.status !== 'pending') {
+      await t.rollback();
+      return res.status(400).json({ success: false, message: 'Giao dịch này đã được xử lý!' });
+    }
+
+    const wallet = await Wallet.findByPk(tx.wallet_id, { transaction: t });
+    if (!wallet) {
+      await t.rollback();
+      return res.status(404).json({ success: false, message: 'Ví không tồn tại!' });
+    }
+
+    wallet.balance += tx.amount;
+    await wallet.save({ transaction: t });
+
+    tx.status = 'success';
+    await tx.save({ transaction: t });
+
+    await t.commit();
+    res.json({ success: true, message: 'Đã phê duyệt nạp tiền thành công!' });
+  } catch (error) {
+    await t.rollback();
+    next(error);
+  }
+};
+
+// Reject deposit (Admin only)
+exports.rejectDeposit = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const tx = await WalletTransaction.findByPk(id);
+    if (!tx) {
+      return res.status(404).json({ success: false, message: 'Giao dịch không tồn tại!' });
+    }
+    if (tx.status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Giao dịch này đã được xử lý!' });
+    }
+
+    tx.status = 'failed';
+    await tx.save();
+
+    res.json({ success: true, message: 'Đã từ chối yêu cầu nạp tiền!' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Reject withdrawal (Admin only)
+exports.rejectWithdrawal = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const withdrawal = await WithdrawalRequest.findByPk(id);
+    if (!withdrawal) {
+      return res.status(404).json({ success: false, message: 'Yêu cầu rút tiền không tồn tại!' });
+    }
+    if (withdrawal.status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Yêu cầu này đã được xử lý!' });
+    }
+
+    withdrawal.status = 'rejected';
+    await withdrawal.save();
+
+    res.json({ success: true, message: 'Đã từ chối yêu cầu rút tiền!' });
   } catch (error) {
     next(error);
   }
