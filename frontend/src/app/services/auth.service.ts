@@ -7,7 +7,9 @@ import { User } from '../models/models';
   providedIn: 'root'
 })
 export class AuthService {
-  private BACKEND_URL = 'http://localhost:5055/api/auth';
+  private BACKEND_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5055/api/auth' 
+    : 'https://greensteps-backend.onrender.com/api/auth'; // Hãy đổi URL này thành URL Render của bạn sau khi deploy backend!
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
