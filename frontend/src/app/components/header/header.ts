@@ -505,8 +505,17 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public updateNavigation() {
+    const travelerTabs = [
+      { label: 'Cộng đồng', link: '/community' },
+      { label: 'Lịch trình', link: '/tours' },
+      { label: 'Cẩm nang', action: 'green_handbook' },
+      { label: 'AI Planner', action: 'ai_planner' },
+      { label: 'Về GreenSteps', link: '/home' }
+    ];
+
     if (this.currentUser && this.currentUser.role === 'provider') {
       this.allTabs = [
+        ...travelerTabs,
         { label: 'Tổng quan nhà cung cấp', link: '/partner-dashboard' },
         { label: 'Dịch vụ', link: '/partner-services' },
         { label: 'Quản lý booking', link: '/partner-bookings' },
@@ -514,16 +523,11 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
       ];
     } else if (this.currentUser && this.currentUser.role === 'admin') {
       this.allTabs = [
+        ...travelerTabs,
         { label: 'Bảng quản trị', link: '/admin' }
       ];
     } else {
-      this.allTabs = [
-        { label: 'Cộng đồng', link: '/community' },
-        { label: 'Lịch trình', link: '/tours' },
-        { label: 'Cẩm nang', action: 'green_handbook' },
-        { label: 'AI Planner', action: 'ai_planner' },
-        { label: 'Về GreenSteps', link: '/home' }
-      ];
+      this.allTabs = [...travelerTabs];
     }
 
     this.overflowTabs = [];
