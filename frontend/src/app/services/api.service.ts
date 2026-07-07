@@ -7,7 +7,9 @@ import { Tour, Itinerary, Service, Booking, WalletInfo, WalletTransaction, Commu
   providedIn: 'root'
 })
 export class ApiService {
-  private BACKEND_URL = 'http://localhost:5055/api';
+  private BACKEND_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:5055/api' 
+    : 'https://greensteps-backend.onrender.com/api'; // Hãy đổi URL này thành URL Render của bạn sau khi deploy backend!
 
 
 
