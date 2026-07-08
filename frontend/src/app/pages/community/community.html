@@ -56,8 +56,8 @@
       <div class="create-post-card fb-composer-card">
         <div class="composer-top-row">
           <div class="post-author-avatar">
-            <img *ngIf="currentUser?.avatarUrl" [src]="currentUser?.avatarUrl" alt="Avatar" class="avatar-img">
-            <span *ngIf="!currentUser?.avatarUrl">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</span>
+            <img *ngIf="isAvatarUrl(currentUser?.avatarUrl)" [src]="currentUser?.avatarUrl" alt="Avatar" class="avatar-img">
+            <span *ngIf="!isAvatarUrl(currentUser?.avatarUrl)">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</span>
           </div>
           <button type="button" class="composer-input-trigger" (click)="showPostDetails = true">
             {{ currentUser ? currentUser.fullname + ' ơi, bạn đang nghĩ gì thế?' : 'Bạn đang nghĩ gì thế?' }}
@@ -83,8 +83,8 @@
             <!-- Author info row -->
             <div class="modal-author-row">
               <div class="post-author-avatar">
-                <img *ngIf="currentUser?.avatarUrl" [src]="currentUser?.avatarUrl" alt="Avatar" class="avatar-img">
-                <span *ngIf="!currentUser?.avatarUrl">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</span>
+                <img *ngIf="isAvatarUrl(currentUser?.avatarUrl)" [src]="currentUser?.avatarUrl" alt="Avatar" class="avatar-img">
+                <span *ngIf="!isAvatarUrl(currentUser?.avatarUrl)">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</span>
               </div>
               <div class="modal-author-meta">
                 <h4>{{ currentUser ? currentUser.fullname : 'Khách du lịch' }}</h4>
@@ -180,8 +180,8 @@
         <div class="feed-post-card fb-post-card" *ngFor="let post of posts">
           <div class="post-header">
             <div class="post-author-avatar">
-              <img *ngIf="post.avatar && post.avatar.length > 1" [src]="post.avatar" alt="Avatar" class="avatar-img">
-              <span *ngIf="!post.avatar || post.avatar.length <= 1">{{ getFirstLetter(post.author) }}</span>
+              <img *ngIf="isAvatarUrl(post.avatar)" [src]="post.avatar" alt="Avatar" class="avatar-img">
+              <span *ngIf="!isAvatarUrl(post.avatar)">{{ getFirstLetter(post.author) }}</span>
             </div>
             <div class="post-author-info">
               <h4>{{ post.author }}</h4>
@@ -236,8 +236,8 @@
             <div class="comments-list">
               <div class="comment-item-row" *ngFor="let comment of postComments[post.id]">
                 <div class="comment-avatar">
-                  <img *ngIf="comment.user?.avatar && comment.user.avatar.length > 1" [src]="comment.user.avatar" alt="Avatar" class="avatar-img">
-                  <span *ngIf="!comment.user?.avatar || comment.user.avatar.length <= 1">{{ getFirstLetter(comment.user?.fullname || 'U') }}</span>
+                  <img *ngIf="isAvatarUrl(comment.user?.avatar)" [src]="comment.user.avatar" alt="Avatar" class="avatar-img">
+                  <span *ngIf="!isAvatarUrl(comment.user?.avatar)">{{ getFirstLetter(comment.user?.fullname || 'U') }}</span>
                 </div>
                 
                 <div class="comment-block-wrapper">
@@ -260,8 +260,8 @@
                   <div class="replies-list" *ngIf="comment.replies && comment.replies.length > 0">
                     <div class="reply-item-row" *ngFor="let reply of comment.replies">
                       <div class="reply-avatar">
-                        <img *ngIf="reply.user?.avatar && reply.user.avatar.length > 1" [src]="reply.user.avatar" alt="Avatar" class="avatar-img">
-                        <span *ngIf="!reply.user?.avatar || reply.user.avatar.length <= 1">{{ getFirstLetter(reply.user?.fullname || 'U') }}</span>
+                        <img *ngIf="isAvatarUrl(reply.user?.avatar)" [src]="reply.user.avatar" alt="Avatar" class="avatar-img">
+                        <span *ngIf="!isAvatarUrl(reply.user?.avatar)">{{ getFirstLetter(reply.user?.fullname || 'U') }}</span>
                       </div>
                       
                       <div class="reply-block-wrapper">
@@ -296,8 +296,8 @@
             <!-- Add Root Comment Input with Photo Upload -->
             <div class="add-comment-row fb-add-comment-row">
               <div class="comment-avatar-small">
-                <img *ngIf="currentUser?.avatarUrl" [src]="currentUser?.avatarUrl" alt="Avatar" class="avatar-img">
-                <span *ngIf="!currentUser?.avatarUrl">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</span>
+                <img *ngIf="isAvatarUrl(currentUser?.avatarUrl)" [src]="currentUser?.avatarUrl" alt="Avatar" class="avatar-img">
+                <span *ngIf="!isAvatarUrl(currentUser?.avatarUrl)">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</span>
               </div>
               
               <div class="comment-input-container">

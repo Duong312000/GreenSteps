@@ -268,4 +268,9 @@ export class CommunityComponent implements OnInit {
   public getFirstLetter(name: string): string {
     return name ? name.charAt(0).toUpperCase() : 'U';
   }
+
+  public isAvatarUrl(avatar: string | undefined | null): boolean {
+    if (!avatar) return false;
+    return avatar.trim().length > 1;
+  }
 }
