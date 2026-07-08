@@ -18,10 +18,11 @@ exports.getPosts = async (req, res, next) => {
       }
       
       const authorName = row.User ? row.User.fullname : 'Người dùng GreenSteps';
+      const avatarVal = row.User && row.User.avatarUrl ? row.User.avatarUrl : (authorName ? authorName.charAt(0).toUpperCase() : 'U');
       return {
         id: row.id,
         author: authorName,
-        avatar: authorName ? authorName.charAt(0).toUpperCase() : 'U',
+        avatar: avatarVal,
         time: timeText,
         rating: row.rating,
         text: row.text,
@@ -149,7 +150,7 @@ exports.addPostComment = async (req, res, next) => {
         imageUrl: comment.image_url,
         user: {
           fullname: userObj ? userObj.fullname : 'Người dùng ẩn danh',
-          avatar: userObj ? userObj.fullname.charAt(0).toUpperCase() : 'U'
+          avatar: userObj && userObj.avatarUrl ? userObj.avatarUrl : (userObj ? userObj.fullname.charAt(0).toUpperCase() : 'U')
         }
       }
     });
@@ -179,7 +180,7 @@ exports.getPostComments = async (req, res, next) => {
         imageUrl: c.image_url,
         user: {
           fullname: author ? author.fullname : 'Người dùng ẩn danh',
-          avatar: author ? author.fullname.charAt(0).toUpperCase() : 'U'
+          avatar: author && author.avatarUrl ? author.avatarUrl : (author ? author.fullname.charAt(0).toUpperCase() : 'U')
         }
       });
     }

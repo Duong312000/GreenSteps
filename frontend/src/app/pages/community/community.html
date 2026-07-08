@@ -3,7 +3,10 @@
     <!-- Left Sidebar: shortcuts & user card -->
     <aside class="fb-left-sidebar">
       <div class="fb-user-card" *ngIf="currentUser">
-        <div class="fb-user-avatar">{{ getFirstLetter(currentUser.fullname) }}</div>
+        <div class="fb-user-avatar">
+          <img *ngIf="currentUser.avatarUrl" [src]="currentUser.avatarUrl" alt="Avatar" class="avatar-img">
+          <span *ngIf="!currentUser.avatarUrl">{{ getFirstLetter(currentUser.fullname) }}</span>
+        </div>
         <div class="fb-user-meta">
           <h4>{{ currentUser.fullname }}</h4>
           <span class="badge-green-member"><i class="bi bi-shield-check"></i> Thành viên xanh</span>
@@ -52,7 +55,10 @@
       <!-- Facebook Composer Card -->
       <div class="create-post-card fb-composer-card">
         <div class="composer-top-row">
-          <div class="post-author-avatar">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</div>
+          <div class="post-author-avatar">
+            <img *ngIf="currentUser?.avatarUrl" [src]="currentUser.avatarUrl" alt="Avatar" class="avatar-img">
+            <span *ngIf="!currentUser?.avatarUrl">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</span>
+          </div>
           <button type="button" class="composer-input-trigger" (click)="showPostDetails = !showPostDetails">
             {{ currentUser ? currentUser.fullname + ' ơi, bạn đang nghĩ gì thế?' : 'Bạn đang nghĩ gì thế?' }}
           </button>
@@ -151,7 +157,10 @@
       <div class="posts-feed-container">
         <div class="feed-post-card fb-post-card" *ngFor="let post of posts">
           <div class="post-header">
-            <div class="post-author-avatar">{{ getFirstLetter(post.author) }}</div>
+            <div class="post-author-avatar">
+              <img *ngIf="post.avatar && post.avatar.length > 1" [src]="post.avatar" alt="Avatar" class="avatar-img">
+              <span *ngIf="!post.avatar || post.avatar.length <= 1">{{ getFirstLetter(post.author) }}</span>
+            </div>
             <div class="post-author-info">
               <h4>{{ post.author }}</h4>
               <div class="post-meta-subline">
@@ -204,7 +213,10 @@
             <!-- List of Comments -->
             <div class="comments-list">
               <div class="comment-item-row" *ngFor="let comment of postComments[post.id]">
-                <div class="comment-avatar">{{ getFirstLetter(comment.user?.fullname || 'U') }}</div>
+                <div class="comment-avatar">
+                  <img *ngIf="comment.user?.avatar && comment.user.avatar.length > 1" [src]="comment.user.avatar" alt="Avatar" class="avatar-img">
+                  <span *ngIf="!comment.user?.avatar || comment.user.avatar.length <= 1">{{ getFirstLetter(comment.user?.fullname || 'U') }}</span>
+                </div>
                 
                 <div class="comment-block-wrapper">
                   <div class="comment-content-card fb-speech-bubble">
@@ -225,7 +237,10 @@
                   <!-- Nested Replies (Level 2) -->
                   <div class="replies-list" *ngIf="comment.replies && comment.replies.length > 0">
                     <div class="reply-item-row" *ngFor="let reply of comment.replies">
-                      <div class="reply-avatar">{{ getFirstLetter(reply.user?.fullname || 'U') }}</div>
+                      <div class="reply-avatar">
+                        <img *ngIf="reply.user?.avatar && reply.user.avatar.length > 1" [src]="reply.user.avatar" alt="Avatar" class="avatar-img">
+                        <span *ngIf="!reply.user?.avatar || reply.user.avatar.length <= 1">{{ getFirstLetter(reply.user?.fullname || 'U') }}</span>
+                      </div>
                       
                       <div class="reply-block-wrapper">
                         <div class="reply-content-card fb-speech-bubble">
@@ -258,7 +273,10 @@
 
             <!-- Add Root Comment Input with Photo Upload -->
             <div class="add-comment-row fb-add-comment-row">
-              <div class="comment-avatar-small">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</div>
+              <div class="comment-avatar-small">
+                <img *ngIf="currentUser?.avatarUrl" [src]="currentUser.avatarUrl" alt="Avatar" class="avatar-img">
+                <span *ngIf="!currentUser?.avatarUrl">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</span>
+              </div>
               
               <div class="comment-input-container">
                 <!-- Image attachment thumb preview -->

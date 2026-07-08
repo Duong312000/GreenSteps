@@ -72,7 +72,9 @@ app.post('/api/upload-base64', (req, res) => {
 
     fs.writeFileSync(filepath, buffer);
 
-    const fileUrl = `http://localhost:5055/uploads/${filename}`;
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.get('host');
+    const fileUrl = `${protocol}://${host}/uploads/${filename}`;
     res.json({ success: true, url: fileUrl });
   } catch (err) {
     console.error('Base64 upload failed:', err);

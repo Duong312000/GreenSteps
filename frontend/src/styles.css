@@ -7667,6 +7667,185 @@
     color: var(--primary-green) !important;
 }
 
+/* ==========================================================================
+   Facebook-style UI improvements and missing classes
+   ========================================================================== */
+
+.avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+.post-author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    border: 1.5px solid #ffffff;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.post-author-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.post-author-info h4 {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.post-stars-rating {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.post-stars-rating i {
+    font-size: 13px;
+}
+
+/* Rating Stars Selector in Composer */
+.rating-stars-select {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.stars-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.star-icon {
+    font-size: 20px;
+    color: #cbd5e1; /* slate-300 */
+    cursor: pointer;
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.star-icon:hover {
+    transform: scale(1.2);
+}
+
+.star-icon.active {
+    color: #ffb300; /* Beautiful gold/yellow */
+}
+
+/* Trip tag banner */
+.post-trip-banner-pill {
+    align-self: flex-start;
+    background-color: #e6f4ea;
+    color: #137333;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12.5px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    border: 1px solid #ceead6;
+}
+
+.trip-name-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Custom file upload button style */
+.custom-file-upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: #e6f4ea;
+    color: #137333;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    border: 1px solid #ceead6;
+}
+
+.custom-file-upload:hover {
+    background-color: #d2ebd9;
+}
+
+.custom-file-upload:active {
+    transform: scale(0.98);
+}
+
+/* Post image margin counter-offset for true edge-to-edge feel like Facebook */
+.post-media-container {
+    margin: 12px -16px -12px -16px;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-height: 520px;
+    overflow: hidden;
+    border-top: 1px solid #e4e6eb;
+    border-bottom: 1px solid #e4e6eb;
+}
+
+.post-image-embed {
+    width: 100%;
+    max-height: 520px;
+    object-fit: cover;
+    display: block;
+}
+
+/* Enhancing existing elements */
+.fb-post-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #65676B;
+    padding: 12px 16px 4px 16px !important;
+}
+
+.fb-user-avatar {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+.comment-avatar {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+.comment-avatar-small {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+.reply-avatar {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
 /* Custom Premium Alert Dialog Modal (Center Screen) */
 .custom-alert-overlay {
   position: fixed;
