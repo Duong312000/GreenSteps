@@ -144,6 +144,7 @@ export class CommunityComponent implements OnInit {
       this.postText = '';
       this.postRating = 5;
       this.postImage = '';
+      this.showPostDetails = false;
       await this.loadPosts();
     } else {
       alert('Đăng bài viết thất bại. Vui lòng kiểm tra kết nối mạng!');

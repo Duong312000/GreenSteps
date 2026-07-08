@@ -7830,6 +7830,209 @@
     padding: 12px 16px 4px 16px !important;
 }
 
+.reply-avatar {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+/* Facebook-Style Composer Modal Popup */
+.composer-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.composer-modal-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 16px;
+    border-bottom: 1px solid #E4E6EB;
+    position: relative;
+}
+
+.modal-header h3 {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+    text-align: center;
+    width: 100%;
+}
+
+.btn-close-modal {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: #E4E6EB;
+    color: #050505;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.btn-close-modal:hover {
+    background-color: #D8DADF;
+}
+
+.modal-body-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-author-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-author-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-author-meta h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.privacy-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background-color: #E4E6EB;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #050505;
+    margin-top: 4px;
+    align-self: flex-start;
+}
+
+.composer-modal-card textarea {
+    width: 100%;
+    min-height: 120px;
+    border: none;
+    font-size: 16px;
+    color: var(--text-primary);
+    background: none;
+    resize: none;
+    outline: none;
+    padding: 8px 0;
+    margin-top: 8px;
+}
+
+.modal-image-preview-box {
+    position: relative;
+    width: 100%;
+    max-height: 240px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    border: 1px solid #E4E6EB;
+    background-color: #f3f4f6;
+}
+
+.modal-image-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.btn-remove-modal-preview {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: background-color 0.2s;
+}
+
+.btn-remove-modal-preview:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-form-actions {
+    margin-top: 14px;
+}
+
+.btn-modal-post-submit {
+    width: 100%;
+    height: 40px;
+    border-radius: 8px;
+    background-color: var(--primary-green);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s, opacity 0.2s;
+}
+
+.btn-modal-post-submit:hover {
+    background-color: #057a55;
+}
+
+.btn-modal-post-submit:disabled {
+    background-color: #E4E6EB;
+    color: #B0B3B8;
+    cursor: not-allowed;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 .fb-user-avatar {
     background: linear-gradient(135deg, #10b981, #059669) !important;
 }
