@@ -7857,6 +7857,7 @@
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1);
     width: 90%;
     max-width: 500px;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -7909,6 +7910,8 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+    overflow-y: auto;
+    flex-grow: 1;
 }
 
 .modal-author-row {

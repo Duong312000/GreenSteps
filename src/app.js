@@ -72,8 +72,14 @@ app.post('/api/upload-base64', (req, res) => {
 
     fs.writeFileSync(filepath, buffer);
 
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-    const host = req.get('host');
+    let protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    if (protocol.includes(',')) {
+      protocol = protocol.split(',')[0].trim();
+    }
+    let host = req.get('host');
+    if (host.includes(',')) {
+      host = host.split(',')[0].trim();
+    }
     const fileUrl = `${protocol}://${host}/uploads/${filename}`;
     res.json({ success: true, url: fileUrl });
   } catch (err) {
