@@ -8894,7 +8894,9 @@
 
 .place-search-inline input {
     height: 36px;
-    width: 220px;
+    width: 100%;
+    max-width: 220px;
+    min-width: 120px;
     padding: 0 12px;
     border-radius: var(--border-radius-sm);
     border: 1px solid var(--border-color);
@@ -8924,6 +8926,7 @@
     align-items: center;
     gap: 4px;
     transition: var(--transition-smooth);
+    flex-shrink: 0;
 }
 
 .place-search-inline button:hover {
