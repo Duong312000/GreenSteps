@@ -273,4 +273,17 @@ export class CommunityComponent implements OnInit {
     if (!avatar) return false;
     return avatar.trim().length > 1;
   }
+
+  // Lightbox Theater View Methods
+  public activeLightboxImage: string | null = null;
+
+  public openLightbox(imageUrl: string) {
+    this.activeLightboxImage = imageUrl;
+    this.cdr.detectChanges();
+  }
+
+  public closeLightbox() {
+    this.activeLightboxImage = null;
+    this.cdr.detectChanges();
+  }
 }

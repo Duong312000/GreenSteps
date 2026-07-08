@@ -207,7 +207,7 @@
             </div>
 
             <!-- Post Image if available -->
-            <div class="post-media-container" *ngIf="post.image">
+            <div class="post-media-container" *ngIf="post.image" (click)="openLightbox(post.image)" style="cursor: pointer;">
               <img [src]="post.image" [alt]="post.tripName || 'Community Image'" class="post-image-embed">
             </div>
           </div>
@@ -394,6 +394,14 @@
       <div class="custom-alert-actions">
         <button type="button" class="btn-alert-ok" (click)="closeAlert()">Đã hiểu</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Lightbox Modal (Facebook-style Theater View) -->
+  <div class="lightbox-overlay" *ngIf="activeLightboxImage" (click)="closeLightbox()">
+    <button type="button" class="btn-close-lightbox" (click)="closeLightbox()">&times;</button>
+    <div class="lightbox-content" (click)="$event.stopPropagation()">
+      <img [src]="activeLightboxImage" alt="Full Image" class="lightbox-image">
     </div>
   </div>
 </main>
