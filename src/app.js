@@ -47,41 +47,8 @@ app.post('/api/upload-base64', (req, res) => {
     if (!base64) {
       return res.status(400).json({ success: false, message: 'No base64 data provided' });
     }
-
-    const matches = base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-    if (!matches || matches.length !== 3) {
-      return res.status(400).json({ success: false, message: 'Invalid base64 format' });
-    }
-
-    const contentType = matches[1];
-    const rawData = matches[2];
-    const buffer = Buffer.from(rawData, 'base64');
-
-    const uploadsDir = path.join(__dirname, '../uploads');
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-
-    let ext = '.png';
-    if (contentType.includes('jpeg') || contentType.includes('jpg')) ext = '.jpg';
-    else if (contentType.includes('webp')) ext = '.webp';
-    else if (contentType.includes('gif')) ext = '.gif';
-
-    const filename = `upload_${Date.now()}${ext}`;
-    const filepath = path.join(uploadsDir, filename);
-
-    fs.writeFileSync(filepath, buffer);
-
-    let protocol = req.headers['x-forwarded-proto'] || req.protocol;
-    if (protocol.includes(',')) {
-      protocol = protocol.split(',')[0].trim();
-    }
-    let host = req.get('host');
-    if (host.includes(',')) {
-      host = host.split(',')[0].trim();
-    }
-    const fileUrl = `${protocol}://${host}/uploads/${filename}`;
-    res.json({ success: true, url: fileUrl });
+    // Return the base64 data URL directly so it will be saved in the database
+    res.json({ success: true, url: base64 });
   } catch (err) {
     console.error('Base64 upload failed:', err);
     res.status(500).json({ success: false, message: 'Upload failed: ' + err.message });

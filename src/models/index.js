@@ -217,7 +217,7 @@ const CommunityPost = sequelize.define('CommunityPost', {
   text: { type: DataTypes.TEXT, allowNull: false },
   tour_name: { type: DataTypes.STRING },
   destination: { type: DataTypes.STRING },
-  image_url: { type: DataTypes.STRING },
+  image_url: { type: DataTypes.TEXT },
   tour_description: { type: DataTypes.TEXT },
   days: { type: DataTypes.INTEGER },
   likes_count: { type: DataTypes.INTEGER, defaultValue: 0 },
@@ -230,7 +230,7 @@ const CommentPost = sequelize.define('CommentPost', {
   id: { type: DataTypes.STRING, primaryKey: true }, // CEPtraXXXXXXXX
   rating: { type: DataTypes.INTEGER }, // 1-5, nullable (replies don't have stars)
   text: { type: DataTypes.TEXT, allowNull: false },
-  image_url: { type: DataTypes.STRING },
+  image_url: { type: DataTypes.TEXT },
   tour_id: { type: DataTypes.STRING, allowNull: true },
   service_id: { type: DataTypes.STRING, allowNull: true },
   parent_comment_id: { type: DataTypes.STRING, allowNull: true }
