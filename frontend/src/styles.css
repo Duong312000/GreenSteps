@@ -5,6 +5,7 @@
            1. DESIGN TOKENS & CSS VARIABLES (LIGHT/DARK THEMES)
            ========================================================================== */
         :root {
+            --font-main: 'Be Vietnam Pro', 'Inter', sans-serif;
             /* Light Mode Colors */
             --bg-primary: #F3F7F5; /* Soft Minty Warm Gray */
             --bg-secondary: #FFFFFF;
@@ -87,7 +88,11 @@
         }
 
         body {
-            font-family: 'Geist', sans-serif;
+            font-family: var(--font-main);
+            font-synthesis: none;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             background-color: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
@@ -103,8 +108,10 @@
         h4,
         h5,
         h6 {
-            font-family: 'Geist', sans-serif;
-            font-weight: 600;
+            font-family: var(--font-main);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.08;
         }
 
         a {
@@ -9453,7 +9460,7 @@ header .nav-hover-trigger img {
 .mobile-hamburger {
     display: grid !important;
 }
-@media (min-width: 1024px) {
+@media (min-width: 640px) {
     .header-main-nav {
         display: flex !important;
     }
