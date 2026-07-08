@@ -423,8 +423,8 @@ export class PartnerBookingsComponent implements OnInit {
       name: this.newWpName,
       tag: this.newWpTag,
       color: this.newWpColor,
-      lat: 12.9 + Math.random() * 0.2, // mock coords
-      lng: 108.4 + Math.random() * 0.2
+      lat: null as any,
+      lng: null as any
     };
     this.waypoints = [...this.waypoints, newWp];
     this.showRouteModal = false;

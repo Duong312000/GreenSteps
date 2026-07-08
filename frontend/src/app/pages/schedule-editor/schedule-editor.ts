@@ -417,11 +417,10 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
           lng = coords.lng;
         }
 
-        // Ultimate fallback: Use city center
+        // Ultimate fallback: Do not show on map if invalid or not found
         if (typeof lat !== "number" || typeof lng !== "number" || isNaN(lat) || isNaN(lng) || lat < 5 || lat > 30 || lng < 100 || lng > 115) {
-          const center = this.cityCenters[destSlug] || [11.9404, 108.4373];
-          lat = center[0];
-          lng = center[1];
+          lat = undefined;
+          lng = undefined;
         }
         
         const title = act.title || act.name || "Hoạt động";
@@ -835,12 +834,10 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       }
     }
 
-    // Ultimate fallback: Use city center
-    const destSlug = this.activeItinerary.dest || 'da-lat';
+    // Ultimate fallback: Do not show on map if invalid or not found
     if (!lat || !lng || isNaN(lat) || isNaN(lng) || lat < 5 || lat > 30 || lng < 100 || lng > 115) {
-      const center = this.cityCenters[destSlug] || [11.9404, 108.4373];
-      lat = center[0];
-      lng = center[1];
+      lat = undefined;
+      lng = undefined;
     }
 
     const newAct = {
