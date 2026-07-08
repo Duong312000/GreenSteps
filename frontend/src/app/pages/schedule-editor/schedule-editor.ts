@@ -812,26 +812,6 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       const coords = this.getCoordinatesForPlace(val, destSlug);
       lat = coords.lat;
       lng = coords.lng;
-
-      // Geocoding online as fallback
-      if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
-        const destLabel = this.activeItinerary.destLabel || this.mapSlugToDestLabel(destSlug);
-        const searchQuery = `${val}, ${destLabel}, Việt Nam`;
-        
-        try {
-          const fetchPromise = fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=1`);
-          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000));
-          
-          const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
-          const data = await response.json();
-          if (data && data.length > 0) {
-            lat = parseFloat(data[0].lat);
-            lng = parseFloat(data[0].lon);
-          }
-        } catch (e) {
-          console.warn("Geocoding failed or timed out:", e);
-        }
-      }
     }
 
     // Ultimate fallback: Do not show on map if invalid or not found
