@@ -439,100 +439,104 @@
     z-index: 1;
     width: min(var(--gs-hero-width), calc(100% - 48px));
     min-height: 100%;
-    height: 100%;
     margin: 0 auto;
-    padding-top: clamp(122px, 15vh, 150px);
+    padding: clamp(106px, 12vh, 128px) 0 28px;
+    display: flex;
+    align-items: center;
   }
 
+  .gs-hero-stack { display: grid; width: 100%; gap: clamp(18px, 2.2vh, 26px); }
+
   .gs-home-copy {
-    width: min(720px, 100%);
+    width: min(610px, 100%);
     padding: 0;
     border: 0;
     background: transparent;
     box-shadow: none;
+    transform: translateY(-34px);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
 
-  .gs-home-title { margin: 0; color: #f7fff6; font-family: 'Be Vietnam Pro', 'Inter', Arial, sans-serif; font-size: clamp(58px, 5.15vw, 86px); font-weight: 800; line-height: 1.02; letter-spacing: -.045em; text-wrap: balance; text-shadow: 0 8px 28px rgba(0, 0, 0, .28); }
-  .gs-home-title em { display: block; margin-top: .05em; color: #a7e6a1; font-family: inherit; font-size: .93em; font-weight: 800; font-style: normal; line-height: 1.04; letter-spacing: -.04em; }
-  .gs-home-description { max-width: 570px; margin: 22px 0 0; color: rgba(255, 255, 255, .9); font-size: 17px; font-weight: 500; line-height: 1.65; text-shadow: 0 2px 14px rgba(2, 30, 22, .48); }
-  .gs-home-actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 26px; }
-  .gs-home-action { display: inline-flex; min-height: 54px; align-items: center; justify-content: center; gap: 12px; padding: 0 24px; border: 1px solid rgba(255, 255, 255, .72); border-radius: 999px; background: rgba(255, 255, 255, .12); color: #fff; font-weight: 800; text-decoration: none; box-shadow: 0 8px 24px rgba(2, 30, 22, .1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: .25s ease; }
+  .gs-home-title { margin: 0; color: #f7fff6; font-family: 'Be Vietnam Pro', 'Inter', Arial, sans-serif; font-size: clamp(58px, 5.15vw, 84px); font-weight: 800; line-height: .96; letter-spacing: -.045em; text-wrap: balance; text-shadow: 0 8px 28px rgba(0, 0, 0, .28); }
+  .gs-home-title span { display: block; font-weight: 900; }
+  .gs-home-title em { display: block; margin-top: .1em; color: #a7e6a1; font-family: inherit; font-size: .78em; font-weight: 800; font-style: normal; line-height: 1.04; letter-spacing: -.04em; }
+  .gs-home-description { max-width: 540px; margin: 16px 0 0; color: rgba(255, 255, 255, .92); font-size: 16px; font-weight: 500; line-height: 1.6; text-shadow: 0 2px 14px rgba(2, 30, 22, .48); }
+  .gs-home-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+  .gs-home-action { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; gap: 10px; padding: 0 20px; border: 1px solid rgba(255, 255, 255, .72); border-radius: 999px; background: rgba(255, 255, 255, .12); color: #fff; font-size: 14px; font-weight: 800; text-decoration: none; box-shadow: 0 8px 24px rgba(2, 30, 22, .1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: .25s ease; }
   .gs-home-action--primary { border-color: #0f7952; background: #0f7952; color: white; box-shadow: 0 12px 28px rgba(3, 50, 35, .28); }
   .gs-home-action:hover { transform: translateY(-2px); background: #0a6848; color: white; }
 
   .gs-trip-finder {
-    position: absolute;
-    z-index: 3;
-    left: 50%;
-    bottom: clamp(94px, 11vh, 108px);
-    width: min(var(--gs-hero-width), calc(100% - 48px));
-    max-width: calc(100vw - 48px);
-    transform: translateX(-50%);
+    position: relative;
+    z-index: 2;
+    width: min(1080px, 100%);
+    margin: 46px auto 0;
+    padding-top: 28px;
     border: 1px solid rgba(255, 255, 255, .55);
-    border-radius: 30px;
-    background: rgba(255, 255, 255, .88);
-    box-shadow: 0 22px 54px rgba(3, 35, 26, .2);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, .91);
+    box-shadow: 0 18px 44px rgba(3, 35, 26, .18);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
 
-  .gs-trip-tabs { display: grid; grid-template-columns: repeat(3, 1fr); width: min(820px, calc(100% - 40px)); margin: -28px auto 0; padding: 7px; border: 1px solid rgba(255, 255, 255, .68); border-radius: 24px 24px 16px 16px; background: rgba(248, 248, 242, .92); box-shadow: 0 12px 30px rgba(3, 43, 31, .16); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-  .gs-trip-tab { position: relative; display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 10px; border: 0; border-right: 1px solid #dce5e1; border-radius: 13px; background: transparent; color: #36564b; font-size: 15px; font-weight: 800; cursor: pointer; }
-  .gs-trip-tab:last-child { border-right-color: transparent; }
-  .gs-trip-tab i { color: #5f8376; font-size: 18px; }
+  .gs-trip-tabs { position: absolute; left: 50%; top: 0; z-index: 3; display: flex; width: min(760px, calc(100% - 280px)); max-width: calc(100% - 28px); gap: 6px; margin: 0; padding: 6px; transform: translate(-50%, -50%); border: 1px solid rgba(255, 255, 255, .66); border-radius: 18px; background: rgba(248, 250, 245, .9); box-shadow: 0 10px 26px rgba(3, 43, 31, .16); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .gs-trip-tab { position: relative; display: inline-flex; min-height: 34px; flex: 1 1 0; min-width: 0; align-items: center; justify-content: center; gap: 7px; padding: 0 15px; border: 0; border-radius: 11px; background: transparent; color: #36564b; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+  .gs-trip-tab i { color: #5f8376; font-size: 14px; }
   .gs-trip-tab.active { border-right-color: transparent; background: #0f6b45; color: white; box-shadow: 0 8px 18px rgba(8, 100, 67, .2); }
   .gs-trip-tab.active i { color: white; }
-  .gs-trip-tab.active::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 12px; height: 12px; transform: translateX(-50%) rotate(45deg); border-radius: 2px; background: #0f6b45; }
-  .gs-trip-form { display: grid; grid-template-columns: 1.45fr .92fr .92fr 1fr 1.22fr auto; gap: 14px; align-items: end; padding: 22px 28px 20px; }
+  .gs-trip-tab.active::after { content: ""; position: absolute; left: 50%; bottom: -8px; width: 14px; height: 14px; transform: translateX(-50%) rotate(45deg); border-radius: 2px; background: #0f6b45; }
+  .gs-trip-form { display: grid; grid-template-columns: 1.35fr .92fr .92fr .9fr 1.1fr auto; gap: 10px; align-items: end; padding: 12px 18px 17px; }
   .gs-trip-field { min-width: 0; }
-  .gs-trip-field label { display: block; margin: 0 0 8px 4px; color: #38544b; font-size: 12px; font-weight: 800; }
+  .gs-trip-field label { display: block; margin: 0 0 6px 3px; color: #38544b; font-size: 11px; font-weight: 800; }
   .gs-trip-control-wrap { position: relative; min-width: 0; }
   .gs-trip-control-wrap > i { position: absolute; z-index: 1; left: 14px; top: 50%; transform: translateY(-50%); color: #43806c; font-size: 16px; pointer-events: none; }
-  .gs-trip-control { display: block; width: 100%; min-width: 0; max-width: 100%; height: 52px; padding: 0 10px 0 39px; border: 1px solid rgba(196, 211, 204, .8); border-radius: 12px; outline: none; background: rgba(255, 255, 252, .78); color: #344a43; font: inherit; font-size: 13px; }
+  .gs-trip-control { display: block; width: 100%; min-width: 0; max-width: 100%; height: 43px; padding: 0 8px 0 36px; border: 1px solid rgba(196, 211, 204, .8); border-radius: 10px; outline: none; background: rgba(255, 255, 252, .82); color: #344a43; font: inherit; font-size: 12px; }
   .gs-trip-control:focus { border-color: #0a8057; box-shadow: 0 0 0 3px rgba(10, 128, 87, .1); }
-  .gs-trip-submit { display: inline-flex; height: 52px; align-items: center; justify-content: center; gap: 12px; padding: 0 22px; border: 0; border-radius: 13px; background: #0f6b45; color: white; font-size: 15px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: .25s ease; }
+  .gs-trip-submit { display: inline-flex; height: 43px; align-items: center; justify-content: center; gap: 9px; padding: 0 18px; border: 0; border-radius: 10px; background: #0f6b45; color: white; font-size: 13px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: .25s ease; }
   .gs-trip-submit:hover { transform: translateY(-2px); background: #095638; box-shadow: 0 10px 22px rgba(15, 107, 69, .2); }
-  .gs-hero-stats { position: absolute; z-index: 2; left: 50%; bottom: clamp(14px, 2vh, 20px); display: grid; width: min(1160px, calc(100% - 64px)); max-width: calc(100vw - 48px); grid-template-columns: 1.35fr repeat(3, 1fr); align-items: center; transform: translateX(-50%); color: #fff; text-shadow: 0 2px 14px rgba(1, 29, 21, .72); }
-  .gs-hero-stat { display: flex; min-width: 0; min-height: 64px; align-items: center; justify-content: center; gap: 13px; padding: 0 22px; border-left: 1px solid rgba(255, 255, 255, .55); }
-  .gs-hero-stat:first-child { justify-content: flex-start; border-left: 0; }
-  .gs-hero-stat > i { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(255, 255, 255, .48); border-radius: 50%; font-size: 18px; }
-  .gs-hero-stat strong { display: block; color: white; font-size: 21px; line-height: 1.15; }
-  .gs-hero-stat small { display: block; margin-top: 3px; color: rgba(255, 255, 255, .96); font-size: 12px; font-weight: 600; line-height: 1.35; }
-  .gs-stat-trust { display: flex; align-items: center; gap: 13px; }
+  .gs-hero-stats { position: relative; z-index: 1; display: grid; width: min(1020px, 100%); margin: 0 auto; grid-template-columns: 1.25fr repeat(3, 1fr); align-items: center; color: #fff; text-shadow: 0 2px 12px rgba(1, 29, 21, .55); }
+  .gs-hero-stat { display: flex; min-width: 0; min-height: 50px; align-items: center; justify-content: center; gap: 11px; padding: 2px 24px; border-left: 1px solid rgba(255, 255, 255, .34); }
+  .gs-hero-stat:first-child { justify-content: flex-start; padding-left: 0; border-left: 0; }
+  .gs-hero-stat > i { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; border: 1px solid rgba(255, 255, 255, .42); border-radius: 50%; color: #c9f7d4; font-size: 13px; }
+  .gs-hero-stat strong { display: block; color: white; font-size: 17px; font-weight: 850; line-height: 1.15; }
+  .gs-hero-stat small { display: block; max-width: 155px; margin-top: 3px; color: rgba(255, 255, 255, .86); font-size: 10px; font-weight: 600; line-height: 1.35; }
+  .gs-stat-trust { display: flex; align-items: center; gap: 11px; }
   .gs-stat-avatars { display: flex; }
   .gs-stat-avatars span { display: grid; width: 34px; height: 34px; margin-left: -7px; place-items: center; border: 2px solid rgba(255, 255, 255, .9); border-radius: 50%; background: #e8f2ec; color: #176247; font-size: 10px; font-weight: 900; text-shadow: none; }
   .gs-stat-avatars span:first-child { margin-left: 0; }
   .gs-stat-rating { color: #ffd35a; letter-spacing: 1px; }
 
   @media (max-width: 1100px) {
-    .gs-home-hero { height: auto; min-height: max(100vh, 900px); }
-    .gs-home-hero__inner { height: auto; min-height: max(100vh, 900px); padding-top: 112px; }
-    .gs-trip-finder { bottom: 112px; }
+    .gs-home-hero { height: auto; min-height: 100vh; }
+    .gs-home-hero__inner { min-height: 100vh; padding-top: 106px; padding-bottom: 30px; }
+    .gs-trip-tabs { width: min(720px, calc(100% - 32px)); }
     .gs-trip-form { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .gs-trip-submit { width: 100%; }
-    .gs-hero-stats { grid-template-columns: repeat(4, 1fr); bottom: 30px; }
-    .gs-hero-stat { padding: 0 10px; }
+    .gs-hero-stats { grid-template-columns: repeat(4, 1fr); }
+    .gs-hero-stat { padding-inline: 14px; }
     .gs-stat-avatars { display: none; }
   }
 
   @media (max-width: 720px) {
-    .gs-home-hero { height: auto; min-height: max(100vh, 1320px); }
-    .gs-home-hero__inner { height: auto; min-height: max(100vh, 1320px); }
-    .gs-home-hero__inner { width: calc(100% - 28px); padding-top: 92px; }
-    .gs-home-copy { padding: 0 6px; }
-    .gs-home-title { font-size: clamp(42px, 12.5vw, 52px); letter-spacing: -.04em; line-height: 1.08; }
+    .gs-home-hero { height: auto; min-height: 100vh; overflow: hidden; }
+    .gs-home-hero__inner { width: calc(100% - 28px); min-height: 100vh; padding: 88px 0 24px; align-items: flex-start; }
+    .gs-hero-stack { gap: 18px; }
+    .gs-home-copy { padding: 0 6px; transform: translateY(-18px); }
+    .gs-home-title { font-size: clamp(46px, 13vw, 58px); letter-spacing: -.04em; line-height: 1; }
     .gs-home-description { font-size: 15px; }
-    .gs-home-action { width: 100%; }
-    .gs-trip-finder { bottom: 142px; width: calc(100% - 28px); border-radius: 22px; }
-    .gs-trip-tabs { display: flex; width: calc(100% - 20px); justify-content: flex-start; overflow-x: auto; padding: 7px; scrollbar-width: none; }
+    .gs-home-action { flex: 1 1 180px; }
+    .gs-trip-finder { width: 100%; margin-top: 38px; padding-top: 34px; border-radius: 18px; }
+    .gs-trip-tabs { width: calc(100% - 16px); max-width: calc(100% - 16px); justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
     .gs-trip-tabs::-webkit-scrollbar { display: none; }
-    .gs-trip-tab { min-width: 145px; flex: 0 0 auto; padding: 0 12px; font-size: 12px; }
-    .gs-trip-form { grid-template-columns: 1fr; gap: 12px; padding: 18px 16px 16px; }
+    .gs-trip-tab { min-width: 128px; flex: 0 0 auto; }
+    .gs-trip-form { grid-template-columns: 1fr; gap: 12px; padding: 10px 16px 16px; }
     .gs-trip-field:first-child, .gs-trip-field:nth-child(5), .gs-trip-submit { grid-column: auto; }
-    .gs-hero-stats { bottom: 22px; width: calc(100% - 32px); grid-template-columns: 1fr 1fr; row-gap: 12px; }
-    .gs-hero-stat { min-height: 42px; justify-content: flex-start; padding: 0 8px; border-left: 0; }
+    .gs-hero-stats { width: 100%; grid-template-columns: 1fr 1fr; gap: 0; padding-top: 2px; }
+    .gs-hero-stat { min-height: 58px; justify-content: flex-start; padding: 8px 10px; border-left: 0; border-bottom: 1px solid rgba(255, 255, 255, .22); }
+    .gs-hero-stat:nth-child(even) { border-left: 1px solid rgba(255, 255, 255, .22); }
+    .gs-hero-stat:nth-last-child(-n+2) { border-bottom: 0; }
     .gs-hero-stat > i { width: 34px; height: 34px; font-size: 14px; }
     .gs-hero-stat strong { font-size: 14px; }
     .gs-hero-stat small { font-size: 9px; }
@@ -540,20 +544,19 @@
   }
 
   @media (min-width: 1101px) and (max-height: 820px) {
-    .gs-home-title { font-size: clamp(54px, 4.6vw, 70px); }
+    .gs-home-title { font-size: clamp(54px, 4.8vw, 70px); }
     .gs-home-description { margin-top: 14px; line-height: 1.5; }
     .gs-home-actions { margin-top: 18px; }
-    .gs-trip-form { padding-top: 16px; padding-bottom: 16px; }
+    .gs-hero-stack { gap: 14px; }
+    .gs-trip-form { padding-top: 13px; padding-bottom: 13px; }
   }
 
   @media (min-width: 1101px) and (max-height: 700px) {
-    .gs-home-hero, .gs-home-hero__inner { min-height: 700px; height: 700px; }
-    .gs-home-hero__inner { padding-top: 92px; }
-    .gs-home-title { margin-top: 12px; font-size: 54px; }
+    .gs-home-hero, .gs-home-hero__inner { min-height: 680px; height: auto; }
+    .gs-home-hero__inner { padding-top: 86px; }
+    .gs-home-title { font-size: 54px; }
     .gs-home-description { max-width: 520px; font-size: 15px; }
     .gs-home-action { min-height: 48px; }
-    .gs-trip-finder { bottom: 90px; }
-    .gs-hero-stats { bottom: 12px; }
   }
 
   .gs-ai-section {
@@ -685,17 +688,17 @@
   <section class="gs-home-hero">
     <img class="gs-home-hero__image" src="https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=2400&q=92" alt="Vịnh Hạ Long nhìn từ trên cao">
     <div class="gs-home-hero__inner">
+      <div class="gs-hero-stack">
       <div class="gs-home-copy gs-soft-reveal">
-        <h1 class="gs-home-title">Khám phá Việt Nam <em>theo cách xanh hơn.</em></h1>
+        <h1 class="gs-home-title"><span>KHÁM PHÁ</span><span>VIỆT NAM</span><em>theo cách xanh hơn.</em></h1>
         <p class="gs-home-description">Hành trình được tuyển chọn kỹ lưỡng, tôn vinh thiên nhiên, văn hóa và cộng đồng địa phương.</p>
         <div class="gs-home-actions">
           <a routerLink="/tours" class="gs-home-action gs-home-action--primary"><i class="bi bi-compass"></i> Lên kế hoạch ngay <i class="bi bi-arrow-right"></i></a>
           <a href="#diem-den-noi-bat" class="gs-home-action"><i class="bi bi-stars"></i> Khám phá cảm hứng</a>
         </div>
       </div>
-    </div>
 
-    <div class="gs-trip-finder">
+      <div class="gs-trip-finder">
       <div class="gs-trip-tabs" role="tablist" aria-label="Điểm đến gợi ý">
         <button type="button" class="gs-trip-tab" [class.active]="searchDest === 'Đà Lạt'" (click)="setSearchDest('Đà Lạt')"><i class="bi bi-feather"></i> Đà Lạt</button>
         <button type="button" class="gs-trip-tab" [class.active]="searchDest === 'Đà Nẵng - Hội An'" (click)="setSearchDest('Đà Nẵng - Hội An')"><i class="bi bi-building"></i> Đà Nẵng - Hội An</button>
@@ -709,9 +712,9 @@
         <div class="gs-trip-field"><label for="heroBudget">Ngân sách</label><div class="gs-trip-control-wrap"><i class="bi bi-wallet2"></i><select id="heroBudget" class="gs-trip-control" [(ngModel)]="budget" name="budget"><option value="1M-2M">1 - 2 triệu đồng</option><option value="2M-5M">2 - 5 triệu đồng</option><option value="5M+">Trên 5 triệu đồng</option></select></div></div>
         <button type="submit" class="gs-trip-submit">Tìm kiếm <i class="bi bi-arrow-right"></i></button>
       </form>
-    </div>
+      </div>
 
-    <div class="gs-hero-stats" aria-label="Thành tựu của GreenSteps">
+      <div class="gs-hero-stats" aria-label="Thành tựu của GreenSteps">
       <div class="gs-hero-stat gs-stat-trust">
         <div class="gs-stat-avatars" aria-hidden="true"><span>AN</span><span>MI</span><span>HU</span><span>+</span></div>
         <div><strong>50K+ <small>du khách tin tưởng</small></strong><small class="gs-stat-rating">★★★★★ &nbsp; 4.9/5</small></div>
@@ -719,6 +722,8 @@
       <div class="gs-hero-stat"><i class="bi bi-signpost-split"></i><div><strong>200+</strong><small>Hành trình bền vững</small></div></div>
       <div class="gs-hero-stat"><i class="bi bi-map"></i><div><strong>30+</strong><small>Điểm đến trải dài Việt Nam</small></div></div>
       <div class="gs-hero-stat"><i class="bi bi-emoji-smile"></i><div><strong>98%</strong><small>Đánh giá hài lòng</small></div></div>
+      </div>
+      </div>
     </div>
   </section>
 
@@ -834,160 +839,134 @@
       </button>
     </div>
 
-    <!-- Asymmetric & Responsive Flex Container -->
-    <div class="mx-auto mt-9 max-w-6xl flex flex-col lg:flex-row gap-6 items-start">
-      
-      <!-- Left Column (Highlights + Indicators) -->
-      <div class="w-full lg:flex-1 flex flex-col gap-6">
-        
-        <!-- Main Content Card: Trip Highlights (Asymmetrical Grid Layout) -->
-        <div class="w-full rounded-3xl bg-white/88 p-7 shadow-[0_20px_60px_rgba(15,23,42,0.08)] ring-1 ring-slate-100 backdrop-blur">
-          <h3 class="text-base font-black text-slate-900">Điểm nổi bật chuyến đi</h3>
-          
-          <!-- Organic Asymmetric Grid -->
-          <div class="mt-5 grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            
-            <!-- Tile 1: Eco stays (Col-span 2) -->
-            <div 
-              (click)="selectHighlight('eco')"
-              class="group cursor-pointer rounded-2xl p-5 transition-all duration-300 transform border lg:col-span-2 flex flex-col justify-between min-h-[128px] hover:-translate-y-1 hover:shadow-lg"
-              [class.bg-gradient-to-br]="activeHighlight === 'eco'"
-              [class.from-emerald-600]="activeHighlight === 'eco'"
-              [class.to-teal-700]="activeHighlight === 'eco'"
-              [class.text-white]="activeHighlight === 'eco'"
-              [class.shadow-[0_15px_30px_rgba(16,185,129,0.25)]]="activeHighlight === 'eco'"
+    <section class="mx-auto mt-10 max-w-6xl overflow-hidden rounded-[34px] bg-gradient-to-br from-white via-emerald-50/55 to-sky-50 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] ring-1 ring-emerald-100/80 md:p-7">
+      <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_430px]">
+
+        <div class="rounded-[28px] bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] ring-1 ring-slate-100 backdrop-blur md:p-7">
+          <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-emerald-700">
+                <i class="bi bi-leaf-fill"></i> Green travel system
+              </span>
+              <h3 class="mt-4 text-2xl font-black leading-tight text-slate-950 md:text-3xl">Một hành trình xanh, rõ ràng từ lúc chọn tour.</h3>
+            </div>
+            <p class="max-w-sm text-sm font-semibold leading-6 text-slate-500">Chọn nhanh ưu tiên của bạn, GreenSteps sẽ cập nhật phần xem trước hành trình tương ứng.</p>
+          </div>
+
+          <div class="mt-6 grid gap-3 sm:grid-cols-2">
+            <button type="button" (click)="selectHighlight('eco')" class="group min-h-[118px] rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
               [class.border-emerald-500]="activeHighlight === 'eco'"
-              [class.bg-white]="activeHighlight !== 'eco'"
-              [class.text-slate-800]="activeHighlight !== 'eco'"
+              [class.bg-emerald-600]="activeHighlight === 'eco'"
+              [class.text-white]="activeHighlight === 'eco'"
+              [class.shadow-[0_18px_35px_rgba(5,150,105,0.22)]]="activeHighlight === 'eco'"
               [class.border-slate-100]="activeHighlight !== 'eco'"
-            >
-              <div class="flex items-center gap-3">
-                <span class="grid h-10 w-10 place-items-center rounded-full text-lg transition-colors"
-                      [class.bg-white]="activeHighlight === 'eco'"
-                      [class.text-emerald-700]="activeHighlight === 'eco'"
-                      [class.bg-emerald-50]="activeHighlight !== 'eco'"
-                      [class.text-emerald-600]="activeHighlight !== 'eco'"><i class="bi bi-leaf"></i></span>
-                <span class="text-sm font-extrabold">Lưu trú xanh</span>
-              </div>
-              <p class="text-[11px] leading-relaxed mt-2" [class.text-white/80]="activeHighlight === 'eco'" [class.text-slate-400]="activeHighlight !== 'eco'">
-                Hệ thống lưu trú sinh thái bảo tồn tự nhiên, giảm thiểu phát thải nhựa tối đa.
-              </p>
-            </div>
+              [class.bg-white]="activeHighlight !== 'eco'">
+              <span class="flex items-center gap-3">
+                <span class="grid h-11 w-11 place-items-center rounded-full text-lg"
+                  [class.bg-white]="activeHighlight === 'eco'"
+                  [class.text-emerald-700]="activeHighlight === 'eco'"
+                  [class.bg-emerald-50]="activeHighlight !== 'eco'"
+                  [class.text-emerald-600]="activeHighlight !== 'eco'"><i class="bi bi-house-heart"></i></span>
+                <b class="text-base">Lưu trú xanh</b>
+              </span>
+              <span class="mt-3 block text-xs font-semibold leading-5" [class.text-white/80]="activeHighlight === 'eco'" [class.text-slate-500]="activeHighlight !== 'eco'">Homestay, eco-stay và dịch vụ giảm nhựa dùng một lần.</span>
+            </button>
 
-            <!-- Tile 2: Local guides (Row-span 2) -->
-            <div 
-              (click)="selectHighlight('guides')"
-              class="group cursor-pointer rounded-2xl p-5 transition-all duration-300 transform border lg:col-span-1 lg:row-span-2 flex flex-col justify-between min-h-[270px] hover:-translate-y-1 hover:shadow-lg"
-              [class.bg-emerald-50/50]="activeHighlight === 'guides'"
+            <button type="button" (click)="selectHighlight('guides')" class="group min-h-[118px] rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
               [class.border-emerald-500]="activeHighlight === 'guides'"
-              [class.shadow-[0_15px_30px_rgba(16,185,129,0.1)]]="activeHighlight === 'guides'"
-              [class.bg-white]="activeHighlight !== 'guides'"
+              [class.bg-emerald-600]="activeHighlight === 'guides'"
+              [class.text-white]="activeHighlight === 'guides'"
+              [class.shadow-[0_18px_35px_rgba(5,150,105,0.22)]]="activeHighlight === 'guides'"
               [class.border-slate-100]="activeHighlight !== 'guides'"
-              [class.text-slate-800]="true"
-            >
-              <div class="space-y-4">
-                <div class="flex items-center gap-3">
-                  <span class="grid h-10 w-10 place-items-center rounded-full bg-emerald-50 text-lg text-emerald-600"><i class="bi bi-people-fill"></i></span>
-                  <span class="text-sm font-extrabold text-slate-800">Hướng dẫn viên địa phương</span>
-                </div>
-                <p class="text-[11px] leading-relaxed text-slate-400">
-                  Kết nối trực tiếp du khách với người kể chuyện bản xứ, hỗ trợ sinh kế và bảo tồn di sản văn hóa địa phương.
-                </p>
-              </div>
-              <!-- Custom illustration block for asymmetry -->
-              <div class="mt-4 hidden lg:block relative overflow-hidden rounded-xl bg-slate-100 h-20 bg-cover bg-center transition-all duration-500 group-hover:scale-[1.02]" style="background-image: url('image/b025d2b33ebe6db7e576ff3476f9acde.jpg');">
-                <div class="absolute inset-0 bg-emerald-950/20 backdrop-blur-[1px]"></div>
-                <span class="absolute bottom-2 left-2 text-[10px] font-bold text-white uppercase tracking-wider">Bản địa hóa</span>
-              </div>
-            </div>
+              [class.bg-white]="activeHighlight !== 'guides'">
+              <span class="flex items-center gap-3">
+                <span class="grid h-11 w-11 place-items-center rounded-full text-lg"
+                  [class.bg-white]="activeHighlight === 'guides'"
+                  [class.text-emerald-700]="activeHighlight === 'guides'"
+                  [class.bg-emerald-50]="activeHighlight !== 'guides'"
+                  [class.text-emerald-600]="activeHighlight !== 'guides'"><i class="bi bi-people-fill"></i></span>
+                <b class="text-base">Bản địa hóa</b>
+              </span>
+              <span class="mt-3 block text-xs font-semibold leading-5" [class.text-white/80]="activeHighlight === 'guides'" [class.text-slate-500]="activeHighlight !== 'guides'">Kết nối hướng dẫn viên địa phương và trải nghiệm văn hóa thật.</span>
+            </button>
 
-            <!-- Tile 3: Flexible dates -->
-            <div 
-              (click)="selectHighlight('dates')"
-              class="group cursor-pointer rounded-2xl p-5 transition-all duration-300 transform border flex flex-col justify-between min-h-[128px] hover:-translate-y-1 hover:shadow-lg"
-              [class.bg-emerald-50/50]="activeHighlight === 'dates'"
+            <button type="button" (click)="selectHighlight('dates')" class="group rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
               [class.border-emerald-500]="activeHighlight === 'dates'"
-              [class.shadow-[0_15px_30px_rgba(16,185,129,0.1)]]="activeHighlight === 'dates'"
-              [class.bg-white]="activeHighlight !== 'dates'"
+              [class.bg-emerald-600]="activeHighlight === 'dates'"
+              [class.text-white]="activeHighlight === 'dates'"
+              [class.shadow-[0_18px_35px_rgba(5,150,105,0.22)]]="activeHighlight === 'dates'"
               [class.border-slate-100]="activeHighlight !== 'dates'"
-              [class.text-slate-800]="true"
-            >
-              <div class="flex items-center gap-3">
-                <span class="grid h-10 w-10 place-items-center rounded-full bg-emerald-50 text-lg text-emerald-600"><i class="bi bi-calendar3"></i></span>
-                <span class="text-sm font-extrabold text-slate-800">Ngày đi linh hoạt</span>
-              </div>
-              <p class="text-[11px] leading-relaxed text-slate-400 mt-2">
-                Dễ dàng đổi ngày khởi hành hoặc hủy lịch, giữ cọc bảo chứng an toàn.
-              </p>
-            </div>
+              [class.bg-white]="activeHighlight !== 'dates'">
+              <span class="flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-full text-base"
+                  [class.bg-white]="activeHighlight === 'dates'"
+                  [class.text-emerald-700]="activeHighlight === 'dates'"
+                  [class.bg-emerald-50]="activeHighlight !== 'dates'"
+                  [class.text-emerald-600]="activeHighlight !== 'dates'"><i class="bi bi-calendar3"></i></span>
+                <b class="text-sm">Ngày đi linh hoạt</b>
+              </span>
+            </button>
 
-            <!-- Tile 4: AI itinerary -->
-            <div 
-              (click)="selectHighlight('ai')"
-              class="group cursor-pointer rounded-2xl p-5 transition-all duration-300 transform border flex flex-col justify-between min-h-[128px] hover:-translate-y-1 hover:shadow-lg"
-              [class.bg-emerald-50/50]="activeHighlight === 'ai'"
+            <button type="button" (click)="selectHighlight('ai')" class="group rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
               [class.border-emerald-500]="activeHighlight === 'ai'"
-              [class.shadow-[0_15px_30px_rgba(16,185,129,0.1)]]="activeHighlight === 'ai'"
-              [class.bg-white]="activeHighlight !== 'ai'"
+              [class.bg-emerald-600]="activeHighlight === 'ai'"
+              [class.text-white]="activeHighlight === 'ai'"
+              [class.shadow-[0_18px_35px_rgba(5,150,105,0.22)]]="activeHighlight === 'ai'"
               [class.border-slate-100]="activeHighlight !== 'ai'"
-              [class.text-slate-800]="true"
-            >
-              <div class="flex items-center gap-3">
-                <span class="grid h-10 w-10 place-items-center rounded-full bg-emerald-50 text-lg text-emerald-600"><i class="bi bi-stars"></i></span>
-                <span class="text-sm font-extrabold text-slate-800">Lịch trình AI</span>
-              </div>
-              <p class="text-[11px] leading-relaxed text-slate-400 mt-2">
-                Thuật toán Gemini AI tự thiết kế lịch trình xanh tối ưu hóa lượng khí thải.
-              </p>
-            </div>
-
+              [class.bg-white]="activeHighlight !== 'ai'">
+              <span class="flex items-center gap-3">
+                <span class="grid h-10 w-10 place-items-center rounded-full text-base"
+                  [class.bg-white]="activeHighlight === 'ai'"
+                  [class.text-emerald-700]="activeHighlight === 'ai'"
+                  [class.bg-emerald-50]="activeHighlight !== 'ai'"
+                  [class.text-emerald-600]="activeHighlight !== 'ai'"><i class="bi bi-stars"></i></span>
+                <b class="text-sm">Lịch trình AI</b>
+              </span>
+            </button>
           </div>
         </div>
 
-        <!-- Bottom Indicators + Explore Button inside left flex column -->
-        <div class="flex flex-col items-center gap-5 lg:flex-row w-full">
-          <div class="grid w-full gap-0 overflow-hidden rounded-3xl bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)] ring-1 ring-slate-100 sm:grid-cols-2">
-            <div class="flex min-w-0 items-center gap-3 px-5 py-4">
-              <span class="grid h-12 w-12 place-items-center rounded-full bg-emerald-600 text-xl text-white"><i class="bi bi-people-fill"></i></span>
-              <p class="min-w-0"><b class="whitespace-nowrap text-base text-slate-900 xl:text-lg">50K+ du khách</b><br><span class="text-xs font-semibold leading-5 text-slate-500">Được du khách tin tưởng</span></p>
-            </div>
-            <div class="flex min-w-0 items-center gap-3 border-t border-slate-100 px-5 py-4 sm:border-l sm:border-t-0">
-              <span class="grid h-12 w-12 place-items-center rounded-full bg-sky-500 text-xl text-white"><i class="bi bi-emoji-smile-fill"></i></span>
-              <p class="min-w-0"><b class="whitespace-nowrap text-base text-slate-900 xl:text-lg">98% hài lòng</b><br><span class="text-xs font-semibold leading-5 text-slate-500">Từ du khách GreenSteps</span></p>
+        <aside class="rounded-[28px] bg-emerald-950 p-4 text-white shadow-[0_26px_60px_rgba(6,78,59,0.22)] md:p-5">
+          <div class="relative overflow-hidden rounded-3xl">
+            <img [src]="currentPreview.days[0]?.img || 'https://i.pinimg.com/736x/f3/34/b3/f334b3d836d0d5fd68f797f7ad3c7021.jpg'" [alt]="currentPreview.title" class="h-44 w-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/45 to-transparent"></div>
+            <div class="absolute bottom-4 left-4 right-4">
+              <span class="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-200">Xem trước hành trình</span>
+              <h3 class="mt-1 text-lg font-black leading-tight">{{ currentPreview.title }}</h3>
+              <p class="mt-1 text-xs font-semibold text-white/70">{{ currentPreview.subtitle }}</p>
             </div>
           </div>
-          <a routerLink="/tours" class="inline-flex shrink-0 items-center gap-3 rounded-full bg-emerald-600 px-7 py-4 text-base font-black text-white shadow-[0_18px_40px_rgba(5,150,105,0.32)] transition-all duration-300 hover:-translate-y-1 hover:bg-emerald-700 xl:px-9 xl:text-lg">
-            Xem tất cả tour <i class="bi bi-arrow-right"></i>
+
+          <div class="mt-4 space-y-2.5">
+            <div *ngFor="let day of currentPreview.days | slice:0:4" class="grid grid-cols-[54px_1fr_62px] items-center gap-3 rounded-2xl bg-white/8 p-2.5 ring-1 ring-white/10">
+              <span class="rounded-full bg-emerald-300/18 px-2 py-1.5 text-center text-[10px] font-black text-emerald-100">{{ day.label }}</span>
+              <p class="min-w-0 text-[11px] leading-relaxed text-white/65"><b class="block truncate text-xs font-extrabold text-white">{{ day.title }}</b>{{ day.desc }}</p>
+              <img [src]="day.img" class="h-12 w-[62px] rounded-xl object-cover shadow-sm" [alt]="day.title">
+            </div>
+          </div>
+
+          <a routerLink="/schedule/new" class="mt-5 flex items-center justify-center gap-3 rounded-full bg-white px-5 py-3 text-xs font-black text-emerald-800 transition-all duration-300 hover:bg-emerald-100">
+            Xem lịch trình <i class="bi bi-arrow-right"></i>
           </a>
-        </div>
-
+        </aside>
       </div>
 
-      <!-- Right Column: Trip Preview Card (Interactive, 360px stable width) -->
-      <aside class="w-full lg:w-[360px] shrink-0 rounded-3xl bg-emerald-50/85 p-6 shadow-[0_20px_60px_rgba(15,118,110,0.13)] ring-1 ring-emerald-100 backdrop-blur">
-        <div class="flex items-start gap-3">
-          <span class="text-2xl text-emerald-600"><i class="bi bi-stars"></i></span>
-          <div>
-            <h3 class="text-sm font-black text-emerald-800">Xem trước hành trình</h3>
-            <p class="text-xs font-semibold text-slate-500">{{ currentPreview.title }}</p>
+      <div class="mt-6 grid gap-4 rounded-[26px] bg-white/90 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)] ring-1 ring-slate-100 md:grid-cols-[1fr_auto] md:items-center">
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="flex items-center gap-3">
+            <span class="grid h-11 w-11 place-items-center rounded-full bg-emerald-600 text-lg text-white"><i class="bi bi-people-fill"></i></span>
+            <p><b class="text-lg font-black text-slate-950">50K+ du khách</b><br><span class="text-xs font-bold text-slate-500">Được du khách tin tưởng</span></p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="grid h-11 w-11 place-items-center rounded-full bg-sky-500 text-lg text-white"><i class="bi bi-emoji-smile-fill"></i></span>
+            <p><b class="text-lg font-black text-slate-950">98% hài lòng</b><br><span class="text-xs font-bold text-slate-500">Từ du khách GreenSteps</span></p>
           </div>
         </div>
-        
-        <!-- Live Preview Content -->
-        <div class="mt-6 space-y-4">
-          <div *ngFor="let day of currentPreview.days" class="grid grid-cols-[52px_1fr_64px] items-center gap-3 animate-[fadeIn_0.3s_ease-out]">
-            <span class="rounded-full bg-emerald-100 px-2 py-1.5 text-center text-[10px] font-black text-emerald-700 shadow-sm">{{ day.label }}</span>
-            <p class="text-[11px] leading-relaxed text-slate-500"><b class="text-xs font-extrabold text-slate-900 leading-tight block">{{ day.title }}</b>{{ day.desc }}</p>
-            <img [src]="day.img" class="h-12 w-16 rounded-xl object-cover shadow-sm bg-slate-200" [alt]="day.title">
-          </div>
-        </div>
-        
-        <a routerLink="/schedule/new" class="mt-6 flex items-center justify-center gap-3 rounded-full bg-white px-5 py-3 text-xs font-black text-emerald-700 shadow-inner ring-1 ring-emerald-100 transition-all duration-300 hover:bg-emerald-600 hover:text-white">
-          Xem lịch trình <i class="bi bi-arrow-right"></i>
+        <a routerLink="/tours" class="inline-flex items-center justify-center gap-3 rounded-full bg-emerald-600 px-7 py-3.5 text-sm font-black text-white shadow-[0_18px_40px_rgba(5,150,105,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-700">
+          Xem tất cả tour <i class="bi bi-arrow-right"></i>
         </a>
-      </aside>
-
-    </div>
+      </div>
+    </section>
     </div>
   </section>
 
@@ -1115,7 +1094,7 @@
                 <h4 class="text-xs font-bold text-slate-950">Đặt chỗ sắp tới</h4>
                 <div class="mt-2 rounded-[16px] bg-white p-2.5 shadow-[0_14px_30px_rgba(15,23,42,0.08)] ring-1 ring-slate-100">
                   <div class="flex gap-3">
-                    <img src="image/Viet Nam.png" class="h-[70px] w-[70px] rounded-[11px] object-cover" alt="Đà Nẵng - Hội An">
+                    <img src="https://i.pinimg.com/736x/a6/f9/2e/a6f92ed32526a0b16c257a645e4034fc.jpg" class="h-[70px] w-[70px] rounded-[11px] object-cover" alt="Hội An">
                     <div class="min-w-0 flex-1 pt-1">
                       <h5 class="text-sm font-bold leading-4 text-slate-950">Đà Nẵng - Hội An</h5>
                       <span class="mt-1.5 inline-flex rounded-lg bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-700">Sắp tới</span>
@@ -1186,10 +1165,11 @@
         </div>
 
         <div class="pt-3">
-          <div class="h-[505px] rounded-[22px] bg-white/82 px-6 py-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_24px_70px_rgba(15,23,42,0.08)] ring-1 ring-white/80 backdrop-blur-xl">
+          <div class="flex h-[487px] flex-col rounded-[22px] bg-white/82 px-6 py-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_24px_70px_rgba(15,23,42,0.08)] ring-1 ring-white/80 backdrop-blur-xl">
             <h3 class="text-center text-lg font-bold text-slate-950">Đặt chỗ chỉ với 3 bước</h3>
-            <div class="relative mt-8 space-y-9 before:absolute before:bottom-16 before:left-[18px] before:top-9 before:w-px before:border-l before:border-dotted before:border-slate-400">
-              <div class="relative grid grid-cols-[40px_62px_1fr] items-center gap-3">
+            <div class="mt-2 flex flex-1 items-center">
+              <div class="relative w-full space-y-10 before:absolute before:bottom-5 before:left-5 before:top-5 before:w-px before:border-l before:border-dotted before:border-slate-400">
+                <div class="relative grid grid-cols-[40px_62px_1fr] items-center gap-3">
                 <span class="z-10 grid h-10 w-10 place-items-center rounded-full bg-emerald-600 text-lg font-bold text-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.22),0_10px_20px_rgba(5,150,105,0.2)]">1</span>
                 <span class="relative grid h-14 w-14 place-items-center rounded-full bg-emerald-50 text-2xl text-emerald-700 shadow-[inset_4px_4px_10px_rgba(16,185,129,0.08),inset_-4px_-4px_10px_rgba(255,255,255,0.9)]"><i class="bi bi-search"></i><i class="bi bi-geo-alt-fill absolute right-3 top-3 text-[10px]"></i></span>
                 <p><b class="text-base text-slate-950">Tìm kiếm</b><br><span class="mt-1 block text-xs font-medium leading-5 text-slate-500">Tìm điểm đến và trải nghiệm truyền cảm hứng.</span></p>
@@ -1203,6 +1183,7 @@
                 <span class="z-10 grid h-10 w-10 place-items-center rounded-full bg-emerald-600 text-lg font-bold text-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.22),0_10px_20px_rgba(5,150,105,0.2)]">3</span>
                 <span class="relative grid h-14 w-14 place-items-center rounded-full bg-emerald-50 text-2xl text-emerald-700 shadow-[inset_4px_4px_10px_rgba(16,185,129,0.08),inset_-4px_-4px_10px_rgba(255,255,255,0.9)]"><i class="bi bi-ticket-perforated absolute left-3 top-4 text-lg"></i><i class="bi bi-briefcase-fill absolute bottom-3 right-3 text-lg"></i></span>
                 <p><b class="text-base text-slate-950">Đặt chỗ &amp; khởi hành</b><br><span class="mt-1 block text-xs font-medium leading-5 text-slate-500">Hoàn tất đặt chỗ và sẵn sàng cho hành trình tiếp theo.</span></p>
+              </div>
               </div>
             </div>
           </div>

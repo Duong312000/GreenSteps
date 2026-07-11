@@ -23,19 +23,20 @@
 
     <section class="tour-hero-grid" aria-label="Tour gallery and booking">
         <div class="gallery-panel">
-            <div class="gallery-main">
-                <img [src]="slideImages[0]" [alt]="activeTour.title">
+            <div class="gallery-main" (click)="openPhotoGallery(activeSlideIndex)" role="button" tabindex="0" aria-label="Xem ảnh lớn">
+                <img [src]="slideImages[activeSlideIndex] || slideImages[0]" [alt]="activeTour.title">
             </div>
 
             <div class="gallery-side-grid">
                 <button type="button"
-                        *ngFor="let img of slideImages.slice(1, 5); let idx = index"
+                        *ngFor="let img of slideImages.slice(1, 7); let idx = index"
                         class="gallery-tile"
-                        [class.show-all-tile]="idx === 3"
-                        (click)="setSlide(idx + 1)"
+                        [class.active]="activeSlideIndex === idx + 1"
+                        [class.show-all-tile]="idx === 5"
+                        (click)="openPhotoGallery(idx + 1)"
                         [attr.aria-label]="'Xem ảnh ' + (idx + 2)">
                     <img [src]="img" [alt]="activeTour.destination + ' ảnh ' + (idx + 2)">
-                    <span *ngIf="idx === 3"><i class="bi bi-grid-3x3-gap"></i> Xem tất cả ảnh</span>
+                    <span *ngIf="idx === 5"><i class="bi bi-grid-3x3-gap"></i> Xem tất cả ảnh</span>
                 </button>
             </div>
         </div>
@@ -693,5 +694,32 @@
             <strong>{{ activeTour.cost | number:'1.0-0':'vi-VN' }}đ</strong>
         </div>
         <button type="button" (click)="submitBooking($event)">Đặt Cọc Tour Ngay</button>
+    </div>
+    <div class="tour-photo-modal" *ngIf="isPhotoGalleryOpen" (click)="closePhotoGallery()">
+        <div class="tour-photo-modal-card" (click)="$event.stopPropagation()">
+            <div class="tour-photo-modal-header">
+                <div>
+                    <span>Thư viện ảnh</span>
+                    <h3>{{ activeTour.title }}</h3>
+                </div>
+                <button type="button" class="tour-photo-close" (click)="closePhotoGallery()" aria-label="Đóng thư viện ảnh">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <div class="tour-photo-featured">
+                <img [src]="galleryPhotoUrl || slideImages[activeSlideIndex] || slideImages[0]" [alt]="activeTour.title">
+            </div>
+
+            <div class="tour-photo-grid">
+                <button type="button"
+                        *ngFor="let img of slideImages; let idx = index"
+                        [class.active]="activeSlideIndex === idx"
+                        (click)="selectGalleryPhoto(idx, $event)"
+                        [attr.aria-label]="'Chọn ảnh ' + (idx + 1)">
+                    <img [src]="img" [alt]="activeTour.destination + ' ảnh ' + (idx + 1)">
+                </button>
+            </div>
+        </div>
     </div>
 </main>

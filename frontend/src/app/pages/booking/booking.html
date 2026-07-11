@@ -189,7 +189,6 @@
         </div>
 
         <div class="card-form" *ngIf="paymentMethod === 'card'">
-          <div class="secure-note"><i class="bi bi-shield-lock"></i> Thông tin thẻ được mã hóa trong môi trường demo.</div>
           <label class="payment-field" [class.invalid]="paymentError('cardName')">
             <span>Tên trên thẻ</span>
             <input name="cardName" [(ngModel)]="cardForm.cardName" placeholder="NGUYEN VAN A">

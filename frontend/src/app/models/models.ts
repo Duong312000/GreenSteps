@@ -38,6 +38,7 @@ export interface Tour {
   carbon: number;
   image?: string;
   image_url?: string;
+  gallery?: string[];
   description?: string;
   rating?: number;
   votes?: number;

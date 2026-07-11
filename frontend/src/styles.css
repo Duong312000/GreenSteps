@@ -10435,3 +10435,954 @@ app-partner-register {
     display: block;
     width: 100%;
 }
+
+/* ========================================================================== 
+   COMPACT DESIGN SYSTEM
+   Keeps 100% browser zoom visually close to the previous 90% presentation.
+   Mobile intentionally retains a larger type/control scale for accessibility.
+   ========================================================================== */
+:root {
+    --gs-content-max: 90rem;
+    --gs-content-wide: 96rem;
+    --gs-section-space: clamp(3.5rem, 5.5vw, 5.75rem);
+    --gs-section-space-sm: clamp(2.5rem, 4vw, 4rem);
+    --gs-gutter: clamp(1.25rem, 3vw, 3rem);
+    --gs-control-height: 2.75rem;
+    --gs-control-height-sm: 2.375rem;
+    --gs-card-padding: clamp(1rem, 1.7vw, 1.5rem);
+    --gs-card-radius: 1rem;
+    --gs-panel-radius: 1.25rem;
+    --gs-shadow-card: 0 8px 24px rgba(4, 70, 49, .065);
+    --border-radius-md: 10px;
+    --border-radius-lg: 14px;
+    --border-radius-xl: 20px;
+}
+
+@media (min-width: 769px) {
+    html { font-size: 90%; }
+
+    /* Common page shells: narrower and calmer on large screens. */
+    .container,
+    .main-container,
+    .page-container,
+    .content-container {
+        max-width: var(--gs-content-max);
+    }
+
+    /* Header contains pixel-based legacy sizing, so compact it explicitly. */
+    app-header header > div:first-child {
+        max-width: var(--gs-content-wide) !important;
+        height: 76px !important;
+        padding-inline: var(--gs-gutter) !important;
+    }
+    app-header header > div:first-child > div:first-child,
+    app-header header > div:first-child > div:last-child {
+        width: 250px !important;
+    }
+    app-header header > div:first-child > div:nth-child(2),
+    app-header .header-main-nav {
+        height: 76px !important;
+    }
+    app-header .header-main-nav { gap: 1rem !important; }
+    app-header .nav-tab-item { font-size: 1rem !important; }
+    app-header header img[alt="GreenSteps"] {
+        width: 3.15rem !important;
+        height: 3.15rem !important;
+    }
+    app-header .header-overflow-panel > div {
+        max-width: var(--gs-content-wide) !important;
+        height: 46px !important;
+        padding-inline: var(--gs-gutter) !important;
+    }
+    app-header .header-overflow-panel > div > div:first-child { width: 250px !important; }
+
+    /* Home hero and trip finder use px values outside the utility scale. */
+    .gs-reference-shell {
+        max-width: var(--gs-content-wide) !important;
+        padding: 76px var(--gs-gutter) 0 !important;
+        grid-template-columns: 40% 60% !important;
+    }
+    .gs-reference-content { max-width: 31rem !important; }
+    .gs-reference-title {
+        max-width: 31rem !important;
+        font-size: clamp(4.75rem, 6vw, 6.25rem) !important;
+        line-height: .9 !important;
+    }
+    .gs-reference-copy {
+        max-width: 30rem !important;
+        margin-top: 1.5rem !important;
+        font-size: clamp(1.15rem, 1.4vw, 1.45rem) !important;
+    }
+    .gs-reference-button {
+        height: 3.5rem !important;
+        margin-top: 1.75rem !important;
+        padding-inline: 1.75rem !important;
+        border-radius: .875rem !important;
+        font-size: 1rem !important;
+        box-shadow: var(--gs-shadow-card) !important;
+    }
+    .gs-reference-trust { margin-top: 1.75rem !important; }
+    .gs-reference-avatar { width: 3rem !important; height: 3rem !important; }
+    .gs-reference-trust-text { font-size: 1.2rem !important; }
+
+    .gs-trip-planner,
+    .home-search-overlay-panel {
+        border-radius: var(--gs-panel-radius) !important;
+        box-shadow: var(--gs-shadow-card) !important;
+    }
+    .gs-trip-tab,
+    .search-panel-tab { min-height: 2.25rem !important; }
+    .gs-trip-control,
+    .search-field input,
+    .search-field select { min-height: var(--gs-control-height-sm) !important; }
+    .gs-trip-submit,
+    .search-panel-btn { min-height: var(--gs-control-height) !important; }
+    .gs-hero-stats {
+        width: min(65rem, calc(100% - 4rem)) !important;
+        column-gap: 1.25rem !important;
+    }
+
+    /* Home sections and prominent cards. */
+    .gs-ai-section { padding-block: var(--gs-section-space-sm) !important; }
+    .gs-ai-search { height: 3.5rem !important; border-radius: 1rem !important; }
+    .gs-ai-search button { width: 2.75rem !important; height: 2.75rem !important; }
+    .gs-destination-card { border-radius: var(--gs-panel-radius) !important; }
+
+    /* Detail/booking surfaces with fixed pixel dimensions. */
+    .tour-detail-page {
+        width: min(72rem, calc(100% - 4rem)) !important;
+        padding-top: 7rem !important;
+    }
+    .tour-heading h1 { font-size: clamp(2rem, 3vw, 2.5rem) !important; }
+    .booking-card,
+    .content-shell { border-radius: var(--gs-panel-radius) !important; box-shadow: var(--gs-shadow-card) !important; }
+    .form-field input,
+    .form-field select { height: var(--gs-control-height-sm) !important; }
+    .primary-booking-button { height: var(--gs-control-height) !important; }
+    .detail-tabs button { height: 3.5rem !important; }
+
+    /* Dashboard/card families. */
+    .profile-card,
+    .profile-summary-card,
+    .profile-wallet-card,
+    .profile-stat-card,
+    .partner-register-card {
+        border-radius: var(--gs-card-radius) !important;
+        box-shadow: var(--gs-shadow-card) !important;
+    }
+    .profile-card { padding: var(--gs-card-padding) !important; }
+    .profile-stats-grid { gap: 1rem !important; }
+    .profile-stat-card { min-height: 8.25rem !important; padding: 1.125rem .875rem !important; }
+    .profile-stat-icon { width: 2.75rem !important; height: 2.75rem !important; }
+    .profile-stat-card strong { font-size: 1.65rem !important; }
+
+    /* Footer follows the same compact vertical rhythm. */
+    #app-footer,
+    .app-footer { padding-block: 2.75rem 1.5rem !important; }
+    .footer-container { max-width: var(--gs-content-max) !important; gap: 2rem !important; }
+    .footer-links-grid { gap: 1.75rem !important; }
+}
+
+@media (min-width: 769px) and (max-width: 1180px) {
+    html { font-size: 92%; }
+    :root { --gs-gutter: 1.5rem; }
+    app-header header > div:first-child > div:first-child,
+    app-header header > div:first-child > div:last-child { width: 210px !important; }
+}
+
+@media (max-width: 768px) {
+    html { font-size: 100%; }
+    :root {
+        --gs-control-height: 2.875rem;
+        --gs-control-height-sm: 2.75rem;
+        --gs-gutter: 1rem;
+    }
+    button,
+    input,
+    select { min-height: 2.75rem; }
+    .gs-reference-title { font-size: clamp(3.15rem, 14vw, 4rem) !important; }
+    .gs-reference-copy { font-size: clamp(1rem, 4.3vw, 1.125rem) !important; }
+    .gs-reference-button { min-height: 3rem; }
+    .profile-card,
+    .booking-card,
+    .content-shell { border-radius: 1rem !important; }
+}
+
+/* ==========================================================================
+   SCHEDULE EDITOR COMPACT UI
+   Keeps the top menu/header intact while making the itinerary workspace denser.
+   ========================================================================== */
+@media (min-width: 901px) {
+    .schedule-editor-container {
+        font-size: 13px !important;
+    }
+
+    .schedule-editor-container .map-search-overlay {
+        top: 14px !important;
+        width: 280px !important;
+        border-radius: 6px !important;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, .12) !important;
+    }
+
+    .schedule-editor-container .map-search-overlay input {
+        min-height: 34px !important;
+        padding: 8px 11px !important;
+        font-size: 12px !important;
+    }
+
+    .sidebar-panel {
+        min-width: 228px !important;
+        max-width: 310px !important;
+    }
+
+    .schedule-editor-container .sidebar-header {
+        padding-bottom: 10px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .schedule-editor-container .btn-back-tours {
+        padding: 6px 11px !important;
+        font-size: 11px !important;
+        border-radius: 6px !important;
+    }
+
+    .schedule-editor-container .btn-ai-assistant {
+        padding: 11px 18px !important;
+        font-size: 12px !important;
+        min-height: 40px !important;
+    }
+
+    .schedule-editor-container .btn-ai-assistant i {
+        left: 18px !important;
+        font-size: 15px !important;
+    }
+
+    .schedule-editor-container .sidebar-menu-list,
+    .schedule-editor-container .menu-group {
+        gap: 6px !important;
+    }
+
+    .schedule-editor-container .menu-group > span {
+        font-size: 9px !important;
+        margin-bottom: 2px !important;
+        padding-left: 8px !important;
+    }
+
+    .schedule-editor-container .sidebar-menu-item {
+        padding: 8px 11px !important;
+        gap: 1px !important;
+        border-radius: 6px !important;
+        font-size: 12px !important;
+    }
+
+    .schedule-editor-container .sidebar-menu-item span {
+        font-size: 12px !important;
+    }
+
+    .schedule-editor-container .sidebar-menu-item-preview {
+        max-width: 128px !important;
+        font-size: 10px !important;
+        padding-left: 22px !important;
+    }
+
+    .schedule-editor-container .btn-add-day {
+        min-height: 34px !important;
+        padding: 8px !important;
+        margin-top: 6px !important;
+        font-size: 12px !important;
+        border-radius: 6px !important;
+    }
+
+    .schedule-editor-container .sidebar-metrics {
+        gap: 5px !important;
+        padding-top: 6px !important;
+    }
+
+    .schedule-editor-container .metric-info {
+        font-size: 11px !important;
+        margin-bottom: 1px !important;
+    }
+
+    .schedule-editor-container .progress-bar-track {
+        height: 5px !important;
+    }
+
+    .schedule-editor-container .checkout-actions {
+        gap: 5px !important;
+        margin-top: 8px !important;
+    }
+
+    .schedule-editor-container .btn-checkout-pay,
+    .schedule-editor-container .btn-wallet-open {
+        min-height: 34px !important;
+        padding: 8px !important;
+        font-size: 11px !important;
+        border-radius: 6px !important;
+    }
+
+    .schedule-editor-container .editor-main-panel {
+        min-width: 420px !important;
+        box-shadow: 8px 0 22px rgba(15, 23, 42, .10) !important;
+    }
+
+    .schedule-editor-container .timeline-cover-container {
+        height: 128px !important;
+    }
+
+    .schedule-editor-container .cover-overlay {
+        padding: 16px 18px !important;
+    }
+
+    .schedule-editor-container .cover-overlay h2 {
+        font-size: 19px !important;
+        line-height: 1.2 !important;
+        letter-spacing: 0 !important;
+    }
+
+    .schedule-editor-container .cover-dates {
+        font-size: 11px !important;
+        margin-top: 3px !important;
+    }
+
+    .schedule-editor-container .active-day-header {
+        padding: 12px 16px !important;
+        gap: 10px !important;
+    }
+
+    .schedule-editor-container .active-day-header h3 {
+        font-size: 15px !important;
+    }
+
+    .schedule-editor-container .place-search-inline {
+        gap: 6px !important;
+    }
+
+    .schedule-editor-container .place-search-inline input {
+        height: 32px !important;
+        max-width: 196px !important;
+        padding: 0 10px !important;
+        font-size: 12px !important;
+    }
+
+    .schedule-editor-container .place-search-inline button {
+        height: 32px !important;
+        padding: 0 11px !important;
+        font-size: 12px !important;
+    }
+
+    .schedule-editor-container .timeline-list-container {
+        padding: 16px 18px !important;
+        gap: 8px !important;
+    }
+
+    .schedule-editor-container .timeline-item {
+        gap: 6px !important;
+        margin-bottom: 1px !important;
+    }
+
+    .schedule-editor-container .timeline-item .timeline-time-node {
+        width: 70px !important;
+    }
+
+    .schedule-editor-container .timeline-time-node input[type="time"] {
+        width: 66px !important;
+        min-height: 24px !important;
+        font-size: 9px !important;
+    }
+
+    .schedule-editor-container .timeline-item .timeline-time-node .node-icon-bullet {
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 10px !important;
+        border-width: 2px !important;
+    }
+
+    .schedule-editor-container .timeline-item .timeline-time-node::after {
+        top: 34px !important;
+        bottom: -22px !important;
+    }
+
+    .schedule-editor-container .activity-card {
+        border-radius: 8px !important;
+        border-left-width: 3px !important;
+        box-shadow: 0 5px 14px rgba(4, 120, 87, .035) !important;
+    }
+
+    .schedule-editor-container .activity-card:hover {
+        transform: translateY(-2px) scale(1.003) !important;
+    }
+
+    .schedule-editor-container .activity-card-body {
+        padding: 9px 12px !important;
+        gap: 6px !important;
+    }
+
+    .schedule-editor-container .activity-card-header {
+        gap: 10px !important;
+    }
+
+    .schedule-editor-container .activity-card-title {
+        font-size: 12px !important;
+        line-height: 1.35 !important;
+        letter-spacing: 0 !important;
+    }
+
+    .schedule-editor-container .activity-card-controls {
+        gap: 3px !important;
+    }
+
+    .schedule-editor-container .activity-control-btn {
+        width: 23px !important;
+        height: 23px !important;
+        min-height: 23px !important;
+        font-size: 10px !important;
+        border-radius: 4px !important;
+    }
+
+    .schedule-editor-container .activity-card-meta {
+        gap: 8px !important;
+        font-size: 10.5px !important;
+    }
+
+    .schedule-editor-container .activity-meta-badge {
+        font-size: 10px !important;
+        padding: 2px 5px !important;
+    }
+
+    .schedule-editor-container .travel-gap-item {
+        margin: 3px 0 3px 35px !important;
+        padding: 3px 9px !important;
+        font-size: 10px !important;
+    }
+
+    .schedule-editor-container .suggestions-section {
+        padding: 16px 18px !important;
+        margin-top: 0 !important;
+    }
+
+    .schedule-editor-container .suggestions-section h3 {
+        font-size: 14px !important;
+        letter-spacing: 0 !important;
+    }
+
+    .schedule-editor-container .suggestions-section .subtitle {
+        font-size: 11px !important;
+        margin-bottom: 12px !important;
+        line-height: 1.45 !important;
+    }
+
+    .schedule-editor-container .local-suggestions-grid {
+        gap: 10px !important;
+    }
+
+    .schedule-editor-container .suggestion-card {
+        border-radius: 8px !important;
+        box-shadow: 0 5px 16px rgba(4, 120, 87, .04) !important;
+    }
+
+    .schedule-editor-container .suggestion-card:hover {
+        transform: translateY(-2px) !important;
+    }
+
+    .schedule-editor-container .sugg-img-container {
+        height: 82px !important;
+    }
+
+    .schedule-editor-container .sugg-content {
+        padding: 9px !important;
+        gap: 6px !important;
+    }
+
+    .schedule-editor-container .sugg-title {
+        min-height: 30px !important;
+        font-size: 12px !important;
+        line-height: 1.3 !important;
+    }
+
+    .schedule-editor-container .sugg-meta {
+        font-size: 10px !important;
+    }
+
+    .schedule-editor-container .sugg-add-btn {
+        height: 29px !important;
+        min-height: 29px !important;
+        font-size: 11px !important;
+        border-radius: 6px !important;
+    }
+
+    .schedule-editor-container .ai-chat-panel {
+        width: min(360px, calc(100% - 32px)) !important;
+        max-height: calc(100% - 36px) !important;
+        border-radius: 10px !important;
+    }
+
+    .schedule-editor-container .chat-header,
+    .schedule-editor-container .chat-input-row {
+        padding: 10px 12px !important;
+    }
+
+    .schedule-editor-container .chat-messages-area {
+        padding: 12px !important;
+    }
+}
+
+/* ==========================================================================
+   TOURS PAGE CENTERED COMPACT LAYOUT
+   Narrows the tour listing so it feels calmer and more balanced on wide screens.
+   ========================================================================== */
+.tours-page-compact {
+    background: #f2f7f4 !important;
+    padding-top: 118px !important;
+}
+
+.tours-page-compact .tours-banners-section,
+.tours-page-compact .tours-filter-section,
+.tours-page-compact .tours-grid-section {
+    width: min(1688px, calc(100% - 220px)) !important;
+    max-width: none !important;
+    padding-inline: 0 !important;
+}
+
+.tours-page-compact .tours-banners-section {
+    margin-top: 0 !important;
+    gap: 30px !important;
+}
+
+.tours-page-compact .dest-banner-card {
+    height: 204px !important;
+    border-radius: 13px !important;
+    box-shadow: none !important;
+}
+
+.tours-page-compact .dest-banner-card:hover {
+    transform: translateY(-3px) !important;
+}
+
+.tours-page-compact .dest-banner-overlay {
+    padding: 24px !important;
+    background: linear-gradient(to top, rgba(0, 0, 0, .72) 0%, rgba(0, 0, 0, .18) 72%, rgba(0, 0, 0, .08) 100%) !important;
+}
+
+.tours-page-compact .dest-banner-overlay h3 {
+    font-size: 24px !important;
+    line-height: 1.05 !important;
+    letter-spacing: 0 !important;
+}
+
+.tours-page-compact .dest-banner-overlay p {
+    margin-top: 3px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+.tours-page-compact .tours-filter-section {
+    margin-top: 46px !important;
+    gap: 22px !important;
+}
+
+.tours-page-compact .tours-filter-header {
+    align-items: center !important;
+}
+
+.tours-page-compact .search-input-wrapper {
+    width: 505px !important;
+    max-width: 505px !important;
+    min-width: 0 !important;
+    flex: 0 0 505px !important;
+}
+
+.tours-page-compact .search-input-wrapper input {
+    height: 47px !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background: #fff !important;
+    font-size: 14px !important;
+    box-shadow: none !important;
+}
+
+.tours-page-compact .search-input-wrapper i {
+    left: 16px !important;
+    font-size: 18px !important;
+}
+
+.tours-page-compact .tours-count-badge {
+    padding: 10px 18px !important;
+    border-radius: 999px !important;
+    background: #ecfbf2 !important;
+    color: #007f61 !important;
+    font-size: 14px !important;
+    font-weight: 900 !important;
+}
+
+.tours-page-compact .tours-filters-row {
+    gap: 14px !important;
+}
+
+.tours-page-compact .tours-filters-row select {
+    width: 186px !important;
+    height: 43px !important;
+    border: 0 !important;
+    border-radius: 6px !important;
+    background-color: #fff !important;
+    padding-inline: 17px !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+}
+
+.tours-page-compact .tours-grid-section {
+    margin-top: 46px !important;
+    margin-bottom: 88px !important;
+}
+
+.tours-page-compact .tours-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 34px !important;
+}
+
+.tours-page-compact .tour-card {
+    min-height: 360px !important;
+    border: 0 !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+    background: #fff !important;
+}
+
+.tours-page-compact .tour-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 16px 34px rgba(15, 23, 42, .08) !important;
+}
+
+.tours-page-compact .tour-img-container {
+    height: 248px !important;
+}
+
+.tours-page-compact .tour-img-container::after {
+    background: linear-gradient(to top, rgba(14, 74, 55, .28), transparent 58%) !important;
+}
+
+.tours-page-compact .price-pill-overlay {
+    top: 16px !important;
+    right: 16px !important;
+    min-width: 96px !important;
+    padding: 7px 12px !important;
+    border-radius: 16px !important;
+    box-shadow: none !important;
+}
+
+.tours-page-compact .price-new {
+    font-size: 17px !important;
+    line-height: 1.05 !important;
+    letter-spacing: 0 !important;
+}
+
+.tours-page-compact .price-old {
+    margin-top: 2px !important;
+    font-size: 11px !important;
+}
+
+.tours-page-compact .tour-info {
+    padding: 22px 24px 24px !important;
+    gap: 10px !important;
+}
+
+.tours-page-compact .tour-region {
+    font-size: 12px !important;
+    font-weight: 800 !important;
+}
+
+.tours-page-compact .tour-title {
+    min-height: auto !important;
+    font-size: 18px !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0 !important;
+}
+
+.tours-page-compact .create-new-card {
+    min-height: 360px !important;
+    border: 2px dashed #00b884 !important;
+    background: transparent !important;
+}
+
+.tours-page-compact .create-new-dashed-box {
+    height: 100% !important;
+    min-height: 360px !important;
+    padding: 34px !important;
+}
+
+@media (max-width: 1500px) {
+    .tours-page-compact .tours-banners-section,
+    .tours-page-compact .tours-filter-section,
+    .tours-page-compact .tours-grid-section {
+        width: min(1240px, calc(100% - 96px)) !important;
+    }
+
+    .tours-page-compact .dest-banner-card {
+        height: 170px !important;
+    }
+
+    .tours-page-compact .tour-img-container {
+        height: 220px !important;
+    }
+}
+
+@media (max-width: 1100px) {
+    .tours-page-compact .tours-banners-section,
+    .tours-page-compact .tours-filter-section,
+    .tours-page-compact .tours-grid-section {
+        width: min(100% - 48px, 960px) !important;
+    }
+
+    .tours-page-compact .tours-banners-section,
+    .tours-page-compact .tours-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .tours-page-compact .search-input-wrapper {
+        width: min(100%, 505px) !important;
+        flex-basis: min(100%, 505px) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .tours-page-compact {
+        padding-top: 82px !important;
+    }
+
+    .tours-page-compact .tours-banners-section,
+    .tours-page-compact .tours-filter-section,
+    .tours-page-compact .tours-grid-section {
+        width: calc(100% - 28px) !important;
+    }
+
+    .tours-page-compact .tours-banners-section,
+    .tours-page-compact .tours-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .tours-page-compact .tours-filter-header {
+        align-items: stretch !important;
+    }
+
+    .tours-page-compact .search-input-wrapper,
+    .tours-page-compact .tours-filters-row select {
+        width: 100% !important;
+        max-width: none !important;
+        flex-basis: auto !important;
+    }
+
+    .tours-page-compact .dest-banner-card {
+        height: 168px !important;
+    }
+}
+
+/* ==========================================================================
+   TOUR DETAIL PHOTO GALLERY
+   Shows six side thumbnails and opens a full photo popup from the final tile.
+   ========================================================================== */
+app-tour-detail .gallery-panel {
+    grid-template-columns: minmax(0, 1.08fr) 312px !important;
+    gap: 14px !important;
+}
+
+app-tour-detail .gallery-main {
+    cursor: zoom-in !important;
+}
+
+app-tour-detail .gallery-side-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    height: 500px !important;
+}
+
+app-tour-detail .gallery-tile {
+    height: auto !important;
+    min-height: 0 !important;
+    border: 0 !important;
+    padding: 0 !important;
+    cursor: pointer !important;
+}
+
+app-tour-detail .gallery-tile.active {
+    outline: 3px solid #126342 !important;
+    outline-offset: -3px !important;
+}
+
+app-tour-detail .gallery-tile:not(.show-all-tile) > span {
+    display: none !important;
+}
+
+app-tour-detail .show-all-tile span {
+    font-size: 14px !important;
+    text-align: center !important;
+    line-height: 1.25 !important;
+}
+
+.tour-photo-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 4000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(8, 15, 12, .86);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.tour-photo-modal-card {
+    width: min(1180px, 100%);
+    max-height: min(880px, calc(100vh - 48px));
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 20px;
+    background: #101713;
+    box-shadow: 0 34px 90px rgba(0, 0, 0, .42);
+}
+
+.tour-photo-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.tour-photo-modal-header span {
+    color: #a7f3d0;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.tour-photo-modal-header h3 {
+    margin: 4px 0 0;
+    color: #ffffff;
+    font-size: 20px;
+    line-height: 1.25;
+    letter-spacing: 0;
+}
+
+.tour-photo-close {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, .16);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .08);
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color .2s ease, transform .2s ease;
+}
+
+.tour-photo-close:hover {
+    background: rgba(255, 255, 255, .16);
+    transform: scale(1.04);
+}
+
+.tour-photo-featured {
+    min-height: 0;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: #050807;
+}
+
+.tour-photo-featured img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: min(62vh, 560px);
+    object-fit: contain;
+    object-position: center;
+}
+
+.tour-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.tour-photo-grid button {
+    position: relative;
+    height: 72px;
+    overflow: hidden;
+    padding: 0;
+    border: 2px solid rgba(255, 255, 255, .10);
+    border-radius: 10px;
+    background: #050807;
+    cursor: pointer;
+    opacity: .72;
+    transition: opacity .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.tour-photo-grid button.active {
+    border-color: #34d399;
+    opacity: 1;
+    transform: translateY(-2px);
+}
+
+.tour-photo-grid button:hover {
+    opacity: 1;
+    border-color: rgba(52, 211, 153, .55);
+}
+
+.tour-photo-grid img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@media (max-width: 1180px) {
+    app-tour-detail .gallery-panel {
+        grid-template-columns: minmax(0, 1fr) 300px !important;
+    }
+
+    app-tour-detail .gallery-side-grid {
+        height: 460px !important;
+    }
+}
+
+@media (max-width: 760px) {
+    app-tour-detail .gallery-side-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        grid-template-rows: repeat(2, 88px) !important;
+        height: auto !important;
+        margin-top: 12px;
+    }
+
+    .tour-photo-modal {
+        padding: 12px;
+    }
+
+    .tour-photo-modal-card {
+        max-height: calc(100vh - 28px);
+        padding: 12px;
+        border-radius: 16px;
+        gap: 12px;
+    }
+
+    .tour-photo-modal-header h3 {
+        font-size: 16px;
+    }
+
+    .tour-photo-featured img {
+        max-height: min(54vh, 420px);
+    }
+
+    .tour-photo-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .tour-photo-grid button {
+        height: 62px;
+    }
+}

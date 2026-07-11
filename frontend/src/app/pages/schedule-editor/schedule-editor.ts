@@ -73,8 +73,8 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public carbonProgressPct: number = 0;
 
   // Resizer Panel properties
-  public sidebarWidth: number = 280;
-  public mapWidthPct: number = 45;
+  public sidebarWidth: number = 252;
+  public mapWidthPct: number = 42;
   private isResizing: boolean = false;
   private resizeType: 'left' | 'right' = 'left';
 

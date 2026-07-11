@@ -17,6 +17,8 @@ export class TourDetailComponent implements OnInit {
   public activeTour: Tour | null = null;
   public slideImages: string[] = [];
   public activeSlideIndex: number = 0;
+  public isPhotoGalleryOpen: boolean = false;
+  public galleryPhotoUrl: string = '';
   public activeDayIndex: number = 0;
   public activeInfoTab: 'overview' | 'included' | 'itinerary' | 'policy' | 'reviews' = 'overview';
 
@@ -31,23 +33,29 @@ export class TourDetailComponent implements OnInit {
     "Đà Lạt": [
       "image/1dc8619487310884c9d631d689ece1e7.jpg",
       "image/52627caa0015b2f833fbdc632d37dc82.jpg",
-      "image/581559b0ca4ebbb8ec09d933fc7bff3d.jpg",
       "image/2eee566424c1f35fbeacf85496b4b6e7.jpg",
-      "image/41a413334d9e3753b26c50f3a3921309.jpg"
+      "image/41a413334d9e3753b26c50f3a3921309.jpg",
+      "image/dalat_cover.png",
+      "image/cb4fbf769d60d911e13c255f7fb39dcc.jpg",
+      "image/581559b0ca4ebbb8ec09d933fc7bff3d.jpg"
     ],
     "Phú Yên": [
       "image/cb4fbf769d60d911e13c255f7fb39dcc.jpg",
       "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg",
       "image/e8b896896439701c1ff79d65290703b0.jpg",
       "image/4302842f8d693c25238f2141964a64b2.jpg",
-      "image/68e15971da05ec82c116fe191abb8c7f.jpg"
+      "image/68e15971da05ec82c116fe191abb8c7f.jpg",
+      "image/phuyen_cover.png",
+      "image/52627caa0015b2f833fbdc632d37dc82.jpg"
     ],
     "Đà Nẵng - Hội An": [
       "image/da38f44902391ce9a9e4f0fd4b69fb04.jpg",
       "image/b025d2b33ebe6db7e576ff3476f9acde.jpg",
       "image/7c9e14a82698a594dd914369bfb8eaa5.jpg",
       "image/Viet Nam.png",
-      "image/Gemini_Generated_Image_szp1ouszp1ouszp1.png"
+      "image/Gemini_Generated_Image_szp1ouszp1ouszp1.png",
+      "image/danang_cover.png",
+      "image/41a413334d9e3753b26c50f3a3921309.jpg"
     ]
   };
 
@@ -72,31 +80,98 @@ export class TourDetailComponent implements OnInit {
 
   private setupSlides() {
     if (!this.activeTour) return;
+    const coverImage = this.activeTour.image || this.activeTour.image_url || this.localTourImage('cover.jpg');
+    const galleryImages = (this.activeTour.gallery || []).filter(Boolean);
+
+    this.slideImages = [coverImage, ...galleryImages];
+
+    for (let index = 1; this.slideImages.length < 7 && index <= 6; index++) {
+      const localGalleryImage = this.localTourImage(`gallery-${String(index).padStart(2, '0')}.jpg`);
+      if (!this.slideImages.includes(localGalleryImage)) {
+        this.slideImages.push(localGalleryImage);
+      }
+    }
+
+    this.slideImages = this.slideImages.slice(0, 7);
+    this.activeSlideIndex = 0;
+
+    if (this.slideImages.length >= 7) return;
     const dest = this.activeTour.destination || 'Đà Lạt';
     const destImgs = this.destinationImages[dest] || this.destinationImages['Đà Lạt'];
-    
-    this.slideImages = [];
-    if (this.activeTour.image) {
-      this.slideImages.push(this.activeTour.image);
-    }
-    
+    const highQualityFallbacks = [
+      "image/1dc8619487310884c9d631d689ece1e7.jpg",
+      "image/cb4fbf769d60d911e13c255f7fb39dcc.jpg",
+      "image/dalat_cover.png",
+      "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg",
+      "image/phuyen_cover.png",
+      "image/da38f44902391ce9a9e4f0fd4b69fb04.jpg",
+      "image/danang_cover.png",
+      "image/Viet Nam.png",
+      "image/Gemini_Generated_Image_szp1ouszp1ouszp1.png",
+      "image/41a413334d9e3753b26c50f3a3921309.jpg",
+      "image/b025d2b33ebe6db7e576ff3476f9acde.jpg",
+      "image/52627caa0015b2f833fbdc632d37dc82.jpg",
+      "image/581559b0ca4ebbb8ec09d933fc7bff3d.jpg",
+      "image/2eee566424c1f35fbeacf85496b4b6e7.jpg"
+    ];
+
     destImgs.forEach(img => {
-      if (img !== this.activeTour?.image && this.slideImages.length < 5) {
+      if (img !== this.activeTour?.image && this.slideImages.length < 7) {
         this.slideImages.push(img);
       }
     });
 
     if (this.slideImages.length === 0) {
-      this.slideImages = destImgs.slice(0, 5);
+      this.slideImages = destImgs.slice(0, 7);
     }
 
-    while (this.slideImages.length < 5) {
+    while (this.slideImages.length < 7) {
       this.slideImages.push(destImgs[this.slideImages.length % destImgs.length]);
     }
+
+    this.slideImages = this.slideImages.filter(img => !this.isLowQualityGalleryImage(img));
+    highQualityFallbacks.forEach(img => {
+      if (this.slideImages.length < 7 && !this.slideImages.includes(img)) {
+        this.slideImages.push(img);
+      }
+    });
+    this.slideImages = this.slideImages.slice(0, 7);
+  }
+
+  private localTourImage(fileName: string): string {
+    const tourId = (this.activeTour?.id || '').toLowerCase();
+    return tourId ? `image/tours/${tourId}/${fileName}` : `image/Viet Nam.png`;
   }
 
   public setSlide(index: number) {
     this.activeSlideIndex = index;
+  }
+
+  private isLowQualityGalleryImage(img: string): boolean {
+    return img.startsWith('http') ||
+      img.includes('e8b896896439701c1ff79d65290703b0') ||
+      img.includes('68e15971da05ec82c116fe191abb8c7f') ||
+      img.includes('7c9e14a82698a594dd914369bfb8eaa5') ||
+      img.includes('4302842f8d693c25238f2141964a64b2');
+  }
+
+  public selectGalleryPhoto(index: number, event?: Event) {
+    event?.stopPropagation();
+    this.activeSlideIndex = index;
+    this.galleryPhotoUrl = this.slideImages[index] || this.slideImages[0] || '';
+    this.cdr.detectChanges();
+  }
+
+  public openPhotoGallery(index: number = this.activeSlideIndex) {
+    this.activeSlideIndex = index;
+    this.galleryPhotoUrl = this.slideImages[index] || this.slideImages[0] || '';
+    this.isPhotoGalleryOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  public closePhotoGallery() {
+    this.isPhotoGalleryOpen = false;
+    this.galleryPhotoUrl = '';
   }
 
   public setDay(index: number) {

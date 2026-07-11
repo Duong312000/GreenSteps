@@ -15,6 +15,23 @@ type DestinationPosition = 'left' | 'center' | 'right';
   templateUrl: './home.html',
 })
 export class HomeComponent implements OnInit {
+  private readonly realPreviewImages = {
+    daNang: 'https://i.pinimg.com/736x/f3/34/b3/f334b3d836d0d5fd68f797f7ad3c7021.jpg',
+    baNa: 'https://i.pinimg.com/736x/3d/a1/1f/3da11f5f8766b7c71fdce561420950e1.jpg',
+    hoiAn: 'https://i.pinimg.com/736x/a6/f9/2e/a6f92ed32526a0b16c257a645e4034fc.jpg',
+    nguHanhSon: 'https://i.pinimg.com/1200x/51/8a/24/518a24abfd5bf366aaea50f79fc67644.jpg',
+    phuYen: 'https://i.pinimg.com/736x/60/9c/ef/609cefb4e490debd1ea140b6e21be7bc.jpg',
+    ganhDaDia: 'https://i.pinimg.com/736x/60/9c/ef/609cefb4e490debd1ea140b6e21be7bc.jpg',
+    damOLoan: 'https://i.pinimg.com/1200x/c9/81/68/c9816838986e252b85aab71a13f07d8d.jpg',
+    muiDien: 'https://i.pinimg.com/1200x/a4/54/5a/a4545a58170747ef18d15a28d465bc13.jpg',
+    baiXep: 'https://i.pinimg.com/1200x/9b/43/5f/9b435f463cb84aa6065b3c0c44eec4cc.jpg',
+    honYen: 'https://i.pinimg.com/736x/3f/87/0e/3f870eb589c0b29dd95402a8acf8cf25.jpg',
+    nhatTuSon: 'https://i.pinimg.com/1200x/e6/58/65/e658653f875121e5aadc54c25a1b397b.jpg',
+    daLat: 'https://i.pinimg.com/736x/10/f4/97/10f4970291970e2f773327a6ad723bc0.jpg',
+    langbiang: 'https://i.pinimg.com/1200x/69/d6/e5/69d6e56299838d8728a7670ed21edd91.jpg',
+    tuyenLam: 'https://i.pinimg.com/1200x/b4/cd/b9/b4cdb9c05718a57d34787052447ca7bf.jpg'
+  };
+
   public searchDest: string = 'Đà Lạt';
   public realTours: Tour[] = [];
   public aiPlannerDest: string = 'Đà Nẵng';
@@ -44,7 +61,7 @@ export class HomeComponent implements OnInit {
       label: 'Đà Nẵng - Hội An',
       title: 'Đà Nẵng - Hội An',
       subtitle: 'Di sản, biển xanh và văn hóa sống động',
-      image: 'image/Viet Nam.png'
+      image: this.realPreviewImages.daNang
     },
     {
       dest: 'Phú Yên',
@@ -62,42 +79,42 @@ export class HomeComponent implements OnInit {
       title: "Chuyến đi 5 ngày Miền Trung Xanh",
       subtitle: "Trải nghiệm lưu trú sinh thái & phục hồi tự nhiên",
       days: [
-        { label: "Ngày 1", title: "Đến Đà Nẵng", desc: "Khu nghỉ dưỡng sinh thái tre, bãi biển Mỹ Khê", img: "image/Viet Nam.png" },
-        { label: "Ngày 2", title: "Nhà nghỉ sinh thái Hội An", desc: "Chèo thuyền thúng rừng dừa, nông nghiệp hữu cơ", img: "image/b025d2b33ebe6db7e576ff3476f9acde.jpg" },
-        { label: "Ngày 3", title: "Danh thắng Ngũ Hành Sơn", desc: "Đi bộ hành hương, thưởng trà thảo mộc", img: "image/7c9e14a82698a594dd914369bfb8eaa5.jpg" },
-        { label: "Ngày 4", title: "Công viên sinh thái Bà Nà", desc: "Cáp treo thủy điện, vườn hoa bảo tồn", img: "image/da38f44902391ce9a9e4f0fd4b69fb04.jpg" },
-        { label: "Ngày 5", title: "Khởi hành về", desc: "Gieo mầm cây lưu niệm, chia tay miền Trung", img: "image/68e15971da05ec82c116fe191abb8c7f.jpg" }
+        { label: "Ngày 1", title: "Đến Đà Nẵng", desc: "Khu nghỉ dưỡng sinh thái tre, bãi biển Mỹ Khê", img: this.realPreviewImages.daNang },
+        { label: "Ngày 2", title: "Nhà nghỉ sinh thái Hội An", desc: "Chèo thuyền thúng rừng dừa, nông nghiệp hữu cơ", img: this.realPreviewImages.hoiAn },
+        { label: "Ngày 3", title: "Danh thắng Ngũ Hành Sơn", desc: "Đi bộ hành hương, thưởng trà thảo mộc", img: this.realPreviewImages.nguHanhSon },
+        { label: "Ngày 4", title: "Công viên sinh thái Bà Nà", desc: "Cáp treo thủy điện, vườn hoa bảo tồn", img: this.realPreviewImages.baNa },
+        { label: "Ngày 5", title: "Khởi hành về", desc: "Gieo mầm cây lưu niệm, chia tay miền Trung", img: this.realPreviewImages.hoiAn }
       ]
     },
     guides: {
       title: "Hành trình Văn hóa Bản địa 5 ngày",
       subtitle: "Tìm hiểu di sản cùng người kể chuyện bản xứ",
       days: [
-        { label: "Ngày 1", title: "Di sản Đà Nẵng", desc: "Đón khách, tour đi bộ phố cổ và bảo tàng Chăm", img: "image/Viet Nam.png" },
-        { label: "Ngày 2", title: "Nghề làm lồng đèn Hội An", desc: "Làm lồng đèn cùng nghệ nhân phố cổ", img: "image/b025d2b33ebe6db7e576ff3476f9acde.jpg" },
-        { label: "Ngày 3", title: "Làng rau Trà Quế", desc: "Học làm nông dân trồng rau sạch cùng người bản địa", img: "image/7c9e14a82698a594dd914369bfb8eaa5.jpg" },
-        { label: "Ngày 4", title: "Thánh địa Mỹ Sơn", desc: "Khám phá thánh địa Mỹ Sơn cổ kính với hướng dẫn viên", img: "image/da38f44902391ce9a9e4f0fd4b69fb04.jpg" },
-        { label: "Ngày 5", title: "Khởi hành về", desc: "Lớp học nấu ăn đặc sản miền Trung, kết thúc tour", img: "image/68e15971da05ec82c116fe191abb8c7f.jpg" }
+        { label: "Ngày 1", title: "Di sản Đà Nẵng", desc: "Đón khách, tour đi bộ phố cổ và bảo tàng Chăm", img: this.realPreviewImages.daNang },
+        { label: "Ngày 2", title: "Nghề làm lồng đèn Hội An", desc: "Làm lồng đèn cùng nghệ nhân phố cổ", img: this.realPreviewImages.hoiAn },
+        { label: "Ngày 3", title: "Làng rau Trà Quế", desc: "Học làm nông dân trồng rau sạch cùng người bản địa", img: this.realPreviewImages.hoiAn },
+        { label: "Ngày 4", title: "Thánh địa Mỹ Sơn", desc: "Khám phá thánh địa Mỹ Sơn cổ kính với hướng dẫn viên", img: this.realPreviewImages.nguHanhSon },
+        { label: "Ngày 5", title: "Khởi hành về", desc: "Lớp học nấu ăn đặc sản miền Trung, kết thúc tour", img: this.realPreviewImages.hoiAn }
       ]
     },
     dates: {
       title: "Lộ trình Linh hoạt Đà Lạt 3 ngày",
       subtitle: "Tự chủ thời gian và điểm đến mong muốn",
       days: [
-        { label: "Ngày 1", title: "Đến nơi & nhận phòng linh hoạt", desc: "Đón sân bay linh hoạt theo giờ bay riêng của khách", img: "image/1dc8619487310884c9d631d689ece1e7.jpg" },
-        { label: "Ngày 2", title: "Chinh phục LangBiang tự chọn", desc: "Tự chọn cung đường đi bộ ngắn/dài tùy thuộc sức khỏe", img: "image/7c9e14a82698a594dd914369bfb8eaa5.jpg" },
-        { label: "Ngày 3", title: "Khởi hành & trả phòng linh hoạt", desc: "Tự do mua sắm, trả phòng muộn không phụ thu", img: "image/68e15971da05ec82c116fe191abb8c7f.jpg" }
+        { label: "Ngày 1", title: "Đến nơi & nhận phòng linh hoạt", desc: "Đón sân bay linh hoạt theo giờ bay riêng của khách", img: this.realPreviewImages.daLat },
+        { label: "Ngày 2", title: "Chinh phục LangBiang tự chọn", desc: "Tự chọn cung đường đi bộ ngắn/dài tùy thuộc sức khỏe", img: this.realPreviewImages.langbiang },
+        { label: "Ngày 3", title: "Khởi hành & trả phòng linh hoạt", desc: "Tự do mua sắm, trả phòng muộn không phụ thu", img: this.realPreviewImages.daLat }
       ]
     },
     ai: {
       title: "Lịch trình AI Gemini Tự động Lập",
       subtitle: "Tối ưu hóa phát thải CO2 bằng thuật toán AI",
       days: [
-        { label: "Ngày 1", title: "Lộ trình tối ưu phát thải AI", desc: "Đặt xe điện đưa đón và chọn homestay tiết kiệm năng lượng", img: "image/Viet Nam.png" },
-        { label: "Ngày 2", title: "Ẩm thực sinh thái cùng Gemini", desc: "Gợi ý các quán ăn chay thực dưỡng và đi bộ ngắm phố", img: "image/b025d2b33ebe6db7e576ff3476f9acde.jpg" },
-        { label: "Ngày 3", title: "Cắm trại không rác thải", desc: "Trải nghiệm cắm trại không rác thải nhựa đồi thông", img: "image/1dc8619487310884c9d631d689ece1e7.jpg" },
-        { label: "Ngày 4", title: "Tham quan xanh bằng xe điện", desc: "Thuê xe máy điện dạo quanh thành phố, giảm thiểu ô nhiễm", img: "image/da38f44902391ce9a9e4f0fd4b69fb04.jpg" },
-        { label: "Ngày 5", title: "Bù đắp lượng phát thải", desc: "Tính tổng phát thải và quy đổi thành cây xanh quyên góp", img: "image/68e15971da05ec82c116fe191abb8c7f.jpg" }
+        { label: "Ngày 1", title: "Lộ trình tối ưu phát thải AI", desc: "Đặt xe điện đưa đón và chọn homestay tiết kiệm năng lượng", img: this.realPreviewImages.daNang },
+        { label: "Ngày 2", title: "Ẩm thực sinh thái cùng Gemini", desc: "Gợi ý các quán ăn chay thực dưỡng và đi bộ ngắm phố", img: this.realPreviewImages.hoiAn },
+        { label: "Ngày 3", title: "Cắm trại không rác thải", desc: "Trải nghiệm cắm trại không rác thải nhựa đồi thông", img: this.realPreviewImages.daLat },
+        { label: "Ngày 4", title: "Tham quan xanh bằng xe điện", desc: "Thuê xe máy điện dạo quanh thành phố, giảm thiểu ô nhiễm", img: this.realPreviewImages.baNa },
+        { label: "Ngày 5", title: "Bù đắp lượng phát thải", desc: "Tính tổng phát thải và quy đổi thành cây xanh quyên góp", img: this.realPreviewImages.tuyenLam }
       ]
     }
   };
@@ -154,7 +171,7 @@ export class HomeComponent implements OnInit {
       const days = (t.data || []).map((dayActs, dIdx) => {
         const mainAct = dayActs[0] || { name: 'Hoạt động tự do', time: '08:00' };
         
-        let img = 'image/greensteps_logo.png';
+        let img = this.realPreviewImages.daNang;
         if (t.image) {
           img = t.image;
         }
@@ -162,18 +179,31 @@ export class HomeComponent implements OnInit {
         const actName = mainAct.name || '';
         const dest = t.destination || '';
         
-        if (actName.toLowerCase().includes('đà nẵng') || actName.toLowerCase().includes('sân bay') || dest.includes('Đà Nẵng')) {
-          img = 'image/Viet Nam.png';
-        } else if (actName.toLowerCase().includes('hội an') || actName.toLowerCase().includes('đèn lồng')) {
-          img = 'image/b025d2b33ebe6db7e576ff3476f9acde.jpg';
-        } else if (actName.toLowerCase().includes('ngũ hành sơn') || actName.toLowerCase().includes('chùa')) {
-          img = 'image/7c9e14a82698a594dd914369bfb8eaa5.jpg';
-        } else if (actName.toLowerCase().includes('bà nà') || actName.toLowerCase().includes('cáp treo')) {
-          img = 'image/da38f44902391ce9a9e4f0fd4b69fb04.jpg';
+        const actNameLower = actName.toLowerCase();
+        if (actNameLower.includes('hòn yến') || actNameLower.includes('hon yen')) {
+          img = this.realPreviewImages.honYen;
+        } else if (actNameLower.includes('nhất tự sơn') || actNameLower.includes('nhat tu son')) {
+          img = this.realPreviewImages.nhatTuSon;
+        } else if (actNameLower.includes('đầm ô loan') || actNameLower.includes('dam o loan') || actNameLower.includes('ô loan')) {
+          img = this.realPreviewImages.damOLoan;
+        } else if (actNameLower.includes('gành đá đĩa') || actNameLower.includes('ganh da dia')) {
+          img = this.realPreviewImages.ganhDaDia;
+        } else if (actNameLower.includes('mũi điện') || actNameLower.includes('mui dien') || actNameLower.includes('bãi môn')) {
+          img = this.realPreviewImages.muiDien;
+        } else if (actNameLower.includes('bãi xép') || actNameLower.includes('bai xep') || actNameLower.includes('ghềnh ông')) {
+          img = this.realPreviewImages.baiXep;
+        } else if (actNameLower.includes('đà nẵng') || actNameLower.includes('sân bay') || dest.includes('Đà Nẵng')) {
+          img = this.realPreviewImages.daNang;
+        } else if (actNameLower.includes('hội an') || actNameLower.includes('đèn lồng')) {
+          img = this.realPreviewImages.hoiAn;
+        } else if (actNameLower.includes('ngũ hành sơn') || actNameLower.includes('chùa')) {
+          img = this.realPreviewImages.nguHanhSon;
+        } else if (actNameLower.includes('bà nà') || actNameLower.includes('cáp treo')) {
+          img = this.realPreviewImages.baNa;
         } else if (dest.includes('Phú Yên')) {
-          img = 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg';
+          img = this.realPreviewImages.phuYen;
         } else if (dest.includes('Đà Lạt')) {
-          img = 'image/1dc8619487310884c9d631d689ece1e7.jpg';
+          img = this.realPreviewImages.daLat;
         }
 
         return {
@@ -205,7 +235,7 @@ export class HomeComponent implements OnInit {
         this.destinationCards = dbDests.map(dest => {
           let label = dest;
           let subtitle = 'Điểm đến du lịch xanh thân thiện';
-          let image = 'image/Viet Nam.png';
+          let image = this.realPreviewImages.daNang;
           if (dest === 'Đà Lạt') {
             label = 'Đà Lạt';
             subtitle = 'Thành phố ngàn hoa';
@@ -217,7 +247,7 @@ export class HomeComponent implements OnInit {
           } else if (dest === 'Đà Nẵng - Hội An') {
             label = 'Đà Nẵng - Hội An';
             subtitle = 'Di sản, biển xanh và văn hóa sống động';
-            image = 'image/Viet Nam.png';
+            image = this.realPreviewImages.daNang;
           }
           return {
             dest: dest,
@@ -283,27 +313,39 @@ export class HomeComponent implements OnInit {
       this.aiSuggestedDays = (matchedTour.data || []).map((dayActs, dIdx) => {
         const mainAct = dayActs[0] || { name: 'Khám phá tự do', time: '08:00', description: 'Trải nghiệm du lịch sinh thái cùng GreenSteps.' };
         
-        let img = 'image/Viet Nam.png';
+        let img = this.realPreviewImages.daNang;
         const actName = (mainAct.name || '').toLowerCase();
         const destName = (matchedTour.destination || '').toLowerCase();
         
-        if (actName.includes('hội an') || actName.includes('đèn lồng')) {
-          img = 'image/Viet Nam.png';
+        if (actName.includes('hòn yến')) {
+          img = this.realPreviewImages.honYen;
+        } else if (actName.includes('nhất tự sơn')) {
+          img = this.realPreviewImages.nhatTuSon;
+        } else if (actName.includes('đầm ô loan') || actName.includes('ô loan')) {
+          img = this.realPreviewImages.damOLoan;
+        } else if (actName.includes('gành đá đĩa')) {
+          img = this.realPreviewImages.ganhDaDia;
+        } else if (actName.includes('mũi điện') || actName.includes('bãi môn')) {
+          img = this.realPreviewImages.muiDien;
+        } else if (actName.includes('bãi xép') || actName.includes('ghềnh ông')) {
+          img = this.realPreviewImages.baiXep;
+        } else if (actName.includes('hội an') || actName.includes('đèn lồng')) {
+          img = this.realPreviewImages.hoiAn;
         } else if (actName.includes('bà nà') || actName.includes('cáp treo') || actName.includes('cầu vàng')) {
-          img = 'image/da38f44902391ce9a9e4f0fd4b69fb04.jpg'; // Golden Bridge
+          img = this.realPreviewImages.baNa; // Golden Bridge
         } else if (actName.includes('đà nẵng')) {
-          img = 'image/danang_cover.png';
+          img = this.realPreviewImages.daNang;
         } else if (destName.includes('đà nẵng')) {
           const daNangImages = [
-            'image/danang_cover.png',
-            'image/Viet Nam.png',
-            'image/da38f44902391ce9a9e4f0fd4b69fb04.jpg'
+            this.realPreviewImages.daNang,
+            this.realPreviewImages.hoiAn,
+            this.realPreviewImages.baNa
           ];
           img = daNangImages[dIdx % daNangImages.length];
         } else if (destName.includes('phú yên')) {
-          img = 'image/phuyen_cover.png';
+          img = this.realPreviewImages.phuYen;
         } else if (destName.includes('đà lạt') || actName.includes('đồi sương') || actName.includes('cắm trại')) {
-          img = 'image/dalat_cover.png';
+          img = this.realPreviewImages.daLat;
         } else if (matchedTour.image) {
           img = matchedTour.image;
         }
