@@ -591,6 +591,31 @@ export class ProfileComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
+  public formatNotifTime(dateStr?: string): string {
+    if (!dateStr) return 'Vừa xong';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return 'Vừa xong';
+      const now = new Date();
+      const diffMs = now.getTime() - d.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return 'Vừa xong';
+      if (diffMins < 60) return `${diffMins} phút trước`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours} giờ trước`;
+      const diffDays = Math.floor(diffHours / 24);
+      if (diffDays === 1) return 'Hôm qua';
+      if (diffDays < 7) return `${diffDays} ngày trước`;
+      
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch (e) {
+      return 'Vừa xong';
+    }
+  }
+
   public getFirstLetter(name: string): string {
     return name ? name.charAt(0).toUpperCase() : 'U';
   }

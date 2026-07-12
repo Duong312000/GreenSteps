@@ -178,13 +178,30 @@
                 </div>
 
                 <article class="profile-card dashboard-card overview-activity-card recent-activity-card">
-                    <header class="profile-card-header"><h2>Hoạt động gần đây</h2><a href="#" (click)="$event.preventDefault()">Xem tất cả <i class="bi bi-arrow-right"></i></a></header>
-                    <div class="overview-activity-list recent-list">
-                        <div class="recent-item"><i class="bi bi-heart-fill"></i><span><strong class="recent-title">Đã lưu lịch trình Hà Giang Loop 3N2Đ</strong><small class="recent-time">Hôm nay, 09:42</small></span></div>
-                        <div class="recent-item"><i class="bi bi-star-fill"></i><span><strong class="recent-title">Đã đánh giá 5 sao cho Homestay Mộc Châu Green</strong><small class="recent-time">Hôm qua, 18:20</small></span></div>
-                        <div class="recent-item"><i class="bi bi-map"></i><span><strong class="recent-title">Vừa tạo lịch trình mới Đà Lạt 4N3Đ - Chill & Chill</strong><small class="recent-time">2 ngày trước</small></span></div>
+                    <header class="profile-card-header">
+                        <h2>Hoạt động gần đây</h2>
+                        <a href="#" (click)="$event.preventDefault(); activeSection = 'notifications'">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+                    </header>
+                    <div class="overview-activity-list recent-list" *ngIf="notificationsList.length > 0">
+                        <div class="recent-item" *ngFor="let notif of notificationsList.slice(0, 3)">
+                            <i class="bi" [ngClass]="{
+                                'bi-wallet-fill text-emerald-600': notif.type === 'wallet',
+                                'bi-calendar-check-fill text-indigo-600': notif.type === 'booking',
+                                'bi-people-fill text-blue-600': notif.type === 'community',
+                                'bi-info-circle-fill text-gray-500': notif.type !== 'wallet' && notif.type !== 'booking' && notif.type !== 'community'
+                            }"></i>
+                            <span>
+                                <strong class="recent-title">{{ notif.title }}: {{ notif.message }}</strong>
+                                <small class="recent-time">{{ formatNotifTime(notif.createdAt) }}</small>
+                            </span>
+                        </div>
                     </div>
+                    <div class="overview-activity-list recent-list" *ngIf="notificationsList.length === 0" style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px;">
+                        Chưa có hoạt động gần đây nào.
+                    </div>
+
                 </article>
+
 
                 <aside class="right-column">
                     <article class="profile-wallet-card overview-wallet-card side-widget wallet-card">
