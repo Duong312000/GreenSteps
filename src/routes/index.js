@@ -14,6 +14,7 @@ const communityRoutes = require('./community.routes');
 const reviewsRoutes = require('./reviews.routes');
 const recommendationRoutes = require('./recommendation.routes');
 const notificationRoutes = require('./notification.routes');
+const spotRoutes = require('./spot.routes');
 
 router.use('/auth', authRoutes);
 router.use('/bookings', bookingRoutes);
@@ -28,5 +29,6 @@ router.use('/community', communityRoutes);
 router.use('/reviews', reviewsRoutes);
 router.use('/recommendations', recommendationRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/spots', spotRoutes);
 
 module.exports = router;

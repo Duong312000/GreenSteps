@@ -3,6 +3,7 @@ const {
   sequelize, 
   GreenService, 
   BadgeService, 
+  Badge,
   Vender, 
   BadgeUser, 
   User, 
@@ -10,7 +11,7 @@ const {
   CPGS 
 } = require('../models/index');
 
-// 1. Get All Green Services (with optional destination filter)
+// 1. Get All Green Services (with optional destination filter — Eager Loading)
 exports.getServices = async (req, res, next) => {
   try {
     const { destination } = req.query;
@@ -20,17 +21,19 @@ exports.getServices = async (req, res, next) => {
       query.destination = { [Op.iLike]: `%${destination}%` };
     }
 
-    const services = await GreenService.findAll({ where: query });
-    const formatted = [];
+    const services = await GreenService.findAll({
+      where: query,
+      include: [
+        { model: Badge, through: { attributes: [] } },
+        { model: Vender }
+      ]
+    });
 
-    for (const s of services) {
-      const badgeServices = await BadgeService.findAll({ where: { service_id: s.id } });
-      const badges = badgeServices.map(bs => bs.badge_name);
-      
-      const vender = await Vender.findByPk(s.vender_id);
-      const providerId = vender ? vender.user_id : 'UG26pro0001';
+    const formatted = services.map(s => {
+      const badges = (s.Badges || []).map(b => b.id);
+      const providerId = s.Vender ? s.Vender.user_id : 'UG26pro0001';
 
-      formatted.push({
+      return {
         id: s.id,
         provider_id: providerId,
         name: s.name_service,
@@ -46,14 +49,15 @@ exports.getServices = async (req, res, next) => {
         max_capacity: s.max_capacity || 10,
         badges: badges,
         current_data: s.current_data || {}
-      });
-    }
+      };
+    });
 
     res.json(formatted);
   } catch (error) {
     next(error);
   }
 };
+
 
 // 2. Get My Services (for provider dashboard)
 exports.getProviderServices = async (req, res, next) => {

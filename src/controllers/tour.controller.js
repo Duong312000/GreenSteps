@@ -7,6 +7,7 @@ const {
   ScheduleActivity, 
   BadgeSchedule, 
   BadgeUser, 
+  Badge,
   User, 
   CommentPost, 
   CPSS,
@@ -15,9 +16,51 @@ const {
   Notification,
   UserSchedule
 } = require('../models/index');
+
+// Helper: Format activities from Schedule into days array
+function formatActivitiesIntoDays(schedule, activities) {
+  const days = schedule.days || 1;
+  const data = Array.from({ length: days }, () => []);
+  (activities || []).forEach(act => {
+    const dIdx = act.day_number - 1;
+    if (dIdx >= 0 && dIdx < days) {
+      data[dIdx].push({
+        id: act.id,
+        time: act.time,
+        name: act.activity_name || '[Địa điểm tự do]',
+        cost: act.activity_cost,
+        carbon: act.carbon,
+        icon: act.icon,
+        type: act.type,
+        lat: act.coordinates ? parseFloat(act.coordinates.split(',')[0]) : null,
+        lng: act.coordinates ? parseFloat(act.coordinates.split(',')[1]) : null
+      });
+    }
+  });
+  return data;
+}
+
+// Helper: Format a ScheduleSample+Schedule row into a tour response object
+function formatTourResponse(sample, schedule, badges, activities) {
+  return {
+    id: sample.id,
+    title: schedule.tour_name,
+    destination: schedule.destination || 'Việt Nam',
+    days: schedule.days,
+    cost: sample.cost,
+    oldCost: sample.old_cost,
+    carbon: schedule.carbon,
+    image: schedule.image_url,
+    description: schedule.tour_description,
+    rating: sample.rating,
+    votes_count: sample.votes_count,
+    tags: badges,
+    data: activities ? formatActivitiesIntoDays(schedule, activities) : undefined
+  };
+}
 const bcrypt = require('bcrypt');
 
-// 1. Get All Preset Tours
+// 1. Get All Preset Tours (Eager Loading — single query)
 exports.getPresetTours = async (req, res, next) => {
   try {
     const { userId } = req.query;
@@ -35,55 +78,39 @@ exports.getPresetTours = async (req, res, next) => {
         return res.json([]);
       }
     }
-    const samples = await ScheduleSample.findAll({ where: whereClause });
-    const tours = [];
 
-    for (const s of samples) {
-      const base = await Schedule.findByPk(s.id);
-      if (!base) continue;
-
-      const activities = await ScheduleActivity.findAll({
-        where: { schedule_id: s.id },
-        order: [['day_number', 'ASC'], ['time', 'ASC']]
-      });
-
-      const data = Array.from({ length: base.days }, () => []);
-      activities.forEach(act => {
-        const dIdx = act.day_number - 1;
-        if (dIdx >= 0 && dIdx < base.days) {
-          data[dIdx].push({
-            id: act.id,
-            time: act.time,
-            name: act.activity_name || '[Địa điểm tự do]',
-            cost: act.activity_cost,
-            carbon: act.carbon,
-            icon: act.icon,
-            type: act.type,
-            lat: act.coordinates ? parseFloat(act.coordinates.split(',')[0]) : null,
-            lng: act.coordinates ? parseFloat(act.coordinates.split(',')[1]) : null
-          });
+    const samples = await ScheduleSample.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: Schedule,
+          include: [{
+            model: ScheduleActivity,
+            order: [['day_number', 'ASC'], ['time', 'ASC']]
+          }]
         }
-      });
+      ]
+    });
 
-      const badgeSchedules = await BadgeSchedule.findAll({ where: { schedule_id: s.id } });
-      const badges = badgeSchedules.map(bs => bs.badge_name);
+    // Fetch all badges for returned schedule IDs in a single query
+    const sampleIds = samples.map(s => s.id);
+    const allBadges = sampleIds.length > 0
+      ? await BadgeSchedule.findAll({ where: { schedule_id: { [Op.in]: sampleIds } } })
+      : [];
+    const badgeMap = {};
+    allBadges.forEach(bs => {
+      if (!badgeMap[bs.schedule_id]) badgeMap[bs.schedule_id] = [];
+      badgeMap[bs.schedule_id].push(bs.badge_name);
+    });
 
-      tours.push({
-        id: s.id,
-        title: base.tour_name,
-        destination: base.destination || 'Việt Nam',
-        days: base.days,
-        cost: s.cost,
-        oldCost: s.old_cost,
-        carbon: base.carbon,
-        image: base.image_url,
-        description: base.tour_description,
-        rating: s.rating,
-        votes_count: s.votes_count,
-        tags: badges,
-        data: data
-      });
-    }
+    const tours = samples
+      .filter(s => s.Schedule)
+      .map(s => formatTourResponse(
+        s,
+        s.Schedule,
+        badgeMap[s.id] || [],
+        s.Schedule.ScheduleActivities
+      ));
 
     res.json(tours);
   } catch (error) {
@@ -91,97 +118,74 @@ exports.getPresetTours = async (req, res, next) => {
   }
 };
 
-// 2. Get Single Preset Tour
+// 2. Get Single Preset Tour (Eager Loading — single query)
 exports.getPresetTourById = async (req, res, next) => {
   const { id } = req.params;
   try {
-    const s = await ScheduleSample.findByPk(id);
-    if (!s) {
+    const s = await ScheduleSample.findByPk(id, {
+      include: [{
+        model: Schedule,
+        include: [{ model: ScheduleActivity }]
+      }]
+    });
+    if (!s || !s.Schedule) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy tour du lịch này!' });
     }
-    const base = await Schedule.findByPk(id);
-    if (!base) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy tour!' });
-    }
-
-    const activities = await ScheduleActivity.findAll({
-      where: { schedule_id: id },
-      order: [['day_number', 'ASC'], ['time', 'ASC']]
-    });
-
-    const data = Array.from({ length: base.days }, () => []);
-    activities.forEach(act => {
-      const dIdx = act.day_number - 1;
-      if (dIdx >= 0 && dIdx < base.days) {
-        data[dIdx].push({
-          id: act.id,
-          time: act.time,
-          name: act.activity_name || '[Địa điểm tự do]',
-          cost: act.activity_cost,
-          carbon: act.carbon,
-          icon: act.icon,
-          type: act.type,
-          lat: act.coordinates ? parseFloat(act.coordinates.split(',')[0]) : null,
-          lng: act.coordinates ? parseFloat(act.coordinates.split(',')[1]) : null
-        });
-      }
-    });
 
     const badgeSchedules = await BadgeSchedule.findAll({ where: { schedule_id: id } });
     const badges = badgeSchedules.map(bs => bs.badge_name);
 
-    res.json({
-      id: s.id,
-      title: base.tour_name,
-      destination: base.destination || 'Việt Nam',
-      days: base.days,
-      cost: s.cost,
-      oldCost: s.old_cost,
-      carbon: base.carbon,
-      image: base.image_url,
-      description: base.tour_description,
-      rating: s.rating,
-      votes_count: s.votes_count,
-      tags: badges,
-      data: data
-    });
+    const result = formatTourResponse(
+      s,
+      s.Schedule,
+      badges,
+      s.Schedule.ScheduleActivities
+    );
+
+    res.json(result);
   } catch (error) {
     next(error);
   }
 };
 
-// 3. Get Personalized Tour Recommendations
+// 3. Get Personalized Tour Recommendations (Eager Loading)
 exports.getRecommendations = async (req, res, next) => {
   const { userId } = req.params;
   try {
-    // Priority 1: Check user last interest destination
     const user = await User.findByPk(userId);
     let matchedTours = [];
 
+    const eagerInclude = [{ model: Schedule }];
+
+    // Priority 1: Check user last interest destination
     if (user && user.last_interest) {
       const matchedSchedules = await Schedule.findAll({
-        where: { destination: { [Op.iLike]: `%${user.last_interest}%` } }
+        where: { destination: { [Op.iLike]: `%${user.last_interest}%` } },
+        attributes: ['id']
       });
       const scheduleIds = matchedSchedules.map(s => s.id);
       if (scheduleIds.length > 0) {
         matchedTours = await ScheduleSample.findAll({
-          where: { id: { [Op.in]: scheduleIds } }
+          where: { id: { [Op.in]: scheduleIds } },
+          include: eagerInclude
         });
       }
     }
 
     // Priority 2: Match user badges
     if (matchedTours.length === 0) {
-      const userBadges = await BadgeUser.findAll({ where: { user_id: userId } });
+      const userBadges = await BadgeUser.findAll({ where: { user_id: userId }, attributes: ['badge_name'] });
       const badgeNames = userBadges.map(ub => ub.badge_name);
       if (badgeNames.length > 0) {
         const badgeSchedules = await BadgeSchedule.findAll({
-          where: { badge_name: { [Op.in]: badgeNames } }
+          where: { badge_name: { [Op.in]: badgeNames } },
+          attributes: ['schedule_id']
         });
         const tourIds = [...new Set(badgeSchedules.map(bs => bs.schedule_id))];
         if (tourIds.length > 0) {
           matchedTours = await ScheduleSample.findAll({
-            where: { id: { [Op.in]: tourIds } }
+            where: { id: { [Op.in]: tourIds } },
+            include: eagerInclude
           });
         }
       }
@@ -191,30 +195,25 @@ exports.getRecommendations = async (req, res, next) => {
     if (matchedTours.length === 0) {
       matchedTours = await ScheduleSample.findAll({
         order: [['rating', 'DESC']],
-        limit: 3
+        limit: 3,
+        include: eagerInclude
       });
     }
 
-    const tours = [];
-    for (const s of matchedTours) {
-      const base = await Schedule.findByPk(s.id);
-      if (!base) continue;
-      const badgeSchedules = await BadgeSchedule.findAll({ where: { schedule_id: s.id } });
-      tours.push({
-        id: s.id,
-        title: base.tour_name,
-        destination: base.destination,
-        days: base.days,
-        cost: s.cost,
-        oldCost: s.old_cost,
-        carbon: base.carbon,
-        image: base.image_url,
-        description: base.tour_description,
-        rating: s.rating,
-        votes_count: s.votes_count,
-        tags: badgeSchedules.map(bs => bs.badge_name)
-      });
-    }
+    // Fetch all badges for matched tours in a single query
+    const tourIds = matchedTours.map(s => s.id);
+    const allBadges = tourIds.length > 0
+      ? await BadgeSchedule.findAll({ where: { schedule_id: { [Op.in]: tourIds } } })
+      : [];
+    const badgeMap = {};
+    allBadges.forEach(bs => {
+      if (!badgeMap[bs.schedule_id]) badgeMap[bs.schedule_id] = [];
+      badgeMap[bs.schedule_id].push(bs.badge_name);
+    });
+
+    const tours = matchedTours
+      .filter(s => s.Schedule)
+      .map(s => formatTourResponse(s, s.Schedule, badgeMap[s.id] || []));
 
     res.json(tours);
   } catch (error) {
@@ -317,10 +316,10 @@ exports.saveCustomItinerary = async (req, res, next) => {
           read: false
         }, { transaction: t });
       }
-    });
 
       // Destroy old activities
       await ScheduleActivity.destroy({ where: { schedule_id: id }, transaction: t });
+
 
       // Save new activities
       const activitiesToSave = [];
@@ -352,55 +351,34 @@ exports.saveCustomItinerary = async (req, res, next) => {
   }
 };
 
-// 5. Get All Custom Itineraries for a User
+// 5. Get All Custom Itineraries for a User (Eager Loading — single query)
 exports.getUserCustomItineraries = async (req, res, next) => {
   const { userId } = req.params;
   try {
-    const customs = await ScheduleCustom.findAll({ where: { user_id: userId } });
-    const result = [];
+    const customs = await ScheduleCustom.findAll({
+      where: { user_id: userId },
+      include: [{
+        model: Schedule,
+        include: [{ model: ScheduleActivity }]
+      }]
+    });
 
-    for (const c of customs) {
-      const base = await Schedule.findByPk(c.id);
-      if (!base) continue;
-
-      const activities = await ScheduleActivity.findAll({
-        where: { schedule_id: c.id },
-        order: [['day_number', 'ASC'], ['time', 'ASC']]
-      });
-
-      const daysData = Array.from({ length: base.days }, () => []);
-      activities.forEach(act => {
-        const dIdx = act.day_number - 1;
-        if (dIdx >= 0 && dIdx < base.days) {
-          daysData[dIdx].push({
-            id: act.id,
-            time: act.time,
-            name: act.activity_name || '[Địa điểm tự do]',
-            cost: act.activity_cost,
-            carbon: act.carbon,
-            icon: act.icon,
-            type: act.type,
-            lat: act.coordinates ? parseFloat(act.coordinates.split(',')[0]) : null,
-            lng: act.coordinates ? parseFloat(act.coordinates.split(',')[1]) : null
-          });
-        }
-      });
-
-      result.push({
+    const result = customs
+      .filter(c => c.Schedule)
+      .map(c => ({
         id: c.id,
-        name: base.tour_name,
-        destination: base.destination || 'Việt Nam',
-        days: base.days,
+        name: c.Schedule.tour_name,
+        destination: c.Schedule.destination || 'Việt Nam',
+        days: c.Schedule.days,
         totalCost: c.total_cost,
-        totalCarbon: base.carbon,
-        daysData: daysData,
+        totalCarbon: c.Schedule.carbon,
+        daysData: formatActivitiesIntoDays(c.Schedule, c.Schedule.ScheduleActivities),
         status: c.status || 'draft',
         deposit_deadline: c.deposit_deadline || null,
         start_date: c.start_date || null,
         end_date: c.end_date || null,
         companion_email: c.companion_email || null
-      });
-    }
+      }));
 
     res.json(result);
   } catch (error) {
@@ -408,50 +386,28 @@ exports.getUserCustomItineraries = async (req, res, next) => {
   }
 };
 
-// 6. Get Single Custom Itinerary
+// 6. Get Single Custom Itinerary (Eager Loading — single query)
 exports.getCustomItineraryById = async (req, res, next) => {
   const { id } = req.params;
   try {
-    const c = await ScheduleCustom.findByPk(id);
-    if (!c) {
+    const c = await ScheduleCustom.findByPk(id, {
+      include: [{
+        model: Schedule,
+        include: [{ model: ScheduleActivity }]
+      }]
+    });
+    if (!c || !c.Schedule) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy lịch trình!' });
     }
-    const base = await Schedule.findByPk(id);
-    if (!base) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy lịch trình!' });
-    }
-
-    const activities = await ScheduleActivity.findAll({
-      where: { schedule_id: id },
-      order: [['day_number', 'ASC'], ['time', 'ASC']]
-    });
-
-    const daysData = Array.from({ length: base.days }, () => []);
-    activities.forEach(act => {
-      const dIdx = act.day_number - 1;
-      if (dIdx >= 0 && dIdx < base.days) {
-        daysData[dIdx].push({
-          id: act.id,
-          time: act.time,
-          name: act.activity_name || '[Địa điểm tự do]',
-          cost: act.activity_cost,
-          carbon: act.carbon,
-          icon: act.icon,
-          type: act.type,
-          lat: act.coordinates ? parseFloat(act.coordinates.split(',')[0]) : null,
-          lng: act.coordinates ? parseFloat(act.coordinates.split(',')[1]) : null
-        });
-      }
-    });
 
     res.json({
       id: c.id,
-      name: base.tour_name,
-      destination: base.destination || 'Việt Nam',
-      days: base.days,
+      name: c.Schedule.tour_name,
+      destination: c.Schedule.destination || 'Việt Nam',
+      days: c.Schedule.days,
       totalCost: c.total_cost,
-      totalCarbon: base.carbon,
-      daysData: daysData,
+      totalCarbon: c.Schedule.carbon,
+      daysData: formatActivitiesIntoDays(c.Schedule, c.Schedule.ScheduleActivities),
       status: c.status || 'draft',
       deposit_deadline: c.deposit_deadline || null,
       start_date: c.start_date || null,

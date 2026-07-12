@@ -15,8 +15,20 @@
             <button (click)="cancelLocatingActivity()" style="background: rgba(255,255,255,0.2); border: 1px solid white; border-radius: 4px; color: white; padding: 2px 8px; font-size: 11px; cursor: pointer; font-weight: 700;">Hủy</button>
         </div>
 
+        <!-- Floating Clear Search Pins Button -->
+        <div *ngIf="searchMarkers.length > 0"
+             [style.left.px]="sidebarWidth + 30"
+             [style.top.px]="locatingActivityIdx !== null ? 130 : 80"
+             style="position: absolute; z-index: 1000; width: 320px; display: flex; pointer-events: auto;">
+             <button (click)="clearSearchMarkers()" style="width: 100%; height: 36px; background-color: #EF4444; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(239,68,68,0.25);">
+                 <i class="bi bi-x-circle-fill"></i> Xóa kết quả tìm kiếm ({{ searchMarkers.length }} Pin)
+             </button>
+
+        </div>
+
         <div id="leafletMap" style="width:100%; height:100%;"></div>
     </div>
+
 
     <!-- 1. LEFT SIDEBAR: Professional Days & Navigation Panel -->
     <aside class="sidebar-panel" [style.width.px]="sidebarWidth" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 20px 0 20px 12px; overflow: visible !important;">
@@ -141,8 +153,8 @@
             <h3 id="activeDayTitle">{{ activeItinerary.days[activeDayIdx]?.title }}</h3>
             
             <div class="place-search-inline" style="position: relative;" *ngIf="!isItineraryLocked()">
-                <input type="text" [(ngModel)]="customPlaceTitle" (input)="onCustomPlaceTyping()" placeholder="Thêm địa điểm tùy chỉnh..." (keyup.enter)="addCustomPlaceToActiveDay()">
-                <button (click)="addCustomPlaceToActiveDay()"><i class="bi bi-plus-lg"></i> Thêm</button>
+                <input type="text" [(ngModel)]="customPlaceTitle" (input)="onCustomPlaceTyping()" placeholder="Thêm địa điểm tùy chỉnh..." (keyup.enter)="searchSidebarPlaceOnMap()">
+                <button (click)="searchSidebarPlaceOnMap()"><i class="bi bi-search"></i> Tìm</button>
                 
                 <!-- Autocomplete suggestions dropdown -->
                 <div class="autocomplete-dropdown" *ngIf="customSearchSuggestions.length > 0" 
@@ -150,12 +162,14 @@
                     <div *ngFor="let sug of customSearchSuggestions" 
                          (click)="selectSearchSuggestion(sug)"
                          style="padding: 8px 12px; font-size: 12px; cursor: pointer; color: var(--text-primary); border-bottom: 1px solid var(--border-color); font-weight: 600; display: flex; flex-direction: column; gap: 2px;">
-                        <span>{{ sug.name_service }}</span>
-                        <span style="font-size: 10px; color: var(--text-muted); font-weight: 400;">{{ sug.current_data?.category || 'Dịch vụ' }}</span>
+                        <span>{{ sug.title }}</span>
+                        <span style="font-size: 10px; color: var(--text-muted); font-weight: 400; text-transform: capitalize;">{{ sug.category || 'Địa điểm' }} {{ sug.isLocal ? '• Hệ thống' : '' }}</span>
                     </div>
                 </div>
+
             </div>
         </div>
+
 
         <!-- Timeline Activities List -->
         <div class="timeline-list-container" id="timelineList">
@@ -429,10 +443,22 @@
     </div>
 
     <!-- Loading State -->
-    <div class="flex flex-col items-center justify-center py-20" *ngIf="isLoadingList">
-        <div class="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full text-[#0E9F6E] mb-4" role="status" style="border-right-color: transparent;"></div>
-        <span class="text-sm font-semibold text-[#184A37]/70">Đang tải danh sách lịch trình...</span>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8" *ngIf="isLoadingList">
+        <div class="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm" *ngFor="let s of [1, 2, 3]">
+            <div class="skeleton" style="width: 100%; height: 176px; border-top-left-radius: 16px; border-top-right-radius: 16px;"></div>
+            <div style="padding: 20px;">
+                <div class="skeleton skeleton-title" style="width: 70%; height: 20px; margin-bottom: 8px;"></div>
+                <div class="skeleton skeleton-text" style="width: 40%; height: 12px; margin-bottom: 16px;"></div>
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <div class="skeleton" style="width: 70px; height: 22px; border-radius: 9999px;"></div>
+                    <div class="skeleton" style="width: 50px; height: 22px; border-radius: 9999px;"></div>
+                </div>
+                <div class="skeleton skeleton-text" style="width: 100%; height: 14px; margin-bottom: 8px;"></div>
+                <div class="skeleton skeleton-text" style="width: 90%; height: 14px;"></div>
+            </div>
+        </div>
     </div>
+
 
     <!-- Empty State -->
     <div class="bg-white/80 backdrop-blur-md rounded-3xl border border-[#184A37]/10 p-12 text-center shadow-sm" *ngIf="!isLoadingList && savedItineraries.length === 0">

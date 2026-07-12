@@ -255,9 +255,9 @@ export class ApiService {
   }
 
   // 4. Community APIs
-  public async getCommunityPosts(): Promise<CommunityPost[]> {
+  public async getCommunityPosts(page = 0, limit = 15): Promise<CommunityPost[]> {
     try {
-      return await firstValueFrom(this.http.get<CommunityPost[]>(`${this.BACKEND_URL}/community/posts`));
+      return await firstValueFrom(this.http.get<CommunityPost[]>(`${this.BACKEND_URL}/community/posts?page=${page}&limit=${limit}`));
     } catch (e) {
       return [];
     }
@@ -659,25 +659,16 @@ export class ApiService {
     }
   }
 
-  public async approveBooking(bookingId: string): Promise<boolean> {
-    try {
-      await firstValueFrom(
-        this.http.post(`${this.BACKEND_URL}/booking/${bookingId}/approve`, {}, { withCredentials: true })
-      );
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
+  // 15. SerpApi Google Maps Search
 
-  public async rejectBooking(bookingId: string): Promise<boolean> {
+  public async searchSerpPlaces(query: string, destination: string): Promise<any[]> {
     try {
-      await firstValueFrom(
-        this.http.post(`${this.BACKEND_URL}/booking/${bookingId}/reject`, {}, { withCredentials: true })
+      return await firstValueFrom(
+        this.http.get<any[]>(`${this.BACKEND_URL}/spots/search-serp?q=${encodeURIComponent(query)}&destination=${encodeURIComponent(destination)}`)
       );
-      return true;
     } catch (e) {
-      return false;
+      console.error('Failed to search spots via SerpApi:', e);
+      return [];
     }
   }
 }

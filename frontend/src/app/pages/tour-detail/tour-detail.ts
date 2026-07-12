@@ -17,7 +17,9 @@ export class TourDetailComponent implements OnInit {
   public activeTour: Tour | null = null;
   public slideImages: string[] = [];
   public activeSlideIndex: number = 0;
+  public isPageLoading: boolean = true;
   public isPhotoGalleryOpen: boolean = false;
+
   public galleryPhotoUrl: string = '';
   public activeDayIndex: number = 0;
   public activeInfoTab: 'overview' | 'included' | 'itinerary' | 'policy' | 'reviews' = 'overview';
@@ -74,9 +76,13 @@ export class TourDetailComponent implements OnInit {
       if (this.activeTour) {
         this.setupSlides();
       }
+      this.isPageLoading = false;
       this.cdr.detectChanges();
+    } else {
+      this.isPageLoading = false;
     }
   }
+
 
   private setupSlides() {
     if (!this.activeTour) return;

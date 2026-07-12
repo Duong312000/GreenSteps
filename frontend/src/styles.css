@@ -11386,3 +11386,44 @@ app-tour-detail .show-all-tile span {
         height: 62px;
     }
 }
+
+/* ==========================================================================
+   Skeleton Shimmer Animation & Utility Classes
+   ========================================================================== */
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite linear;
+  border-radius: 8px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-circle { border-radius: 50% !important; }
+.skeleton-text { height: 14px; margin-bottom: 8px; width: 100%; }
+.skeleton-title { height: 24px; margin-bottom: 12px; width: 60%; }
+.skeleton-rect { height: 100%; width: 100%; }
+.skeleton-button { height: 42px; width: 120px; border-radius: 9999px; }
+
+/* Pulse animation for active search pins */
+@keyframes pin-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+.map-leaflet-pin-red-pulse {
+  background-color: #EF4444 !important;
+  animation: pin-pulse 2s infinite !important;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+

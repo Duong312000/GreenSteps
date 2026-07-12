@@ -70,18 +70,40 @@
     <!-- TOURS GRID (Slide Page 4) -->
     <section class="tours-grid-section">
         <div class="tours-grid" id="toursGrid">
-            <!-- Special "Create New Itinerary" Card (Placed at the very first slot) -->
-            <div class="tour-card create-new-card" (click)="openCreateItineraryModal()">
-                <div class="create-new-dashed-box">
-                    <div class="plus-icon">+</div>
-                    <h3>Tạo Lịch Trình Mới</h3>
-                    <p>Bắt đầu hành trình trống của riêng bạn và để AI hỗ trợ sắp xếp địa điểm</p>
+            <!-- Skeleton cards when loading -->
+            <ng-container *ngIf="isPageLoading">
+              <div class="tour-card" style="padding: 0; background: white; border-radius: 12px;" *ngFor="let s of [1, 2, 3, 4, 5]">
+                <div class="skeleton" style="width: 100%; height: 180px; border-top-left-radius: 12px; border-top-right-radius: 12px;"></div>
+                <div style="padding: 16px;">
+                  <div class="skeleton skeleton-text" style="width: 40%; height: 12px; margin-bottom: 12px;"></div>
+                  <div class="skeleton skeleton-title" style="width: 85%; height: 18px; margin-bottom: 12px;"></div>
+                  <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <div class="skeleton" style="width: 60px; height: 20px; border-radius: 9999px;"></div>
+                    <div class="skeleton" style="width: 60px; height: 20px; border-radius: 9999px;"></div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="skeleton skeleton-text" style="width: 30%; height: 12px; margin-bottom: 0;"></div>
+                    <div class="skeleton skeleton-text" style="width: 25%; height: 12px; margin-bottom: 0;"></div>
+                  </div>
                 </div>
-            </div>
+              </div>
+            </ng-container>
 
-            <!-- Tour Cards rendered dynamically -->
-            <div class="tour-card" *ngFor="let tour of filteredTours" [routerLink]="['/tours', tour.id]" style="cursor: pointer;">
-                <div class="tour-img-container" style="position: relative;">
+            <!-- Real cards when not loading -->
+            <ng-container *ngIf="!isPageLoading">
+              <!-- Special "Create New Itinerary" Card (Placed at the very first slot) -->
+              <div class="tour-card create-new-card" (click)="openCreateItineraryModal()">
+                  <div class="create-new-dashed-box">
+                      <div class="plus-icon">+</div>
+                      <h3>Tạo Lịch Trình Mới</h3>
+                      <p>Bắt đầu hành trình trống của riêng bạn và để AI hỗ trợ sắp xếp địa điểm</p>
+                  </div>
+              </div>
+
+              <!-- Tour Cards rendered dynamically -->
+              <div class="tour-card" *ngFor="let tour of filteredTours" [routerLink]="['/tours', tour.id]" style="cursor: pointer;">
+                  <div class="tour-img-container" style="position: relative;">
+
                     <!-- Premium "Recommended" badge on the top-left of the image -->
                     <div *ngIf="tour.isRecommended" style="position: absolute; top: 12px; left: 12px; background: linear-gradient(135deg, #059669 0%, #10B981 100%); color: white; padding: 4px 10px; font-size: 0.65rem; font-weight: 700; border-radius: 4px; box-shadow: 0 4px 8px rgba(4,120,87,0.25); display: flex; align-items: center; gap: 4px; z-index: 10; text-transform: uppercase;">
                         <i class="bi bi-patch-check-fill"></i> Đề xuất cho bạn
@@ -104,9 +126,11 @@
                     </div>
                 </div>
             </div>
+          </ng-container>
         </div>
     </section>
 </main>
+
 
 <!-- CREATE ITINERARY MODAL -->
 <div class="modal-overlay" [class.active]="isCreateModalOpen">

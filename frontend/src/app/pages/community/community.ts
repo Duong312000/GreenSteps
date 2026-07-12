@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -16,6 +16,13 @@ export class CommunityComponent implements OnInit {
   public currentUser: User | null = null;
   public posts: CommunityPost[] = [];
 
+  // Pagination & Loading States
+  public page: number = 0;
+  public limit: number = 15;
+  public isPageLoading: boolean = true;
+  public isLoadingMore: boolean = false;
+  public hasMorePosts: boolean = true;
+
   // New post form bindings
   public postText: string = '';
   public postDest: string = 'Đà Lạt';
@@ -27,6 +34,7 @@ export class CommunityComponent implements OnInit {
   // Custom Share Itinerary variables
   public userItineraries: Itinerary[] = [];
   public selectedItineraryId: string = '';
+
 
   // Comments bindings
   public expandedComments: { [postId: string]: boolean } = {};
@@ -131,9 +139,48 @@ export class CommunityComponent implements OnInit {
   }
 
   private async loadPosts() {
-    this.posts = await this.apiService.getCommunityPosts();
+    this.isPageLoading = true;
+    this.page = 0;
+    this.hasMorePosts = true;
+    this.posts = await this.apiService.getCommunityPosts(this.page, this.limit);
+    if (this.posts.length < this.limit) {
+      this.hasMorePosts = false;
+    }
+    this.isPageLoading = false;
     this.cdr.detectChanges();
   }
+
+  public async loadMorePosts() {
+    if (this.isLoadingMore || !this.hasMorePosts) return;
+    this.isLoadingMore = true;
+    this.page++;
+    this.cdr.detectChanges();
+
+    try {
+      const nextPosts = await this.apiService.getCommunityPosts(this.page, this.limit);
+      if (nextPosts.length < this.limit) {
+        this.hasMorePosts = false;
+      }
+      this.posts = [...this.posts, ...nextPosts];
+    } catch (e) {
+      console.error('Error loading more posts:', e);
+    } finally {
+      this.isLoadingMore = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll() {
+
+    const pos = (document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.clientHeight;
+    const max = document.documentElement.scrollHeight;
+    // Load more when scrolled to 85% of the page
+    if (pos >= max * 0.85) {
+      this.loadMorePosts();
+    }
+  }
+
 
   public async loadUserItineraries(userId: string) {
     try {

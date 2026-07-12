@@ -62,7 +62,9 @@ export class BookingComponent implements OnInit {
   public alertActionUrl = '';
 
   // VietQR & Loading properties
+  public isPageLoading = true;
   public isBookingLoading = false;
+
   public isQrModalOpen = false;
   public qrCodeUrl = '';
   public qrAmount = 0;
@@ -163,7 +165,9 @@ export class BookingComponent implements OnInit {
       const draft = localStorage.getItem('greensteps_booking_draft');
       if (draft) this.restoreDraft(JSON.parse(draft));
     }
+    this.isPageLoading = false;
   }
+
 
   public openAuth() {
     this.loginModalService.open();

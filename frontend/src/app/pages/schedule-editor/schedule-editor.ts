@@ -73,6 +73,9 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public locatingActivityIdx: number | null = null;
   public customSearchSuggestions: any[] = [];
   public isAutoSaving: boolean = false;
+  public searchMarkers: any[] = [];
+  private typingTimeout: any = null;
+
 
   // Checkout modal properties
   public isCheckoutModalOpen: boolean = false;
@@ -230,11 +233,13 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngOnDestroy() {
+    this.clearSearchMarkers();
     if (this.map) {
       this.map.remove();
       this.map = null;
     }
   }
+
 
   public async loadSavedItinerariesList() {
     this.isLoadingList = true;
@@ -992,21 +997,107 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   public onCustomPlaceTyping() {
-    const val = this.customPlaceTitle.trim().toLowerCase();
-    if (!val) {
+    const val = this.customPlaceTitle.trim();
+    if (!val || !this.activeItinerary) {
       this.customSearchSuggestions = [];
       return;
     }
-    this.customSearchSuggestions = this.localServices.filter(s => 
-      (s.name || s.name_service || '').toLowerCase().includes(val)
-    ).slice(0, 5);
+
+    // Filter local services instantly
+    const localMatches = this.localServices.filter(s => 
+      (s.name || s.name_service || '').toLowerCase().includes(val.toLowerCase())
+    ).slice(0, 3).map(s => ({
+      name: s.name || s.name_service,
+      name_service: s.name || s.name_service,
+      title: s.name || s.name_service,
+      category: s.type || 'explore',
+      lat: s.lat || (s.current_data && s.current_data.lat) || null,
+      lng: s.lng || (s.current_data && s.current_data.lng) || null,
+      isLocal: true,
+      address: s.address || ''
+    }));
+
+    this.customSearchSuggestions = localMatches;
+
+    // Debounce Nominatim API call for external suggestions
+    if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    this.typingTimeout = setTimeout(async () => {
+      try {
+        const destSlug = this.mapDestToSlug(this.activeItinerary.destination);
+        const destLabel = this.mapSlugToDestLabel(destSlug);
+        const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(val + ', ' + destLabel)}`;
+        const res = await fetch(url, { headers: { 'User-Agent': 'GreenSteps/1.0' } });
+        const data = await res.json();
+        
+        const osmMatches = (data || []).map((r: any) => {
+          let placeType = "explore";
+          if (r.type === "cafe" || r.type === "restaurant" || r.class === "amenity") {
+            placeType = "dining";
+          } else if (r.type === "hotel" || r.class === "tourism") {
+            placeType = "lodging";
+          }
+          return {
+            name: r.display_name ? r.display_name.split(',')[0] : val,
+            name_service: r.display_name ? r.display_name.split(',')[0] : val,
+            title: r.display_name ? r.display_name.split(',')[0] : val,
+            category: placeType,
+            lat: parseFloat(r.lat) || null,
+            lng: parseFloat(r.lon) || null,
+            address: r.display_name || '',
+            isLocal: false
+          };
+        });
+
+        // Combine local and external matches, filtering duplicates
+        const combined = [...localMatches];
+        osmMatches.forEach((osm: any) => {
+          if (!combined.some(c => c.title.toLowerCase() === osm.title.toLowerCase())) {
+            combined.push(osm);
+          }
+        });
+        
+        this.customSearchSuggestions = combined.slice(0, 6);
+        this.cdr.detectChanges();
+      } catch (e) {
+        console.warn('Autocomplete suggest error:', e);
+      }
+    }, 500);
   }
 
   public selectSearchSuggestion(sug: any) {
-    this.customPlaceTitle = sug.name || sug.name_service;
+    this.customPlaceTitle = sug.title || sug.name || sug.name_service;
     this.customSearchSuggestions = [];
-    this.addCustomPlaceToActiveDay();
+    
+    // Add directly to active day
+    const time = this.getNextSuggestedTime();
+    const type = sug.category || 'explore';
+    let cost = type === "dining" ? 80000 : (type === "lodging" ? 500000 : 30000);
+    let carbon = type === "dining" ? 2 : 4;
+    
+    const activeDay = this.activeItinerary.days[this.activeDayIdx];
+    if (!activeDay.activities) activeDay.activities = [];
+    activeDay.activities.push({
+      id: 'act_' + Date.now() + '_' + Math.random().toString(36).substring(2,7),
+      time: time,
+      name: this.customPlaceTitle,
+      cost: cost,
+      carbon: carbon,
+      icon: type === 'lodging' ? 'bi-house-door-fill' : (type === 'dining' ? 'bi-cup-hot-fill' : 'bi-tree-fill'),
+      type: type,
+      lat: sug.lat,
+      lng: sug.lng
+    });
+    
+    this.customPlaceTitle = '';
+    this.plotMapMarkers();
+    this.saveItineraryToDb();
+    
+    if (sug.lat && sug.lng && this.map) {
+      this.map.panTo([sug.lat, sug.lng]);
+      this.map.setZoom(15);
+    }
   }
+
 
   public async addCustomPlaceToActiveDay() {
     const val = this.customPlaceTitle.trim();
@@ -1556,67 +1647,157 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  // OpenStreetMap Nominatim Search
+  // SerpApi Google Maps Search & Interaction
   public async searchPlaceOnMap() {
     const query = this.mapSearchQuery.trim();
     if (!query || !this.activeItinerary) return;
 
-    const destSlug = this.mapDestToSlug(this.activeItinerary.destination);
-    const destLabel = this.mapSlugToDestLabel(destSlug);
-    const fullQuery = `${query}, ${destLabel}`;
+    // Sync search queries
+    this.customPlaceTitle = query;
+    this.customSearchSuggestions = [];
+
+    this.isAutoSaving = true; // show a small loader indicator
+    this.cdr.detectChanges();
 
     try {
-      const fetchPromise = fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(fullQuery)}`);
-      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1500));
-      
-      const res = await Promise.race([fetchPromise, timeoutPromise]) as Response;
-      const data = await res.json();
-      if (data && data.length > 0) {
-        const first = data[0];
-        const lat = parseFloat(first.lat);
-        const lng = parseFloat(first.lon);
-        
-        let placeType = "attraction";
-        if (first.type === "cafe" || first.type === "restaurant" || first.class === "amenity") {
-          placeType = "dining";
-        } else if (first.type === "hotel" || first.class === "tourism") {
-          placeType = "lodging";
-        }
+      const results = await this.apiService.searchSerpPlaces(query, this.activeItinerary.destination);
+      this.isAutoSaving = false;
+      this.cdr.detectChanges();
 
-        if (this.map) {
-          this.map.panTo([lat, lng]);
-          this.map.setZoom(15);
-        }
-
-        // Add temporary pin representing search result (Red Search Pin)
-        const tempMarker = L.marker([lat, lng], {
-          icon: L.divIcon({
-            html: `<div class="map-leaflet-rec-pin" style="background-color: #EF4444; border: 2px solid #FFFFFF; color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);"><i class="bi bi-search" style="font-size: 11px;"></i></div>`,
-            className: 'custom-div-icon-temp',
-            iconSize: [26, 26],
-            iconAnchor: [13, 13]
-          })
-        }).addTo(this.map);
-
-        this.leafletMarkers.push(tempMarker);
-
-        this.selectedPlaceDetails = {
-          title: first.name || query,
-          type: placeType,
-          cost: placeType === "dining" ? 80000 : (placeType === "lodging" ? 500000 : 30000),
-          carbon: placeType === "dining" ? 2 : 4,
-          lat: lat,
-          lng: lng,
-          isActivity: false
-        };
-        this.cdr.detectChanges();
+      if (results && results.length > 0) {
+        this.renderSearchPins(results);
       } else {
-        this.showAlert('Không tìm thấy địa điểm này ở ' + destLabel, 'warning');
+        this.showAlert('Không tìm thấy địa điểm này ở ' + this.activeItinerary.destination, 'warning');
       }
     } catch (e) {
+      this.isAutoSaving = false;
+      this.cdr.detectChanges();
       console.error('Search error:', e);
     }
   }
+
+  public async searchSidebarPlaceOnMap() {
+    const query = this.customPlaceTitle.trim();
+    if (!query || !this.activeItinerary) return;
+
+    // Sync search queries
+    this.mapSearchQuery = query;
+    this.customSearchSuggestions = [];
+
+    this.isAutoSaving = true;
+    this.cdr.detectChanges();
+
+    try {
+      const results = await this.apiService.searchSerpPlaces(query, this.activeItinerary.destination);
+      this.isAutoSaving = false;
+      this.cdr.detectChanges();
+
+      if (results && results.length > 0) {
+        this.renderSearchPins(results);
+      } else {
+        this.showAlert('Không tìm thấy địa điểm này ở ' + this.activeItinerary.destination, 'warning');
+      }
+    } catch (e) {
+      this.isAutoSaving = false;
+      this.cdr.detectChanges();
+      console.error('Sidebar search error:', e);
+    }
+  }
+
+  public renderSearchPins(results: any[]) {
+    // Clear old search markers
+    this.clearSearchMarkers();
+
+    const bounds = L.latLngBounds([]);
+
+    results.forEach((item, idx) => {
+      if (!item.lat || !item.lng) return;
+
+      const lat = item.lat;
+      const lng = item.lng;
+      bounds.extend([lat, lng]);
+
+      // Create red search pin with pulse animation
+      const marker = L.marker([lat, lng], {
+        icon: L.divIcon({
+          html: `<div class="map-leaflet-rec-pin map-leaflet-pin-red-pulse" style="background-color: #EF4444; border: 2px solid #FFFFFF; color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);"><span style="font-size: 11px; font-weight: bold;">${idx + 1}</span></div>`,
+          className: 'custom-div-icon-search-pin',
+          iconSize: [26, 26],
+          iconAnchor: [13, 13]
+        })
+      }).addTo(this.map);
+
+      // Create popup content
+      const popupContent = `
+        <div style="font-family: var(--font-main); width: 220px; font-size: 13px; line-height: 1.4;">
+          ${item.thumbnail ? `<img src="${item.thumbnail}" style="width:100%; height:110px; object-fit:cover; border-radius:8px; margin-bottom:8px;">` : ''}
+          <h4 style="font-weight:700; margin:0 0 4px 0; color:var(--text-primary); font-size:14px;">${item.title}</h4>
+          ${item.rating ? `
+            <div style="color:#f59e0b; font-weight:600; margin-bottom:4px; display:flex; align-items:center; gap:4px;">
+              <i class="bi bi-star-fill" style="color: #F59E0B;"></i> ${item.rating} <span>(${item.reviews || 0} đánh giá)</span>
+            </div>
+          ` : ''}
+          <p style="margin:0 0 8px 0; color:#3D5A46; font-size:11px;">${item.address || ''}</p>
+          ${item.hours ? `<p style="margin:0 0 8px 0; color:#047857; font-weight:600; font-size:11px;">${item.hours}</p>` : ''}
+          <button id="add-search-pin-${idx}" style="width:100%; height:32px; background:#047857; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px; transition: background 0.2s;">Thêm vào lịch trình</button>
+        </div>
+      `;
+
+      marker.bindPopup(popupContent);
+      
+      marker.on('popupopen', () => {
+        const btn = document.getElementById(`add-search-pin-${idx}`);
+        if (btn) {
+          btn.onclick = (e) => {
+            e.preventDefault();
+            this.addSearpedPlaceToItinerary(item);
+            marker.closePopup();
+          };
+        }
+      });
+
+      this.searchMarkers.push(marker);
+    });
+
+    if (this.map && bounds.isValid()) {
+      this.map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }
+
+  public addSearpedPlaceToItinerary(item: any) {
+    if (!this.activeItinerary) return;
+    const time = this.getNextSuggestedTime();
+    const type = item.category || 'explore';
+    let cost = type === "dining" ? 80000 : (type === "lodging" ? 500000 : 30000);
+    let carbon = type === "dining" ? 2 : 4;
+    
+    const activeDay = this.activeItinerary.days[this.activeDayIdx];
+    if (!activeDay.activities) activeDay.activities = [];
+    activeDay.activities.push({
+      id: 'act_' + Date.now() + '_' + Math.random().toString(36).substring(2,7),
+      time: time,
+      name: item.title,
+      cost: cost,
+      carbon: carbon,
+      icon: type === 'lodging' ? 'bi-house-door-fill' : (type === 'dining' ? 'bi-cup-hot-fill' : 'bi-tree-fill'),
+      type: type,
+      lat: item.lat,
+      lng: item.lng
+    });
+    
+    this.plotMapMarkers();
+    this.saveItineraryToDb();
+    
+    // Show toast-like feedback
+    this.showAlert('Đã thêm "' + item.title + '" vào lịch trình ngày ' + (this.activeDayIdx + 1), 'success');
+  }
+
+  public clearSearchMarkers() {
+    this.searchMarkers.forEach(m => this.map.removeLayer(m));
+    this.searchMarkers = [];
+    this.cdr.detectChanges();
+  }
+
 
   public getBucketListCount(): number {
     let total = 0;
@@ -1929,10 +2110,10 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       this.isActivatingWallet = false;
       if (res.success) {
         this.showAlert(
-          'Đã gửi yêu cầu',
           'Yêu cầu kích hoạt ví GreenSteps của bạn đã được gửi thành công! Quà tặng 200.000đ sẽ được cộng khi Admin phê duyệt.',
           'info'
         );
+
       } else {
         this.showAlert('Gửi yêu cầu thất bại: ' + res.message, 'error');
       }

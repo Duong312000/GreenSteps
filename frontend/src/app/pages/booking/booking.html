@@ -7,10 +7,41 @@
     <div class="progress-step" [class.active]="isPaymentStep || isCompleteStep"><span>3</span><p>Thanh toán</p></div>
   </section>
 
-  <section class="booking-shell" *ngIf="!isPaymentStep && !isCompleteStep">
-    <aside class="summary-column">
-      <ng-container *ngTemplateOutlet="summaryCards"></ng-container>
-    </aside>
+  <!-- Skeleton Loading State -->
+  <div *ngIf="isPageLoading" style="display: flex; gap: 24px; padding: 24px; max-width: 1200px; margin: 0 auto; width: 100%;">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 24px;">
+      <!-- Summary Card Skeleton -->
+      <div style="background: white; border-radius: 16px; padding: 20px; border: 1px solid #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div class="skeleton" style="width: 100%; height: 180px; border-radius: 12px; margin-bottom: 16px;"></div>
+        <div class="skeleton skeleton-title" style="width: 70%; height: 20px; margin-bottom: 12px;"></div>
+        <div class="skeleton skeleton-text" style="width: 40%; height: 12px; margin-bottom: 8px;"></div>
+        <div class="skeleton skeleton-text" style="width: 90%; height: 12px; margin-bottom: 16px;"></div>
+      </div>
+    </div>
+    <div style="flex: 2; display: flex; flex-direction: column; gap: 24px;">
+      <div style="background: white; border-radius: 16px; padding: 24px; border: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div class="skeleton skeleton-title" style="width: 45%; height: 24px; margin-bottom: 12px;"></div>
+        <div class="skeleton skeleton-text" style="width: 95%; height: 12px; margin-bottom: 16px;"></div>
+        <div style="display: flex; gap: 16px;">
+          <div class="skeleton" style="flex: 1; height: 46px; border-radius: 8px;"></div>
+          <div class="skeleton" style="flex: 1; height: 46px; border-radius: 8px;"></div>
+        </div>
+        <div style="display: flex; gap: 16px; margin-top: 8px;">
+          <div class="skeleton" style="flex: 1; height: 46px; border-radius: 8px;"></div>
+          <div class="skeleton" style="flex: 1; height: 46px; border-radius: 8px;"></div>
+        </div>
+        <div class="skeleton" style="width: 100%; height: 80px; border-radius: 8px; margin-top: 12px;"></div>
+        <div class="skeleton skeleton-button" style="align-self: flex-end; width: 160px; height: 46px; margin-top: 16px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isPageLoading">
+    <section class="booking-shell" *ngIf="!isPaymentStep && !isCompleteStep">
+      <aside class="summary-column">
+        <ng-container *ngTemplateOutlet="summaryCards"></ng-container>
+      </aside>
+
 
     <section class="form-column">
       <div class="notice-card" *ngIf="!currentUser">
@@ -369,6 +400,8 @@
       <p>Sau thời gian này, tiền cọc có thể không được hoàn lại.</p>
     </article>
   </ng-template>
+
+  </div>
 
   <div class="booking-toast" *ngIf="toastMessage">{{ toastMessage }}</div>
 

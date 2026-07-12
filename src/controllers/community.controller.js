@@ -2,9 +2,13 @@ const { User, CommunityPost, CommentPost, Notification } = require('../models/in
 
 exports.getPosts = async (req, res, next) => {
   try {
+    const page = parseInt(req.query.page) || 0;
+    const limit = parseInt(req.query.limit) || 15;
     const posts = await CommunityPost.findAll({
       include: [{ model: User, required: false }],
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
+      limit: limit,
+      offset: page * limit
     });
 
     const formatted = posts.map(row => {

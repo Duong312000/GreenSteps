@@ -18,6 +18,8 @@ export class ToursComponent implements OnInit {
   public toursData: Tour[] = [];
   public filteredTours: Tour[] = [];
   public recommendedTours: Tour[] = [];
+  public isPageLoading: boolean = true;
+
 
   private modalMap: any = null;
   private modalMarkers: { [key: string]: any } = {};
@@ -51,7 +53,9 @@ export class ToursComponent implements OnInit {
     const allTours = await this.apiService.getPresetTours() || [];
     this.toursData = allTours;
     this.filteredTours = [...this.toursData];
+    this.isPageLoading = false;
     this.cdr.detectChanges();
+
 
     // 2. Read query params and perform initial filtering
     this.route.queryParams.subscribe(params => {
