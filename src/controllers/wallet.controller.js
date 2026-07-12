@@ -55,14 +55,8 @@ exports.activateWallet = async (req, res, next) => {
 
   try {
     const user = await User.findByPk(userId);
-    const userDisplay = user ? user.fullname : `Khách hàng #${userId}`;
-
-    // Prompt terminal for approval!
-    const msg = `Du khách #${userId} (${userDisplay}) yêu cầu KÍCH HOẠT VÍ MỚI & NHẬN QUÀ TẶNG: 200.000 đ`;
-    const approved = await promptTerminalApproval(msg);
-
-    if (!approved) {
-      return res.status(400).json({ success: false, message: 'Yêu cầu kích hoạt ví bị từ chối bởi Quản trị viên.' });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Người dùng không tồn tại!' });
     }
 
     const t = await sequelize.transaction();
@@ -70,52 +64,55 @@ exports.activateWallet = async (req, res, next) => {
       let wallet = await Wallet.findOne({ where: { user_id: userId }, transaction: t });
       
       if (!wallet) {
-        // Create wallet if it doesn't exist in the DB yet!
         wallet = await Wallet.create({
           id: 'EW' + Math.floor(10000000 + Math.random() * 90000000),
           user_id: userId,
-          balance: 200000.00,
-          registered: true,
+          balance: 0.0,
+          registered: false,
           green_points: 0
         }, { transaction: t });
-
-        await WalletTransaction.create({
-          id: 'GD-' + Date.now(),
-          wallet_id: wallet.id,
-          type: 'deposit',
-          description: 'Quà tặng chào mừng kích hoạt ví GreenSteps',
-          amount: 200000.00,
-          status: 'success'
-        }, { transaction: t });
-      } else {
-        if (wallet.registered) {
-          await t.rollback();
-          return res.status(400).json({ success: false, message: 'Ví của bạn đã được kích hoạt từ trước!' });
-        }
-
-        wallet.registered = true;
-        wallet.balance += 200000.00; // Gift 200,000 VND upon activation
-        await wallet.save({ transaction: t });
-
-        await WalletTransaction.create({
-          id: 'GD-' + Date.now(),
-          wallet_id: wallet.id,
-          type: 'deposit',
-          description: 'Quà tặng chào mừng kích hoạt ví GreenSteps',
-          amount: 200000.00,
-          status: 'success'
-        }, { transaction: t });
       }
+
+      if (wallet.registered) {
+        await t.rollback();
+        return res.status(400).json({ success: false, message: 'Ví của bạn đã được kích hoạt từ trước!' });
+      }
+
+      // Check if a pending activation transaction already exists
+      const existingPending = await WalletTransaction.findOne({
+        where: {
+          wallet_id: wallet.id,
+          type: 'deposit',
+          description: 'Yêu cầu kích hoạt ví GreenSteps',
+          status: 'pending'
+        },
+        transaction: t
+      });
+
+      if (existingPending) {
+        await t.rollback();
+        return res.json({ success: true, message: 'Yêu cầu kích hoạt ví của bạn đang chờ quản trị viên duyệt!', pending: true });
+      }
+
+      // Create pending activation transaction
+      await WalletTransaction.create({
+        id: 'GD-' + Date.now(),
+        wallet_id: wallet.id,
+        type: 'deposit',
+        description: 'Yêu cầu kích hoạt ví GreenSteps',
+        amount: 200000.00,
+        status: 'pending'
+      }, { transaction: t });
 
       await t.commit();
       res.json({
         success: true,
-        message: 'Kích hoạt ví GreenSteps thành công! Bạn nhận được quà tặng chào mừng 200.000đ.',
-        balance: wallet.balance
+        message: 'Đã gửi yêu cầu kích hoạt ví GreenSteps. Vui lòng chờ quản trị viên duyệt!',
+        pending: true
       });
-    } catch (innerErr) {
+    } catch (err) {
       await t.rollback();
-      throw innerErr;
+      throw err;
     }
   } catch (error) {
     next(error);
@@ -354,13 +351,6 @@ exports.payItinerary = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Số dư ví không đủ để thanh toán lịch trình!' });
     }
 
-    const msg = `Người dùng #${userId} yêu cầu THANH TOÁN GỘP LỊCH TRÌNH #${itineraryId} - SỐ TIỀN: ${amount.toLocaleString('vi-VN')} đ`;
-    const approved = await promptTerminalApproval(msg);
-
-    if (!approved) {
-      return res.status(400).json({ success: false, message: 'Giao dịch thanh toán bị Admin từ chối ở Terminal!' });
-    }
-
     const t = await sequelize.transaction();
     try {
       const lockedWallet = await Wallet.findOne({
@@ -382,7 +372,7 @@ exports.payItinerary = async (req, res, next) => {
         id: txId,
         wallet_id: lockedWallet.id,
         type: 'payment',
-        description: `Thanh toán gộp lịch trình #${itineraryId}`,
+        description: `Thanh toán cọc ví cho lịch trình #${itineraryId}`,
         amount: -parseFloat(amount),
         status: 'success',
         reference_id: itineraryId
@@ -408,17 +398,6 @@ exports.payItineraryQr = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Ví không tồn tại!' });
     }
 
-    if (!wallet.registered) {
-      return res.status(400).json({ success: false, message: 'Ví của bạn chưa được kích hoạt. Vui lòng kích hoạt ví trước khi sử dụng tính năng này!' });
-    }
-
-    const msg = `Người dùng #${userId} THANH TOÁN QR TRỰC TIẾP lịch trình #${itineraryId} - SỐ TIỀN: ${amount.toLocaleString('vi-VN')} đ`;
-    const approved = await promptTerminalApproval(msg);
-
-    if (!approved) {
-      return res.status(400).json({ success: false, message: 'Giao dịch bị từ chối!' });
-    }
-
     const t = await sequelize.transaction();
     try {
       const txId = 'GD-' + Date.now();
@@ -426,14 +405,14 @@ exports.payItineraryQr = async (req, res, next) => {
         id: txId,
         wallet_id: wallet.id,
         type: 'payment',
-        description: `Thanh toán QR trực tiếp lịch trình #${itineraryId}`,
+        description: `Thanh toán cọc QR trực tiếp cho lịch trình #${itineraryId}`,
         amount: -parseFloat(amount),
-        status: 'success',
+        status: 'pending', // Pending admin approval
         reference_id: itineraryId
       }, { transaction: t });
 
       await t.commit();
-      res.json({ success: true, balance: parseFloat(wallet.balance), message: `Thanh toán thành công ${amount.toLocaleString('vi-VN')}đ` });
+      res.json({ success: true, balance: parseFloat(wallet.balance), message: `Đang chờ quản trị viên xác nhận giao dịch chuyển khoản ${amount.toLocaleString('vi-VN')}đ` });
     } catch (txErr) {
       await t.rollback();
       throw txErr;
@@ -532,6 +511,88 @@ exports.rejectWithdrawal = async (req, res, next) => {
     await withdrawal.save();
 
     res.json({ success: true, message: 'Đã từ chối yêu cầu rút tiền!' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.listPendingWallets = async (req, res, next) => {
+  try {
+    const pendingTxs = await WalletTransaction.findAll({
+      where: {
+        type: 'deposit',
+        description: 'Yêu cầu kích hoạt ví GreenSteps',
+        status: 'pending'
+      },
+      include: [{
+        model: Wallet,
+        include: [User]
+      }],
+      order: [['createdAt', 'ASC']]
+    });
+    res.json(pendingTxs);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.approveWalletActivation = async (req, res, next) => {
+  const { txId } = req.params;
+
+  try {
+    const tx = await WalletTransaction.findByPk(txId, {
+      include: [Wallet]
+    });
+
+    if (!tx || tx.status !== 'pending' || tx.description !== 'Yêu cầu kích hoạt ví GreenSteps') {
+      return res.status(404).json({ success: false, message: 'Yêu cầu kích hoạt ví không tồn tại hoặc đã được xử lý!' });
+    }
+
+    const t = await sequelize.transaction();
+    try {
+      const wallet = await Wallet.findOne({
+        where: { id: tx.wallet_id },
+        transaction: t,
+        lock: t.LOCK.UPDATE
+      });
+
+      if (!wallet) {
+        await t.rollback();
+        return res.status(404).json({ success: false, message: 'Ví không tồn tại!' });
+      }
+
+      wallet.registered = true;
+      wallet.balance += parseFloat(tx.amount || 200000.00); // 200k welcome gift
+      await wallet.save({ transaction: t });
+
+      tx.status = 'success';
+      tx.description = 'Quà tặng chào mừng kích hoạt ví GreenSteps'; // Update description
+      await tx.save({ transaction: t });
+
+      await t.commit();
+      res.json({ success: true, message: 'Duyệt kích hoạt ví thành công!' });
+    } catch (err) {
+      await t.rollback();
+      throw err;
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.rejectWalletActivation = async (req, res, next) => {
+  const { txId } = req.params;
+
+  try {
+    const tx = await WalletTransaction.findByPk(txId);
+    if (!tx || tx.status !== 'pending' || tx.description !== 'Yêu cầu kích hoạt ví GreenSteps') {
+      return res.status(404).json({ success: false, message: 'Yêu cầu kích hoạt ví không tồn tại hoặc đã được xử lý!' });
+    }
+
+    tx.status = 'failed';
+    await tx.save();
+
+    res.json({ success: true, message: 'Đã từ chối kích hoạt ví!' });
   } catch (error) {
     next(error);
   }

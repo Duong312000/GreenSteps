@@ -336,12 +336,12 @@ export class ApiService {
     }
   }
 
-  public async createBooking(bookingData: any): Promise<boolean> {
+  public async createBooking(bookingData: any): Promise<{ success: boolean; bookingId?: string; message?: string }> {
     try {
-      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/bookings`, bookingData));
-      return true;
-    } catch (e) {
-      return false;
+      const res = await firstValueFrom(this.http.post<any>(`${this.BACKEND_URL}/bookings`, bookingData));
+      return { success: true, bookingId: res.bookingId, message: res.message };
+    } catch (e: any) {
+      return { success: false, message: e?.error?.message || 'Có lỗi xảy ra khi tạo đặt chỗ.' };
     }
   }
 
@@ -611,6 +611,70 @@ export class ApiService {
   public async rejectWithdrawal(id: string): Promise<boolean> {
     try {
       await firstValueFrom(this.http.post(`${this.BACKEND_URL}/wallet/withdrawals/${id}/reject`, {}, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async getPendingWallets(): Promise<any[]> {
+    try {
+      return await firstValueFrom(
+        this.http.get<any[]>(`${this.BACKEND_URL}/wallet/pending-activations`, { withCredentials: true })
+      );
+    } catch (e) {
+      return [];
+    }
+  }
+
+  public async approveWallet(txId: string): Promise<boolean> {
+    try {
+      await firstValueFrom(
+        this.http.post(`${this.BACKEND_URL}/wallet/pending-activations/${txId}/approve`, {}, { withCredentials: true })
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async rejectWallet(txId: string): Promise<boolean> {
+    try {
+      await firstValueFrom(
+        this.http.post(`${this.BACKEND_URL}/wallet/pending-activations/${txId}/reject`, {}, { withCredentials: true })
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async getPendingBookings(): Promise<any[]> {
+    try {
+      return await firstValueFrom(
+        this.http.get<any[]>(`${this.BACKEND_URL}/booking/pending`, { withCredentials: true })
+      );
+    } catch (e) {
+      return [];
+    }
+  }
+
+  public async approveBooking(bookingId: string): Promise<boolean> {
+    try {
+      await firstValueFrom(
+        this.http.post(`${this.BACKEND_URL}/booking/${bookingId}/approve`, {}, { withCredentials: true })
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async rejectBooking(bookingId: string): Promise<boolean> {
+    try {
+      await firstValueFrom(
+        this.http.post(`${this.BACKEND_URL}/booking/${bookingId}/reject`, {}, { withCredentials: true })
+      );
       return true;
     } catch (e) {
       return false;

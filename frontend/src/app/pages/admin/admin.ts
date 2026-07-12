@@ -11,10 +11,12 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './admin.html',
 })
 export class AdminComponent implements OnInit {
-  public activeTab: 'providers' | 'deposits' | 'withdrawals' = 'providers';
+  public activeTab: 'providers' | 'deposits' | 'withdrawals' | 'wallets' | 'bookings' = 'providers';
   public pendingProviders: any[] = [];
   public pendingDeposits: any[] = [];
   public pendingWithdrawals: any[] = [];
+  public pendingWallets: any[] = [];
+  public pendingBookings: any[] = [];
 
   constructor(
     private apiService: ApiService,
@@ -34,7 +36,7 @@ export class AdminComponent implements OnInit {
     await this.loadAllData();
   }
 
-  public setActiveTab(tab: 'providers' | 'deposits' | 'withdrawals') {
+  public setActiveTab(tab: 'providers' | 'deposits' | 'withdrawals' | 'wallets' | 'bookings') {
     this.activeTab = tab;
     this.cdr.detectChanges();
   }
@@ -43,7 +45,9 @@ export class AdminComponent implements OnInit {
     await Promise.all([
       this.loadProviders(),
       this.loadDeposits(),
-      this.loadWithdrawals()
+      this.loadWithdrawals(),
+      this.loadWallets(),
+      this.loadBookings()
     ]);
   }
 
@@ -59,6 +63,16 @@ export class AdminComponent implements OnInit {
 
   public async loadWithdrawals() {
     this.pendingWithdrawals = await this.apiService.getPendingWithdrawals();
+    this.cdr.detectChanges();
+  }
+
+  public async loadWallets() {
+    this.pendingWallets = await this.apiService.getPendingWallets();
+    this.cdr.detectChanges();
+  }
+
+  public async loadBookings() {
+    this.pendingBookings = await this.apiService.getPendingBookings();
     this.cdr.detectChanges();
   }
 
@@ -118,6 +132,54 @@ export class AdminComponent implements OnInit {
       if (success) {
         alert('Đã từ chối giao dịch rút tiền ví!');
         await this.loadWithdrawals();
+      } else {
+        alert('Thao tác thất bại!');
+      }
+    }
+  }
+
+  public async approveWallet(txId: string) {
+    if (confirm('Phê duyệt kích hoạt ví GreenSteps cho khách hàng này và tặng 200k?')) {
+      const success = await this.apiService.approveWallet(txId);
+      if (success) {
+        alert('Kích hoạt ví và cộng quà thưởng thành công!');
+        await this.loadWallets();
+      } else {
+        alert('Duyệt ví thất bại!');
+      }
+    }
+  }
+
+  public async rejectWallet(txId: string) {
+    if (confirm('Từ chối yêu cầu kích hoạt ví này?')) {
+      const success = await this.apiService.rejectWallet(txId);
+      if (success) {
+        alert('Đã từ chối yêu cầu kích hoạt ví!');
+        await this.loadWallets();
+      } else {
+        alert('Thao tác thất bại!');
+      }
+    }
+  }
+
+  public async approveBooking(bookingId: string) {
+    if (confirm('Phê duyệt và xác nhận thanh toán/giữ chỗ cho đơn hàng này?')) {
+      const success = await this.apiService.approveBooking(bookingId);
+      if (success) {
+        alert('Phê duyệt đơn hàng thành công!');
+        await this.loadBookings();
+      } else {
+        alert('Phê duyệt thất bại!');
+      }
+    }
+  }
+
+  public async rejectBooking(bookingId: string) {
+    if (confirm('Từ chối đơn hàng này?')) {
+      const success = await this.apiService.rejectBooking(bookingId);
+      if (success) {
+        alert('Đã từ chối đơn đặt chỗ!');
+        await this.loadBookings();
       } else {
         alert('Thao tác thất bại!');
       }

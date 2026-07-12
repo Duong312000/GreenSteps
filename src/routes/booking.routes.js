@@ -7,6 +7,7 @@ router.post('/', softAuth, bookingController.createBooking);
 router.post('/checkin', softAuth, bookingController.checkInEVoucher);
 router.post('/cancel', softAuth, bookingController.cancelBooking);
 router.get('/', softAuth, bookingController.getBookings);
+router.get('/pending', softAuth, bookingController.getPendingBookings);
 router.post('/:id/approve', softAuth, bookingController.approveBooking);
 router.post('/:id/reject', softAuth, bookingController.rejectBooking);
 

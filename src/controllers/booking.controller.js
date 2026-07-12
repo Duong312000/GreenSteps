@@ -181,15 +181,8 @@ exports.createBooking = async (req, res, next) => {
         }, { transaction: t });
       });
 
-    } else if (paymentMethod === 'bank_transfer') {
-      // Direct QR transfer with Admin verification
-      const msg = `Khách hàng #${userId} THANH TOÁN QR TRỰC TIẾP cho #${bookingId} - SỐ TIỀN: ${totalValue.toLocaleString('vi-VN')} đ`;
-      const approved = await promptTerminalApproval(msg);
-
-      if (!approved) {
-        return res.status(400).json({ success: false, message: 'Giao dịch chuyển khoản QR bị Admin từ chối ở terminal.' });
-      }
-
+    } else if (paymentMethod === 'card') {
+      // Direct Credit Card payment (success without OTP simulator)
       await sequelize.transaction(async (t) => {
         const wallet = await Wallet.findOne({ where: { user_id: userId }, transaction: t });
         const evoucherCode = 'EV-' + Math.floor(1000000000 + Math.random() * 9000000000);
@@ -219,7 +212,7 @@ exports.createBooking = async (req, res, next) => {
             booking_date: bookingDate,
             guests: guests,
             value: totalValue,
-            payment_method: 'bank_transfer',
+            payment_method: 'card',
             evoucher_code: evoucherCode,
             status: 'deposit',
             escrow_status: 'holding',
@@ -235,7 +228,67 @@ exports.createBooking = async (req, res, next) => {
           );
         }
 
-        // Record transaction without deducting balance if wallet exists
+        // Record successful transaction in wallet if it exists
+        if (wallet) {
+          await WalletTransaction.create({
+            id: 'GD-' + Date.now(),
+            wallet_id: wallet.id,
+            type: 'payment',
+            amount: totalValue,
+            description: `Thanh toán cọc bằng Thẻ Tín Dụng cho đơn #${bookingId}`,
+            status: 'success',
+            reference_id: bookingId
+          }, { transaction: t });
+        }
+      });
+    } else if (paymentMethod === 'bank_transfer') {
+      // Direct QR transfer (Pending admin verification, no terminal block)
+      await sequelize.transaction(async (t) => {
+        const wallet = await Wallet.findOne({ where: { user_id: userId }, transaction: t });
+        const evoucherCode = 'EV-' + Math.floor(1000000000 + Math.random() * 9000000000);
+
+        if (type === 'service') {
+          await ServiceBooking.create({
+            id: bookingId,
+            user_id: userId,
+            service_id: targetId,
+            fullname: fullname,
+            name_service: tourNameOrServiceName,
+            booking_date: bookingDate,
+            guests: guests,
+            value: totalValue,
+            status: 'pending', // Pending admin approval
+            evoucher_code: evoucherCode,
+            escrow_status: 'none',
+            voucher_code: voucherCode || null
+          }, { transaction: t });
+        } else {
+          await TourBooking.create({
+            id: bookingId,
+            user_id: userId,
+            schedule_id: targetId,
+            fullname: fullname,
+            tour_name: tourNameOrServiceName,
+            booking_date: bookingDate,
+            guests: guests,
+            value: totalValue,
+            payment_method: 'bank_transfer',
+            evoucher_code: evoucherCode,
+            status: 'pending', // Pending admin approval
+            escrow_status: 'none',
+            voucher_code: voucherCode || null
+          }, { transaction: t });
+        }
+
+        // Set voucher status to used
+        if (voucherCode) {
+          await Voucher.update(
+            { status: 'used' },
+            { where: { code: voucherCode, user_id: userId }, transaction: t }
+          );
+        }
+
+        // Record pending transaction in wallet if it exists
         if (wallet) {
           await WalletTransaction.create({
             id: 'GD-' + Date.now(),
@@ -243,7 +296,7 @@ exports.createBooking = async (req, res, next) => {
             type: 'payment',
             amount: totalValue,
             description: `Thanh toán cọc QR trực tiếp cho đơn #${bookingId}`,
-            status: 'success',
+            status: 'pending', // Pending admin approval
             reference_id: bookingId
           }, { transaction: t });
         }
@@ -579,6 +632,40 @@ exports.getBookings = async (req, res, next) => {
 exports.approveBooking = async (req, res, next) => {
   const { id } = req.params;
   try {
+    if (id.startsWith('iti_') || id.startsWith('GD-')) {
+      const tx = await WalletTransaction.findOne({
+        where: {
+          [Op.or]: [{ id: id }, { reference_id: id }],
+          type: 'payment',
+          status: 'pending'
+        }
+      });
+      if (!tx) {
+        return res.status(404).json({ success: false, message: 'Yêu cầu thanh toán lịch trình không tồn tại hoặc đã xử lý!' });
+      }
+      const itineraryId = tx.reference_id;
+      const t = await sequelize.transaction();
+      try {
+        tx.status = 'success';
+        await tx.save({ transaction: t });
+
+        // Update custom itinerary status & deadline (+7 days)
+        await ScheduleCustom.update(
+          { 
+            status: 'deposited',
+            deposit_deadline: sequelize.literal("CURRENT_DATE + 7")
+          },
+          { where: { id: itineraryId }, transaction: t }
+        );
+
+        await t.commit();
+        return res.json({ success: true, message: 'Đã phê duyệt đặt cọc lịch trình thành công!' });
+      } catch (err) {
+        await t.rollback();
+        throw err;
+      }
+    }
+
     let booking = await ServiceBooking.findByPk(id);
     if (!booking) {
       booking = await TourBooking.findByPk(id);
@@ -589,6 +676,13 @@ exports.approveBooking = async (req, res, next) => {
     booking.status = 'deposit';
     booking.escrow_status = 'holding';
     await booking.save();
+
+    // Sync pending QR transfer transaction
+    await WalletTransaction.update(
+      { status: 'success' },
+      { where: { reference_id: id, status: 'pending' } }
+    );
+
     res.json({ success: true, message: 'Đã phê duyệt đơn đặt chỗ thành công!' });
   } catch (error) {
     next(error);
@@ -598,6 +692,22 @@ exports.approveBooking = async (req, res, next) => {
 exports.rejectBooking = async (req, res, next) => {
   const { id } = req.params;
   try {
+    if (id.startsWith('iti_') || id.startsWith('GD-')) {
+      const tx = await WalletTransaction.findOne({
+        where: {
+          [Op.or]: [{ id: id }, { reference_id: id }],
+          type: 'payment',
+          status: 'pending'
+        }
+      });
+      if (!tx) {
+        return res.status(404).json({ success: false, message: 'Yêu cầu thanh toán lịch trình không tồn tại hoặc đã xử lý!' });
+      }
+      tx.status = 'failed';
+      await tx.save();
+      return res.json({ success: true, message: 'Đã từ chối đặt cọc lịch trình!' });
+    }
+
     let booking = await ServiceBooking.findByPk(id);
     if (!booking) {
       booking = await TourBooking.findByPk(id);
@@ -608,7 +718,83 @@ exports.rejectBooking = async (req, res, next) => {
     booking.status = 'rejected';
     booking.escrow_status = 'refunded';
     await booking.save();
+
+    // Sync pending QR transfer transaction
+    await WalletTransaction.update(
+      { status: 'failed' },
+      { where: { reference_id: id, status: 'pending' } }
+    );
+
     res.json({ success: true, message: 'Đã từ chối đơn đặt chỗ thành công!' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getPendingBookings = async (req, res, next) => {
+  try {
+    const serviceBookings = await ServiceBooking.findAll({
+      where: { status: 'pending' },
+      include: [User],
+      order: [['createdAt', 'DESC']]
+    });
+
+    const tourBookings = await TourBooking.findAll({
+      where: { status: 'pending' },
+      include: [User],
+      order: [['createdAt', 'DESC']]
+    });
+
+    const itineraryPayments = await WalletTransaction.findAll({
+      where: { type: 'payment', status: 'pending' },
+      include: [{
+        model: Wallet,
+        include: [User]
+      }],
+      order: [['createdAt', 'DESC']]
+    });
+
+    const mappedServices = serviceBookings.map(row => ({
+      id: row.id,
+      customer: row.fullname,
+      service: row.name_service,
+      date: row.booking_date,
+      guests: row.guests,
+      value: row.value,
+      status: row.status,
+      type: 'service',
+      escrow: row.escrow_status,
+      createdAt: row.createdAt
+    }));
+
+    const mappedTours = tourBookings.map(row => ({
+      id: row.id,
+      customer: row.fullname,
+      service: row.tour_name,
+      date: row.booking_date,
+      guests: row.guests,
+      value: row.value,
+      status: row.status,
+      type: 'tour',
+      escrow: row.escrow_status,
+      createdAt: row.createdAt
+    }));
+
+    const mappedItineraries = itineraryPayments.map(row => ({
+      id: row.id,
+      itineraryId: row.reference_id,
+      customer: row.Wallet?.User?.fullname || 'Khách hàng',
+      service: `Đặt cọc Lịch trình tự chọn (#${row.reference_id ? row.reference_id.substring(4, 12) : ''})`,
+      date: new Date(row.createdAt).toLocaleDateString('vi-VN'),
+      guests: 1,
+      value: Math.abs(row.amount),
+      status: row.status,
+      type: 'itinerary',
+      escrow: 'none',
+      createdAt: row.createdAt
+    }));
+
+    res.json([...mappedServices, ...mappedTours, ...mappedItineraries]);
   } catch (error) {
     next(error);
   }

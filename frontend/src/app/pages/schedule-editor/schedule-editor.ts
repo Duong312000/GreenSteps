@@ -1793,11 +1793,6 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   public openCheckout() {
-    if (!this.walletRegistered) {
-      this.showAlert('Ví GreenSteps của bạn chưa được kích hoạt! Vui lòng vào trang Quản lý trang cá nhân để thực hiện yêu cầu kích hoạt ví.', 'warning');
-      return;
-    }
-
     this.isCheckoutModalOpen = true;
     this.isItineraryPay = false;
     this.checkoutItems = [];
@@ -1920,6 +1915,33 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.isCheckoutModalOpen = false;
   }
 
+  public isActivatingWallet = false;
+
+  public async activateWalletInline() {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.showAlert('Vui lòng đăng nhập để gửi yêu cầu kích hoạt ví!', 'warning');
+      return;
+    }
+    this.isActivatingWallet = true;
+    try {
+      const res = await this.apiService.activateWallet(user.id || user._id || '');
+      this.isActivatingWallet = false;
+      if (res.success) {
+        this.showAlert(
+          'Đã gửi yêu cầu',
+          'Yêu cầu kích hoạt ví GreenSteps của bạn đã được gửi thành công! Quà tặng 200.000đ sẽ được cộng khi Admin phê duyệt.',
+          'info'
+        );
+      } else {
+        this.showAlert('Gửi yêu cầu thất bại: ' + res.message, 'error');
+      }
+    } catch (e) {
+      this.isActivatingWallet = false;
+      this.showAlert('Gửi yêu cầu kích hoạt ví thất bại.', 'error');
+    }
+  }
+
   public setDepositAmount(amount: number) {
     this.depositAmount = amount;
   }
@@ -1940,18 +1962,28 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.qrPaymentNote = `NAP VI ${username}`.toUpperCase();
     this.qrCodeUrl = `https://img.vietqr.io/image/970422-0392851304-compact.jpg?amount=${this.depositAmount}&addInfo=${encodeURIComponent(this.qrPaymentNote)}&accountName=KIEU%20HOANG%20DUONG`;
 
-    // Step 1: Show QR immediately so customer can scan
     this.isQrVisible = true;
     this.cdr.detectChanges();
 
-    // Step 2: Call deposit API in background (blocks until admin approves in terminal)
     try {
       const res = await this.apiService.depositMoney(userId, this.depositAmount);
       if (res.success) {
-        // Admin approved -> auto-close QR and update balance
-        this.isQrVisible = false;
-        this.walletBalance = res.balance;
-        this.showAlert(`Nạp tiền thành công! Số dư ví: ${res.balance.toLocaleString('vi-VN')}đ`, 'success');
+        // Start polling balance changes
+        const initialBalance = this.walletBalance;
+        const interval = setInterval(async () => {
+          const wInfo = await this.apiService.getWalletInfo(userId);
+          if (wInfo && wInfo.balance > initialBalance) {
+            clearInterval(interval);
+            this.isQrVisible = false;
+            this.walletBalance = wInfo.balance;
+            this.cdr.detectChanges();
+            this.showAlert(`Nạp tiền thành công! Số dư ví: ${wInfo.balance.toLocaleString('vi-VN')}đ`, 'success');
+          }
+        }, 2500);
+
+        setTimeout(() => {
+          clearInterval(interval);
+        }, 900000);
       } else {
         this.isQrVisible = false;
         this.showAlert(res.message || 'Giao dịch bị từ chối.', 'error');
@@ -1980,27 +2012,29 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.qrPaymentNote = `THANH TOAN ${username}`.toUpperCase();
     this.qrCodeUrl = `https://img.vietqr.io/image/970422-0392851304-compact.jpg?amount=${this.checkoutTotal}&addInfo=${encodeURIComponent(this.qrPaymentNote)}&accountName=KIEU%20HOANG%20DUONG`;
 
-    // Step 1: Show QR immediately so customer can scan
     this.isQrVisible = true;
     this.cdr.detectChanges();
 
-    // Step 2: Call pay API in background (blocks until admin approves in terminal)
     try {
       const res = await this.apiService.payItineraryQr(userId, this.activeItinerary.id, this.checkoutTotal);
       if (res.success) {
-        this.isQrVisible = false;
-        this.walletBalance = res.balance;
-        this.activeItinerary.status = 'deposited';
-        // Set deposit deadline as today + 7 days
-        const dateObj = new Date();
-        dateObj.setDate(dateObj.getDate() + 7);
-        const yyyy = dateObj.getFullYear();
-        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const dd = String(dateObj.getDate()).padStart(2, '0');
-        this.activeItinerary.deposit_deadline = `${yyyy}-${mm}-${dd}`;
-        await this.saveItineraryToDb();
-        this.closeCheckout();
-        this.showAlert(`Thanh toán thành công! Đã đặt cọc và khóa lịch trình. Hạn hủy miễn phí trước ngày ${dd}/${mm}/${yyyy}.`, 'success');
+        // Start polling status changes
+        const interval = setInterval(async () => {
+          const custom = await this.apiService.getItinerary(this.activeItinerary.id);
+          if (custom && custom.status === 'deposited') {
+            clearInterval(interval);
+            this.isQrVisible = false;
+            this.isCheckoutModalOpen = false;
+            this.activeItinerary.status = 'deposited';
+            this.activeItinerary.deposit_deadline = custom.deposit_deadline;
+            this.cdr.detectChanges();
+            this.showAlert('Thanh toán đặt cọc lịch trình thành công!', 'success');
+          }
+        }, 2500);
+
+        setTimeout(() => {
+          clearInterval(interval);
+        }, 900000);
       } else {
         this.isQrVisible = false;
         this.showAlert(res.message || 'Giao dịch bị từ chối.', 'error');

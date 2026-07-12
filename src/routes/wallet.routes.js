@@ -16,6 +16,9 @@ router.post('/withdrawals/:id/reject', authMiddleware, checkRole(['admin']), wal
 router.get('/deposits/pending', authMiddleware, checkRole(['admin']), walletController.listPendingDeposits);
 router.post('/deposits/:id/approve', authMiddleware, checkRole(['admin']), walletController.approveDeposit);
 router.post('/deposits/:id/reject', authMiddleware, checkRole(['admin']), walletController.rejectDeposit);
+router.get('/pending-activations', authMiddleware, checkRole(['admin']), walletController.listPendingWallets);
+router.post('/pending-activations/:txId/approve', authMiddleware, checkRole(['admin']), walletController.approveWalletActivation);
+router.post('/pending-activations/:txId/reject', authMiddleware, checkRole(['admin']), walletController.rejectWalletActivation);
 
 // Legacy compat endpoints
 router.get('/:userId', softAuth, walletController.getWallet);

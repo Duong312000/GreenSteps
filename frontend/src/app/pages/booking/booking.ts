@@ -203,7 +203,135 @@ export class BookingComponent implements OnInit {
     this.router.navigate(['/booking/payment']);
   }
 
+  public isActivatingWallet = false;
+
+  public getTempBookingDeadline() {
+    const now = new Date('2026-07-12T14:30:00');
+    if (!this.bookingContext.checkIn) {
+      return {
+        type: 'normal',
+        message: 'GreenSteps sẽ tạm giữ chỗ của bạn trong vòng 12 giờ. Vui lòng hoàn tất đặt cọc trước thời hạn này.',
+        buttonLabel: 'Gửi yêu cầu giữ chỗ',
+        status: 'holding'
+      };
+    }
+    const departureStr = this.bookingContext.checkIn + 'T08:00:00';
+    const departure = new Date(departureStr);
+    const diffMs = departure.getTime() - now.getTime();
+    const diffHours = diffMs / (1000 * 60 * 60);
+
+    if (diffHours < 12) {
+      return {
+        type: 'urgent',
+        message: 'Tour sắp khởi hành. GreenSteps cần kiểm tra tình trạng chỗ trước khi xác nhận yêu cầu của bạn.',
+        buttonLabel: 'Gửi yêu cầu xác nhận chỗ',
+        status: 'pending_confirmation'
+      };
+    } else if (diffHours >= 12 && diffHours <= 48) {
+      const deadline = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+      const timeStr = deadline.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = deadline.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      return {
+        type: 'normal',
+        message: `GreenSteps sẽ tạm giữ chỗ của bạn đến ${timeStr} ngày ${dateStr}. Vui lòng hoàn tất đặt cọc trước thời hạn này để tránh mất chỗ.`,
+        buttonLabel: 'Gửi yêu cầu giữ chỗ',
+        status: 'holding'
+      };
+    } else {
+      const deadline = new Date(now.getTime() + 12 * 60 * 60 * 1000);
+      const timeStr = deadline.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = deadline.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      return {
+        type: 'normal',
+        message: `GreenSteps sẽ tạm giữ chỗ của bạn đến ${timeStr} ngày ${dateStr}. Vui lòng hoàn tất đặt cọc trước thời hạn này để tránh mất chỗ.`,
+        buttonLabel: 'Gửi yêu cầu giữ chỗ',
+        status: 'holding'
+      };
+    }
+  }
+
+  public async activateWalletInline() {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.showAlert('Chưa đăng nhập', 'Vui lòng đăng nhập để gửi yêu cầu kích hoạt ví!', 'warning');
+      return;
+    }
+    this.isActivatingWallet = true;
+    try {
+      const res = await this.apiService.activateWallet(user.id || user._id || '');
+      this.isActivatingWallet = false;
+      if (res.success) {
+        this.showAlert(
+          'Đã gửi yêu cầu',
+          'Yêu cầu kích hoạt ví GreenSteps của bạn đã được gửi thành công! Quà tặng 200.000đ sẽ được cộng khi Admin phê duyệt.',
+          'info'
+        );
+      } else {
+        this.showAlert('Thất bại', res.message || 'Gửi yêu cầu kích hoạt ví thất bại.', 'error');
+      }
+    } catch (e) {
+      this.isActivatingWallet = false;
+      this.showAlert('Thất bại', 'Có lỗi xảy ra khi gửi yêu cầu kích hoạt ví.', 'error');
+    }
+  }
+
   public async completeDeposit() {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.showAlert("Chưa đăng nhập", "Vui lòng đăng nhập trước khi tiến hành đặt chỗ!", "warning");
+      return;
+    }
+
+    const userId = user.id || user._id || '';
+    const targetId = this.activeTour?.id || this.bookingContext.tourId || 'sample_tour_id';
+
+    // Prepare API booking data
+    const bookingData: any = {
+      type: 'tour',
+      targetId: targetId,
+      bookingDate: this.bookingContext.checkIn,
+      guests: this.bookingContext.guestCount,
+      customerId: userId,
+      customerName: `${this.guestInfo.lastName} ${this.guestInfo.firstName}`
+    };
+
+    if (this.payTiming === 'later') {
+      // Temporary Holding / Later timing flow
+      const dlInfo = this.getTempBookingDeadline();
+      bookingData.paymentMethod = 'bank_transfer';
+      
+      this.isBookingLoading = true;
+      try {
+        const res = await this.apiService.createBooking(bookingData);
+        this.isBookingLoading = false;
+        if (res.success) {
+          this.saveDraft();
+          if (dlInfo.type === 'urgent') {
+            this.showAlert(
+              "Tiếp nhận yêu cầu",
+              "GreenSteps đã tiếp nhận yêu cầu xác nhận chỗ của bạn cho tour sắp khởi hành này. Nhân viên sẽ liên hệ lại trong thời gian sớm nhất!",
+              "info",
+              "/booking/confirm"
+            );
+          } else {
+            this.showAlert(
+              "Yêu cầu giữ chỗ thành công",
+              dlInfo.message,
+              "info",
+              "/booking/confirm"
+            );
+          }
+        } else {
+          this.showAlert("Thất bại", res.message || "Không thể gửi yêu cầu giữ chỗ.", "error");
+        }
+      } catch (e) {
+        this.isBookingLoading = false;
+        this.showAlert("Thất bại", "Gửi yêu cầu giữ chỗ thất bại.", "error");
+      }
+      return;
+    }
+
+    // Đặt cọc ngay flow
     this.paymentSubmitted = true;
     this.paymentErrors = this.validatePayment();
 
@@ -214,44 +342,14 @@ export class BookingComponent implements OnInit {
       return;
     }
 
-    // Check undeveloped payment methods
-    if (this.paymentMethod === 'card') {
-      this.showAlert(
-        "Tính năng đang phát triển",
-        "Phương thức thanh toán này hiện đang được nâng cấp phát triển. Vui lòng thanh toán đặt cọc bằng phương thức Ví điện tử hoặc Chuyển khoản ngân hàng!",
-        "info"
-      );
-      return;
-    }
-
-    const user = this.authService.getCurrentUser();
-    if (!user) {
-      this.showAlert("Chưa đăng nhập", "Vui lòng đăng nhập trước khi tiến hành thanh toán đặt cọc!", "warning");
-      return;
-    }
-    const userId = user.id || user._id || '';
-    const username = user.username || 'USER';
-
-    const targetId = this.activeTour?.id || this.bookingContext.tourId || 'sample_tour_id';
-    
-    // Prepare API booking data
-    const bookingData = {
-      type: 'tour',
-      targetId: targetId,
-      bookingDate: this.bookingContext.checkIn,
-      guests: this.bookingContext.guestCount,
-      paymentMethod: this.paymentMethod === 'wallet' ? 'wallet' : 'bank_transfer',
-      customerId: userId,
-      customerName: `${this.guestInfo.lastName} ${this.guestInfo.firstName}`
-    };
+    bookingData.paymentMethod = this.paymentMethod === 'bank' ? 'bank_transfer' : (this.paymentMethod === 'card' ? 'card' : 'wallet');
 
     if (this.paymentMethod === 'wallet') {
       if (!this.walletRegistered) {
         this.showAlert(
           "Ví chưa kích hoạt",
-          "Ví du lịch GreenSteps của bạn chưa được kích hoạt! Hãy di chuyển tới trang cá nhân để gửi yêu cầu kích hoạt ví nhận ngay quà tặng chào mừng 200.000đ.",
-          "warning",
-          "/profile"
+          "Ví du lịch GreenSteps của bạn chưa được kích hoạt! Vui lòng kích hoạt ví để thanh toán.",
+          "warning"
         );
         return;
       }
@@ -264,23 +362,38 @@ export class BookingComponent implements OnInit {
         return;
       }
 
-      // Show wallet approval loader
       this.isBookingLoading = true;
       try {
-        const success = await this.apiService.createBooking(bookingData);
+        const res = await this.apiService.createBooking(bookingData);
         this.isBookingLoading = false;
-        if (success) {
+        if (res.success) {
           this.saveDraft();
           this.router.navigate(['/booking/confirm']);
         } else {
-          this.showAlert("Thanh toán thất bại", "Giao dịch trừ tiền ví bị từ chối hoặc có lỗi xảy ra.", "error");
+          this.showAlert("Thanh toán thất bại", res.message || "Giao dịch trừ tiền ví bị từ chối hoặc có lỗi xảy ra.", "error");
         }
       } catch (e) {
         this.isBookingLoading = false;
         this.showAlert("Thanh toán thất bại", "Yêu cầu thanh toán bị từ chối.", "error");
       }
+    } else if (this.paymentMethod === 'card') {
+      // Credit card payment succeeds directly
+      this.isBookingLoading = true;
+      try {
+        const res = await this.apiService.createBooking(bookingData);
+        this.isBookingLoading = false;
+        if (res.success) {
+          this.saveDraft();
+          this.router.navigate(['/booking/confirm']);
+        } else {
+          this.showAlert("Thanh toán thất bại", res.message || "Thao tác thanh toán thẻ bị từ chối.", "error");
+        }
+      } catch (e) {
+        this.isBookingLoading = false;
+        this.showAlert("Thanh toán thất bại", "Giao dịch thẻ bị từ chối.", "error");
+      }
     } else if (this.paymentMethod === 'bank') {
-      // Direct QR Transfer flow
+      // Direct QR Transfer flow with polling
       this.qrAmount = this.depositAmount;
       const txId = 'GD-' + Date.now().toString().slice(-8);
       this.qrDescription = `GS TOUR ${txId}`.toUpperCase();
@@ -288,42 +401,40 @@ export class BookingComponent implements OnInit {
       
       this.isQrModalOpen = true; // Open the QR code modal
       
-      // Make the API call in background (wait for terminal approval)
       try {
-        const success = await this.apiService.createBooking(bookingData);
-        this.isQrModalOpen = false;
-        if (success) {
-          this.saveDraft();
-          this.router.navigate(['/booking/confirm']);
+        const res = await this.apiService.createBooking(bookingData);
+        if (res.success && res.bookingId) {
+          // Poll until admin approves
+          this.startBookingStatusPolling(res.bookingId);
         } else {
-          this.showAlert("Thanh toán thất bại", "Giao dịch chuyển khoản bị từ chối.", "error");
+          this.isQrModalOpen = false;
+          this.showAlert("Thanh toán thất bại", res.message || "Giao dịch chuyển khoản bị từ chối.", "error");
         }
       } catch (e) {
         this.isQrModalOpen = false;
         this.showAlert("Thanh toán thất bại", "Giao dịch chuyển khoản bị từ chối.", "error");
       }
-    } else if (this.paymentMethod === 'counter') {
-      // Direct Counter Booking logic
-      this.isBookingLoading = true;
-      try {
-        const success = await this.apiService.createBooking(bookingData);
-        this.isBookingLoading = false;
-        if (success) {
-          this.saveDraft();
-          this.showAlert(
-            "Đặt chỗ thành công",
-            "Đơn đặt tour du lịch của bạn đã được ghi nhận dưới hình thức thanh toán tại quầy. Vui lòng đến văn phòng đại diện GreenSteps trong vòng 24 giờ để hoàn tất thủ tục cọc giữ chỗ!",
-            "info",
-            "/booking/confirm"
-          );
-        } else {
-          this.showAlert("Thất bại", "Không thể khởi tạo yêu cầu đặt chỗ.", "error");
-        }
-      } catch (e) {
-        this.isBookingLoading = false;
-        this.showAlert("Thất bại", "Có lỗi xảy ra trong quá trình đặt chỗ.", "error");
-      }
     }
+  }
+
+  public startBookingStatusPolling(bookingId: string) {
+    const user = this.authService.getCurrentUser();
+    const customerId = user ? (user.id || user._id || '') : '';
+    
+    const interval = setInterval(async () => {
+      const bookings = await this.apiService.getBookings(customerId);
+      const target = bookings.find(b => b.id === bookingId);
+      if (target && target.status === 'deposit') {
+        clearInterval(interval);
+        this.isQrModalOpen = false;
+        this.saveDraft();
+        this.router.navigate(['/booking/confirm']);
+      }
+    }, 2500);
+
+    setTimeout(() => {
+      clearInterval(interval);
+    }, 900000);
   }
 
   // Custom Alert Helpers
