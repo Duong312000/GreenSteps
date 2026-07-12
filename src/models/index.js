@@ -239,7 +239,8 @@ const CommentPost = sequelize.define('CommentPost', {
   image_url: { type: DataTypes.TEXT },
   tour_id: { type: DataTypes.STRING, allowNull: true },
   service_id: { type: DataTypes.STRING, allowNull: true },
-  parent_comment_id: { type: DataTypes.STRING, allowNull: true }
+  parent_comment_id: { type: DataTypes.STRING, allowNull: true },
+  likes_count: { type: DataTypes.INTEGER, defaultValue: 0 }
 }, { timestamps: true });
 
 // 25. CPSS Junction

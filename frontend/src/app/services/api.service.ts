@@ -448,10 +448,19 @@ export class ApiService {
     }
   }
 
-  public async postTourReview(reviewData: { userId: string; tourId: string; rating: number; text: string }): Promise<any> {
+  public async postTourReview(reviewData: { userId: string; tourId: string; rating?: number | null; text: string; parentCommentId?: string | null }): Promise<any> {
     const cleanId = String(reviewData.tourId).replace('preset_', '');
     const data = { ...reviewData, tourId: cleanId };
     return await firstValueFrom(this.http.post<any>(`${this.BACKEND_URL}/reviews/tour`, data));
+  }
+
+  public async likeComment(commentId: string): Promise<any> {
+    try {
+      return await firstValueFrom(this.http.post<any>(`${this.BACKEND_URL}/reviews/${commentId}/like`, {}));
+    } catch (e) {
+      console.error('Failed to like comment:', e);
+      return null;
+    }
   }
 
   public async getServiceReviews(serviceId: string): Promise<any[]> {

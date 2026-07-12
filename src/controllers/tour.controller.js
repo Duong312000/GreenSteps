@@ -449,9 +449,12 @@ exports.getDestinations = async (req, res, next) => {
 
 // 9. Post Tour Review
 exports.postTourReview = async (req, res, next) => {
-  const { userId, tourId, rating, text } = req.body;
-  if (!userId || !tourId || !rating || !text) {
+  const { userId, tourId, rating, text, parentCommentId } = req.body;
+  if (!userId || !tourId || !text) {
     return res.status(400).json({ success: false, message: 'Thiếu thông tin đánh giá!' });
+  }
+  if (!parentCommentId && rating === undefined) {
+    return res.status(400).json({ success: false, message: 'Thiếu số điểm đánh giá (rating)!' });
   }
 
   try {
@@ -460,23 +463,41 @@ exports.postTourReview = async (req, res, next) => {
     const comment = await CommentPost.create({
       id: commentId,
       user_id: userId,
-      rating: rating,
+      rating: parentCommentId ? null : rating,
       text: text,
-      tour_id: tourId
+      tour_id: tourId,
+      parent_comment_id: parentCommentId || null
     });
 
-    await CPSS.create({
-      comment_id: commentId,
-      schedule_sample_id: tourId
-    });
+    if (!parentCommentId) {
+      await CPSS.create({
+        comment_id: commentId,
+        schedule_sample_id: tourId
+      });
+    }
 
     // Rating hooks inside CommentPost automatically update ScheduleSample rating in DB.
     // Fetch newly updated rating to return to client.
     const updatedSample = await ScheduleSample.findByPk(tourId);
+    const userObj = await User.findByPk(userId);
 
     res.json({
       success: true,
-      comment,
+      comment: {
+        id: comment.id,
+        user: userObj ? {
+          id: userObj.id,
+          fullname: userObj.fullname,
+          role: userObj.role,
+          avatar: userObj.avatarUrl || userObj.fullname.charAt(0).toUpperCase()
+        } : { fullname: 'Người dùng ẩn danh', avatar: 'U' },
+        rating: comment.rating,
+        text: comment.text,
+        parentCommentId: comment.parent_comment_id,
+        likesCount: comment.likes_count || 0,
+        createdAt: comment.createdAt,
+        replies: []
+      },
       rating: updatedSample ? updatedSample.rating : rating,
       votes_count: updatedSample ? updatedSample.votes_count : 1
     });
@@ -491,32 +512,75 @@ exports.getTourReviews = async (req, res, next) => {
   try {
     const cpssList = await CPSS.findAll({ where: { schedule_sample_id: tourId } });
     const commentIds = cpssList.map(c => c.comment_id);
+
     const comments = await CommentPost.findAll({
-      where: { id: { [Op.in]: commentIds } },
-      order: [['createdAt', 'DESC']]
+      where: {
+        [Op.or]: [
+          { tour_id: tourId },
+          { id: { [Op.in]: commentIds } }
+        ]
+      },
+      order: [['createdAt', 'ASC']]
     });
 
-    const reviews = [];
+    const commentMap = {};
+    const commentTree = [];
+
     for (let c of comments) {
       const user = await User.findByPk(c.user_id);
-      reviews.push({
+      const cJson = {
         id: c.id,
         user: user ? {
           id: user.id,
           fullname: user.fullname,
-          role: user.role
-        } : { fullname: 'Người dùng ẩn danh' },
+          role: user.role,
+          avatar: user.avatarUrl || user.fullname.charAt(0).toUpperCase()
+        } : { fullname: 'Người dùng ẩn danh', avatar: 'U' },
         rating: c.rating,
         text: c.text,
-        createdAt: c.createdAt
-      });
+        parentCommentId: c.parent_comment_id,
+        likesCount: c.likes_count || 0,
+        createdAt: c.createdAt,
+        replies: []
+      };
+      commentMap[c.id] = cJson;
     }
 
-    res.json(reviews);
+    for (let c of Object.values(commentMap)) {
+      if (c.parentCommentId && commentMap[c.parentCommentId]) {
+        commentMap[c.parentCommentId].replies.push(c);
+      } else {
+        commentTree.push(c);
+      }
+    }
+
+    // Sort root reviews newest first
+    commentTree.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.json(commentTree);
   } catch (error) {
     next(error);
   }
 };
+
+// 10b. Like / React helpful to Tour Review
+exports.likeComment = async (req, res, next) => {
+  const { commentId } = req.params;
+  try {
+    const comment = await CommentPost.findByPk(commentId);
+    if (!comment) {
+      return res.status(404).json({ success: false, message: 'Bình luận không tồn tại!' });
+    }
+
+    comment.likes_count = (comment.likes_count || 0) + 1;
+    await comment.save();
+
+    res.json({ success: true, likes: comment.likes_count });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 exports.cloneItinerary = async (req, res, next) => {
   const { id } = req.params;

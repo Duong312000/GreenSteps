@@ -8,5 +8,6 @@ router.post('/tour', authMiddleware, tourController.postTourReview);
 router.get('/tour/:tourId', tourController.getTourReviews);
 router.post('/service', authMiddleware, serviceController.postServiceReview);
 router.get('/service/:serviceId', serviceController.getServiceReviews);
+router.post('/:commentId/like', tourController.likeComment);
 
 module.exports = router;

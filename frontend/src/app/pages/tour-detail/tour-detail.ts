@@ -20,6 +20,17 @@ export class TourDetailComponent implements OnInit {
   public isPageLoading: boolean = true;
   public isPhotoGalleryOpen: boolean = false;
 
+  public reviewsList: any[] = [];
+  public filteredReviews: any[] = [];
+  public activeFilter: string = 'Tất cả';
+  public activeSort: string = 'Mới nhất';
+  public likedReviewsSet: Set<string> = new Set();
+  public currentUser: any = null;
+  public replyInputs: { [commentId: string]: string } = {};
+  public activeReplyTarget: { [commentId: string]: boolean } = {};
+  public newReviewRating: number = 5;
+  public newReviewText: string = '';
+
   public galleryPhotoUrl: string = '';
   public activeDayIndex: number = 0;
   public activeInfoTab: 'overview' | 'included' | 'itinerary' | 'policy' | 'reviews' = 'overview';
@@ -70,11 +81,19 @@ export class TourDetailComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
+
+    const liked = JSON.parse(localStorage.getItem('greensteps_liked_reviews') || '[]');
+    this.likedReviewsSet = new Set<string>(liked);
+
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.activeTour = await this.apiService.getPresetTour(id);
       if (this.activeTour) {
         this.setupSlides();
+        await this.loadReviews(id);
       }
       this.isPageLoading = false;
       this.cdr.detectChanges();
@@ -260,5 +279,154 @@ export class TourDetailComponent implements OnInit {
 
     localStorage.setItem('greensteps_booking_context', JSON.stringify(bookingContext));
     this.router.navigate(['/booking'], { queryParams: bookingContext });
+  }
+
+  // REVIEWS & COMMENTS FEATURE INTEGRATION
+  public async loadReviews(tourId: string) {
+    this.reviewsList = await this.apiService.getTourReviews(tourId);
+    this.applyFilterAndSort();
+    this.cdr.detectChanges();
+  }
+
+  public applyFilterAndSort() {
+    let list = [...this.reviewsList];
+
+    // 1. Filter
+    if (this.activeFilter === 'Gia đình có trẻ nhỏ') {
+      list = list.filter(r => /gia đình|bé|trẻ|con|nhỏ|đứa|family/i.test(r.text));
+    } else if (this.activeFilter === 'Lịch trình xanh') {
+      list = list.filter(r => /lịch trình|xanh|môi trường|bảo vệ|eco/i.test(r.text));
+    } else if (this.activeFilter === 'Hướng dẫn viên') {
+      list = list.filter(r => /hướng dẫn|hdv|guide|phục vụ|nhân viên/i.test(r.text));
+    } else if (this.activeFilter === 'Ẩm thực') {
+      list = list.filter(r => /ăn|uống|ẩm thực|nhà hàng|món|ngon|đặc sản/i.test(r.text));
+    } else if (this.activeFilter === 'Có ảnh') {
+      list = list.filter(r => r.image_url || r.imageUrl);
+    }
+
+    // 2. Sort
+    if (this.activeSort === 'Mới nhất') {
+      list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else if (this.activeSort === 'Đánh giá cao nhất') {
+      list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    }
+
+    this.filteredReviews = list;
+  }
+
+  public setFilter(filterName: string) {
+    this.activeFilter = filterName;
+    this.applyFilterAndSort();
+    this.cdr.detectChanges();
+  }
+
+  public setSort(event: any) {
+    this.activeSort = event.target.value;
+    this.applyFilterAndSort();
+    this.cdr.detectChanges();
+  }
+
+  public async handleLikeComment(commentId: string) {
+    if (this.likedReviewsSet.has(commentId)) return;
+
+    const res = await this.apiService.likeComment(commentId);
+    if (res && res.success) {
+      this.likedReviewsSet.add(commentId);
+      localStorage.setItem('greensteps_liked_reviews', JSON.stringify(Array.from(this.likedReviewsSet)));
+      
+      const updateCount = (list: any[]) => {
+        for (let item of list) {
+          if (item.id === commentId) {
+            item.likesCount = res.likes;
+            return true;
+          }
+          if (item.replies && item.replies.length > 0) {
+            if (updateCount(item.replies)) return true;
+          }
+        }
+        return false;
+      };
+      updateCount(this.reviewsList);
+      this.applyFilterAndSort();
+      this.cdr.detectChanges();
+    }
+  }
+
+  public toggleReplyBox(commentId: string) {
+    this.activeReplyTarget[commentId] = !this.activeReplyTarget[commentId];
+    if (this.activeReplyTarget[commentId]) {
+      this.replyInputs[commentId] = '';
+    }
+  }
+
+  public async submitReply(parentCommentId: string) {
+    const text = this.replyInputs[parentCommentId];
+    if (!text || !text.trim()) return;
+
+    if (!this.currentUser) {
+      alert('Vui lòng đăng nhập để gửi phản hồi!');
+      return;
+    }
+
+    const userId = this.currentUser.id || this.currentUser._id;
+    const tourId = this.activeTour?.id || '';
+
+    const res = await this.apiService.postTourReview({
+      userId,
+      tourId,
+      text,
+      parentCommentId
+    });
+
+    if (res && res.success) {
+      this.replyInputs[parentCommentId] = '';
+      this.activeReplyTarget[parentCommentId] = false;
+      if (this.activeTour) {
+        await this.loadReviews(this.activeTour.id);
+      }
+    } else {
+      alert('Gửi phản hồi thất bại!');
+    }
+  }
+
+  public async submitRootReview() {
+    if (!this.newReviewText || !this.newReviewText.trim()) return;
+
+    if (!this.currentUser) {
+      alert('Vui lòng đăng nhập để gửi đánh giá!');
+      return;
+    }
+
+    const userId = this.currentUser.id || this.currentUser._id;
+    const tourId = this.activeTour?.id || '';
+
+    const res = await this.apiService.postTourReview({
+      userId,
+      tourId,
+      rating: this.newReviewRating,
+      text: this.newReviewText
+    });
+
+    if (res && res.success) {
+      this.newReviewText = '';
+      this.newReviewRating = 5;
+      if (this.activeTour) {
+        await this.loadReviews(this.activeTour.id);
+        this.activeTour.rating = res.rating;
+        this.activeTour.votes_count = res.votes_count;
+        this.activeTour.votes = res.votes_count;
+      }
+    } else {
+      alert('Gửi đánh giá thất bại!');
+    }
+  }
+
+  public isAvatarUrl(avatar?: string): boolean {
+    if (!avatar) return false;
+    return avatar.startsWith('http://') || avatar.startsWith('https://') || avatar.startsWith('image/');
+  }
+
+  public getFirstLetter(name?: string): string {
+    return name ? name.charAt(0).toUpperCase() : 'U';
   }
 }

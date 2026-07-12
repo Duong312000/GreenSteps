@@ -81,7 +81,7 @@
             <div class="rating-line" (click)="scrollToReviews()" style="cursor: pointer;">
                 <span><i class="bi bi-star-fill"></i> {{ activeTour.rating || 4.8 }}</span>
                 <span>·</span>
-                <a href="#" (click)="$event.preventDefault(); $event.stopPropagation(); scrollToReviews()">126 đánh giá</a>
+                <a href="#" (click)="$event.preventDefault(); $event.stopPropagation(); scrollToReviews()">{{ reviewsList.length > 0 ? reviewsList.length : '126' }} đánh giá</a>
             </div>
 
             <div class="price-block">
@@ -562,7 +562,30 @@
                     </div>
                 </section>
 
-                <section class="review-list-section" aria-label="Đánh giá từ du khách">
+                <section id="reviews-section" class="review-list-section" aria-label="Đánh giá từ du khách">
+                    <!-- Form viết đánh giá mới -->
+                    <div class="add-review-card" style="background: white; padding: 24px; border-radius: 16px; border: 1px solid #dde6e0; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                        <h4 style="font-size: 16px; font-weight: 800; color: #111816; margin: 0 0 16px;">Để lại đánh giá của bạn</h4>
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                            <span style="font-size: 14px; font-weight: 700; color: #5f6863;">Điểm đánh giá:</span>
+                            <div class="star-rating-selector" style="display: flex; gap: 6px; font-size: 20px; color: #f5b400; cursor: pointer;">
+                                <i *ngFor="let star of [1,2,3,4,5]" 
+                                   [class]="newReviewRating >= star ? 'bi bi-star-fill' : 'bi bi-star'"
+                                   (click)="newReviewRating = star"></i>
+                            </div>
+                        </div>
+                        <div class="comment-input-container" style="display: flex; gap: 12px; align-items: flex-end;">
+                            <textarea [(ngModel)]="newReviewText" 
+                                      placeholder="Chia sẻ trải nghiệm của bạn về chuyến đi..." 
+                                      style="flex: 1; min-height: 80px; border: 1px solid #dde6e0; border-radius: 12px; padding: 12px; font-size: 14px; resize: vertical; outline: none;"></textarea>
+                            <button type="button" 
+                                    (click)="submitRootReview()" 
+                                    style="background-color: var(--g, #174c39); color: white; border: none; height: 44px; padding: 0 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                                Gửi đánh giá
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="review-filter-bar">
                         <div>
                             <span class="section-kicker">Review</span>
@@ -570,71 +593,98 @@
                         </div>
                         <label class="review-sort">
                             <span>Sắp xếp</span>
-                            <select aria-label="Sắp xếp đánh giá">
-                                <option>Mới nhất</option>
-                                <option>Đánh giá cao nhất</option>
-                                <option>Hữu ích nhất</option>
+                            <select aria-label="Sắp xếp đánh giá" (change)="setSort($event)">
+                                <option value="Mới nhất">Mới nhất</option>
+                                <option value="Đánh giá cao nhất">Đánh giá cao nhất</option>
                             </select>
                         </label>
                     </div>
 
                     <div class="review-chip-row" aria-label="Lọc đánh giá">
-                        <button type="button" class="active">Tất cả</button>
-                        <button type="button">Gia đình có trẻ nhỏ</button>
-                        <button type="button">Lịch trình xanh</button>
-                        <button type="button">Hướng dẫn viên</button>
-                        <button type="button">Ẩm thực</button>
-                        <button type="button">Có ảnh</button>
+                        <button type="button" [class.active]="activeFilter === 'Tất cả'" (click)="setFilter('Tất cả')">Tất cả</button>
+                        <button type="button" [class.active]="activeFilter === 'Gia đình có trẻ nhỏ'" (click)="setFilter('Gia đình có trẻ nhỏ')">Gia đình có trẻ nhỏ</button>
+                        <button type="button" [class.active]="activeFilter === 'Lịch trình xanh'" (click)="setFilter('Lịch trình xanh')">Lịch trình xanh</button>
+                        <button type="button" [class.active]="activeFilter === 'Hướng dẫn viên'" (click)="setFilter('Hướng dẫn viên')">Hướng dẫn viên</button>
+                        <button type="button" [class.active]="activeFilter === 'Ẩm thực'" (click)="setFilter('Ẩm thực')">Ẩm thực</button>
+                        <button type="button" [class.active]="activeFilter === 'Có ảnh'" (click)="setFilter('Có ảnh')">Có ảnh</button>
                     </div>
 
                     <div class="review-card-list">
-                        <article class="guest-review-card">
-                            <div class="review-avatar">A</div>
+                        <!-- Dynamic Loop -->
+                        <article class="guest-review-card" *ngFor="let comment of filteredReviews" style="margin-bottom: 24px;">
+                            <div class="review-avatar">
+                                <img *ngIf="isAvatarUrl(comment.user?.avatar)" [src]="comment.user.avatar" alt="Avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                                <span *ngIf="!isAvatarUrl(comment.user?.avatar)">{{ getFirstLetter(comment.user?.fullname) }}</span>
+                            </div>
                             <div class="review-card-body">
                                 <div class="review-card-head">
-                                    <div><h4>Nguyễn Minh Anh</h4><p>Gia đình 4 người · Đi tháng 6/2026</p></div>
-                                    <div class="review-card-rating"><i class="bi bi-star-fill"></i><strong>5.0</strong></div>
+                                    <div>
+                                        <h4>{{ comment.user?.fullname || 'Khách du lịch' }}</h4>
+                                        <p>{{ comment.createdAt | date:'HH:mm dd/MM/yyyy' }}</p>
+                                    </div>
+                                    <div class="review-card-rating" *ngIf="comment.rating">
+                                        <i class="bi bi-star-fill"></i>
+                                        <strong>{{ comment.rating | number:'1.1-1' }}</strong>
+                                    </div>
                                 </div>
-                                <p class="review-copy">Tour nhẹ nhàng, bé nhà mình không bị mệt. Hướng dẫn viên thân thiện, các điểm đến xanh và có thời gian nghỉ hợp lý.</p>
-                                <div class="review-tags">
-                                    <span><i class="bi bi-patch-check"></i> Đã xác minh đặt tour</span>
-                                    <span>Phù hợp gia đình</span>
+                                <p class="review-copy" style="margin-top: 10px; margin-bottom: 12px; line-height: 1.6;">{{ comment.text }}</p>
+                                
+                                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                                    <button type="button" 
+                                            class="helpful-button" 
+                                            (click)="handleLikeComment(comment.id)" 
+                                            [class.liked]="likedReviewsSet.has(comment.id)"
+                                            style="border: 1px solid #dde6e0; border-radius: 99px; padding: 6px 14px; font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;">
+                                        <i class="bi bi-hand-thumbs-up-fill" *ngIf="likedReviewsSet.has(comment.id)"></i>
+                                        <i class="bi bi-hand-thumbs-up" *ngIf="!likedReviewsSet.has(comment.id)"></i>
+                                        Hữu ích ({{ comment.likesCount || 0 }})
+                                    </button>
+
+                                    <button type="button" 
+                                            (click)="toggleReplyBox(comment.id)"
+                                            style="background: none; border: none; font-size: 12px; color: #5f6863; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                        <i class="bi bi-reply-fill"></i> Trả lời
+                                    </button>
                                 </div>
-                                <button type="button" class="helpful-button"><i class="bi bi-hand-thumbs-up"></i> Hữu ích</button>
+
+                                <!-- Nested Replies (Level 2) -->
+                                <div class="replies-list" *ngIf="comment.replies && comment.replies.length > 0" style="margin-left: 20px; border-left: 2px solid #edf2ee; padding-left: 16px; margin-top: 12px; display: flex; flex-direction: column; gap: 12px;">
+                                    <div class="reply-item-row" *ngFor="let reply of comment.replies" style="display: flex; gap: 12px; align-items: flex-start;">
+                                        <div class="reply-avatar" style="width: 32px; height: 32px; border-radius: 50%; background: #eef7f1; color: var(--g); display: grid; place-items: center; font-size: 12px; font-weight: 800; overflow: hidden; flex-shrink: 0;">
+                                            <img *ngIf="isAvatarUrl(reply.user?.avatar)" [src]="reply.user.avatar" alt="Avatar" style="width:100%; height:100%; object-fit:cover;">
+                                            <span *ngIf="!isAvatarUrl(reply.user?.avatar)">{{ getFirstLetter(reply.user?.fullname) }}</span>
+                                        </div>
+                                        <div class="reply-block-wrapper" style="flex: 1;">
+                                            <div class="reply-content-card" style="background: #f7faf8; padding: 10px 14px; border-radius: 12px;">
+                                                <strong style="font-size: 13px; color: #111816; display: block; margin-bottom: 4px;">{{ reply.user?.fullname || 'Khách du lịch' }}</strong>
+                                                <p style="font-size: 13px; color: #46534d; margin: 0; line-height: 1.5;">{{ reply.text }}</p>
+                                            </div>
+                                            <div class="reply-actions-meta" style="margin-top: 4px; font-size: 11px; color: #8d9691; display: flex; align-items: center; gap: 8px; padding-left: 4px;">
+                                                <span>{{ reply.createdAt | date:'HH:mm dd/MM/yyyy' }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Nested Reply Input Box -->
+                                <div *ngIf="activeReplyTarget[comment.id]" class="nested-reply-input-box" style="margin-left: 20px; display: flex; gap: 10px; align-items: center; margin-top: 12px;">
+                                    <input type="text" 
+                                           [(ngModel)]="replyInputs[comment.id]" 
+                                           placeholder="Viết phản hồi..." 
+                                           (keyup.enter)="submitReply(comment.id)"
+                                           style="flex: 1; height: 38px; border: 1px solid #dde6e0; border-radius: 10px; padding: 0 12px; font-size: 13px; outline: none;">
+                                    <button type="button" 
+                                            (click)="submitReply(comment.id)"
+                                            style="background: var(--g); color: white; border: none; height: 38px; width: 38px; border-radius: 10px; display: grid; place-items: center; cursor: pointer;">
+                                        <i class="bi bi-send-fill"></i>
+                                    </button>
+                                </div>
                             </div>
                         </article>
 
-                        <article class="guest-review-card">
-                            <div class="review-avatar">N</div>
-                            <div class="review-card-body">
-                                <div class="review-card-head">
-                                    <div><h4>Trần Hoàng Nam</h4><p>Gia đình có trẻ nhỏ · Đi tháng 5/2026</p></div>
-                                    <div class="review-card-rating"><i class="bi bi-star-fill"></i><strong>4.8</strong></div>
-                                </div>
-                                <p class="review-copy">Lịch trình vừa sức, không bị chạy show. Mình thích cách tour ưu tiên điểm đến xanh và hạn chế di chuyển không cần thiết.</p>
-                                <div class="review-tags">
-                                    <span><i class="bi bi-patch-check"></i> Đã xác minh đặt tour</span>
-                                    <span>Lịch trình xanh</span>
-                                </div>
-                                <button type="button" class="helpful-button"><i class="bi bi-hand-thumbs-up"></i> Hữu ích</button>
-                            </div>
-                        </article>
-
-                        <article class="guest-review-card">
-                            <div class="review-avatar">T</div>
-                            <div class="review-card-body">
-                                <div class="review-card-head">
-                                    <div><h4>Lê Phương Thảo</h4><p>Nhóm 3 người · Đi tháng 4/2026</p></div>
-                                    <div class="review-card-rating"><i class="bi bi-star-fill"></i><strong>4.7</strong></div>
-                                </div>
-                                <p class="review-copy">Ăn trưa ngon, hướng dẫn viên nhiệt tình. Nếu có thêm nhiều lựa chọn hoạt động cho trẻ em thì sẽ tuyệt hơn.</p>
-                                <div class="review-tags">
-                                    <span><i class="bi bi-patch-check"></i> Đã xác minh đặt tour</span>
-                                    <span>Ẩm thực</span>
-                                </div>
-                                <button type="button" class="helpful-button"><i class="bi bi-hand-thumbs-up"></i> Hữu ích</button>
-                            </div>
-                        </article>
+                        <div *ngIf="filteredReviews.length === 0" style="text-align: center; padding: 40px 20px; color: #8d9691; font-size: 14px; background: white; border-radius: 12px; border: 1px dashed #dde6e0;">
+                            Không tìm thấy đánh giá nào phù hợp với bộ lọc này.
+                        </div>
                     </div>
                 </section>
 
