@@ -78,10 +78,10 @@
                 <p>{{ activeTour.destination }}, Việt Nam</p>
             </div>
 
-            <div class="rating-line">
+            <div class="rating-line" (click)="scrollToReviews()" style="cursor: pointer;">
                 <span><i class="bi bi-star-fill"></i> {{ activeTour.rating || 4.8 }}</span>
                 <span>·</span>
-                <a href="#" (click)="$event.preventDefault()">126 đánh giá</a>
+                <a href="#" (click)="$event.preventDefault(); $event.stopPropagation(); scrollToReviews()">126 đánh giá</a>
             </div>
 
             <div class="price-block">
@@ -457,7 +457,7 @@
                 </div>
             </section>
 
-            <section class="reviews-panel" *ngIf="activeInfoTab === 'reviews'">
+            <section id="reviews-section" class="reviews-panel" *ngIf="activeInfoTab === 'reviews'">
                 <div class="review-summary-card">
                     <div class="review-score-block">
                         <span class="section-kicker">Đánh giá tour</span>

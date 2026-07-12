@@ -188,6 +188,18 @@ export class TourDetailComponent implements OnInit {
     this.activeInfoTab = tab;
   }
 
+  public scrollToReviews() {
+    this.activeInfoTab = 'reviews';
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      const el = document.getElementById('reviews-section');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 50);
+  }
+
+
   public get totalPrice(): number {
     if (!this.activeTour) return 0;
     return this.activeTour.cost * this.totalGuests;
