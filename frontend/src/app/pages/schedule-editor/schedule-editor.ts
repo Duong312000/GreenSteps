@@ -1259,30 +1259,20 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.cdr.detectChanges();
 
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
-        headers: { 'User-Agent': 'GreenSteps/1.0' }
-      });
-      const data = await response.json();
+      const data = await this.apiService.reverseGeocodeSerp(lat, lng);
       
       let placeName = 'Địa điểm chọn từ bản đồ';
       let placeType = 'explore';
       let snapLat = lat;
       let snapLng = lng;
+      let addressText = '';
 
       if (data) {
-        placeName = data.name || (data.display_name ? data.display_name.split(',')[0] : 'Địa điểm chọn từ bản đồ');
-        if (data.lat && data.lon) {
-          snapLat = parseFloat(data.lat);
-          snapLng = parseFloat(data.lon);
-        }
-        
-        const type = data.type || '';
-        const category = data.class || '';
-        if (type === 'cafe' || type === 'restaurant' || category === 'amenity') {
-          placeType = 'dining';
-        } else if (type === 'hotel' || category === 'tourism') {
-          placeType = 'lodging';
-        }
+        placeName = data.title || 'Địa điểm chọn từ bản đồ';
+        snapLat = data.lat || lat;
+        snapLng = data.lng || lng;
+        placeType = data.category || 'explore';
+        addressText = data.address || '';
       }
 
       this.selectedPlaceDetails = {
@@ -1309,7 +1299,6 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       }).addTo(this.map);
 
       // Bind popup
-      const addressText = data && data.display_name ? data.display_name : '';
       const popupContent = `
         <div style="font-family: var(--font-main); width: 220px; font-size: 13px; line-height: 1.4;">
           <h4 style="font-weight:700; margin:0 0 6px 0; color:var(--text-primary); font-size:14px;">${placeName}</h4>
@@ -1337,6 +1326,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
       this.searchMarkers.push(marker);
       this.cdr.detectChanges();
+
     } catch (e) {
       console.warn('Reverse geocoding error:', e);
       this.selectedPlaceDetails = {

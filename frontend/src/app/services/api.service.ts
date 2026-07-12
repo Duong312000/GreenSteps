@@ -671,4 +671,15 @@ export class ApiService {
       return [];
     }
   }
+
+  public async reverseGeocodeSerp(lat: number, lng: number): Promise<any> {
+    try {
+      return await firstValueFrom(
+        this.http.get<any>(`${this.BACKEND_URL}/spots/reverse-serp?lat=${lat}&lng=${lng}`)
+      );
+    } catch (e) {
+      console.error('Failed reverse geocoding via SerpApi:', e);
+      return null;
+    }
+  }
 }
