@@ -1,11 +1,11 @@
-const { User } = require('../src/models/index');
+const { Schedule } = require('../src/models/index');
 const { sequelize } = require('../src/config/db.config');
 
 async function test() {
   try {
     await sequelize.authenticate();
-    const users = await User.findAll();
-    console.log(JSON.stringify(users.map(u => ({ id: u.id, fullname: u.fullname, email: u.email, role: u.role, avatarUrl: u.avatarUrl })), null, 2));
+    const schedules = await Schedule.findAll();
+    console.log(JSON.stringify(schedules.map(s => ({ id: s.id, tour_name: s.tour_name, image_url: s.image_url })), null, 2));
   } catch (err) {
     console.error(err);
   }
