@@ -503,9 +503,12 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       attributionControl: false
     }).setView([14.2, 108.8], 6);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18
+    L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '&copy; Google Maps'
     }).addTo(this.modalMap);
+
 
     Object.keys(this.destCoords).forEach(dest => {
       const coords = this.destCoords[dest];
@@ -1413,10 +1416,13 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         zoomControl: false
       }).setView(center, 12);
 
-      // CartoDB Voyager style (beautiful, premium, clean and loaded without errors)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        maxZoom: 20
+      // Google Maps road map style
+      L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: '&copy; Google Maps'
       }).addTo(this.map);
+
 
       this.map.on("click", (e: any) => {
         if (this.locatingActivityIdx !== null && e.latlng) {

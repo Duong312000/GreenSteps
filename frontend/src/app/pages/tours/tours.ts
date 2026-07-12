@@ -197,9 +197,12 @@ export class ToursComponent implements OnInit {
       attributionControl: false
     }).setView([14.2, 108.8], 6);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18
+    L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '&copy; Google Maps'
     }).addTo(this.modalMap);
+
 
     Object.keys(this.destCoords).forEach(dest => {
       const coords = this.destCoords[dest];
