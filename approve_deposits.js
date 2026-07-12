@@ -1,5 +1,5 @@
 const readline = require('readline');
-const { Wallet, WalletTransaction, sequelize } = require('./db');
+const { Wallet, WalletTransaction, sequelize } = require('./src/models/index');
 
 const rl = readline.createInterface({
   input: process.stdin,

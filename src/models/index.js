@@ -118,7 +118,9 @@ const ScheduleSample = sequelize.define('ScheduleSample', {
 // 14. ScheduleCustom Model
 const ScheduleCustom = sequelize.define('ScheduleCustom', {
   id: { type: DataTypes.STRING, primaryKey: true }, // ref: Schedule.id
-  total_cost: { type: DataTypes.DOUBLE, defaultValue: 0.0 }
+  total_cost: { type: DataTypes.DOUBLE, defaultValue: 0.0 },
+  status: { type: DataTypes.ENUM('draft', 'deposited', 'cancelled'), defaultValue: 'draft', allowNull: false },
+  deposit_deadline: { type: DataTypes.DATEONLY, allowNull: true }
 }, { timestamps: true });
 
 // 15. UserSchedule Junction
@@ -222,7 +224,8 @@ const CommunityPost = sequelize.define('CommunityPost', {
   days: { type: DataTypes.INTEGER },
   likes_count: { type: DataTypes.INTEGER, defaultValue: 0 },
   comments_count: { type: DataTypes.INTEGER, defaultValue: 0 },
-  current_data: { type: DataTypes.JSONB }
+  current_data: { type: DataTypes.JSONB },
+  itinerary_id: { type: DataTypes.STRING, allowNull: true }
 }, { timestamps: true });
 
 // 24. CommentPost Model

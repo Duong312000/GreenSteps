@@ -222,7 +222,7 @@ exports.getRecommendations = async (req, res, next) => {
 
 // 4. Custom Itineraries: Save or Update Itinerary (calculates carbon footprint)
 exports.saveCustomItinerary = async (req, res, next) => {
-  const { id, name, user_id, destination, days, totalCost, daysData } = req.body;
+  const { id, name, user_id, destination, days, totalCost, daysData, status, deposit_deadline } = req.body;
 
   try {
     // Sum carbon emissions from activities
@@ -265,7 +265,9 @@ exports.saveCustomItinerary = async (req, res, next) => {
       await ScheduleCustom.upsert({
         id: id,
         user_id: user_id,
-        total_cost: totalCost
+        total_cost: totalCost,
+        ...(status ? { status } : {}),
+        ...(deposit_deadline !== undefined ? { deposit_deadline } : {})
       }, { transaction: t });
 
       // Destroy old activities
@@ -342,7 +344,9 @@ exports.getUserCustomItineraries = async (req, res, next) => {
         days: base.days,
         totalCost: c.total_cost,
         totalCarbon: base.carbon,
-        daysData: daysData
+        daysData: daysData,
+        status: c.status || 'draft',
+        deposit_deadline: c.deposit_deadline || null
       });
     }
 
@@ -395,7 +399,9 @@ exports.getCustomItineraryById = async (req, res, next) => {
       days: base.days,
       totalCost: c.total_cost,
       totalCarbon: base.carbon,
-      daysData: daysData
+      daysData: daysData,
+      status: c.status || 'draft',
+      deposit_deadline: c.deposit_deadline || null
     });
   } catch (error) {
     next(error);
@@ -496,6 +502,70 @@ exports.getTourReviews = async (req, res, next) => {
     }
 
     res.json(reviews);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.cloneItinerary = async (req, res, next) => {
+  const { id } = req.params;
+  const newUserId = req.user ? req.user.id : (req.body.userId || req.body.user_id || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d');
+
+  try {
+    const base = await Schedule.findByPk(id);
+    if (!base) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy lịch trình gốc để sao chép!' });
+    }
+
+    const custom = await ScheduleCustom.findByPk(id);
+    const activities = await ScheduleActivity.findAll({ where: { schedule_id: id } });
+
+    const newId = 'iti_' + Date.now();
+
+    await sequelize.transaction(async (t) => {
+      // Create Base Schedule
+      await Schedule.create({
+        id: newId,
+        tour_name: `Bản sao - ${base.tour_name}`,
+        destination: base.destination,
+        days: base.days,
+        discount: base.discount,
+        carbon: base.carbon,
+        image_url: base.image_url,
+        tour_description: base.tour_description
+      }, { transaction: t });
+
+      // Create ScheduleCustom for new user
+      await ScheduleCustom.create({
+        id: newId,
+        user_id: newUserId,
+        total_cost: custom ? custom.total_cost : 0,
+        status: 'draft',
+        deposit_deadline: null
+      }, { transaction: t });
+
+      // Copy Activities
+      const newActivities = activities.map((act, idx) => {
+        return {
+          id: `act_${newId}_${act.day_number}_${idx + 1}_${Math.random().toString(36).substring(2, 7)}`,
+          schedule_id: newId,
+          day_number: act.day_number,
+          time: act.time,
+          activity_name: act.activity_name,
+          activity_cost: act.activity_cost,
+          carbon: act.carbon,
+          icon: act.icon,
+          type: act.type,
+          coordinates: act.coordinates
+        };
+      });
+
+      if (newActivities.length > 0) {
+        await ScheduleActivity.bulkCreate(newActivities, { transaction: t });
+      }
+    });
+
+    res.json({ success: true, message: 'Đã sao chép lịch trình thành công!', newItineraryId: newId });
   } catch (error) {
     next(error);
   }

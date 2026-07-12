@@ -31,6 +31,30 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   };
   public smartSearchQuery: string = '';
   public isSearchDropdownActive: boolean = false;
+  public isNotificationDropdownActive: boolean = false;
+  public notifications: any[] = [
+    { id: 1, title: 'Lịch trình mới', message: 'Hành trình Phú Yên xanh đã được khởi tạo thành công.', time: '5 phút trước', read: false },
+    { id: 2, title: 'Đặt cọc thành công', message: 'Bạn đã hoàn tất đặt cọc 500.000đ cho chuyến đi Đà Lạt.', time: '2 giờ trước', read: false },
+    { id: 3, title: 'Khuyến mãi đặc biệt', message: 'GreenSteps tặng bạn voucher 10% cho dịch vụ eco-lodge kế tiếp.', time: '1 ngày trước', read: true }
+  ];
+
+  public get unreadNotificationCount(): number {
+    return this.notifications.filter(n => !n.read).length;
+  }
+
+  public toggleNotificationDropdown(event: Event) {
+    event.stopPropagation();
+    this.isNotificationDropdownActive = !this.isNotificationDropdownActive;
+    this.isProfileOpen = false;
+  }
+
+  public markAllNotificationsAsRead() {
+    this.notifications.forEach(n => n.read = true);
+  }
+
+  public clearNotifications() {
+    this.notifications = [];
+  }
   public isMobileMenuOpen: boolean = false;
   public isLoginModalOpen: boolean = false;
   public isOverflowOpen: boolean = false;  // controlled by mouseenter/mouseleave
@@ -241,6 +265,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   public onDocumentClick(event: MouseEvent) {
     this.isProfileOpen = false;
     this.isSearchDropdownActive = false;
+    this.isNotificationDropdownActive = false;
   }
 
   public toggleProfileOpen(event: Event) {
@@ -296,13 +321,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public handleAiPlannerClick() {
-    if (this.isAiPlannerActive()) return;
-    const workingId = localStorage.getItem('greensteps_working_itinerary_id');
-    if (workingId) {
-      this.router.navigate(['/schedule', workingId]);
-    } else {
-      this.router.navigate(['/schedule']);
-    }
+    this.router.navigate(['/schedule']);
   }
 
   public openProfileMenu() {
@@ -509,13 +528,13 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
       { label: 'Cộng đồng', link: '/community' },
       { label: 'Lịch trình', link: '/tours' },
       { label: 'Cẩm nang', action: 'green_handbook' },
-      { label: 'Thiết kế AI', action: 'ai_planner' }
+      { label: 'Lịch trình của tôi', action: 'ai_planner' }
     ];
 
     if (this.currentUser && this.currentUser.role === 'provider') {
       this.allTabs = [
         ...travelerTabs,
-        { label: 'Tổng quan nhà cung cấp', link: '/partner-dashboard' },
+        { label: 'Thống kê doanh thu', link: '/partner-dashboard' },
         { label: 'Dịch vụ', link: '/partner-services' },
         { label: 'Quản lý booking', link: '/partner-bookings' },
         { label: 'Tiếp thị và chăm sóc', link: '/partner-ads' },

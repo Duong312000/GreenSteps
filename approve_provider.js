@@ -1,5 +1,5 @@
 const readline = require('readline');
-const { Provider, User, sequelize } = require('./db');
+const { Provider, User, sequelize } = require('./src/models/index');
 
 const rl = readline.createInterface({
   input: process.stdin,

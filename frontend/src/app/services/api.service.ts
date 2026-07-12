@@ -108,7 +108,9 @@ export class ApiService {
           days: itinerary.days,
           totalCost: itinerary.totalCost,
           totalCarbon: itinerary.totalCarbon,
-          daysData: itinerary.daysData
+          daysData: itinerary.daysData,
+          status: itinerary.status,
+          deposit_deadline: itinerary.deposit_deadline
         })
       );
       return true;
@@ -212,6 +214,25 @@ export class ApiService {
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  public async deleteCommunityPost(postId: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.delete(`${this.BACKEND_URL}/community/posts/${postId}`));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async cloneItinerary(id: string, userId: string): Promise<any> {
+    try {
+      return await firstValueFrom(
+        this.http.post<any>(`${this.BACKEND_URL}/itineraries/${id}/clone`, { userId })
+      );
+    } catch (e) {
+      return { success: false, message: 'Lỗi sao chép lịch trình.' };
     }
   }
 

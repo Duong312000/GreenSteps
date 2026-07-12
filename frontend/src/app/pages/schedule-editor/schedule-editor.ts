@@ -50,6 +50,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public mapClickPlaceName: string = '';
   public locatingActivityIdx: number | null = null;
   public customSearchSuggestions: any[] = [];
+  public isAutoSaving: boolean = false;
 
   // Checkout modal properties
   public isCheckoutModalOpen: boolean = false;
@@ -464,7 +465,9 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       title: apiIti.name || "Lịch trình tự thiết kế",
       dest: destSlug,
       destLabel: destLabel,
-      days: days
+      days: days,
+      status: apiIti.status || 'draft',
+      deposit_deadline: apiIti.deposit_deadline || null
     };
   }
 
@@ -510,16 +513,27 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       days: editorIti.days.length,
       totalCost: totalCost,
       totalCarbon: totalCarbon,
-      daysData: daysData
+      daysData: daysData,
+      status: editorIti.status || 'draft',
+      deposit_deadline: editorIti.deposit_deadline || null
     };
   }
 
   public async saveItineraryToDb() {
     if (!this.activeItinerary) return;
-    console.log("Saving itinerary with editor data:", this.activeItinerary);
+    this.isAutoSaving = true;
+    this.cdr.detectChanges();
     const apiIti = this.convertEditorToApiItinerary(this.activeItinerary);
-    console.log("Saving itinerary payload converted to API:", apiIti);
-    await this.apiService.saveItinerary(apiIti);
+    try {
+      await this.apiService.saveItinerary(apiIti);
+      setTimeout(() => {
+        this.isAutoSaving = false;
+        this.cdr.detectChanges();
+      }, 800);
+    } catch (e) {
+      this.isAutoSaving = false;
+      this.cdr.detectChanges();
+    }
   }
 
   public sortActivitiesByTime(dayIdx: number) {
@@ -673,7 +687,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   public switchActiveDay(dayIdx: number) {
     this.activeDayIdx = dayIdx;
-    this.plotMapMarkers();
+    this.plotMapMarkers(true);
   }
 
   public getDayPreviewText(day: any): string {
@@ -1116,13 +1130,13 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         }
       });
 
-      this.plotMapMarkers();
+      this.plotMapMarkers(true);
     } catch (err) {
       console.warn("Leaflet library not ready or loaded:", err);
     }
   }
 
-  private plotMapMarkers() {
+  private plotMapMarkers(shouldFit: boolean = false) {
     if (!this.map || !this.activeItinerary) return;
 
     // Clear previous markers
@@ -1257,7 +1271,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         });
     }
 
-    if (coordinates.length > 0) {
+    if (coordinates.length > 0 && shouldFit) {
       const bounds = L.latLngBounds(coordinates);
       this.map.fitBounds(bounds, { padding: [40, 40] });
     }
@@ -1400,6 +1414,10 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   private dragSrcIdx: number | null = null;
 
   public onDragStart(event: DragEvent, idx: number) {
+    if (this.isItineraryLocked()) {
+      event.preventDefault();
+      return;
+    }
     this.dragSrcIdx = idx;
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
@@ -1411,6 +1429,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   public onDragOver(event: DragEvent, idx: number) {
     event.preventDefault();
+    if (this.isItineraryLocked()) return;
     if (this.dragSrcIdx !== null && this.dragSrcIdx !== idx) {
       if (event.dataTransfer) {
         event.dataTransfer.dropEffect = 'move';
@@ -1420,6 +1439,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   public onDrop(event: DragEvent, targetIdx: number) {
     event.preventDefault();
+    if (this.isItineraryLocked()) return;
     const srcIdx = this.dragSrcIdx;
     if (srcIdx !== null && srcIdx !== targetIdx && this.activeItinerary) {
       const activeDay = this.activeItinerary.days[this.activeDayIdx];
@@ -1662,8 +1682,17 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       if (res.success) {
         this.isQrVisible = false;
         this.walletBalance = res.balance;
+        this.activeItinerary.status = 'deposited';
+        // Set deposit deadline as today + 7 days
+        const dateObj = new Date();
+        dateObj.setDate(dateObj.getDate() + 7);
+        const yyyy = dateObj.getFullYear();
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        this.activeItinerary.deposit_deadline = `${yyyy}-${mm}-${dd}`;
+        await this.saveItineraryToDb();
         this.closeCheckout();
-        alert(`Thanh toán thành công ${this.checkoutTotal.toLocaleString("vi-VN")}đ!`);
+        alert(`Thanh toán thành công! Đã đặt cọc và khóa lịch trình. Hạn hủy miễn phí trước ngày ${dd}/${mm}/${yyyy}.`);
       } else {
         this.isQrVisible = false;
         alert(res.message || "Giao dịch bị từ chối.");
@@ -1730,8 +1759,17 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       const res = await this.apiService.payItinerary(userId, this.activeItinerary.id, this.checkoutTotal);
       if (res.success) {
         this.walletBalance = res.balance;
+        this.activeItinerary.status = 'deposited';
+        // Set deposit deadline as today + 7 days
+        const dateObj = new Date();
+        dateObj.setDate(dateObj.getDate() + 7);
+        const yyyy = dateObj.getFullYear();
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        this.activeItinerary.deposit_deadline = `${yyyy}-${mm}-${dd}`;
+        await this.saveItineraryToDb();
         this.closeCheckout();
-        alert(`Thanh toán thành công! Đã trừ ${this.checkoutTotal.toLocaleString("vi-VN")}đ từ số dư ví.`);
+        alert(`Thanh toán thành công! Đã đặt cọc và khóa lịch trình. Hạn hủy miễn phí trước ngày ${dd}/${mm}/${yyyy}.`);
       } else {
         alert(res.message || "Thanh toán bị từ chối.");
       }
@@ -1902,5 +1940,47 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
+  }
+
+  public isItineraryLocked(): boolean {
+    return this.activeItinerary && this.activeItinerary.status === 'deposited';
+  }
+
+  public getCanCancelDeposit(iti: any): boolean {
+    if (!iti || !iti.deposit_deadline) return false;
+    const today = new Date();
+    const deadline = new Date(iti.deposit_deadline);
+    today.setHours(0, 0, 0, 0);
+    deadline.setHours(0, 0, 0, 0);
+    return today <= deadline;
+  }
+
+  public async cancelDeposit(iti: any, event: Event) {
+    event.stopPropagation();
+    if (!iti.deposit_deadline) {
+      alert("Không tìm thấy thời hạn hủy hợp lệ!");
+      return;
+    }
+    const today = new Date();
+    const deadline = new Date(iti.deposit_deadline);
+    today.setHours(0, 0, 0, 0);
+    deadline.setHours(0, 0, 0, 0);
+
+    if (today > deadline) {
+      alert(`Đã quá thời hạn hủy đặt cọc miễn phí (Hạn chót: ${iti.deposit_deadline}). Bạn không thể hủy lịch trình này.`);
+      return;
+    }
+
+    const confirmCancel = confirm(`Bạn có chắc chắn muốn hủy đặt cọc lịch trình "${iti.name}"? Số tiền đặt cọc sẽ được hoàn lại ví.`);
+    if (confirmCancel) {
+      iti.status = 'cancelled';
+      const success = await this.apiService.saveItinerary(this.convertEditorToApiItinerary(iti));
+      if (success) {
+        alert("Hủy đặt cọc thành công! Lịch trình đã chuyển về trạng thái Hủy.");
+        await this.loadSavedItinerariesList();
+      } else {
+        alert("Hủy đặt cọc thất bại. Vui lòng thử lại!");
+      }
+    }
   }
 }

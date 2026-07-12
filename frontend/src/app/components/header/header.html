@@ -80,51 +80,55 @@
         <!-- ── DIV 3: SEARCH + PROFILE (cố định, flex-shrink-0) ── -->
         <div class="flex items-center justify-end gap-2 flex-shrink-0" style="width: 300px;">
 
-            <!-- Search -->
-            <div class="relative" style="width: 128px;">
-                <input
-                    #searchInput
-                    type="text"
-                    class="w-full h-9 pl-8 pr-3 rounded-full border border-[#184A37]/20
-                           bg-white/50 text-[#184A37] placeholder-[#184A37]/40
-                           focus:outline-none focus:border-[#0E9F6E] focus:bg-white
-                           text-xs transition-all duration-300"
-                    placeholder="Tìm kiếm..."
-                    [(ngModel)]="smartSearchQuery"
-                    (focus)="showSearchDropdown()"
-                    (keypress)="onSearchKeypress($event)">
-                <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-[#184A37]/40 text-xs"></i>
+            <!-- Notifications -->
+            <div class="relative">
+                <button (click)="toggleNotificationDropdown($event)"
+                        class="relative h-10 w-10 flex items-center justify-center rounded-full bg-white/50
+                               border border-[#184A37]/10 text-[#0F6B4C] hover:bg-white hover:border-[#0E9F6E]
+                               transition-all duration-300 focus:outline-none cursor-pointer">
+                    <i class="bi bi-bell text-lg"></i>
+                    <span *ngIf="unreadNotificationCount > 0"
+                          class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full
+                                 bg-red-500 text-[10px] font-bold text-white border-2 border-white animate-pulse">
+                        {{ unreadNotificationCount }}
+                    </span>
+                </button>
 
-                <div #filterDropdown
-                     class="absolute right-0 top-11 w-72 bg-white/95 backdrop-blur-md
-                            rounded-2xl shadow-xl border border-[#184A37]/10 p-4 z-[100]"
-                     [class.block]="isSearchDropdownActive"
-                     [class.hidden]="!isSearchDropdownActive">
-                    <h4 class="text-sm font-bold text-[#184A37] mb-3">Bộ lọc tìm kiếm tour</h4>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-[#184A37]/70 mb-1" for="filterDest">Điểm đến</label>
-                            <select id="filterDest" [(ngModel)]="filterDest"
-                                    class="w-full h-9 rounded-lg border border-[#184A37]/10 px-2 text-xs
-                                           bg-gray-50 focus:outline-none focus:border-[#0E9F6E] text-[#184A37]">
-                                <option value="Đà Lạt">Đà Lạt</option>
-                                <option value="Phú Yên">Phú Yên</option>
-                                <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>
-                            </select>
+                <!-- Notifications Dropdown -->
+                <div class="absolute right-0 top-12 w-80 bg-white/95 backdrop-blur-md
+                            rounded-2xl shadow-xl border border-[#184A37]/10 p-4 z-[1060]
+                            transition-all duration-200"
+                     [style.opacity]="isNotificationDropdownActive ? '1' : '0'"
+                     [style.pointer-events]="isNotificationDropdownActive ? 'auto' : 'none'"
+                     [style.transform]="isNotificationDropdownActive ? 'translateY(0)' : 'translateY(-8px)'"
+                     (click)="$event.stopPropagation()">
+                    <div class="flex justify-between items-center border-b border-[#184A37]/10 pb-2 mb-3">
+                        <h4 class="text-sm font-bold text-[#184A37]">Thông báo</h4>
+                        <div class="flex gap-2">
+                            <button *ngIf="unreadNotificationCount > 0" (click)="markAllNotificationsAsRead()"
+                                    class="text-[11px] text-[#0E9F6E] hover:underline bg-transparent border-0 cursor-pointer">
+                                Đọc tất cả
+                            </button>
+                            <button *ngIf="notifications.length > 0" (click)="clearNotifications()"
+                                    class="text-[11px] text-red-500 hover:underline bg-transparent border-0 cursor-pointer">
+                                Xóa hết
+                            </button>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-[#184A37]/70 mb-1" for="filterStyle">Phong cách</label>
-                            <select id="filterStyle" [(ngModel)]="filterStyle"
-                                    class="w-full h-9 rounded-lg border border-[#184A37]/10 px-2 text-xs
-                                           bg-gray-50 focus:outline-none focus:border-[#0E9F6E] text-[#184A37]">
-                                <option value="eco">Du lịch xanh</option>
-                                <option value="adventure">Khám phá, phượt</option>
-                                <option value="relax">Nghỉ dưỡng</option>
-                            </select>
+                    </div>
+                    
+                    <div class="max-h-60 overflow-y-auto space-y-2 select-none">
+                        <div *ngIf="notifications.length === 0" class="text-center py-6 text-xs text-[#184A37]/50">
+                            Không có thông báo mới
                         </div>
-                        <button class="w-full h-9 rounded-xl bg-[#0E9F6E] hover:bg-[#0b7f57]
-                                       text-white text-xs font-bold transition-all duration-300 cursor-pointer border-none"
-                                (click)="applySmartFilters()">Tìm đề xuất AI</button>
+                        <div *ngFor="let notif of notifications"
+                             [class.bg-[#F3FAF7]]="!notif.read"
+                             class="p-2.5 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer border border-[#184A37]/5">
+                            <div class="flex justify-between items-start gap-1">
+                                <span class="text-xs font-bold" [ngClass]="notif.read ? 'text-[#184A37]/70' : 'text-[#184A37]'">{{ notif.title }}</span>
+                                <span class="text-[10px] text-[#184A37]/40 whitespace-nowrap">{{ notif.time }}</span>
+                            </div>
+                            <p class="text-[11px] mt-1 mb-0 leading-relaxed text-[#184A37]/80">{{ notif.message }}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -158,14 +162,7 @@
                        style="text-decoration:none;">
                         <i class="bi bi-person text-lg"></i> Trang cá nhân
                     </a>
-                    <a *ngIf="currentUser.role === 'traveler'"
-                       routerLink="/partner-register"
-                       (click)="isProfileOpen = false"
-                       class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#184A37]
-                              hover:bg-gray-50 hover:text-[#0E9F6E] rounded-xl transition-colors"
-                       style="text-decoration:none;">
-                        <i class="bi bi-briefcase text-lg"></i> Hợp tác đối tác
-                    </a>
+
                     <div class="border-t border-[#184A37]/10 my-1"></div>
                     <button (click)="isProfileOpen = false; handleLogout()"
                             class="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold

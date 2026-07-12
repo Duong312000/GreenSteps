@@ -61,6 +61,8 @@ export interface Itinerary {
   total_carbon?: number;
   daysData: Activity[][];
   days_data?: Activity[][];
+  status?: 'draft' | 'deposited' | 'cancelled';
+  deposit_deadline?: string | null;
 }
 
 export interface Service {
@@ -122,4 +124,6 @@ export interface CommunityPost {
   likes: number;
   comments: number;
   image?: string;
+  authorId?: string;
+  itinerary_id?: string;
 }

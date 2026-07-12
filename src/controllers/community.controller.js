@@ -21,6 +21,8 @@ exports.getPosts = async (req, res, next) => {
       const avatarVal = row.User && row.User.avatarUrl ? row.User.avatarUrl : (authorName ? authorName.charAt(0).toUpperCase() : 'U');
       return {
         id: row.id,
+        authorId: row.user_id,
+        itinerary_id: row.itinerary_id,
         author: authorName,
         avatar: avatarVal,
         time: timeText,
@@ -43,7 +45,7 @@ exports.getPosts = async (req, res, next) => {
 };
 
 exports.addPost = async (req, res, next) => {
-  const { rating, text, tripName, dest, days, image, author } = req.body;
+  const { rating, text, tripName, dest, days, image, author, itineraryId } = req.body;
   const authorId = req.user ? req.user.id : (req.body.authorId || req.body.userId || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d');
 
   try {
@@ -71,9 +73,32 @@ exports.addPost = async (req, res, next) => {
       tour_name: tripName,
       destination: dest,
       days: days,
-      image_url: image || 'image/Viet Nam.png'
+      image_url: image || 'image/Viet Nam.png',
+      itinerary_id: itineraryId || null
     });
     res.json(post);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deletePost = async (req, res, next) => {
+  const { id } = req.params;
+  const userId = req.user ? req.user.id : (req.body.userId || req.body.authorId || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d');
+
+  try {
+    const post = await CommunityPost.findByPk(id);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Bài viết không tồn tại!' });
+    }
+
+    // Check ownership
+    if (post.user_id !== userId) {
+      return res.status(403).json({ success: false, message: 'Bạn không có quyền xóa bài viết này!' });
+    }
+
+    await post.destroy();
+    res.json({ success: true, message: 'Đã xóa bài viết thành công!' });
   } catch (error) {
     next(error);
   }

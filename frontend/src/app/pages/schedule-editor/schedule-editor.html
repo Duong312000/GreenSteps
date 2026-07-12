@@ -22,8 +22,15 @@
     <aside class="sidebar-panel" [style.width.px]="sidebarWidth" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 20px 0 20px 12px; overflow: visible !important;">
         <!-- Fixed Header & AI Button Area (Overflow Visible) -->
         <div style="display: flex; flex-direction: column; padding-right: 12px; margin-bottom: 20px; overflow: visible !important; position: relative; z-index: 20;">
-            <div class="sidebar-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px;">
+            <div class="sidebar-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; width: 100%;">
                 <button class="btn-back-tours" (click)="goBackToList()"><i class="bi bi-arrow-left"></i> Quay lại</button>
+                <span *ngIf="isAutoSaving" class="text-xs text-emerald-600 font-bold flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    Đang lưu...
+                </span>
+                <span *ngIf="!isAutoSaving && !isItineraryLocked()" class="text-[10px] text-gray-400 font-medium bg-gray-50 border border-gray-150 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <i class="bi bi-check-all"></i> Tự động lưu
+                </span>
             </div>
             
             <button class="btn-ai-assistant" (click)="toggleAiChat()">
@@ -60,7 +67,7 @@
                                 <i class="bi bi-calendar-event"></i>
                                 <span>{{ day.title }}</span>
                             </div>
-                            <button *ngIf="activeItinerary.days.length > 1"
+                            <button *ngIf="!isItineraryLocked() && activeItinerary.days.length > 1"
                                     (click)="deleteDay(idx, $event)"
                                     class="delete-day-btn"
                                     style="background: none; border: none; padding: 4px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color 0.2s;"
@@ -74,7 +81,7 @@
                     </div>
                 </div>
 
-                <button class="btn-add-day" (click)="addDayToItinerary()" style="margin-top: 10px; background-color: var(--bg-secondary); border: 1px dashed var(--border-color); color: var(--text-primary); font-weight: 700; width: 100%; padding: 10px; font-size: 13px; border-radius: var(--border-radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="bi bi-plus-lg"></i> Thêm ngày mới</button>
+                <button *ngIf="!isItineraryLocked()" class="btn-add-day" (click)="addDayToItinerary()" style="margin-top: 10px; background-color: var(--bg-secondary); border: 1px dashed var(--border-color); color: var(--text-primary); font-weight: 700; width: 100%; padding: 10px; font-size: 13px; border-radius: var(--border-radius-sm); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="bi bi-plus-lg"></i> Thêm ngày mới</button>
             </div>
         </div>
 
@@ -106,7 +113,10 @@
 
         <!-- Section 5: Pinned Checkout & Wallet Actions (Fixed at bottom left corner) -->
         <div class="checkout-actions" style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px; padding-right: 20px; flex-shrink: 0;">
-            <button class="btn-checkout-pay" (click)="triggerCheckout()" style="width: 100%; background-color: var(--primary-green); color: white; border: none; border-radius: var(--border-radius-sm); padding: 10px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="bi bi-credit-card-fill"></i> Thanh Toán Gộp Ví</button>
+            <div *ngIf="isItineraryLocked()" class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-center py-2.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 mb-2">
+                <i class="bi bi-lock-fill"></i> Đã đặt cọc & Khóa sửa đổi
+            </div>
+            <button *ngIf="!isItineraryLocked()" class="btn-checkout-pay" (click)="triggerCheckout()" style="width: 100%; background-color: var(--primary-green); color: white; border: none; border-radius: var(--border-radius-sm); padding: 10px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="bi bi-credit-card-fill"></i> Thanh Toán Gộp Ví</button>
             <button class="btn-wallet-open" (click)="openCheckout()" style="width: 100%; background-color: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-secondary); border-radius: var(--border-radius-sm); padding: 10px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="bi bi-wallet2"></i> Số dư Ví: {{ walletBalance | number:'1.0-0':'vi-VN' }}đ</button>
         </div>
     </aside>
@@ -130,7 +140,7 @@
         <div class="active-day-header">
             <h3 id="activeDayTitle">{{ activeItinerary.days[activeDayIdx]?.title }}</h3>
             
-            <div class="place-search-inline" style="position: relative;">
+            <div class="place-search-inline" style="position: relative;" *ngIf="!isItineraryLocked()">
                 <input type="text" [(ngModel)]="customPlaceTitle" (input)="onCustomPlaceTyping()" placeholder="Thêm địa điểm tùy chỉnh..." (keyup.enter)="addCustomPlaceToActiveDay()">
                 <button (click)="addCustomPlaceToActiveDay()"><i class="bi bi-plus-lg"></i> Thêm</button>
                 
@@ -157,9 +167,11 @@
             </div>
 
             <ng-container *ngFor="let act of activeItinerary.days[activeDayIdx]?.activities; let idx = index">
-                <div class="timeline-item cursor-grab" 
+                <div class="timeline-item" 
+                     [class.cursor-grab]="!isItineraryLocked()"
+                     [class.cursor-default]="isItineraryLocked()"
                      [attr.data-type]="act.type" 
-                     draggable="true"
+                     [draggable]="!isItineraryLocked()"
                      (dragstart)="onDragStart($event, idx)"
                      (dragover)="onDragOver($event, idx)"
                      (drop)="onDrop($event, idx)"
@@ -168,7 +180,7 @@
                      (mouseleave)="highlightMapPin(idx, false)">
 
                     <div class="timeline-time-node">
-                        <input type="time" [(ngModel)]="act.time" (change)="onActivityTimeChanged()" style="font-size: 9px; font-weight: 700; color: var(--primary-green); background-color: var(--light-mint); border: none; padding: 2px 2px; border-radius: var(--border-radius-sm); z-index: 2; width: 82px; outline: none; text-align: center; cursor: pointer;">
+                        <input type="time" [(ngModel)]="act.time" (change)="onActivityTimeChanged()" [disabled]="isItineraryLocked()" style="font-size: 9px; font-weight: 700; color: var(--primary-green); background-color: var(--light-mint); border: none; padding: 2px 2px; border-radius: var(--border-radius-sm); z-index: 2; width: 82px; outline: none; text-align: center; cursor: pointer;">
                         <div class="node-icon-bullet" style="margin-top: 4px;">
                             <i class="bi" [ngClass]="act.type === 'lodging' ? 'bi-house-door-fill' : (act.type === 'dining' ? 'bi-cup-hot-fill' : (act.type === 'transport' ? 'bi-scooter' : 'bi-tree-fill'))"></i>
                         </div>
@@ -177,7 +189,7 @@
                         <div class="activity-card-body">
                             <div class="activity-card-header">
                                 <h4 class="activity-card-title">{{ act.title }}</h4>
-                                <div class="activity-card-controls">
+                                <div class="activity-card-controls" *ngIf="!isItineraryLocked()">
                                     <button class="activity-control-btn" (click)="moveActivity(idx, -1)" title="Di chuyển lên"><i class="bi bi-arrow-up"></i></button>
                                     <button class="activity-control-btn" (click)="moveActivity(idx, 1)" title="Di chuyển xuống"><i class="bi bi-arrow-down"></i></button>
                                     <button class="activity-control-btn" 
@@ -209,7 +221,7 @@
         </div>
 
         <!-- Local Area Green Suggestions -->
-        <section class="suggestions-section">
+        <section class="suggestions-section" *ngIf="!isItineraryLocked()">
             <h3>Gợi ý Dịch vụ Xanh địa phương</h3>
             <p class="subtitle">Được đề xuất dựa trên điểm đến và bộ lọc phát thải carbon cực thấp.</p>
             
@@ -243,7 +255,7 @@
         </section>
 
         <!-- Custom Categorized List Builder (Bucket Lists) -->
-        <section class="suggestions-section" style="border-top: 1px dashed var(--border-color); padding-top: 35px; margin-top: 35px;">
+        <section class="suggestions-section" style="border-top: 1px dashed var(--border-color); padding-top: 35px; margin-top: 35px;" *ngIf="!isItineraryLocked()">
             <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Danh mục địa điểm tự chọn (Bucket Lists)</h3>
             <p class="subtitle" style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">Lên ý tưởng gom nhóm địa điểm ăn uống, nghỉ dưỡng trước khi xếp lịch chính thức.</p>
             
@@ -316,7 +328,7 @@
                 </div>
             </div>
             
-            <div class="chat-input-row">
+            <div class="chat-input-row" *ngIf="!isItineraryLocked()">
                 <input type="text" [(ngModel)]="aiInputText" (keyup.enter)="sendAiMessage()" placeholder="Hỏi AI thêm quán ăn, cafe...">
                 <button (click)="sendAiMessage()"><i class="bi bi-send-fill"></i></button>
             </div>
@@ -365,18 +377,18 @@
 
                     <!-- Sheet Footer Actions -->
                     <div style="padding: 12px 18px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; background-color: var(--bg-primary);">
-                        <button *ngIf="!selectedPlaceDetails.isActivity" (click)="addPlaceFromMap(selectedPlaceDetails)" 
+                        <button *ngIf="!selectedPlaceDetails.isActivity && !isItineraryLocked()" (click)="addPlaceFromMap(selectedPlaceDetails)" 
                                 style="background-color: var(--primary-green); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.2s;">
                             <i class="bi bi-plus-lg"></i> Thêm vào lịch trình
                         </button>
-                        <button *ngIf="selectedPlaceDetails.isActivity" (click)="deletePlaceFromMap(selectedPlaceDetails.index)" 
+                        <button *ngIf="selectedPlaceDetails.isActivity && !isItineraryLocked()" (click)="deletePlaceFromMap(selectedPlaceDetails.index)" 
                                 style="background-color: #EF4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; transition: all 0.2s;">
                             <i class="bi bi-trash-fill"></i> Xóa khỏi lịch trình
                         </button>
                     </div>
                 </ng-container>
 
-                <ng-container *ngIf="selectedPlaceDetails.isCustomMapClick">
+                <ng-container *ngIf="selectedPlaceDetails.isCustomMapClick && !isItineraryLocked()">
                     <div style="padding: 14px 18px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 8px;">
                         <span style="font-size: 11px; color: var(--text-secondary);">Tọa độ đã chọn: <strong>{{ selectedPlaceDetails.lat | number:'1.4-4' }}, {{ selectedPlaceDetails.lng | number:'1.4-4' }}</strong></span>
                         <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -406,7 +418,7 @@
         <div>
             <h1 class="text-3xl font-extrabold text-[#184A37] tracking-tight flex items-center gap-3">
                 <i class="bi bi-journal-richtext text-[#0E9F6E]"></i>
-                Kế hoạch Hành trình AI
+                Lịch trình của tôi
             </h1>
             <p class="text-sm text-[#184A37]/60 mt-2 font-medium">Quản lý và tùy chỉnh các lịch trình du lịch xanh cá nhân hóa của bạn</p>
         </div>
@@ -431,58 +443,142 @@
         <p class="text-sm text-[#184A37]/60 mt-2 max-w-md mx-auto">Bạn chưa lưu lịch trình tự thiết kế nào trên GreenSteps. Hãy bắt đầu hành trình xanh đầu tiên của mình ngay bây giờ!</p>
         <button (click)="createItineraryDirectly()" class="mt-6 h-11 px-6 rounded-xl bg-[#0E9F6E] hover:bg-[#0F6B4C] text-white font-bold text-sm shadow-md transition-all duration-300 border-0 cursor-pointer">Bắt đầu thiết kế</button>
     </div>
-
-    <!-- List of Saved Itineraries Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="!isLoadingList && savedItineraries.length > 0">
-        <div *ngFor="let iti of savedItineraries" (click)="openItinerary(iti.id)" class="group bg-white rounded-2xl border border-[#184A37]/10 overflow-hidden shadow-sm hover:shadow-md hover:border-[#0E9F6E]/40 transition-all duration-300 cursor-pointer flex flex-col justify-between">
-            <div>
-                <!-- Cover Image Area -->
-                <div class="relative h-44 w-full overflow-hidden bg-gray-100">
-                    <img [src]="iti.destination === 'Đà Lạt' ? 'image/cb4fbf769d60d911e13c255f7fb39dcc.jpg' : (iti.destination === 'Phú Yên' ? 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg' : 'image/Viet Nam.png')" alt="Destination cover" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+    <!-- Grouped Saved Itineraries -->
+    <div *ngIf="!isLoadingList && savedItineraries.length > 0" class="space-y-12 mt-8">
+        <!-- 1. Draft Itineraries Section -->
+        <div>
+            <h2 class="text-xl font-bold text-[#184A37] mb-6 flex items-center gap-2">
+                <i class="bi bi-pencil-square text-[#0E9F6E]"></i>
+                Lịch trình đang thiết kế (Tạo dở)
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <ng-container *ngFor="let iti of savedItineraries">
+                    <div *ngIf="iti.status !== 'deposited'" (click)="openItinerary(iti.id)" class="group bg-white rounded-2xl border border-[#184A37]/10 overflow-hidden shadow-sm hover:shadow-md hover:border-[#0E9F6E]/40 transition-all duration-300 cursor-pointer flex flex-col justify-between">
                         <div>
-                            <span class="text-xs font-bold text-white/80 uppercase tracking-wider">{{ iti.destination }}</span>
-                            <h3 class="text-lg font-bold text-white mt-0.5 line-clamp-1">{{ iti.name }}</h3>
+                            <!-- Cover Area -->
+                            <div class="relative h-44 w-full overflow-hidden bg-gray-100">
+                                <img [src]="iti.destination === 'Đà Lạt' ? 'image/cb4fbf769d60d911e13c255f7fb39dcc.jpg' : (iti.destination === 'Phú Yên' ? 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg' : 'image/Viet Nam.png')" alt="Destination cover" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                                    <div>
+                                        <span class="text-xs font-bold text-white/80 uppercase tracking-wider">{{ iti.destination }}</span>
+                                        <h3 class="text-lg font-bold text-white mt-0.5 line-clamp-1">{{ iti.name }}</h3>
+                                    </div>
+                                </div>
+                                <span class="absolute top-4 left-4 bg-yellow-100 text-yellow-800 border border-yellow-200 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                                    {{ iti.status === 'cancelled' ? 'Đã hủy' : 'Bản nháp' }}
+                                </span>
+                                <span class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm border border-[#184A37]/10 px-3 py-1 rounded-full text-xs font-bold text-[#184A37]">{{ iti.days }} ngày</span>
+                            </div>
+
+                            <!-- Metrics -->
+                            <div class="p-5 space-y-4">
+                                <div class="grid grid-cols-2 gap-4 border-b border-gray-100 pb-4">
+                                    <div>
+                                        <span class="text-[10px] font-bold text-[#184A37]/50 uppercase tracking-wider block">Phát thải tích lũy</span>
+                                        <span class="text-sm font-bold text-[#0E9F6E] flex items-center gap-1 mt-1">
+                                            <i class="bi bi-leaf-fill"></i>
+                                            {{ iti.totalCarbon }} kg CO₂
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-[#184A37]/50 uppercase tracking-wider block">Tổng chi phí</span>
+                                        <span class="text-sm font-bold text-[#184A37] flex items-center gap-1 mt-1">
+                                            <i class="bi bi-cash"></i>
+                                            {{ iti.totalCost === 0 ? 'Miễn phí' : (iti.totalCost | number:'1.0-0':'vi-VN') + 'đ' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="px-5 pb-5 pt-1 flex items-center justify-between border-t border-gray-50 bg-gray-50/50">
+                            <span class="text-[11px] font-semibold text-[#184A37]/50 flex items-center gap-1">
+                                <i class="bi bi-clock-history"></i> ID: {{ iti.id.substring(4, 12) }}
+                            </span>
+                            <div class="flex items-center gap-3">
+                                <button (click)="deleteSavedItinerary(iti.id, $event)" class="h-9 w-9 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-colors border-0 cursor-pointer" title="Xóa lịch trình">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <button (click)="openItinerary(iti.id)" class="h-9 px-4 rounded-lg bg-[#ECFDF5] hover:bg-[#CCFBF1] text-[#0F6B4C] text-xs font-bold transition-all border-0 cursor-pointer">
+                                    Mở biên tập
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <!-- Badge days -->
-                    <span class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm border border-[#184A37]/10 px-3 py-1 rounded-full text-xs font-bold text-[#184A37]">{{ iti.days }} ngày</span>
-                </div>
-
-                <!-- Info Metrics Area -->
-                <div class="p-5 space-y-4">
-                    <div class="grid grid-cols-2 gap-4 border-b border-gray-100 pb-4">
-                        <div>
-                            <span class="text-[10px] font-bold text-[#184A37]/50 uppercase tracking-wider block">Phát thải tích lũy</span>
-                            <span class="text-sm font-bold text-[#0E9F6E] flex items-center gap-1 mt-1">
-                                <i class="bi bi-leaf-fill"></i>
-                                {{ iti.totalCarbon }} kg CO₂
-                            </span>
-                        </div>
-                        <div>
-                            <span class="text-[10px] font-bold text-[#184A37]/50 uppercase tracking-wider block">Tổng chi phí</span>
-                            <span class="text-sm font-bold text-[#184A37] flex items-center gap-1 mt-1">
-                                <i class="bi bi-cash"></i>
-                                {{ iti.totalCost === 0 ? 'Miễn phí' : (iti.totalCost | number:'1.0-0':'vi-VN') + 'đ' }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                </ng-container>
             </div>
+        </div>
 
-            <!-- Footer Actions -->
-            <div class="px-5 pb-5 pt-1 flex items-center justify-between border-t border-gray-50 bg-gray-50/50">
-                <span class="text-[11px] font-semibold text-[#184A37]/50 flex items-center gap-1">
-                    <i class="bi bi-clock-history"></i> ID: {{ iti.id.substring(4, 12) }}
-                </span>
-                <div class="flex items-center gap-3">
-                    <button (click)="deleteSavedItinerary(iti.id, $event)" class="h-9 w-9 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 flex items-center justify-center transition-colors border-0 cursor-pointer" title="Xóa lịch trình">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                    <button (click)="openItinerary(iti.id)" class="h-9 px-4 rounded-lg bg-[#ECFDF5] hover:bg-[#CCFBF1] text-[#0F6B4C] text-xs font-bold transition-all border-0 cursor-pointer">
-                        Mở biên tập
-                    </button>
-                </div>
+        <!-- 2. Deposited Itineraries Section -->
+        <div>
+            <h2 class="text-xl font-bold text-[#184A37] mb-6 flex items-center gap-2">
+                <i class="bi bi-shield-lock text-[#0E9F6E]"></i>
+                Lịch trình đã đặt cọc (Khóa sửa đổi)
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <ng-container *ngFor="let iti of savedItineraries">
+                    <div *ngIf="iti.status === 'deposited'" (click)="openItinerary(iti.id)" class="group bg-white rounded-2xl border border-emerald-250 overflow-hidden shadow-sm hover:shadow-md hover:border-emerald-500/40 transition-all duration-300 cursor-pointer flex flex-col justify-between">
+                        <div>
+                            <!-- Cover Area -->
+                            <div class="relative h-44 w-full overflow-hidden bg-gray-100">
+                                <img [src]="iti.destination === 'Đà Lạt' ? 'image/cb4fbf769d60d911e13c255f7fb39dcc.jpg' : (iti.destination === 'Phú Yên' ? 'image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg' : 'image/Viet Nam.png')" alt="Destination cover" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                                    <div>
+                                        <span class="text-xs font-bold text-emerald-200 uppercase tracking-wider">{{ iti.destination }}</span>
+                                        <h3 class="text-lg font-bold text-white mt-0.5 line-clamp-1">{{ iti.name }}</h3>
+                                    </div>
+                                </div>
+                                <span class="absolute top-4 left-4 bg-emerald-600 text-white border border-emerald-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                                    <i class="bi bi-lock-fill"></i> Đã đặt cọc
+                                </span>
+                                <span class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm border border-[#184A37]/10 px-3 py-1 rounded-full text-xs font-bold text-[#184A37]">{{ iti.days }} ngày</span>
+                            </div>
+
+                            <!-- Metrics -->
+                            <div class="p-5 space-y-4">
+                                <div class="grid grid-cols-2 gap-4 border-b border-gray-100 pb-4">
+                                    <div>
+                                        <span class="text-[10px] font-bold text-[#184A37]/50 uppercase tracking-wider block">Phát thải tích lũy</span>
+                                        <span class="text-sm font-bold text-[#0E9F6E] flex items-center gap-1 mt-1">
+                                            <i class="bi bi-leaf-fill"></i>
+                                            {{ iti.totalCarbon }} kg CO₂
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-bold text-[#184A37]/50 uppercase tracking-wider block">Đặt cọc</span>
+                                        <span class="text-sm font-bold text-emerald-600 flex items-center gap-1 mt-1">
+                                            <i class="bi bi-cash-stack"></i>
+                                            {{ iti.totalCost === 0 ? 'Miễn phí' : (iti.totalCost | number:'1.0-0':'vi-VN') + 'đ' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50 text-[11px] text-[#184A37]/70 flex items-center gap-2" *ngIf="iti.deposit_deadline">
+                                    <i class="bi bi-info-circle-fill text-emerald-600"></i>
+                                    <span>Hạn hủy hoàn tiền: <strong class="text-emerald-700">{{ iti.deposit_deadline }}</strong></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="px-5 pb-5 pt-1 flex items-center justify-between border-t border-gray-50 bg-gray-50/50">
+                            <span class="text-[11px] font-semibold text-[#184A37]/50 flex items-center gap-1">
+                                <i class="bi bi-clock-history"></i> ID: {{ iti.id.substring(4, 12) }}
+                            </span>
+                            <div class="flex items-center gap-2">
+                                <button *ngIf="getCanCancelDeposit(iti)" (click)="cancelDeposit(iti, $event)" class="h-9 px-3 rounded-lg bg-red-50 hover:bg-red-100 border border-red-150 text-red-600 text-xs font-bold transition-all cursor-pointer flex items-center gap-1" title="Hủy đặt cọc">
+                                    <i class="bi bi-x-circle"></i> Hủy
+                                </button>
+                                <span *ngIf="!getCanCancelDeposit(iti)" class="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-lg border border-red-100">
+                                    Hết hạn hủy
+                                </span>
+                                <button (click)="openItinerary(iti.id)" class="h-9 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 text-[#184A37] text-xs font-bold transition-all border-0 cursor-pointer">
+                                    Xem
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
             </div>
         </div>
     </div>

@@ -1,10 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { User, CommunityPost } from '../../models/models';
+import { User, CommunityPost, Itinerary } from '../../models/models';
 
 @Component({
   selector: 'app-community',
@@ -23,6 +23,10 @@ export class CommunityComponent implements OnInit {
   public postRating: number = 5;
   public postImage: string = '';
   public isUploading: boolean = false;
+  
+  // Custom Share Itinerary variables
+  public userItineraries: Itinerary[] = [];
+  public selectedItineraryId: string = '';
 
   // Comments bindings
   public expandedComments: { [postId: string]: boolean } = {};
@@ -50,6 +54,7 @@ export class CommunityComponent implements OnInit {
   constructor(
     private apiService: ApiService,
     private authService: AuthService,
+    private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -78,6 +83,9 @@ export class CommunityComponent implements OnInit {
   async ngOnInit() {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
+      if (user) {
+        this.loadUserItineraries(user.id || user._id || '');
+      }
       this.cdr.detectChanges();
     });
 
@@ -91,6 +99,15 @@ export class CommunityComponent implements OnInit {
   private async loadPosts() {
     this.posts = await this.apiService.getCommunityPosts();
     this.cdr.detectChanges();
+  }
+
+  public async loadUserItineraries(userId: string) {
+    try {
+      this.userItineraries = await this.apiService.getItineraries(userId);
+      this.cdr.detectChanges();
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   public setRating(stars: number) {
@@ -126,17 +143,20 @@ export class CommunityComponent implements OnInit {
     const authorName = this.currentUser ? this.currentUser.fullname : 'Nguyễn Minh Anh';
     const authorId = this.currentUser ? (this.currentUser.id || this.currentUser._id || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d') : '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d';
 
+    const selectedIti = this.selectedItineraryId ? this.userItineraries.find(i => i.id === this.selectedItineraryId) : null;
+
     const newPost = {
       authorId: authorId,
       author: authorName,
       text: this.postText,
       rating: this.postRating,
-      tripName: `Hành trình ${this.postDest} ${this.postDays} ngày`,
-      dest: this.postDest,
-      days: Number(this.postDays),
+      tripName: selectedIti ? selectedIti.name : `Hành trình ${this.postDest} ${this.postDays} ngày`,
+      dest: selectedIti ? selectedIti.destination : this.postDest,
+      days: selectedIti ? selectedIti.days : Number(this.postDays),
       likes: 0,
       comments: 0,
-      image: this.postImage || null
+      image: this.postImage || null,
+      itineraryId: this.selectedItineraryId || null
     };
 
     const success = await this.apiService.addCommunityPost(newPost);
@@ -144,10 +164,44 @@ export class CommunityComponent implements OnInit {
       this.postText = '';
       this.postRating = 5;
       this.postImage = '';
+      this.selectedItineraryId = '';
       this.showPostDetails = false;
       await this.loadPosts();
     } else {
       alert('Đăng bài viết thất bại. Vui lòng kiểm tra kết nối mạng!');
+    }
+  }
+
+  public async deletePost(postId: string, event: Event) {
+    event.stopPropagation();
+    const confirmDelete = confirm("Bạn có chắc chắn muốn xóa bài viết này không?");
+    if (!confirmDelete) return;
+
+    const success = await this.apiService.deleteCommunityPost(postId);
+    if (success) {
+      alert("Đã xóa bài viết thành công!");
+      await this.loadPosts();
+    } else {
+      alert("Xóa bài viết thất bại hoặc bạn không có quyền!");
+    }
+  }
+
+  public async referenceItinerary(itiId: string, event: Event) {
+    event.stopPropagation();
+    if (!this.currentUser) {
+      alert("Vui lòng đăng nhập để tham khảo lịch trình!");
+      return;
+    }
+    const currentUserId = this.currentUser.id || this.currentUser._id || '';
+    const confirmRef = confirm("Hệ thống sẽ tạo bản sao lịch trình này vào danh sách của bạn để biên tập. Bắt đầu sao chép?");
+    if (!confirmRef) return;
+
+    const res = await this.apiService.cloneItinerary(itiId, currentUserId);
+    if (res && res.success) {
+      alert("Sao chép thành công! Đang chuyển hướng đến bảng biên tập lịch trình của bạn...");
+      this.router.navigate(['/schedule', res.newItineraryId]);
+    } else {
+      alert(res.message || "Sao chép lịch trình thất bại!");
     }
   }
 
