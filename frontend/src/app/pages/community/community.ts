@@ -50,6 +50,13 @@ export class CommunityComponent implements OnInit {
   public alertMessage = '';
   public alertType: 'warning' | 'info' | 'error' = 'info';
   public alertIcon = 'bi-info-circle-fill';
+  private alertCallback: (() => void) | null = null;
+
+  // Custom Confirm variables
+  public confirmVisible = false;
+  public confirmTitle = '';
+  public confirmMessage = '';
+  private confirmCallback: ((confirm: boolean) => void) | null = null;
 
   constructor(
     private apiService: ApiService,
@@ -58,14 +65,16 @@ export class CommunityComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
-  public showAlert(title: string, message: string, type: 'warning' | 'info' | 'error' = 'info') {
+  public showAlert(title: string, message: string, type: 'warning' | 'info' | 'error' | 'success' = 'info', callback?: () => void) {
     this.alertTitle = title;
     this.alertMessage = message;
-    this.alertType = type;
+    this.alertType = type === 'success' ? 'info' : type;
+    this.alertCallback = callback || null;
     
-    if (type === 'warning') this.alertIcon = 'bi-exclamation-triangle-fill';
-    else if (type === 'info') this.alertIcon = 'bi-info-circle-fill';
-    else this.alertIcon = 'bi-x-circle-fill';
+    if (type === 'warning') this.alertIcon = 'bi-exclamation-triangle-fill text-amber-500';
+    else if (type === 'error') this.alertIcon = 'bi-x-circle-fill text-red-500';
+    else if (type === 'success') this.alertIcon = 'bi-check-circle-fill text-emerald-500';
+    else this.alertIcon = 'bi-info-circle-fill text-blue-500';
 
     this.alertVisible = true;
     this.cdr.detectChanges();
@@ -73,6 +82,31 @@ export class CommunityComponent implements OnInit {
 
   public closeAlert() {
     this.alertVisible = false;
+    if (this.alertCallback) {
+      this.alertCallback();
+      this.alertCallback = null;
+    }
+    this.cdr.detectChanges();
+  }
+
+  public showConfirm(title: string, message: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.confirmTitle = title;
+      this.confirmMessage = message;
+      this.confirmCallback = (confirmed) => {
+        resolve(confirmed);
+      };
+      this.confirmVisible = true;
+      this.cdr.detectChanges();
+    });
+  }
+
+  public closeConfirm(confirm: boolean) {
+    this.confirmVisible = false;
+    if (this.confirmCallback) {
+      this.confirmCallback(confirm);
+      this.confirmCallback = null;
+    }
     this.cdr.detectChanges();
   }
 
@@ -129,7 +163,7 @@ export class CommunityComponent implements OnInit {
       if (res && res.success) {
         this.postImage = res.url;
       } else {
-        alert("Không thể tải ảnh lên!");
+        this.showAlert("Thất bại", "Không thể tải ảnh lên!", "error");
       }
       this.cdr.detectChanges();
     };
@@ -167,47 +201,49 @@ export class CommunityComponent implements OnInit {
       this.selectedItineraryId = '';
       this.showPostDetails = false;
       await this.loadPosts();
+      this.showAlert("Thành công", "Đã chia sẻ bài viết lên cộng đồng GreenSteps thành công!", "success");
     } else {
-      alert('Đăng bài viết thất bại. Vui lòng kiểm tra kết nối mạng!');
+      this.showAlert("Lỗi", "Đăng bài viết thất bại. Vui lòng kiểm tra kết nối mạng!", "error");
     }
   }
 
   public async deletePost(postId: string, event: Event) {
     event.stopPropagation();
-    const confirmDelete = confirm("Bạn có chắc chắn muốn xóa bài viết này không?");
+    const confirmDelete = await this.showConfirm("Xóa bài viết", "Bạn có chắc chắn muốn xóa bài viết này không?");
     if (!confirmDelete) return;
 
     const success = await this.apiService.deleteCommunityPost(postId);
     if (success) {
-      alert("Đã xóa bài viết thành công!");
+      this.showAlert("Thành công", "Đã xóa bài viết thành công!", "success");
       await this.loadPosts();
     } else {
-      alert("Xóa bài viết thất bại hoặc bạn không có quyền!");
+      this.showAlert("Lỗi", "Xóa bài viết thất bại hoặc bạn không có quyền!", "error");
     }
   }
 
   public async referenceItinerary(itiId: string, event: Event) {
     event.stopPropagation();
     if (!this.currentUser) {
-      alert("Vui lòng đăng nhập để tham khảo lịch trình!");
+      this.showAlert("Thông báo", "Vui lòng đăng nhập để tham khảo lịch trình!", "warning");
       return;
     }
     const currentUserId = this.currentUser.id || this.currentUser._id || '';
-    const confirmRef = confirm("Hệ thống sẽ tạo bản sao lịch trình này vào danh sách của bạn để biên tập. Bắt đầu sao chép?");
+    const confirmRef = await this.showConfirm("Tham khảo lịch trình", "Hệ thống sẽ tạo bản sao lịch trình này vào danh sách của bạn để biên tập. Bắt đầu sao chép?");
     if (!confirmRef) return;
 
     const res = await this.apiService.cloneItinerary(itiId, currentUserId);
     if (res && res.success) {
-      alert("Sao chép thành công! Đang chuyển hướng đến bảng biên tập lịch trình của bạn...");
-      this.router.navigate(['/schedule', res.newItineraryId]);
+      this.showAlert("Thành công", "Sao chép lịch trình thành công! Hệ thống sẽ chuyển hướng bạn đến trang biên tập lịch trình ngay bây giờ.", "success", () => {
+        this.router.navigate(['/schedule', res.newItineraryId]);
+      });
     } else {
-      alert(res.message || "Sao chép lịch trình thất bại!");
+      this.showAlert("Lỗi", res.message || "Sao chép lịch trình thất bại!", "error");
     }
   }
 
   public async handleLike(post: CommunityPost) {
     if (this.likedPostsSet.has(post.id)) {
-      alert("Bạn đã thích bài viết này rồi!");
+      this.showAlert("Thông báo", "Bạn đã thích bài viết này rồi!", "warning");
       return;
     }
 
@@ -218,7 +254,7 @@ export class CommunityComponent implements OnInit {
       localStorage.setItem('greensteps_liked_posts', JSON.stringify(Array.from(this.likedPostsSet)));
       this.cdr.detectChanges();
     } else {
-      alert("Thích bài viết thất bại!");
+      this.showAlert("Lỗi", "Thích bài viết thất bại!", "error");
     }
   }
 
@@ -233,18 +269,8 @@ export class CommunityComponent implements OnInit {
 
   public async loadComments(postId: string) {
     const comments = await this.apiService.getPostComments(postId);
-    this.postComments[postId] = this.buildCommentTree(comments);
+    this.postComments[postId] = comments;
     this.cdr.detectChanges();
-  }
-
-  private buildCommentTree(flatComments: any[]): any[] {
-    const roots = flatComments.filter(c => !c.parent_comment_id);
-    const children = flatComments.filter(c => c.parent_comment_id);
-    
-    roots.forEach(root => {
-      root.replies = children.filter(c => c.parent_comment_id === root.id);
-    });
-    return roots;
   }
 
   public toggleReplyBox(commentId: string) {
@@ -283,7 +309,7 @@ export class CommunityComponent implements OnInit {
       }
       this.cdr.detectChanges();
     } else {
-      alert("Đăng bình luận thất bại!");
+      this.showAlert("Thất bại", "Đăng bình luận thất bại!", "error");
     }
   }
 
@@ -304,11 +330,11 @@ export class CommunityComponent implements OnInit {
         if (res && res.success) {
           this.commentImageDrafts[postId] = res.url;
         } else {
-          alert("Không thể tải ảnh lên bình luận!");
+          this.showAlert("Thất bại", "Không thể tải ảnh lên bình luận!", "error");
         }
       } catch (err) {
         this.isCommentUploading[postId] = false;
-        alert("Lỗi tải ảnh lên!");
+        this.showAlert("Lỗi", "Lỗi tải ảnh lên!", "error");
       }
       this.cdr.detectChanges();
     };

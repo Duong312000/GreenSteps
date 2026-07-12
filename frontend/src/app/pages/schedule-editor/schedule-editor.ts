@@ -42,6 +42,14 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public shareMessage: string = '';
   public shareLink: string = '';
 
+  // Custom Premium Dialog Modal properties (Alert & Confirm)
+  public dialogVisible = false;
+  public dialogTitle = '';
+  public dialogMessage = '';
+  public dialogType: 'info' | 'warning' | 'error' | 'success' | 'confirm' = 'info';
+  public dialogIcon = 'bi-info-circle-fill';
+  private dialogCallback: ((confirm: boolean) => void) | null = null;
+
   private modalMap: any = null;
   private modalMarkers: { [key: string]: any } = {};
   private destCoords: { [key: string]: [number, number] } = {
@@ -245,16 +253,17 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   public async deleteSavedItinerary(id: string, event: Event) {
     event.stopPropagation();
-    if (confirm('Bạn có chắc chắn muốn xóa lịch trình này?')) {
+    const confirmed = await this.showConfirm('Xóa lịch trình', 'Bạn có chắc chắn muốn xóa lịch trình này không?');
+    if (confirmed) {
       const success = await this.apiService.deleteItinerary(id);
       if (success) {
         if (localStorage.getItem('greensteps_working_itinerary_id') === id) {
           localStorage.removeItem('greensteps_working_itinerary_id');
         }
-        alert('Đã xóa lịch trình thành công!');
+        this.showAlert('Đã xóa lịch trình thành công!', 'success');
         this.loadSavedItinerariesList();
       } else {
-        alert('Xóa lịch trình thất bại!');
+        this.showAlert('Xóa lịch trình thất bại!', 'error');
       }
     }
   }
@@ -322,7 +331,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       const start = new Date(this.newTripStartDate);
       const end = new Date(this.newTripEndDate);
       if (end < start) {
-        alert('Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!');
+        this.showAlert('Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!', 'warning');
         return;
       }
       calculatedDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
@@ -358,7 +367,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       localStorage.setItem('greensteps_working_itinerary_id', newIti.id);
       this.router.navigate(['/schedule', newIti.id]);
     } else {
-      alert('Không thể khởi tạo lịch trình mới!');
+      this.showAlert('Không thể khởi tạo lịch trình mới!', 'error');
     }
   }
 
@@ -383,7 +392,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.sharingItinerary) return;
     const user = this.authService.getCurrentUser();
     if (!user) {
-      alert('Vui lòng đăng nhập để chia sẻ!');
+      this.showAlert('Vui lòng đăng nhập để chia sẻ!', 'warning');
       return;
     }
     
@@ -404,14 +413,16 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       
       const ok = await this.apiService.addCommunityPost(payload);
       if (ok) {
-        alert('Đã chia sẻ lịch trình lên cộng đồng GreenSteps thành công!');
         this.closeShareModal();
+        this.showAlert('Đã chia sẻ lịch trình lên cộng đồng GreenSteps thành công!', 'success', () => {
+          this.router.navigate(['/community']);
+        });
       } else {
-        alert('Chia sẻ lên cộng đồng thất bại!');
+        this.showAlert('Chia sẻ lên cộng đồng thất bại!', 'error');
       }
     } catch (e) {
       console.error(e);
-      alert('Đã xảy ra lỗi khi đăng bài!');
+      this.showAlert('Đã xảy ra lỗi khi đăng bài!', 'error');
     }
   }
 
@@ -429,7 +440,45 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   public copyShareLink() {
     navigator.clipboard.writeText(this.shareLink);
-    alert('Đã sao chép liên kết chia sẻ vào bộ nhớ tạm!');
+    this.showAlert('Đã sao chép liên kết chia sẻ vào bộ nhớ tạm!', 'success');
+  }
+
+  public showAlert(message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info', callback?: () => void) {
+    this.dialogTitle = type === 'success' ? 'Thành công' : (type === 'error' ? 'Lỗi' : 'Thông báo');
+    this.dialogMessage = message;
+    this.dialogType = type;
+    this.dialogCallback = callback ? (confirmed) => { if (confirmed) callback(); } : null;
+    
+    if (type === 'warning') this.dialogIcon = 'bi-exclamation-triangle-fill text-amber-500';
+    else if (type === 'error') this.dialogIcon = 'bi-x-circle-fill text-red-500';
+    else if (type === 'success') this.dialogIcon = 'bi-check-circle-fill text-[#0E9F6E]';
+    else this.dialogIcon = 'bi-info-circle-fill text-blue-500';
+
+    this.dialogVisible = true;
+    this.cdr.detectChanges();
+  }
+
+  public showConfirm(title: string, message: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      this.dialogTitle = title;
+      this.dialogMessage = message;
+      this.dialogType = 'confirm';
+      this.dialogIcon = 'bi-question-circle-fill text-[#0E9F6E]';
+      this.dialogCallback = (confirmed) => {
+        resolve(confirmed);
+      };
+      this.dialogVisible = true;
+      this.cdr.detectChanges();
+    });
+  }
+
+  public closeDialog(confirm: boolean) {
+    this.dialogVisible = false;
+    if (this.dialogCallback) {
+      this.dialogCallback(confirm);
+      this.dialogCallback = null;
+    }
+    this.cdr.detectChanges();
   }
 
   private initModalMap(containerId: string) {
@@ -754,7 +803,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       cloned.title = preset.title;
       this.openEditorWithItinerary(cloned);
     } else {
-      alert("Không tìm thấy lịch trình này, đang quay về danh sách!");
+      this.showAlert('Không tìm thấy lịch trình này, đang quay về danh sách!', 'warning');
       this.router.navigate(['/schedule']);
     }
     this.cdr.detectChanges();
@@ -882,7 +931,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     event.stopPropagation();
     if (!this.activeItinerary || this.activeItinerary.days.length <= 1) return;
 
-    const confirmed = confirm(`Bạn có chắc chắn muốn xóa Ngày ${idx + 1} khỏi lịch trình không?`);
+    const confirmed = await this.showConfirm('Xóa ngày', `Bạn có chắc chắn muốn xóa Ngày ${idx + 1} khỏi lịch trình không?`);
     if (!confirmed) return;
 
     this.activeItinerary.days.splice(idx, 1);
@@ -1562,7 +1611,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         };
         this.cdr.detectChanges();
       } else {
-        alert('Không tìm thấy địa điểm này ở ' + destLabel);
+        this.showAlert('Không tìm thấy địa điểm này ở ' + destLabel, 'warning');
       }
     } catch (e) {
       console.error('Search error:', e);
@@ -1728,7 +1777,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public async handleActivateWallet() {
     const user = this.authService.getCurrentUser();
     if (!user) {
-      alert("Vui lòng đăng nhập!");
+      this.showAlert('Vui lòng đăng nhập!', 'warning');
       return;
     }
     const userId = user.id || user._id || '';
@@ -1736,16 +1785,16 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     if (res && res.success) {
       this.walletBalance = res.balance;
       this.walletRegistered = true;
-      alert("Kích hoạt ví GreenSteps thành công! Bạn nhận được quà tặng chào mừng 200.000đ.");
+      this.showAlert('Kích hoạt ví GreenSteps thành công! Bạn nhận được quà tặng chào mừng 200.000đ.', 'success');
       this.cdr.detectChanges();
     } else {
-      alert("Kích hoạt ví thất bại!");
+      this.showAlert('Kích hoạt ví thất bại!', 'error');
     }
   }
 
   public openCheckout() {
     if (!this.walletRegistered) {
-      alert("Ví GreenSteps của bạn chưa được kích hoạt! Vui lòng vào trang Quản lý trang cá nhân để thực hiện yêu cầu kích hoạt ví.");
+      this.showAlert('Ví GreenSteps của bạn chưa được kích hoạt! Vui lòng vào trang Quản lý trang cá nhân để thực hiện yêu cầu kích hoạt ví.', 'warning');
       return;
     }
 
@@ -1806,7 +1855,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   public validateContactInfo(): boolean {
     if (!this.checkoutLastName.trim() || !this.checkoutFirstName.trim() || !this.checkoutEmail.trim() || !this.checkoutPhone.trim()) {
-      alert("Vui lòng nhập đầy đủ thông tin liên hệ (Họ, Tên, Email, Số điện thoại) để xác nhận đặt cọc!");
+      this.showAlert('Vui lòng nhập đầy đủ thông tin liên hệ (Họ, Tên, Email, Số điện thoại) để xác nhận đặt cọc!', 'warning');
       return false;
     }
     return true;
@@ -1816,13 +1865,13 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.validateContactInfo()) return;
     this.onCardNumberChange();
     if (this.cardError) {
-      alert("Thông tin thẻ tín dụng chưa hợp lệ. Vui lòng kiểm tra lại!");
+      this.showAlert('Thông tin thẻ tín dụng chưa hợp lệ. Vui lòng kiểm tra lại!', 'warning');
       return;
     }
 
     if (!this.cardHolderName.trim()) {
       this.cardError = 'Tên chủ thẻ không được để trống';
-      alert("Tên chủ thẻ không được để trống!");
+      this.showAlert('Tên chủ thẻ không được để trống!', 'warning');
       return;
     }
 
@@ -1840,7 +1889,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       this.activeItinerary.deposit_deadline = `${yyyy}-${mm}-${dd}`;
       await this.saveItineraryToDb();
       this.closeCheckout();
-      alert(`Thanh toán bằng Thẻ Tín Dụng thành công! Đã đặt cọc và khóa lịch trình. Hạn hủy miễn phí trước ngày ${dd}/${mm}/${yyyy}.`);
+      this.showAlert(`Thanh toán bằng Thẻ Tín Dụng thành công! Đã đặt cọc và khóa lịch trình. Hạn hủy miễn phí trước ngày ${dd}/${mm}/${yyyy}.`, 'success');
       this.cdr.detectChanges();
     }, 1500);
   }
@@ -1862,7 +1911,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       this.activeItinerary.deposit_deadline = `${yyyy}-${mm}-${dd}`;
       await this.saveItineraryToDb();
       this.closeCheckout();
-      alert(`Đã xác nhận Giữ Chỗ & Thanh Toán Sau thành công! Lịch trình đã được giữ chỗ và khóa sửa đổi. Vui lòng hoàn tất thanh toán trước ngày ${dd}/${mm}/${yyyy}.`);
+      this.showAlert(`Đã xác nhận Giữ Chỗ & Thanh Toán Sau thành công! Lịch trình đã được giữ chỗ và khóa sửa đổi. Vui lòng hoàn tất thanh toán trước ngày ${dd}/${mm}/${yyyy}.`, 'success');
       this.cdr.detectChanges();
     }, 1500);
   }
@@ -1877,12 +1926,12 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   public async showDepositQr() {
     if (!this.depositAmount || this.depositAmount <= 0) {
-      alert("Vui lòng nhập số tiền nạp hợp lệ!");
+      this.showAlert('Vui lòng nhập số tiền nạp hợp lệ!', 'warning');
       return;
     }
     const user = this.authService.getCurrentUser();
     if (!user) {
-      alert("Vui lòng đăng nhập!");
+      this.showAlert('Vui lòng đăng nhập!', 'warning');
       return;
     }
     const userId = user.id || user._id || '';
@@ -1902,26 +1951,26 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         // Admin approved -> auto-close QR and update balance
         this.isQrVisible = false;
         this.walletBalance = res.balance;
-        alert(`Nạp tiền thành công! Số dư ví: ${res.balance.toLocaleString("vi-VN")}đ`);
+        this.showAlert(`Nạp tiền thành công! Số dư ví: ${res.balance.toLocaleString('vi-VN')}đ`, 'success');
       } else {
         this.isQrVisible = false;
-        alert(res.message || "Giao dịch bị từ chối.");
+        this.showAlert(res.message || 'Giao dịch bị từ chối.', 'error');
       }
     } catch (e: any) {
       this.isQrVisible = false;
-      alert("Giao dịch bị từ chối hoặc có lỗi xảy ra.");
+      this.showAlert('Giao dịch bị từ chối hoặc có lỗi xảy ra.', 'error');
     }
     this.cdr.detectChanges();
   }
 
   public async showPaymentQr() {
     if (this.checkoutTotal === 0) {
-      alert("Lịch trình trống hoặc toàn bộ dịch vụ đều miễn phí!");
+      this.showAlert('Lịch trình trống hoặc toàn bộ dịch vụ đều miễn phí!', 'info');
       return;
     }
     const user = this.authService.getCurrentUser();
     if (!user) {
-      alert("Vui lòng đăng nhập!");
+      this.showAlert('Vui lòng đăng nhập!', 'warning');
       return;
     }
     if (!this.validateContactInfo()) return;
@@ -1951,14 +2000,14 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         this.activeItinerary.deposit_deadline = `${yyyy}-${mm}-${dd}`;
         await this.saveItineraryToDb();
         this.closeCheckout();
-        alert(`Thanh toán thành công! Đã đặt cọc và khóa lịch trình. Hạn hủy miễn phí trước ngày ${dd}/${mm}/${yyyy}.`);
+        this.showAlert(`Thanh toán thành công! Đã đặt cọc và khóa lịch trình. Hạn hủy miễn phí trước ngày ${dd}/${mm}/${yyyy}.`, 'success');
       } else {
         this.isQrVisible = false;
-        alert(res.message || "Giao dịch bị từ chối.");
+        this.showAlert(res.message || 'Giao dịch bị từ chối.', 'error');
       }
     } catch (e: any) {
       this.isQrVisible = false;
-      alert("Giao dịch bị từ chối hoặc có lỗi xảy ra.");
+      this.showAlert('Giao dịch bị từ chối hoặc có lỗi xảy ra.', 'error');
     }
     this.cdr.detectChanges();
   }
@@ -1994,18 +2043,18 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.activeItinerary) return;
 
     if (this.checkoutTotal === 0) {
-      alert("Lịch trình trống hoặc toàn bộ dịch vụ đều miễn phí!");
+      this.showAlert('Lịch trình trống hoặc toàn bộ dịch vụ đều miễn phí!', 'info');
       return;
     }
 
     if (this.walletBalance < this.checkoutTotal) {
-      alert("Số dư ví không đủ! Vui lòng quét mã QR thanh toán trực tiếp.");
+      this.showAlert('Số dư ví không đủ! Vui lòng quét mã QR thanh toán trực tiếp.', 'warning');
       return;
     }
 
     const user = this.authService.getCurrentUser();
     if (!user) {
-      alert("Vui lòng đăng nhập để thanh toán!");
+      this.showAlert('Vui lòng đăng nhập để thanh toán!', 'warning');
       return;
     }
     if (!this.validateContactInfo()) return;
@@ -2029,12 +2078,12 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         this.activeItinerary.deposit_deadline = `${yyyy}-${mm}-${dd}`;
         await this.saveItineraryToDb();
         this.closeCheckout();
-        alert(`Thanh toán thành công! Đã đặt cọc và khóa lịch trình. Hạn hủy miễn phí trước ngày ${dd}/${mm}/${yyyy}.`);
+        this.showAlert(`Thanh toán thành công! Đã đặt cọc và khóa lịch trình. Hạn hủy miễn phí trước ngày ${dd}/${mm}/${yyyy}.`, 'success');
       } else {
-        alert(res.message || "Thanh toán bị từ chối.");
+        this.showAlert(res.message || 'Thanh toán bị từ chối.', 'error');
       }
     } catch (e: any) {
-      alert(e.error?.message || "Thanh toán bị từ chối hoặc hết hạn phê duyệt.");
+      this.showAlert(e.error?.message || 'Thanh toán bị từ chối hoặc hết hạn phê duyệt.', 'error');
     } finally {
       this.isWaitingApproval = false;
       this.cdr.detectChanges();
@@ -2056,8 +2105,9 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.cdr.detectChanges();
   }
 
-  public deleteCustomList(listIdx: number) {
-    if (confirm(`Bạn có chắc chắn muốn xóa danh mục "${this.customLists[listIdx].title}" không?`)) {
+  public async deleteCustomList(listIdx: number) {
+    const ok = await this.showConfirm('Xóa danh mục', `Bạn có chắc chắn muốn xóa danh mục "${this.customLists[listIdx].title}" không?`);
+    if (ok) {
       this.customLists.splice(listIdx, 1);
       this.cdr.detectChanges();
     }
@@ -2069,11 +2119,11 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   public alertNotesDev() {
-    alert("Tính năng Ghi chú hành trình tự do đang phát triển! Bạn có thể lưu trữ ghi chú của mình ở đây.");
+    this.showAlert('Tính năng Ghi chú hành trình tự do đang phát triển! Bạn có thể lưu trữ ghi chú của mình ở đây.', 'info');
   }
 
   public alertPlacesDev() {
-    alert("Tính năng lưu trữ các địa điểm đã ghim đang được phát triển!");
+    this.showAlert('Tính năng lưu trữ các địa điểm đã ghim đang được phát triển!', 'info');
   }
 
   // Drag-to-resize panel layout handler
@@ -2218,7 +2268,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public async cancelDeposit(iti: any, event: Event) {
     event.stopPropagation();
     if (!iti.deposit_deadline) {
-      alert("Không tìm thấy thời hạn hủy hợp lệ!");
+      this.showAlert('Không tìm thấy thời hạn hủy hợp lệ!', 'error');
       return;
     }
     const today = new Date();
@@ -2227,19 +2277,19 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     deadline.setHours(0, 0, 0, 0);
 
     if (today > deadline) {
-      alert(`Đã quá thời hạn hủy đặt cọc miễn phí (Hạn chót: ${iti.deposit_deadline}). Bạn không thể hủy lịch trình này.`);
+      this.showAlert(`Đã quá thời hạn hủy đặt cọc miễn phí (Hạn chót: ${iti.deposit_deadline}). Bạn không thể hủy lịch trình này.`, 'error');
       return;
     }
 
-    const confirmCancel = confirm(`Bạn có chắc chắn muốn hủy đặt cọc lịch trình "${iti.name}"? Số tiền đặt cọc sẽ được hoàn lại ví.`);
+    const confirmCancel = await this.showConfirm('Hủy đặt cọc', `Bạn có chắc chắn muốn hủy đặt cọc lịch trình "${iti.name}"? Số tiền đặt cọc sẽ được hoàn lại ví.`);
     if (confirmCancel) {
       iti.status = 'cancelled';
       const success = await this.apiService.saveItinerary(this.convertEditorToApiItinerary(iti));
       if (success) {
-        alert("Hủy đặt cọc thành công! Lịch trình đã chuyển về trạng thái Hủy.");
+        this.showAlert('Hủy đặt cọc thành công! Lịch trình đã chuyển về trạng thái Hủy.', 'success');
         await this.loadSavedItinerariesList();
       } else {
-        alert("Hủy đặt cọc thất bại. Vui lòng thử lại!");
+        this.showAlert('Hủy đặt cọc thất bại. Vui lòng thử lại!', 'error');
       }
     }
   }

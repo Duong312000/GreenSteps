@@ -73,7 +73,7 @@ exports.addPost = async (req, res, next) => {
       tour_name: tripName,
       destination: dest,
       days: days,
-      image_url: image || 'image/Viet Nam.png',
+      image_url: image || null,
       itinerary_id: itineraryId || null
     });
     res.json(post);

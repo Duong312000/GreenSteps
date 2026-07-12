@@ -1037,3 +1037,27 @@
         </div>
     </div>
 </div>
+
+<!-- Custom Premium Dialog Modal (Alert & Confirm Overlay) -->
+<div class="custom-alert-overlay" *ngIf="dialogVisible" style="z-index: 5100;">
+    <div class="custom-alert-card">
+        <div class="custom-alert-icon" 
+             [ngClass]="dialogType === 'success' ? 'info' : (dialogType === 'confirm' ? 'info' : dialogType)"
+             [style.background-color]="dialogType === 'success' ? '#ECFDF5' : null" 
+             [style.color]="dialogType === 'success' ? '#0E9F6E' : null" 
+             [style.border-color]="dialogType === 'success' ? '#A7F3D0' : null">
+            <i class="bi" [class]="dialogIcon" style="font-size: 2rem;"></i>
+        </div>
+        <h3 style="margin-top: 0; font-size: 18px; font-weight: 800; color: #111827;">{{ dialogTitle }}</h3>
+        <p style="font-size: 14px; color: #4B5563; line-height: 1.5; margin-bottom: 24px;">{{ dialogMessage }}</p>
+        <div class="custom-alert-actions" style="display: flex; gap: 12px; justify-content: center; width: 100%;">
+            <ng-container *ngIf="dialogType === 'confirm'; else alertBtn">
+                <button type="button" class="btn-alert-ok" style="background-color: #6B7280; color: white; border: 0; padding: 0 20px; height: 38px; border-radius: 8px; font-weight: 700; cursor: pointer;" (click)="closeDialog(false)">Hủy</button>
+                <button type="button" class="btn-alert-ok" style="background-color: #0E9F6E; color: white; border: 0; padding: 0 20px; height: 38px; border-radius: 8px; font-weight: 700; cursor: pointer;" (click)="closeDialog(true)">Xác nhận</button>
+            </ng-container>
+            <ng-template #alertBtn>
+                <button type="button" class="btn-alert-ok" style="background-color: #0E9F6E; color: white; border: 0; padding: 0 24px; height: 38px; border-radius: 8px; font-weight: 700; cursor: pointer;" (click)="closeDialog(true)">Đã hiểu</button>
+            </ng-template>
+        </div>
+    </div>
+</div>

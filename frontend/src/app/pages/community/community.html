@@ -411,15 +411,30 @@
   </div>
 
   <!-- Custom Premium Alert Dialog Modal (Center Screen) -->
-  <div class="custom-alert-overlay" *ngIf="alertVisible">
+  <div class="custom-alert-overlay" *ngIf="alertVisible" style="z-index: 5100;">
     <div class="custom-alert-card">
       <div class="custom-alert-icon" [ngClass]="alertType">
-        <i class="bi" [ngClass]="alertIcon"></i>
+        <i class="bi" [class]="alertIcon"></i>
       </div>
       <h3>{{ alertTitle }}</h3>
       <p>{{ alertMessage }}</p>
       <div class="custom-alert-actions">
         <button type="button" class="btn-alert-ok" (click)="closeAlert()">Đã hiểu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Premium Confirm Dialog Modal (Center Screen) -->
+  <div class="custom-alert-overlay" *ngIf="confirmVisible" style="z-index: 5000;">
+    <div class="custom-alert-card">
+      <div class="custom-alert-icon info">
+        <i class="bi bi-question-circle-fill text-blue-500" style="font-size: 2rem;"></i>
+      </div>
+      <h3>{{ confirmTitle }}</h3>
+      <p>{{ confirmMessage }}</p>
+      <div class="custom-alert-actions" style="display: flex; gap: 10px; justify-content: center;">
+        <button type="button" class="btn-alert-ok" style="background-color: #6b7280; border: 0;" (click)="closeConfirm(false)">Hủy</button>
+        <button type="button" class="btn-alert-ok" style="border: 0;" (click)="closeConfirm(true)">Xác nhận</button>
       </div>
     </div>
   </div>
