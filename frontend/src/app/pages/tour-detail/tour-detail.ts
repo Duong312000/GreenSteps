@@ -115,40 +115,23 @@ export class TourDetailComponent implements OnInit {
     const coverImage = this.activeTour.image || this.activeTour.image_url || this.localTourImage('cover.jpg');
     const galleryImages = (this.activeTour.gallery || []).filter(Boolean);
 
-    this.slideImages = [coverImage, ...galleryImages];
+    let rawImages = [coverImage, ...galleryImages];
 
-    for (let index = 1; this.slideImages.length < 7 && index <= 6; index++) {
+    for (let index = 1; rawImages.length < 7 && index <= 6; index++) {
       const localGalleryImage = this.localTourImage(`gallery-${String(index).padStart(2, '0')}.jpg`);
-      if (!this.slideImages.includes(localGalleryImage)) {
-        this.slideImages.push(localGalleryImage);
+      if (!rawImages.includes(localGalleryImage)) {
+        rawImages.push(localGalleryImage);
       }
     }
 
-    this.slideImages = this.slideImages.slice(0, 7);
+    this.slideImages = rawImages.filter(img => !this.isLowQualityGalleryImage(img));
     this.activeSlideIndex = 0;
 
-    if (this.slideImages.length >= 7) return;
     const dest = this.activeTour.destination || 'Đà Lạt';
     const destImgs = this.destinationImages[dest] || this.destinationImages['Đà Lạt'];
-    const highQualityFallbacks = [
-      "image/1dc8619487310884c9d631d689ece1e7.jpg",
-      "image/cb4fbf769d60d911e13c255f7fb39dcc.jpg",
-      "image/dalat_cover.png",
-      "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg",
-      "image/phuyen_cover.png",
-      "image/da38f44902391ce9a9e4f0fd4b69fb04.jpg",
-      "image/danang_cover.png",
-      "image/Viet Nam.png",
-      "image/Gemini_Generated_Image_szp1ouszp1ouszp1.png",
-      "image/41a413334d9e3753b26c50f3a3921309.jpg",
-      "image/b025d2b33ebe6db7e576ff3476f9acde.jpg",
-      "image/52627caa0015b2f833fbdc632d37dc82.jpg",
-      "image/581559b0ca4ebbb8ec09d933fc7bff3d.jpg",
-      "image/2eee566424c1f35fbeacf85496b4b6e7.jpg"
-    ];
 
     destImgs.forEach(img => {
-      if (img !== this.activeTour?.image && this.slideImages.length < 7) {
+      if (img !== this.activeTour?.image && this.slideImages.length < 7 && !this.slideImages.includes(img)) {
         this.slideImages.push(img);
       }
     });
@@ -158,15 +141,10 @@ export class TourDetailComponent implements OnInit {
     }
 
     while (this.slideImages.length < 7) {
-      this.slideImages.push(destImgs[this.slideImages.length % destImgs.length]);
+      const fallbackImg = destImgs[this.slideImages.length % destImgs.length];
+      this.slideImages.push(fallbackImg);
     }
 
-    this.slideImages = this.slideImages.filter(img => !this.isLowQualityGalleryImage(img));
-    highQualityFallbacks.forEach(img => {
-      if (this.slideImages.length < 7 && !this.slideImages.includes(img)) {
-        this.slideImages.push(img);
-      }
-    });
     this.slideImages = this.slideImages.slice(0, 7);
   }
 
