@@ -44,31 +44,38 @@ export class TourDetailComponent implements OnInit {
   // Fallback slider images by destination
   private destinationImages: { [key: string]: string[] } = {
     "Đà Lạt": [
-      "image/1dc8619487310884c9d631d689ece1e7.jpg",
-      "image/52627caa0015b2f833fbdc632d37dc82.jpg",
-      "image/2eee566424c1f35fbeacf85496b4b6e7.jpg",
-      "image/41a413334d9e3753b26c50f3a3921309.jpg",
-      "image/dalat_cover.png",
-      "image/cb4fbf769d60d911e13c255f7fb39dcc.jpg",
-      "image/581559b0ca4ebbb8ec09d933fc7bff3d.jpg"
+      "image/greensteps/da-lat/da-lat-ho-xuan-huong-01.jpg",
+      "image/greensteps/da-lat/da-lat-rung-thong-01.jpg",
+      "image/greensteps/da-lat/da-lat-rung-thong-san-may-01.jpg",
+      "image/greensteps/da-lat/da-lat-ho-tuyen-lam-01.jpg",
+      "image/greensteps/da-lat/da-lat-quang-truong-lam-vien-01.jpg",
+      "image/greensteps/da-lat/da-lat-vuon-hoa-01.jpg",
+      "image/greensteps/da-lat/da-lat-thac-nuoc-01.jpg"
     ],
     "Phú Yên": [
-      "image/cb4fbf769d60d911e13c255f7fb39dcc.jpg",
-      "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg",
-      "image/e8b896896439701c1ff79d65290703b0.jpg",
-      "image/4302842f8d693c25238f2141964a64b2.jpg",
-      "image/68e15971da05ec82c116fe191abb8c7f.jpg",
-      "image/phuyen_cover.png",
-      "image/52627caa0015b2f833fbdc632d37dc82.jpg"
+      "image/greensteps/phu-yen/phu-yen-bai-bien-dua-01.jpg",
+      "image/greensteps/phu-yen/phu-yen-bai-da-ven-bien-01.jpg",
+      "image/greensteps/phu-yen/phu-yen-bai-xep-checkin-01.jpg",
+      "image/greensteps/phu-yen/phu-yen-bien-trong-01.jpg",
+      "image/greensteps/phu-yen/phu-yen-mui-dien-bai-mon-01.jpg",
+      "image/greensteps/phu-yen/phu-yen-thap-nghinh-phong-01.jpg",
+      "image/greensteps/phu-yen/phu-yen-canh-quan-xanh-01.jpg"
+    ],
+    "Đà Nẵng": [
+      "image/greensteps/da-nang-hoi-an/da-nang-bien-my-khe-toan-canh-01.jpg",
+      "image/greensteps/da-nang-hoi-an/da-nang-cau-vang-ba-na-hills-01.jpg",
+      "image/greensteps/da-nang-hoi-an/da-nang-cau-rong-phun-lua-01.jpg",
+      "image/greensteps/da-nang-hoi-an/da-nang-bien-my-khe-01.jpg",
+      "image/greensteps/da-nang-hoi-an/da-nang-ba-na-hills-lang-phap-01.jpg"
     ],
     "Đà Nẵng - Hội An": [
-      "image/da38f44902391ce9a9e4f0fd4b69fb04.jpg",
-      "image/b025d2b33ebe6db7e576ff3476f9acde.jpg",
-      "image/7c9e14a82698a594dd914369bfb8eaa5.jpg",
-      "image/Viet Nam.png",
-      "image/Gemini_Generated_Image_szp1ouszp1ouszp1.png",
-      "image/danang_cover.png",
-      "image/41a413334d9e3753b26c50f3a3921309.jpg"
+      "image/greensteps/da-nang-hoi-an/da-nang-bien-my-khe-toan-canh-01.jpg",
+      "image/greensteps/da-nang-hoi-an/da-nang-cau-vang-ba-na-hills-01.jpg",
+      "image/greensteps/da-nang-hoi-an/da-nang-cau-rong-phun-lua-01.jpg",
+      "image/greensteps/da-nang-hoi-an/hoi-an-lang-rau-tra-que-01.jpg",
+      "image/greensteps/da-nang-hoi-an/hoi-an-chua-cau-01.jpg",
+      "image/greensteps/da-nang-hoi-an/hoi-an-pho-co-den-long-01.jpg",
+      "image/greensteps/da-nang-hoi-an/hoi-an-song-hoai-ban-dem-01.jpg"
     ]
   };
 
