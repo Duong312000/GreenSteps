@@ -689,6 +689,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       title: apiIti.name || "Lịch trình tự thiết kế",
       dest: destSlug,
       destLabel: destLabel,
+      destination: destLabel,
       days: days,
       status: apiIti.status || 'draft',
       deposit_deadline: apiIti.deposit_deadline || null

@@ -11,9 +11,36 @@ export class ApiService {
     ? 'http://localhost:5055/api' 
     : 'https://greensteps-6swn.onrender.com/api';
 
+  private cache = new Map<string, { data: any; expiry: number }>();
 
+  private getCachedData(key: string): any | null {
+    const cached = this.cache.get(key);
+    if (!cached) return null;
+    if (Date.now() > cached.expiry) {
+      this.cache.delete(key);
+      return null;
+    }
+    return cached.data;
+  }
+
+  private setCachedData(key: string, data: any, ttlMs: number = 300000): void {
+    this.cache.set(key, { data, expiry: Date.now() + ttlMs });
+  }
+
+  public clearCache(prefix?: string): void {
+    if (!prefix) {
+      this.cache.clear();
+    } else {
+      for (const key of this.cache.keys()) {
+        if (key.startsWith(prefix)) {
+          this.cache.delete(key);
+        }
+      }
+    }
+  }
 
   constructor(private http: HttpClient) {}
+
 
   private mapTourToFrontend(tour: any): Tour {
     return {
@@ -37,32 +64,52 @@ export class ApiService {
 
   // 1. Tours APIs
   public async getPresetTours(userId?: string): Promise<Tour[]> {
+    const cacheKey = `preset_tours_${userId || 'guest'}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     const url = userId ? `${this.BACKEND_URL}/tours?userId=${userId}` : `${this.BACKEND_URL}/tours`;
     const res = await firstValueFrom(this.http.get<any[]>(url));
-    return (res || []).map(t => this.mapTourToFrontend(t));
+    const data = (res || []).map(t => this.mapTourToFrontend(t));
+    this.setCachedData(cacheKey, data);
+    return data;
   }
 
   public async getPresetTour(id: string): Promise<Tour | null> {
+    const cacheKey = `preset_tour_${id}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
       const cleanId = String(id).replace('preset_', '');
       const t = await firstValueFrom(this.http.get<any>(`${this.BACKEND_URL}/tours/${cleanId}`));
       if (t) {
-        return this.mapTourToFrontend(t);
+        const tour = this.mapTourToFrontend(t);
+        this.setCachedData(cacheKey, tour);
+        return tour;
       }
       return null;
     } catch (e) {
       console.warn('Failed to fetch preset tour details, falling back:', e);
       const cleanId = String(id).replace('preset_', '');
       const tours = await this.getPresetTours();
-      return tours.find(t => t.id === id || String(t.id).replace('preset_', '') === cleanId) || null;
+      const tour = tours.find(t => t.id === id || String(t.id).replace('preset_', '') === cleanId) || null;
+      if (tour) {
+        this.setCachedData(cacheKey, tour);
+      }
+      return tour;
     }
   }
 
   // 2. Itineraries APIs
   public async getItineraries(userId: string): Promise<Itinerary[]> {
+    const cacheKey = `itineraries_${userId}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
       const res = await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/itineraries/user/${userId}`));
-      return res.map(iti => ({
+      const data = res.map(iti => ({
         id: iti.id,
         name: iti.name,
         user_id: iti.user_id || iti.userId || userId,
@@ -77,6 +124,8 @@ export class ApiService {
         end_date: iti.end_date || null,
         companion_email: iti.companion_email || null
       }));
+      this.setCachedData(cacheKey, data);
+      return data;
     } catch (e) {
       console.warn('Failed to load itineraries from server, reading local mockup instead.');
       return [];
@@ -84,9 +133,13 @@ export class ApiService {
   }
 
   public async getItinerary(id: string): Promise<Itinerary | null> {
+    const cacheKey = `itinerary_${id}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
       const iti = await firstValueFrom(this.http.get<any>(`${this.BACKEND_URL}/itineraries/${id}`));
-      return {
+      const data = {
         id: iti.id,
         name: iti.name,
         user_id: iti.user_id || iti.userId || '',
@@ -101,6 +154,8 @@ export class ApiService {
         end_date: iti.end_date || null,
         companion_email: iti.companion_email || null
       };
+      this.setCachedData(cacheKey, data);
+      return data;
     } catch (e) {
       console.warn('Failed to fetch itinerary from server:', e);
       return null;
@@ -108,6 +163,9 @@ export class ApiService {
   }
 
   public async saveItinerary(itinerary: Itinerary): Promise<boolean> {
+    this.clearCache('itineraries_');
+    this.clearCache(`itinerary_${itinerary.id}`);
+
     try {
       await firstValueFrom(
         this.http.post(`${this.BACKEND_URL}/itineraries`, {
@@ -132,6 +190,7 @@ export class ApiService {
       return false;
     }
   }
+
 
   // Notifications APIs
   public async getNotifications(userId: string): Promise<Notification[]> {
@@ -293,16 +352,28 @@ export class ApiService {
 
   // 5. Services & Bookings APIs
   public async getServices(): Promise<Service[]> {
+    const cacheKey = 'services_all';
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
-      return await firstValueFrom(this.http.get<Service[]>(`${this.BACKEND_URL}/services`));
+      const data = await firstValueFrom(this.http.get<Service[]>(`${this.BACKEND_URL}/services`));
+      this.setCachedData(cacheKey, data);
+      return data;
     } catch (e) {
       return [];
     }
   }
 
   public async getServicesByDestination(destination: string): Promise<any[]> {
+    const cacheKey = `services_dest_${destination}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
-      return await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/services?destination=${encodeURIComponent(destination)}`));
+      const data = await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/services?destination=${encodeURIComponent(destination)}`));
+      this.setCachedData(cacheKey, data);
+      return data;
     } catch (e) {
       return [];
     }
@@ -317,6 +388,8 @@ export class ApiService {
   }
 
   public async addMyService(serviceData: any): Promise<boolean> {
+    this.clearCache('services_');
+
     try {
       await firstValueFrom(this.http.post(`${this.BACKEND_URL}/services`, serviceData, { withCredentials: true }));
       return true;
@@ -324,6 +397,7 @@ export class ApiService {
       return false;
     }
   }
+
 
   public async getBookings(providerId?: string, customerId?: string): Promise<Booking[]> {
     try {
