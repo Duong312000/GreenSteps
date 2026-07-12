@@ -398,6 +398,17 @@ export class ApiService {
     }
   }
 
+  public async updateMyService(serviceId: string, serviceData: any): Promise<boolean> {
+    this.clearCache('services_');
+
+    try {
+      await firstValueFrom(this.http.put(`${this.BACKEND_URL}/services/${serviceId}`, serviceData, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
 
   public async getBookings(providerId?: string, customerId?: string): Promise<Booking[]> {
     try {

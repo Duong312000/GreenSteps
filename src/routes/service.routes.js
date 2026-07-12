@@ -8,6 +8,7 @@ router.get('/', cacheMiddleware(600), serviceController.getServices); // cache 1
 router.get('/recommendations/:userId', serviceController.getRecommendations);
 router.get('/provider/:providerId', authMiddleware, checkRole(['provider', 'admin']), serviceController.getProviderServices);
 router.post('/', authMiddleware, checkRole(['provider', 'admin']), serviceController.addService);
+router.put('/:id', authMiddleware, checkRole(['provider', 'admin']), serviceController.updateService);
 router.post('/reviews', authMiddleware, serviceController.postServiceReview);
 router.get('/:serviceId/reviews', serviceController.getServiceReviews);
 

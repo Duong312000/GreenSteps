@@ -17,8 +17,9 @@ export class PartnerServicesComponent implements OnInit {
   public currentUser: User | null = null;
   public myServices: Service[] = [];
 
-  // Add Service Form
+  // Add / Edit Service Form
   public isAddModalOpen: boolean = false;
+  public editingServiceId: string | null = null;
   public serviceName: string = '';
   public serviceType: string = 'stay';
   public serviceCost: number | null = null;
@@ -138,6 +139,7 @@ export class PartnerServicesComponent implements OnInit {
   }
 
   public openAddModal() {
+    this.editingServiceId = null;
     this.isAddModalOpen = true;
     this.serviceName = '';
     this.serviceCost = null;
@@ -145,8 +147,21 @@ export class PartnerServicesComponent implements OnInit {
     this.serviceAddress = '';
   }
 
+  public openEditModal(srv: Service) {
+    this.editingServiceId = srv.id;
+    this.isAddModalOpen = true;
+    this.serviceName = srv.name;
+    this.serviceType = srv.type;
+    this.serviceCost = srv.cost;
+    this.serviceCarbon = srv.carbon || null;
+    this.serviceDest = srv.destination;
+    this.serviceAddress = (srv as any).address || (srv as any).current_data?.address || '';
+    this.cdr.detectChanges();
+  }
+
   public closeAddModal() {
     this.isAddModalOpen = false;
+    this.editingServiceId = null;
   }
 
   public toggleBadge(badge: string) {
@@ -206,33 +221,62 @@ export class PartnerServicesComponent implements OnInit {
       }
     }
 
-    const newService = {
-      id: 'ser_' + Date.now(),
-      providerId: providerId,
-      name: this.serviceName,
-      type: this.serviceType,
-      destination: this.serviceDest,
-      cost: Number(this.serviceCost),
-      carbon: Number(this.serviceCarbon),
-      lat: resolvedLat,
-      lng: resolvedLng,
-      address: this.serviceAddress,
-      category: categoryMap[this.serviceType] || 'Khám phá',
-      badges: ['green'], // Assigned by system/admin by default
-      status: 'active'
-    };
+    if (this.editingServiceId) {
+      const updateData = {
+        name: this.serviceName,
+        type: this.serviceType,
+        destination: this.serviceDest,
+        cost: Number(this.serviceCost),
+        carbon: Number(this.serviceCarbon),
+        lat: resolvedLat,
+        lng: resolvedLng,
+        address: this.serviceAddress,
+        category: categoryMap[this.serviceType] || 'Khám phá',
+        status: 'active'
+      };
 
-    const success = await this.apiService.addMyService(newService);
-    if (success) {
-      alert('Đăng ký dịch vụ xanh thành công!');
-      this.isAddModalOpen = false;
-      this.serviceName = '';
-      this.serviceCost = null;
-      this.serviceCarbon = null;
-      this.serviceAddress = '';
-      await this.loadServices();
+      const success = await this.apiService.updateMyService(this.editingServiceId, updateData);
+      if (success) {
+        alert('Cập nhật dịch vụ thành công!');
+        this.isAddModalOpen = false;
+        this.editingServiceId = null;
+        this.serviceName = '';
+        this.serviceCost = null;
+        this.serviceCarbon = null;
+        this.serviceAddress = '';
+        await this.loadServices();
+      } else {
+        alert('Có lỗi xảy ra khi cập nhật dịch vụ. Vui lòng kiểm tra lại!');
+      }
     } else {
-      alert('Có lỗi xảy ra khi thêm dịch vụ. Vui lòng kiểm tra lại!');
+      const newService = {
+        id: 'ser_' + Date.now(),
+        providerId: providerId,
+        name: this.serviceName,
+        type: this.serviceType,
+        destination: this.serviceDest,
+        cost: Number(this.serviceCost),
+        carbon: Number(this.serviceCarbon),
+        lat: resolvedLat,
+        lng: resolvedLng,
+        address: this.serviceAddress,
+        category: categoryMap[this.serviceType] || 'Khám phá',
+        badges: ['green'], // Assigned by system/admin by default
+        status: 'active'
+      };
+
+      const success = await this.apiService.addMyService(newService);
+      if (success) {
+        alert('Đăng ký dịch vụ xanh thành công!');
+        this.isAddModalOpen = false;
+        this.serviceName = '';
+        this.serviceCost = null;
+        this.serviceCarbon = null;
+        this.serviceAddress = '';
+        await this.loadServices();
+      } else {
+        alert('Có lỗi xảy ra khi thêm dịch vụ. Vui lòng kiểm tra lại!');
+      }
     }
     this.cdr.detectChanges();
   }

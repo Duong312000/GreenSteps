@@ -199,7 +199,7 @@
                                     <p class="font-black text-teal-600 text-[16px]">{{ srv.cost | number:'1.0-0':'vi-VN' }}đ</p>
                                 </div>
                                 <div class="flex items-center gap-1.5 text-gray-400">
-                                    <button class="p-2 hover:text-teal-600 hover:bg-teal-50 border border-gray-100 bg-white rounded-lg transition-colors cursor-pointer" title="Chỉnh sửa">
+                                    <button (click)="openEditModal(srv)" class="p-2 hover:text-teal-600 hover:bg-teal-50 border border-gray-100 bg-white rounded-lg transition-colors cursor-pointer" title="Chỉnh sửa">
                                         <i class="bi bi-pencil-square text-sm"></i>
                                     </button>
                                     <button class="p-2 hover:text-red-600 hover:bg-red-50 border border-gray-100 bg-white rounded-lg transition-colors cursor-pointer" title="Ẩn/Xóa">
@@ -226,7 +226,8 @@
         <div class="bg-white rounded-xl shadow-lg max-w-lg w-full overflow-hidden border border-gray-200">
             <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
                 <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <i class="bi bi-plus-circle text-teal-600"></i> Đăng ký dịch vụ xanh mới
+                    <i class="bi" [class.bi-plus-circle]="!editingServiceId" [class.bi-pencil-square]="editingServiceId" class="text-teal-600"></i>
+                    {{ editingServiceId ? 'Chỉnh sửa thông tin dịch vụ' : 'Đăng ký dịch vụ xanh mới' }}
                 </h3>
                 <button (click)="closeAddModal()" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg border-none bg-transparent cursor-pointer transition-colors">&times;</button>
             </div>
@@ -281,7 +282,7 @@
                         Hủy
                     </button>
                     <button type="submit" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-lg border-none cursor-pointer transition-colors">
-                        Đăng dịch vụ
+                        {{ editingServiceId ? 'Cập nhật dịch vụ' : 'Đăng dịch vụ' }}
                     </button>
                 </div>
             </form>

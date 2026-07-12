@@ -282,3 +282,38 @@ exports.getServiceReviews = async (req, res, next) => {
     next(error);
   }
 };
+
+// 7. Update Service
+exports.updateService = async (req, res, next) => {
+  const { id } = req.params;
+  const { name, type, destination, cost, carbon, lat, lng, address, category, status } = req.body;
+  try {
+    const service = await GreenService.findByPk(id);
+    if (!service) {
+      return res.status(404).json({ success: false, message: 'Dịch vụ không tồn tại!' });
+    }
+
+    if (name !== undefined) service.name_service = name;
+    if (type !== undefined) service.type = type;
+    if (destination !== undefined) service.destination = destination;
+    if (cost !== undefined) service.cost = Number(cost);
+    if (carbon !== undefined) service.carbon = Number(carbon);
+    if (status !== undefined) service.status = status;
+
+    const currentData = service.current_data || {};
+    if (lat !== undefined) currentData.lat = lat ? parseFloat(lat) : null;
+    if (lng !== undefined) currentData.lng = lng ? parseFloat(lng) : null;
+    if (address !== undefined) currentData.address = address;
+    if (category !== undefined) currentData.category = category;
+
+    service.current_data = { ...currentData };
+    service.changed('current_data', true);
+
+    await service.save();
+
+    res.json({ success: true, service });
+  } catch (error) {
+    next(error);
+  }
+};
+
