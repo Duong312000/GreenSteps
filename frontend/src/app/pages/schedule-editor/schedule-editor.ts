@@ -1244,10 +1244,9 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     await this.saveItineraryToDb();
   }
 
-  public handleMapClick(lat: number, lng: number) {
-    this.mapClickPlaceName = '';
+  public async handleMapClick(lat: number, lng: number) {
     this.selectedPlaceDetails = {
-      title: "Địa điểm chọn từ bản đồ",
+      title: "Đang tải thông tin địa điểm...",
       type: "explore",
       cost: 0,
       carbon: 1,
@@ -1256,8 +1255,60 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       isActivity: false,
       isCustomMapClick: true
     };
+    this.mapClickPlaceName = 'Đang tải...';
     this.cdr.detectChanges();
+
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`, {
+        headers: { 'User-Agent': 'GreenSteps/1.0' }
+      });
+      const data = await response.json();
+      
+      let placeName = 'Địa điểm chọn từ bản đồ';
+      let placeType = 'explore';
+
+      if (data) {
+        // Parse name from response details
+        placeName = data.name || (data.display_name ? data.display_name.split(',')[0] : 'Địa điểm chọn từ bản đồ');
+        
+        const type = data.type || '';
+        const category = data.class || '';
+        if (type === 'cafe' || type === 'restaurant' || category === 'amenity') {
+          placeType = 'dining';
+        } else if (type === 'hotel' || category === 'tourism') {
+          placeType = 'lodging';
+        }
+      }
+
+      this.selectedPlaceDetails = {
+        title: placeName,
+        type: placeType,
+        cost: placeType === "dining" ? 80000 : (placeType === "lodging" ? 500000 : 30000),
+        carbon: placeType === "dining" ? 2 : 4,
+        lat: lat,
+        lng: lng,
+        isActivity: false,
+        isCustomMapClick: true
+      };
+      this.mapClickPlaceName = placeName;
+      this.cdr.detectChanges();
+    } catch (e) {
+      console.warn('Reverse geocoding error:', e);
+      this.selectedPlaceDetails = {
+        title: "Địa điểm chọn từ bản đồ",
+        type: "explore",
+        cost: 0,
+        carbon: 1,
+        lat: lat,
+        lng: lng,
+        isActivity: false,
+        isCustomMapClick: true
+      };
+      this.mapClickPlaceName = 'Địa điểm chọn từ bản đồ';
+      this.cdr.detectChanges();
+    }
   }
+
 
   public async addMapClickPlace() {
     const name = this.mapClickPlaceName.trim();
