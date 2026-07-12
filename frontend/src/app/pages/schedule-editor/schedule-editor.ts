@@ -1266,10 +1266,15 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       
       let placeName = 'Địa điểm chọn từ bản đồ';
       let placeType = 'explore';
+      let snapLat = lat;
+      let snapLng = lng;
 
       if (data) {
-        // Parse name from response details
         placeName = data.name || (data.display_name ? data.display_name.split(',')[0] : 'Địa điểm chọn từ bản đồ');
+        if (data.lat && data.lon) {
+          snapLat = parseFloat(data.lat);
+          snapLng = parseFloat(data.lon);
+        }
         
         const type = data.type || '';
         const category = data.class || '';
@@ -1285,12 +1290,52 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         type: placeType,
         cost: placeType === "dining" ? 80000 : (placeType === "lodging" ? 500000 : 30000),
         carbon: placeType === "dining" ? 2 : 4,
-        lat: lat,
-        lng: lng,
+        lat: snapLat,
+        lng: snapLng,
         isActivity: false,
         isCustomMapClick: true
       };
       this.mapClickPlaceName = placeName;
+
+      // Draw a snapped red marker with pulse animation
+      this.clearSearchMarkers();
+      const marker = L.marker([snapLat, snapLng], {
+        icon: L.divIcon({
+          html: `<div class="map-leaflet-rec-pin map-leaflet-pin-red-pulse" style="background-color: #EF4444; border: 2px solid #FFFFFF; color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);"><i class="bi bi-geo-alt-fill" style="font-size: 12px;"></i></div>`,
+          className: 'custom-div-icon-click-pin',
+          iconSize: [26, 26],
+          iconAnchor: [13, 13]
+        })
+      }).addTo(this.map);
+
+      // Bind popup
+      const addressText = data && data.display_name ? data.display_name : '';
+      const popupContent = `
+        <div style="font-family: var(--font-main); width: 220px; font-size: 13px; line-height: 1.4;">
+          <h4 style="font-weight:700; margin:0 0 6px 0; color:var(--text-primary); font-size:14px;">${placeName}</h4>
+          <p style="margin:0 0 8px 0; color:#3D5A46; font-size:11px;">${addressText}</p>
+          <button id="add-click-pin" style="width:100%; height:32px; background:#047857; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">Thêm vào lịch trình</button>
+        </div>
+      `;
+      marker.bindPopup(popupContent).openPopup();
+
+      marker.on('popupopen', () => {
+        const btn = document.getElementById('add-click-pin');
+        if (btn) {
+          btn.onclick = (e) => {
+            e.preventDefault();
+            this.addSearpedPlaceToItinerary({
+              title: placeName,
+              category: placeType,
+              lat: snapLat,
+              lng: snapLng
+            });
+            marker.closePopup();
+          };
+        }
+      });
+
+      this.searchMarkers.push(marker);
       this.cdr.detectChanges();
     } catch (e) {
       console.warn('Reverse geocoding error:', e);
@@ -1308,6 +1353,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       this.cdr.detectChanges();
     }
   }
+
 
 
   public async addMapClickPlace() {
