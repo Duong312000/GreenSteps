@@ -15,6 +15,13 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
+  private assetUrl(value: any): string {
+    const image = String(value || '').trim();
+    if (!image) return 'image/Viet Nam.png';
+    if (/^(https?:)?\/\//i.test(image) || image.startsWith('data:')) return image;
+    return image.replace(/^\/+/, '');
+  }
+
   private mapTourToFrontend(tour: any): Tour {
     return {
       id: tour.id,
@@ -26,7 +33,7 @@ export class ApiService {
             tour.badges && tour.badges.includes('Tiết kiệm') ? 'Tiết kiệm' : 'Nghỉ dưỡng',
       cost: Number(tour.cost),
       oldCost: Number(tour.old_cost || tour.oldCost || tour.cost * 1.2),
-      image: tour.image_url || tour.image,
+      image: this.assetUrl(tour.image_url || tour.image),
       tags: tour.badges || tour.tags || [],
       rating: Number(tour.rating || 5.0),
       votes: Number(tour.votes_count || tour.votes || 0),

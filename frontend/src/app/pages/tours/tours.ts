@@ -158,6 +158,11 @@ export class ToursComponent implements OnInit {
     this.filterTours();
   }
 
+  public onTourImageError(event: Event) {
+    const image = event.target as HTMLImageElement;
+    image.src = 'image/Viet Nam.png';
+  }
+
   public openCreateItineraryModal() {
     this.isCreateModalOpen = true;
     setTimeout(() => {

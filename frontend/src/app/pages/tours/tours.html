@@ -86,7 +86,7 @@
                     <div *ngIf="tour.isRecommended" style="position: absolute; top: 12px; left: 12px; background: linear-gradient(135deg, #059669 0%, #10B981 100%); color: white; padding: 4px 10px; font-size: 0.65rem; font-weight: 700; border-radius: 4px; box-shadow: 0 4px 8px rgba(4,120,87,0.25); display: flex; align-items: center; gap: 4px; z-index: 10; text-transform: uppercase;">
                         <i class="bi bi-patch-check-fill"></i> Đề xuất cho bạn
                     </div>
-                    <img [src]="tour.image" [alt]="tour.title">
+                    <img [src]="tour.image" [alt]="tour.title" (error)="onTourImageError($event)">
                     <div class="price-pill-overlay">
                         <span class="price-new">{{ tour.cost | number:'1.0-0':'vi-VN' }}đ</span>
                         <span class="price-old" *ngIf="tour.oldCost">{{ tour.oldCost | number:'1.0-0':'vi-VN' }}đ</span>
