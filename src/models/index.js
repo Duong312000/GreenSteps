@@ -120,7 +120,10 @@ const ScheduleCustom = sequelize.define('ScheduleCustom', {
   id: { type: DataTypes.STRING, primaryKey: true }, // ref: Schedule.id
   total_cost: { type: DataTypes.DOUBLE, defaultValue: 0.0 },
   status: { type: DataTypes.ENUM('draft', 'deposited', 'cancelled'), defaultValue: 'draft', allowNull: false },
-  deposit_deadline: { type: DataTypes.DATEONLY, allowNull: true }
+  deposit_deadline: { type: DataTypes.DATEONLY, allowNull: true },
+  start_date: { type: DataTypes.DATEONLY, allowNull: true },
+  end_date: { type: DataTypes.DATEONLY, allowNull: true },
+  companion_email: { type: DataTypes.STRING, allowNull: true }
 }, { timestamps: true });
 
 // 15. UserSchedule Junction
@@ -260,10 +263,28 @@ const FAQ = sequelize.define('FAQ', {
   answer: { type: DataTypes.TEXT, allowNull: false }
 }, { timestamps: true });
 
+// 29. Notification Model
+const Notification = sequelize.define('Notification', {
+  id: { type: DataTypes.STRING, primaryKey: true }, // 'notif_' + timestamp + random
+  user_id: { type: DataTypes.STRING, allowNull: false },
+  title: { type: DataTypes.STRING, allowNull: false },
+  message: { type: DataTypes.TEXT, allowNull: false },
+  type: { 
+    type: DataTypes.ENUM('system', 'community', 'booking', 'wallet'), 
+    defaultValue: 'system', 
+    allowNull: false 
+  },
+  read: { type: DataTypes.BOOLEAN, defaultValue: false, allowNull: false }
+}, { timestamps: true });
+
 
 // ==========================================
 // RELATIONSHIPS & ASSOCIATIONS WITH CASCADE
 // ==========================================
+
+// User <-> Notification
+User.hasMany(Notification, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+Notification.belongsTo(User, { foreignKey: 'user_id' });
 
 // Badge <-> User
 User.belongsToMany(Badge, { through: BadgeUser, foreignKey: 'user_id', otherKey: 'badge_name', onDelete: 'CASCADE' });
@@ -475,5 +496,6 @@ module.exports = {
   CPSS,
   CPGS,
   Voucher,
-  FAQ
+  FAQ,
+  Notification
 };

@@ -63,6 +63,9 @@ export interface Itinerary {
   days_data?: Activity[][];
   status?: 'draft' | 'deposited' | 'cancelled';
   deposit_deadline?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  companion_email?: string | null;
 }
 
 export interface Service {
@@ -126,4 +129,15 @@ export interface CommunityPost {
   image?: string;
   authorId?: string;
   itinerary_id?: string;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: 'system' | 'community' | 'booking' | 'wallet';
+  read: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

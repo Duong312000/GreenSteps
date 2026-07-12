@@ -28,6 +28,20 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public modalDest: string = 'Đà Lạt';
   public modalDays: number = 3;
 
+  // New Create Itinerary Modal variables
+  public isCreateNewModalOpen: boolean = false;
+  public newTripName: string = '';
+  public newTripDestination: string = 'Đà Lạt';
+  public newTripStartDate: string = '';
+  public newTripEndDate: string = '';
+  public newTripCompanionEmail: string = '';
+
+  // Share Itinerary variables
+  public isShareModalOpen: boolean = false;
+  public sharingItinerary: any = null;
+  public shareMessage: string = '';
+  public shareLink: string = '';
+
   private modalMap: any = null;
   private modalMarkers: { [key: string]: any } = {};
   private destCoords: { [key: string]: [number, number] } = {
@@ -57,6 +71,22 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public isItineraryPay: boolean = false;
   public checkoutItems: { title: string; cost: number }[] = [];
   public checkoutTotal: number = 0;
+
+  // New Checkout details bindings
+  public checkoutLastName: string = '';
+  public checkoutFirstName: string = '';
+  public checkoutEmail: string = '';
+  public checkoutPhone: string = '';
+  public checkoutCountry: string = 'Việt Nam';
+  public checkoutAutoSave: boolean = false;
+
+  // Payment selected method
+  public checkoutPaymentMethod: 'wallet' | 'qr' | 'credit' | 'later' = 'wallet';
+
+  // Credit Card fields
+  public cardHolderName: string = '';
+  public cardNumber: string = '';
+  public cardError: string = '';
 
   // QR & Wallet Redesign properties
   public isQrVisible: boolean = false;
@@ -233,24 +263,91 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.router.navigate(['/schedule', id]);
   }
 
-  public async createItineraryDirectly() {
+  public openCreateNewModal() {
+    this.isCreateNewModalOpen = true;
+    this.newTripName = '';
+    this.newTripDestination = 'Đà Lạt';
+    this.newTripStartDate = '';
+    this.newTripEndDate = '';
+    this.newTripCompanionEmail = '';
+    this.cdr.detectChanges();
+  }
+
+  public closeCreateNewModal() {
+    this.isCreateNewModalOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  public onTripDatesChange() {
+    this.cdr.detectChanges();
+  }
+
+  public get countdownNotice(): string {
+    if (!this.newTripStartDate) return '';
+    const today = new Date('2026-07-12'); // Fixed system today as July 12, 2026
+    const start = new Date(this.newTripStartDate);
+    const diffMs = start.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays > 0) {
+      return `Chuyến đi của bạn còn ${diffDays} ngày nữa sẽ khởi hành (bắt đầu từ ${this.newTripStartDate}).`;
+    } else if (diffDays === 0) {
+      return `Chuyến đi khởi hành vào hôm nay!`;
+    } else {
+      return `Chuyến đi đã diễn ra vào ${Math.abs(diffDays)} ngày trước.`;
+    }
+  }
+
+  public getCountdownLabel(iti: any): string | null {
+    if (!iti.start_date) return null;
+    const today = new Date('2026-07-12'); // Fixed system today as July 12, 2026
+    const start = new Date(iti.start_date);
+    const diffMs = start.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays > 0) {
+      return `${diffDays} ngày tới`;
+    } else if (diffDays === 0) {
+      return 'Hôm nay';
+    } else {
+      return `Đã đi (${Math.abs(diffDays)} ngày trước)`;
+    }
+  }
+
+  public async submitCreateNewTrip(event: Event) {
+    event.preventDefault();
     const user = this.authService.getCurrentUser();
     const userId = user ? (user.id || user._id || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d') : '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d';
 
-    const daysData = Array.from({ length: 3 }, () => []);
+    let calculatedDays = 3;
+    if (this.newTripStartDate && this.newTripEndDate) {
+      const start = new Date(this.newTripStartDate);
+      const end = new Date(this.newTripEndDate);
+      if (end < start) {
+        alert('Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!');
+        return;
+      }
+      calculatedDays = Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    }
+
+    const daysData = Array.from({ length: calculatedDays }, () => []);
 
     const newIti = {
       id: 'iti_' + Date.now(),
-      name: `Lịch trình tự thiết kế Đà Lạt`,
+      name: this.newTripName.trim() || `Hành trình khám phá ${this.newTripDestination}`,
       user_id: userId,
-      destination: 'Đà Lạt',
-      days: 3,
+      destination: this.newTripDestination,
+      days: calculatedDays,
       totalCost: 0,
       totalCarbon: 0,
-      daysData: daysData
+      daysData: daysData,
+      status: 'draft' as const,
+      deposit_deadline: null,
+      start_date: this.newTripStartDate || null,
+      end_date: this.newTripEndDate || null,
+      companion_email: this.newTripCompanionEmail.trim() || null
     };
 
     this.isLoadingList = true;
+    this.isCreateNewModalOpen = false;
     this.cdr.detectChanges();
 
     const success = await this.apiService.saveItinerary(newIti);
@@ -263,6 +360,76 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     } else {
       alert('Không thể khởi tạo lịch trình mới!');
     }
+  }
+
+  // Share methods
+  public openShareModal(iti: any, event: Event) {
+    event.stopPropagation();
+    this.sharingItinerary = iti;
+    this.isShareModalOpen = true;
+    this.shareMessage = `Khám phá hành trình xanh của tôi tại ${iti.destination} trên GreenSteps! 🌿`;
+    this.shareLink = `${window.location.origin}/schedule/${iti.id}`;
+    this.cdr.detectChanges();
+  }
+
+  public closeShareModal() {
+    this.isShareModalOpen = false;
+    this.sharingItinerary = null;
+    this.shareMessage = '';
+    this.cdr.detectChanges();
+  }
+
+  public async postToCommunity() {
+    if (!this.sharingItinerary) return;
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      alert('Vui lòng đăng nhập để chia sẻ!');
+      return;
+    }
+    
+    try {
+      const payload = {
+        authorId: user.id || user._id || '',
+        author: user.fullname || 'Thành viên GreenSteps',
+        text: this.shareMessage,
+        rating: 5,
+        tripName: this.sharingItinerary.name,
+        dest: this.sharingItinerary.destination,
+        days: this.sharingItinerary.days,
+        likes: 0,
+        comments: 0,
+        image: null,
+        itineraryId: this.sharingItinerary.id
+      };
+      
+      const ok = await this.apiService.addCommunityPost(payload);
+      if (ok) {
+        alert('Đã chia sẻ lịch trình lên cộng đồng GreenSteps thành công!');
+        this.closeShareModal();
+      } else {
+        alert('Chia sẻ lên cộng đồng thất bại!');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Đã xảy ra lỗi khi đăng bài!');
+    }
+  }
+
+  public shareSocial(platform: 'facebook' | 'twitter') {
+    const url = encodeURIComponent(this.shareLink);
+    const text = encodeURIComponent(this.shareMessage);
+    let shareUrl = '';
+    if (platform === 'facebook') {
+      shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    } else {
+      shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+    }
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+  }
+
+  public copyShareLink() {
+    navigator.clipboard.writeText(this.shareLink);
+    alert('Đã sao chép liên kết chia sẻ vào bộ nhớ tạm!');
   }
 
   private initModalMap(containerId: string) {
@@ -1593,7 +1760,23 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.activeItinerary) return;
     this.isCheckoutModalOpen = true;
     this.isItineraryPay = true;
+    this.checkoutPaymentMethod = 'wallet';
     this.reloadWalletInfo();
+
+    // Auto-fill contact details from currentUser
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.checkoutEmail = user.email || '';
+      this.checkoutPhone = user.phone || '';
+      const nameParts = (user.fullname || '').split(' ');
+      if (nameParts.length > 1) {
+        this.checkoutLastName = nameParts[0];
+        this.checkoutFirstName = nameParts.slice(1).join(' ');
+      } else {
+        this.checkoutFirstName = user.fullname || user.username || '';
+        this.checkoutLastName = '';
+      }
+    }
 
     this.checkoutItems = [];
     let total = 0;
@@ -1607,6 +1790,81 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     });
 
     this.checkoutTotal = total;
+  }
+
+  public onCardNumberChange() {
+    const cleanNum = this.cardNumber.replace(/\s+/g, '');
+    if (!cleanNum) {
+      this.cardError = 'Số thẻ này không hợp lệ';
+    } else if (!/^\d{16}$/.test(cleanNum)) {
+      this.cardError = 'Số thẻ này không hợp lệ';
+    } else {
+      this.cardError = '';
+    }
+    this.cdr.detectChanges();
+  }
+
+  public validateContactInfo(): boolean {
+    if (!this.checkoutLastName.trim() || !this.checkoutFirstName.trim() || !this.checkoutEmail.trim() || !this.checkoutPhone.trim()) {
+      alert("Vui lòng nhập đầy đủ thông tin liên hệ (Họ, Tên, Email, Số điện thoại) để xác nhận đặt cọc!");
+      return false;
+    }
+    return true;
+  }
+
+  public async payWithCreditCard() {
+    if (!this.validateContactInfo()) return;
+    this.onCardNumberChange();
+    if (this.cardError) {
+      alert("Thông tin thẻ tín dụng chưa hợp lệ. Vui lòng kiểm tra lại!");
+      return;
+    }
+
+    if (!this.cardHolderName.trim()) {
+      this.cardError = 'Tên chủ thẻ không được để trống';
+      alert("Tên chủ thẻ không được để trống!");
+      return;
+    }
+
+    this.isWaitingApproval = true;
+    this.cdr.detectChanges();
+
+    setTimeout(async () => {
+      this.isWaitingApproval = false;
+      this.activeItinerary.status = 'deposited';
+      const dateObj = new Date();
+      dateObj.setDate(dateObj.getDate() + 7);
+      const yyyy = dateObj.getFullYear();
+      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const dd = String(dateObj.getDate()).padStart(2, '0');
+      this.activeItinerary.deposit_deadline = `${yyyy}-${mm}-${dd}`;
+      await this.saveItineraryToDb();
+      this.closeCheckout();
+      alert(`Thanh toán bằng Thẻ Tín Dụng thành công! Đã đặt cọc và khóa lịch trình. Hạn hủy miễn phí trước ngày ${dd}/${mm}/${yyyy}.`);
+      this.cdr.detectChanges();
+    }, 1500);
+  }
+
+  public async payWithLater() {
+    if (!this.validateContactInfo()) return;
+
+    this.isWaitingApproval = true;
+    this.cdr.detectChanges();
+
+    setTimeout(async () => {
+      this.isWaitingApproval = false;
+      this.activeItinerary.status = 'deposited';
+      const dateObj = new Date();
+      dateObj.setDate(dateObj.getDate() + 7);
+      const yyyy = dateObj.getFullYear();
+      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const dd = String(dateObj.getDate()).padStart(2, '0');
+      this.activeItinerary.deposit_deadline = `${yyyy}-${mm}-${dd}`;
+      await this.saveItineraryToDb();
+      this.closeCheckout();
+      alert(`Đã xác nhận Giữ Chỗ & Thanh Toán Sau thành công! Lịch trình đã được giữ chỗ và khóa sửa đổi. Vui lòng hoàn tất thanh toán trước ngày ${dd}/${mm}/${yyyy}.`);
+      this.cdr.detectChanges();
+    }, 1500);
   }
 
   public closeCheckout() {
@@ -1666,6 +1924,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       alert("Vui lòng đăng nhập!");
       return;
     }
+    if (!this.validateContactInfo()) return;
     const userId = user.id || user._id || '';
     const username = user.username || 'USER';
 
@@ -1749,6 +2008,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       alert("Vui lòng đăng nhập để thanh toán!");
       return;
     }
+    if (!this.validateContactInfo()) return;
     
     // Call pay direct (triggers backend console approval)
     this.isWaitingApproval = true;

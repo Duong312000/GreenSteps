@@ -121,14 +121,33 @@
                             Không có thông báo mới
                         </div>
                         <div *ngFor="let notif of notifications"
+                             (click)="markNotificationRead(notif)"
                              [class.bg-[#F3FAF7]]="!notif.read"
-                             class="p-2.5 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer border border-[#184A37]/5">
-                            <div class="flex justify-between items-start gap-1">
-                                <span class="text-xs font-bold" [ngClass]="notif.read ? 'text-[#184A37]/70' : 'text-[#184A37]'">{{ notif.title }}</span>
-                                <span class="text-[10px] text-[#184A37]/40 whitespace-nowrap">{{ notif.time }}</span>
+                             class="p-2.5 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer border border-[#184A37]/5 flex gap-2">
+                            <div class="flex-shrink-0 mt-0.5">
+                                <i [ngClass]="{
+                                    'bi-info-circle-fill text-[#0E9F6E]': notif.type === 'system',
+                                    'bi-chat-dots-fill text-blue-500': notif.type === 'community' && notif.title.includes('luận'),
+                                    'bi-heart-fill text-rose-500': notif.type === 'community' && !notif.title.includes('luận'),
+                                    'bi-journal-check text-indigo-500': notif.type === 'booking',
+                                    'bi-wallet2 text-amber-500': notif.type === 'wallet'
+                                 }" class="bi text-sm"></i>
                             </div>
-                            <p class="text-[11px] mt-1 mb-0 leading-relaxed text-[#184A37]/80">{{ notif.message }}</p>
+                            <div class="flex-grow">
+                                <div class="flex justify-between items-start gap-1">
+                                    <span class="text-xs font-bold" [ngClass]="notif.read ? 'text-[#184A37]/70' : 'text-[#184A37]'">{{ notif.title }}</span>
+                                    <span class="text-[10px] text-[#184A37]/40 whitespace-nowrap">{{ notif.time }}</span>
+                                </div>
+                                <p class="text-[11px] mt-1 mb-0 leading-relaxed text-[#184A37]/80">{{ notif.message }}</p>
+                            </div>
                         </div>
+                    </div>
+
+                    <div class="border-t border-[#184A37]/10 pt-2 mt-3 text-center">
+                        <button (click)="viewAllNotifications()"
+                                class="w-full text-xs font-bold text-[#0E9F6E] hover:underline bg-transparent border-0 cursor-pointer flex items-center justify-center gap-1.5 py-1">
+                            <i class="bi bi-bell"></i> Xem tất cả thông báo
+                        </button>
                     </div>
                 </div>
             </div>

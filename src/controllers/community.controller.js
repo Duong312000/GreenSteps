@@ -1,4 +1,4 @@
-const { User, CommunityPost, CommentPost } = require('../models/index');
+const { User, CommunityPost, CommentPost, Notification } = require('../models/index');
 
 exports.getPosts = async (req, res, next) => {
   try {
@@ -106,6 +106,8 @@ exports.deletePost = async (req, res, next) => {
 
 exports.likePost = async (req, res, next) => {
   const { id } = req.params;
+  const likerId = req.user ? req.user.id : (req.body.userId || req.body.authorId || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d');
+
   try {
     const post = await CommunityPost.findByPk(id);
     if (!post) {
@@ -115,6 +117,20 @@ exports.likePost = async (req, res, next) => {
     // Toggle like increment in DB
     post.likes_count += 1;
     await post.save();
+
+    // Trigger Notification for author
+    if (post.user_id && post.user_id !== likerId) {
+      const likerUser = await User.findByPk(likerId);
+      const likerName = likerUser ? likerUser.fullname : 'Một người dùng';
+      await Notification.create({
+        id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        user_id: post.user_id,
+        title: 'Lượt thích mới',
+        message: `${likerName} đã thích bài viết của bạn!`,
+        type: 'community',
+        read: false
+      });
+    }
 
     res.json({ success: true, likes: post.likes_count });
   } catch (error) {
@@ -162,6 +178,20 @@ exports.addPostComment = async (req, res, next) => {
     // Update comments count on post
     post.comments_count += 1;
     await post.save();
+
+    // Trigger Notification for author
+    if (post.user_id && post.user_id !== userId) {
+      const commentUser = await User.findByPk(userId);
+      const commenterName = commentUser ? commentUser.fullname : 'Một người dùng';
+      await Notification.create({
+        id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        user_id: post.user_id,
+        title: 'Bình luận mới',
+        message: `${commenterName} đã bình luận về bài viết của bạn: "${text.substring(0, 40)}${text.length > 40 ? '...' : ''}"`,
+        type: 'community',
+        read: false
+      });
+    }
 
     const userObj = await User.findByPk(userId);
 

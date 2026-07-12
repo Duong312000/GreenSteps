@@ -13,6 +13,7 @@ const serviceRoutes = require('./service.routes');
 const communityRoutes = require('./community.routes');
 const reviewsRoutes = require('./reviews.routes');
 const recommendationRoutes = require('./recommendation.routes');
+const notificationRoutes = require('./notification.routes');
 
 router.use('/auth', authRoutes);
 router.use('/bookings', bookingRoutes);
@@ -26,5 +27,6 @@ router.use('/services', serviceRoutes);
 router.use('/community', communityRoutes);
 router.use('/reviews', reviewsRoutes);
 router.use('/recommendations', recommendationRoutes);
+router.use('/notifications', notificationRoutes);
 
 module.exports = router;

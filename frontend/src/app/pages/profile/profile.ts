@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ApiService } from '../../services/api.service';
@@ -271,28 +271,109 @@ export class ProfileComponent implements OnInit {
   public readonly tripImage = 'image/4302842f8d693c25238f2141964a64b2.jpg';
   public readonly offerImage = 'image/1dc8619487310884c9d631d689ece1e7.jpg';
 
+  public notificationsList: any[] = [];
+  public notifFilter: 'all' | 'unread' = 'all';
+  public selectedCategory: string = 'all';
+
+  public get filteredNotifications(): any[] {
+    let list = this.notificationsList;
+    if (this.notifFilter === 'unread') {
+      list = list.filter(n => !n.read);
+    }
+    if (this.selectedCategory !== 'all') {
+      list = list.filter(n => {
+        if (this.selectedCategory === 'offer') return n.type === 'system' && n.title.toLowerCase().includes('ưu đãi');
+        if (this.selectedCategory === 'trip') return n.type === 'system' && !n.title.toLowerCase().includes('ưu đãi');
+        if (this.selectedCategory === 'system') return n.type === 'system';
+        if (this.selectedCategory === 'community') return n.type === 'community';
+        if (this.selectedCategory === 'payment') return n.type === 'wallet' || n.type === 'booking';
+        return true;
+      });
+    }
+    return list;
+  }
+
+  public get totalNotifCount(): number { return this.notificationsList.length; }
+  public get unreadNotifCount(): number { return this.notificationsList.filter(n => !n.read).length; }
+  public get readNotifCount(): number { return this.notificationsList.filter(n => n.read).length; }
+
   constructor(
     private authService: AuthService,
     private apiService: ApiService,
     private router: Router,
+    private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
     private loginModalService: LoginModalService
   ) {}
 
   ngOnInit() {
     const existingUser = this.authService.getCurrentUser();
-    if (existingUser) this.applyProfileUser(existingUser);
+    if (existingUser) {
+      this.applyProfileUser(existingUser);
+      this.loadProfileNotifications();
+    }
 
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (user) {
         this.applyProfileUser(user);
         this.loadWalletAndTransactions();
+        this.loadProfileNotifications();
       } else {
         this.loginModalService.open();
       }
       this.cdr.detectChanges();
     });
+
+    this.route.queryParams.subscribe(params => {
+      if (params['section']) {
+        const sec = params['section'] as ProfileSection;
+        if (['overview', 'personal', 'security', 'notifications', 'wallet'].includes(sec)) {
+          this.activeSection = sec;
+        }
+      }
+    });
+  }
+
+  public async loadProfileNotifications() {
+    if (!this.currentUser) return;
+    const userId = this.currentUser.id || this.currentUser._id || '';
+    try {
+      const res = await this.apiService.getNotifications(userId);
+      this.notificationsList = res;
+      this.cdr.detectChanges();
+    } catch (e) {
+      console.warn('Failed to load profile notifications:', e);
+    }
+  }
+
+  public async markProfileNotifRead(notif: any) {
+    if (notif.read) return;
+    const ok = await this.apiService.markNotificationRead(notif.id);
+    if (ok) {
+      notif.read = true;
+      this.cdr.detectChanges();
+    }
+  }
+
+  public async clearAllProfileNotifications() {
+    if (!this.currentUser) return;
+    const userId = this.currentUser.id || this.currentUser._id || '';
+    const ok = await this.apiService.clearNotifications(userId);
+    if (ok) {
+      this.notificationsList = [];
+      this.cdr.detectChanges();
+    }
+  }
+
+  public async markAllProfileNotifRead() {
+    if (!this.currentUser) return;
+    const userId = this.currentUser.id || this.currentUser._id || '';
+    const ok = await this.apiService.markAllNotificationsRead(userId);
+    if (ok) {
+      this.notificationsList.forEach(n => n.read = true);
+      this.cdr.detectChanges();
+    }
   }
 
   private applyProfileUser(user: User) {

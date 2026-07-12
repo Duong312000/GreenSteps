@@ -32,11 +32,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   public smartSearchQuery: string = '';
   public isSearchDropdownActive: boolean = false;
   public isNotificationDropdownActive: boolean = false;
-  public notifications: any[] = [
-    { id: 1, title: 'Lịch trình mới', message: 'Hành trình Phú Yên xanh đã được khởi tạo thành công.', time: '5 phút trước', read: false },
-    { id: 2, title: 'Đặt cọc thành công', message: 'Bạn đã hoàn tất đặt cọc 500.000đ cho chuyến đi Đà Lạt.', time: '2 giờ trước', read: false },
-    { id: 3, title: 'Khuyến mãi đặc biệt', message: 'GreenSteps tặng bạn voucher 10% cho dịch vụ eco-lodge kế tiếp.', time: '1 ngày trước', read: true }
-  ];
+  public notifications: any[] = [];
 
   public get unreadNotificationCount(): number {
     return this.notifications.filter(n => !n.read).length;
@@ -46,14 +42,67 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     event.stopPropagation();
     this.isNotificationDropdownActive = !this.isNotificationDropdownActive;
     this.isProfileOpen = false;
+    if (this.isNotificationDropdownActive && this.currentUser) {
+      this.loadRealNotifications(this.currentUser.id || this.currentUser._id || '');
+    }
   }
 
-  public markAllNotificationsAsRead() {
-    this.notifications.forEach(n => n.read = true);
+  public async markAllNotificationsAsRead() {
+    if (!this.currentUser) return;
+    const userId = this.currentUser.id || this.currentUser._id || '';
+    const ok = await this.apiService.markAllNotificationsRead(userId);
+    if (ok) {
+      this.notifications.forEach(n => n.read = true);
+    }
   }
 
-  public clearNotifications() {
-    this.notifications = [];
+  public async clearNotifications() {
+    if (!this.currentUser) return;
+    const userId = this.currentUser.id || this.currentUser._id || '';
+    const ok = await this.apiService.clearNotifications(userId);
+    if (ok) {
+      this.notifications = [];
+    }
+  }
+
+  public async markNotificationRead(notif: any) {
+    if (notif.read) return;
+    const ok = await this.apiService.markNotificationRead(notif.id);
+    if (ok) {
+      notif.read = true;
+    }
+  }
+
+  public viewAllNotifications() {
+    this.isNotificationDropdownActive = false;
+    this.router.navigate(['/profile'], { queryParams: { section: 'notifications' } });
+  }
+
+  public async loadRealNotifications(userId: string) {
+    try {
+      const list = await this.apiService.getNotifications(userId);
+      this.notifications = list.map(n => ({
+        id: n.id,
+        title: n.title,
+        message: n.message,
+        type: n.type,
+        read: n.read,
+        time: this.formatTimeAgo(n.createdAt)
+      }));
+    } catch (e) {
+      console.warn('Failed to load real notifications:', e);
+    }
+  }
+
+  private formatTimeAgo(dateStr: string): string {
+    const diffMs = Date.now() - new Date(dateStr).getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    if (diffMins < 1) return 'Vừa xong';
+    if (diffMins < 60) return `${diffMins} phút trước`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} giờ trước`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays} ngày trước`;
   }
   public isMobileMenuOpen: boolean = false;
   public isLoginModalOpen: boolean = false;
@@ -174,6 +223,11 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       this.updateNavigation();
+      if (user) {
+        this.loadRealNotifications(user.id || user._id || '');
+      } else {
+        this.notifications = [];
+      }
       // Recalculate after DOM updates with new tabs
       setTimeout(() => this.calculateOverflow(), 50);
     });
@@ -527,7 +581,6 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     const travelerTabs = [
       { label: 'Cộng đồng', link: '/community' },
       { label: 'Lịch trình', link: '/tours' },
-      { label: 'Cẩm nang', action: 'green_handbook' },
       { label: 'Lịch trình của tôi', action: 'ai_planner' }
     ];
 

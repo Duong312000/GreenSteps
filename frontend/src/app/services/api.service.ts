@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { Tour, Itinerary, Service, Booking, WalletInfo, WalletTransaction, CommunityPost } from '../models/models';
+import { Tour, Itinerary, Service, Booking, WalletInfo, WalletTransaction, CommunityPost, Notification } from '../models/models';
 
 @Injectable({
   providedIn: 'root'
@@ -70,7 +70,12 @@ export class ApiService {
         days: iti.days,
         totalCost: iti.totalCost || iti.total_cost || 0,
         totalCarbon: iti.totalCarbon || iti.total_carbon || 0,
-        daysData: iti.daysData || iti.days_data || []
+        daysData: iti.daysData || iti.days_data || [],
+        status: iti.status || 'draft',
+        deposit_deadline: iti.deposit_deadline || null,
+        start_date: iti.start_date || null,
+        end_date: iti.end_date || null,
+        companion_email: iti.companion_email || null
       }));
     } catch (e) {
       console.warn('Failed to load itineraries from server, reading local mockup instead.');
@@ -89,7 +94,12 @@ export class ApiService {
         days: iti.days,
         totalCost: iti.totalCost || iti.total_cost || 0,
         totalCarbon: iti.totalCarbon || iti.total_carbon || 0,
-        daysData: iti.daysData || iti.days_data || []
+        daysData: iti.daysData || iti.days_data || [],
+        status: iti.status || 'draft',
+        deposit_deadline: iti.deposit_deadline || null,
+        start_date: iti.start_date || null,
+        end_date: iti.end_date || null,
+        companion_email: iti.companion_email || null
       };
     } catch (e) {
       console.warn('Failed to fetch itinerary from server:', e);
@@ -110,12 +120,57 @@ export class ApiService {
           totalCarbon: itinerary.totalCarbon,
           daysData: itinerary.daysData,
           status: itinerary.status,
-          deposit_deadline: itinerary.deposit_deadline
+          deposit_deadline: itinerary.deposit_deadline,
+          start_date: itinerary.start_date,
+          end_date: itinerary.end_date,
+          companion_email: itinerary.companion_email
         })
       );
       return true;
     } catch (e) {
       console.error('Error saving itinerary to server:', e);
+      return false;
+    }
+  }
+
+  // Notifications APIs
+  public async getNotifications(userId: string): Promise<Notification[]> {
+    try {
+      return await firstValueFrom(
+        this.http.get<Notification[]>(`${this.BACKEND_URL}/notifications/user/${userId}`)
+      );
+    } catch (e) {
+      console.error('Error fetching notifications:', e);
+      return [];
+    }
+  }
+
+  public async markNotificationRead(id: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/notifications/${id}/read`, {}));
+      return true;
+    } catch (e) {
+      console.error('Error marking notification read:', e);
+      return false;
+    }
+  }
+
+  public async markAllNotificationsRead(userId: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/notifications/user/${userId}/read-all`, {}));
+      return true;
+    } catch (e) {
+      console.error('Error marking all notifications read:', e);
+      return false;
+    }
+  }
+
+  public async clearNotifications(userId: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.delete(`${this.BACKEND_URL}/notifications/user/${userId}`));
+      return true;
+    } catch (e) {
+      console.error('Error clearing notifications:', e);
       return false;
     }
   }

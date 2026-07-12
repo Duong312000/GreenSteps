@@ -588,56 +588,71 @@
 
         <div class="notifications-tabs-card">
             <nav class="notification-tabs" aria-label="Notification categories">
-                <button type="button" class="active">Tất cả</button>
-                <button type="button">Ưu đãi</button>
-                <button type="button">Lịch trình</button>
-                <button type="button">Hệ thống</button>
-                <button type="button">Cộng đồng</button>
-                <button type="button">Thanh toán</button>
+                <button type="button" [class.active]="selectedCategory === 'all'" (click)="selectedCategory = 'all'">Tất cả</button>
+                <button type="button" [class.active]="selectedCategory === 'offer'" (click)="selectedCategory = 'offer'">Ưu đãi</button>
+                <button type="button" [class.active]="selectedCategory === 'trip'" (click)="selectedCategory = 'trip'">Lịch trình</button>
+                <button type="button" [class.active]="selectedCategory === 'system'" (click)="selectedCategory = 'system'">Hệ thống</button>
+                <button type="button" [class.active]="selectedCategory === 'community'" (click)="selectedCategory = 'community'">Cộng đồng</button>
+                <button type="button" [class.active]="selectedCategory === 'payment'" (click)="selectedCategory = 'payment'">Thanh toán</button>
             </nav>
-            <button type="button" class="notification-settings-btn"><i class="bi bi-gear"></i> Cài đặt thông báo</button>
+            <div>
+                <button type="button" class="notification-settings-btn" (click)="markAllProfileNotifRead()"><i class="bi bi-check2-all"></i> Đọc tất cả</button>
+                <button type="button" class="notification-settings-btn" style="margin-left: 8px; color: #EF4444; border-color: #FCA5A5;" (click)="clearAllProfileNotifications()"><i class="bi bi-trash"></i> Xóa hết</button>
+            </div>
         </div>
 
         <div class="notifications-layout">
             <main class="notifications-feed">
                 <section class="notification-day">
-                    <h2>Hôm nay</h2>
-                    <article class="notification-item unread offer"><span class="notification-icon"><i class="bi bi-gift"></i></span><div><small>ƯU ĐÃI</small><h3>Giảm 20% cho tour Đà Lạt 3N2Đ</h3><p>Chỉ áp dụng hôm nay cho khách hàng GreenSteps thân thiết.</p></div><time>09:30</time><b></b></article>
-                    <article class="notification-item unread trip"><span class="notification-icon"><i class="bi bi-calendar2-check"></i></span><div><small>LỊCH TRÌNH</small><h3>Nhắc nhở: Tour Sapa - Fansipan 3N2Đ</h3><p>Chuyến đi của bạn sẽ khởi hành vào ngày 24/05/2024.</p></div><time>08:15</time><b></b></article>
-                    <article class="notification-item unread system"><span class="notification-icon"><i class="bi bi-gear"></i></span><div><small>HỆ THỐNG</small><h3>Cập nhật tính năng mới</h3><p>Bạn có thể chia sẻ lịch trình với bạn bè và cộng đồng.</p></div><time>07:45</time><b></b></article>
-                </section>
+                    <h2>Danh sách thông báo</h2>
+                    <div *ngIf="filteredNotifications.length === 0" class="text-center py-12 text-[#184A37]/50 select-none">
+                        <i class="bi bi-bell-slash text-4xl mb-3 block"></i>
+                        <span>Không có thông báo nào trong danh mục này.</span>
+                    </div>
 
-                <section class="notification-day">
-                    <h2>Hôm qua</h2>
-                    <article class="notification-item community"><span class="notification-icon"><i class="bi bi-chat-heart"></i></span><div><small>CỘNG ĐỒNG</small><h3>Nguyễn Minh đã bình luận lịch trình của bạn</h3><p>"Lịch trình tuyệt vời! Mình đã lưu lại để tham khảo 😊"</p></div><time>21:30</time></article>
-                    <article class="notification-item payment"><span class="notification-icon"><i class="bi bi-credit-card"></i></span><div><small>THANH TOÁN</small><h3>Thanh toán thành công</h3><p>Bạn đã thanh toán thành công cho tour Đà Nẵng - Hội An.</p></div><time>18:20</time></article>
-                    <article class="notification-item offer"><span class="notification-icon"><i class="bi bi-gift"></i></span><div><small>ƯU ĐÃI</small><h3>Ưu đãi dành riêng cho bạn</h3><p>Giảm đến 15% cho các tour biển hè 2024.</p></div><time>16:05</time></article>
+                    <article *ngFor="let notif of filteredNotifications"
+                             (click)="markProfileNotifRead(notif)"
+                             [class.unread]="!notif.read"
+                             [class.offer]="notif.type === 'system' && notif.title.includes('ưu đãi')"
+                             [class.trip]="notif.type === 'system' && !notif.title.includes('ưu đãi')"
+                             [class.system]="notif.type === 'system'"
+                             [class.community]="notif.type === 'community'"
+                             [class.payment]="notif.type === 'wallet' || notif.type === 'booking'"
+                             class="notification-item transition-all duration-300 hover:shadow-sm" style="cursor: pointer;">
+                        <span class="notification-icon">
+                            <i [ngClass]="{
+                               'bi-gift': notif.type === 'system' && notif.title.includes('ưu đãi'),
+                               'bi-calendar2-check': notif.type === 'system' && !notif.title.includes('ưu đãi'),
+                               'bi-info-circle': notif.type === 'system',
+                               'bi-chat-heart': notif.type === 'community',
+                               'bi-credit-card': notif.type === 'wallet' || notif.type === 'booking'
+                            }" class="bi"></i>
+                        </span>
+                        <div>
+                            <small *ngIf="notif.type === 'system'">HỆ THỐNG</small>
+                            <small *ngIf="notif.type === 'community'">CỘNG ĐỒNG</small>
+                            <small *ngIf="notif.type === 'wallet' || notif.type === 'booking'">THANH TOÁN</small>
+                            <h3>{{ notif.title }}</h3>
+                            <p>{{ notif.message }}</p>
+                        </div>
+                        <time>{{ notif.createdAt | date:'HH:mm dd/MM' }}</time>
+                        <b *ngIf="!notif.read"></b>
+                    </article>
                 </section>
-
-                <section class="notification-day">
-                    <h2>20/05/2024</h2>
-                    <article class="notification-item system"><span class="notification-icon"><i class="bi bi-shield-lock"></i></span><div><small>HỆ THỐNG</small><h3>Bảo mật tài khoản</h3><p>Thiết bị mới đã đăng nhập vào tài khoản của bạn.</p></div><time>14:30</time></article>
-                    <article class="notification-item trip"><span class="notification-icon"><i class="bi bi-journal-plus"></i></span><div><small>LỊCH TRÌNH</small><h3>Đã lưu lịch trình mới</h3><p>"Đà Lạt 4N3Đ - Chill & Relax" đã được lưu vào danh sách.</p></div><time>11:10</time></article>
-                    <article class="notification-item community"><span class="notification-icon"><i class="bi bi-envelope-heart"></i></span><div><small>CỘNG ĐỒNG</small><h3>GreenSteps chia sẻ bài viết mới</h3><p>8 mẹo du lịch xanh bạn nên biết 🌿</p></div><time>09:00</time></article>
-                </section>
-
-                <button type="button" class="load-more-notifications">Tải thêm thông báo <i class="bi bi-chevron-down"></i></button>
             </main>
 
             <aside class="notifications-side">
                 <article class="profile-card notification-summary-card">
                     <h2>Tổng quan</h2>
-                    <span><i class="bi bi-bell"></i>Tất cả thông báo<strong>128</strong></span>
-                    <span><i class="bi bi-bell-fill"></i>Chưa đọc<strong>3 <b></b></strong></span>
-                    <span><i class="bi bi-check2-square"></i>Đã đọc<strong>125</strong></span>
+                    <span><i class="bi bi-bell"></i>Tất cả thông báo<strong>{{ totalNotifCount }}</strong></span>
+                    <span><i class="bi bi-bell-fill"></i>Chưa đọc<strong>{{ unreadNotifCount }} <b *ngIf="unreadNotifCount > 0"></b></strong></span>
+                    <span><i class="bi bi-check2-square"></i>Đã đọc<strong>{{ readNotifCount }}</strong></span>
                 </article>
 
                 <article class="profile-card notification-filter-card">
                     <h2>Tùy chọn hiển thị</h2>
-                    <label><i class="bi bi-bell"></i>Tất cả thông báo<input type="radio" name="noticeFilter" checked></label>
-                    <label><i class="bi bi-bell"></i>Chưa đọc<input type="radio" name="noticeFilter"></label>
-                    <label><i class="bi bi-calendar-check"></i>Ưu tiên<input type="radio" name="noticeFilter"></label>
-                    <label><i class="bi bi-sliders"></i>Theo danh mục<i class="bi bi-chevron-down"></i></label>
+                    <label><i class="bi bi-bell"></i>Tất cả thông báo<input type="radio" name="noticeFilter" [checked]="notifFilter === 'all'" (change)="notifFilter = 'all'"></label>
+                    <label><i class="bi bi-bell"></i>Chưa đọc<input type="radio" name="noticeFilter" [checked]="notifFilter === 'unread'" (change)="notifFilter = 'unread'"></label>
                 </article>
 
                 <article class="profile-card notification-quick-card">

@@ -11,7 +11,9 @@ const {
   CommentPost, 
   CPSS,
   Wallet,
-  Provider
+  Provider,
+  Notification,
+  UserSchedule
 } = require('../models/index');
 const bcrypt = require('bcrypt');
 
@@ -222,7 +224,7 @@ exports.getRecommendations = async (req, res, next) => {
 
 // 4. Custom Itineraries: Save or Update Itinerary (calculates carbon footprint)
 exports.saveCustomItinerary = async (req, res, next) => {
-  const { id, name, user_id, destination, days, totalCost, daysData, status, deposit_deadline } = req.body;
+  const { id, name, user_id, destination, days, totalCost, daysData, status, deposit_deadline, start_date, end_date, companion_email } = req.body;
 
   try {
     // Sum carbon emissions from activities
@@ -262,13 +264,60 @@ exports.saveCustomItinerary = async (req, res, next) => {
         tour_description: `Hành trình tự thiết kế đi ${destination}`
       }, { transaction: t });
 
+      // Check current status if exists to create notification
+      const existingCustom = await ScheduleCustom.findByPk(id, { transaction: t });
+      const statusChanged = existingCustom && existingCustom.status !== status;
+
       await ScheduleCustom.upsert({
         id: id,
         user_id: user_id,
         total_cost: totalCost,
         ...(status ? { status } : {}),
-        ...(deposit_deadline !== undefined ? { deposit_deadline } : {})
+        ...(deposit_deadline !== undefined ? { deposit_deadline } : {}),
+        ...(start_date !== undefined ? { start_date } : {}),
+        ...(end_date !== undefined ? { end_date } : {}),
+        ...(companion_email !== undefined ? { companion_email } : {})
       }, { transaction: t });
+
+      // Create UserSchedule junction if not exist
+      await UserSchedule.findOrCreate({
+        where: { user_id: user_id, schedule_id: id },
+        transaction: t
+      });
+
+      // Create notifications on status change
+      if (statusChanged || (!existingCustom && status)) {
+        if (status === 'deposited') {
+          await Notification.create({
+            id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+            user_id: user_id,
+            title: 'Đặt cọc thành công',
+            message: `Bạn đã hoàn tất đặt cọc cho chuyến đi ${destination || 'của bạn'}. Lịch trình hiện tại đã được khóa.`,
+            type: 'wallet',
+            read: false
+          }, { transaction: t });
+        } else if (status === 'cancelled') {
+          await Notification.create({
+            id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+            user_id: user_id,
+            title: 'Đã hủy đặt cọc',
+            message: `Lịch trình chuyến đi ${destination || 'của bạn'} đã được hủy thành công. Số tiền cọc đã được hoàn trả về ví của bạn.`,
+            type: 'wallet',
+            read: false
+          }, { transaction: t });
+        }
+      } else if (!existingCustom) {
+        // Initial creation notification
+        await Notification.create({
+          id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          user_id: user_id,
+          title: 'Hành trình mới',
+          message: `Lịch trình tự thiết kế đi ${destination || 'điểm đến mới'} đã được khởi tạo thành công!`,
+          type: 'system',
+          read: false
+        }, { transaction: t });
+      }
+    });
 
       // Destroy old activities
       await ScheduleActivity.destroy({ where: { schedule_id: id }, transaction: t });
@@ -346,7 +395,10 @@ exports.getUserCustomItineraries = async (req, res, next) => {
         totalCarbon: base.carbon,
         daysData: daysData,
         status: c.status || 'draft',
-        deposit_deadline: c.deposit_deadline || null
+        deposit_deadline: c.deposit_deadline || null,
+        start_date: c.start_date || null,
+        end_date: c.end_date || null,
+        companion_email: c.companion_email || null
       });
     }
 
@@ -401,7 +453,10 @@ exports.getCustomItineraryById = async (req, res, next) => {
       totalCarbon: base.carbon,
       daysData: daysData,
       status: c.status || 'draft',
-      deposit_deadline: c.deposit_deadline || null
+      deposit_deadline: c.deposit_deadline || null,
+      start_date: c.start_date || null,
+      end_date: c.end_date || null,
+      companion_email: c.companion_email || null
     });
   } catch (error) {
     next(error);
@@ -541,7 +596,16 @@ exports.cloneItinerary = async (req, res, next) => {
         user_id: newUserId,
         total_cost: custom ? custom.total_cost : 0,
         status: 'draft',
-        deposit_deadline: null
+        deposit_deadline: null,
+        start_date: custom ? custom.start_date : null,
+        end_date: custom ? custom.end_date : null,
+        companion_email: null
+      }, { transaction: t });
+
+      // Create UserSchedule junction
+      await UserSchedule.create({
+        user_id: newUserId,
+        schedule_id: newId
       }, { transaction: t });
 
       // Copy Activities
@@ -562,6 +626,29 @@ exports.cloneItinerary = async (req, res, next) => {
 
       if (newActivities.length > 0) {
         await ScheduleActivity.bulkCreate(newActivities, { transaction: t });
+      }
+
+      // Trigger Notifications
+      await Notification.create({
+        id: `notif_${Date.now()}_b_${Math.random().toString(36).substring(2, 7)}`,
+        user_id: newUserId,
+        title: 'Sao chép thành công',
+        message: `Đã tham khảo & sao chép lịch trình "${base.tour_name}" thành công!`,
+        type: 'system',
+        read: false
+      }, { transaction: t });
+
+      if (custom && custom.user_id && custom.user_id !== newUserId) {
+        const clonerUser = await User.findByPk(newUserId, { transaction: t });
+        const clonerName = clonerUser ? clonerUser.fullname : 'Một người dùng';
+        await Notification.create({
+          id: `notif_${Date.now()}_a_${Math.random().toString(36).substring(2, 7)}`,
+          user_id: custom.user_id,
+          title: 'Lịch trình được tham khảo',
+          message: `${clonerName} đã tham khảo & sao chép lịch trình "${base.tour_name}" của bạn!`,
+          type: 'community',
+          read: false
+        }, { transaction: t });
       }
     });
 
