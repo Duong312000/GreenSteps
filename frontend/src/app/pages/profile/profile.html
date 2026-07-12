@@ -31,8 +31,11 @@
                         <div class="profile-summary-cover profile-cover"><img [src]="coverImage" alt="GreenSteps nature cover"></div>
                         <div class="profile-summary-body profile-body">
                             <div class="profile-avatar-wrap profile-avatar-wrapper">
-                                <div class="profile-avatar-large">{{ getFirstLetter(profileUser.fullname) }}</div>
-                                <button type="button" class="profile-avatar-camera" aria-label="Cập nhật ảnh đại diện"><i class="bi bi-camera"></i></button>
+                                <div class="profile-avatar-large" style="overflow: hidden; border-radius: 50%;">
+                                    <img *ngIf="profileUser.avatarUrl" [src]="profileUser.avatarUrl" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <span *ngIf="!profileUser.avatarUrl">{{ getFirstLetter(profileUser.fullname) }}</span>
+                                </div>
+                                <button type="button" (click)="openAvatarModal()" class="profile-avatar-camera" aria-label="Cập nhật ảnh đại diện"><i class="bi bi-camera"></i></button>
                             </div>
                             <h2>{{ profileUser.fullname || profileUser.username }}</h2>
                             <span class="profile-role-pill">{{ profileUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</span>
@@ -284,8 +287,11 @@
                 <div class="profile-summary-cover"><img [src]="coverImage" alt="GreenSteps nature cover"></div>
                 <div class="personal-profile-body">
                     <div class="profile-avatar-wrap">
-                        <div class="profile-avatar-large">{{ getFirstLetter(profileUser.fullname) }}</div>
-                        <button type="button" class="profile-avatar-camera" aria-label="Cập nhật ảnh đại diện"><i class="bi bi-camera"></i></button>
+                        <div class="profile-avatar-large" style="overflow: hidden; border-radius: 50%;">
+                            <img *ngIf="profileUser.avatarUrl" [src]="profileUser.avatarUrl" style="width: 100%; height: 100%; object-fit: cover;">
+                            <span *ngIf="!profileUser.avatarUrl">{{ getFirstLetter(profileUser.fullname) }}</span>
+                        </div>
+                        <button type="button" (click)="openAvatarModal()" class="profile-avatar-camera" aria-label="Cập nhật ảnh đại diện"><i class="bi bi-camera"></i></button>
                     </div>
                     <h2>{{ profileUser.fullname || profileUser.username }}</h2>
                     <span class="profile-role-pill">{{ profileUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</span>
@@ -830,8 +836,11 @@
                 <div class="profile-summary-cover"><img [src]="coverImage" alt="GreenSteps nature cover"></div>
                 <div class="personal-profile-body">
                     <div class="profile-avatar-wrap">
-                        <div class="profile-avatar-large">{{ getFirstLetter(profileUser.fullname) }}</div>
-                        <button type="button" class="profile-avatar-camera" aria-label="Cập nhật ảnh đại diện"><i class="bi bi-camera"></i></button>
+                        <div class="profile-avatar-large" style="overflow: hidden; border-radius: 50%;">
+                            <img *ngIf="profileUser.avatarUrl" [src]="profileUser.avatarUrl" style="width: 100%; height: 100%; object-fit: cover;">
+                            <span *ngIf="!profileUser.avatarUrl">{{ getFirstLetter(profileUser.fullname) }}</span>
+                        </div>
+                        <button type="button" (click)="openAvatarModal()" class="profile-avatar-camera" aria-label="Cập nhật ảnh đại diện"><i class="bi bi-camera"></i></button>
                     </div>
                     <h2>{{ profileUser.fullname || profileUser.username }}</h2>
                     <span class="profile-role-pill">{{ profileUser.role === 'provider' ? 'Nhà cung cấp' : 'Khách du lịch' }}</span>
@@ -841,7 +850,7 @@
                         <span><i class="bi bi-calendar2"></i>Thành viên từ 05/2024</span>
                     </div>
                     <div class="profile-photo-actions">
-                        <button type="button"><i class="bi bi-camera"></i>Đổi ảnh đại diện</button>
+                        <button type="button" (click)="openAvatarModal()"><i class="bi bi-camera"></i>Đổi ảnh đại diện</button>
                         <button type="button"><i class="bi bi-image"></i>Chỉnh sửa ảnh bìa</button>
                     </div>
                     <article class="profile-provider-card">
@@ -934,6 +943,39 @@
             <h3 style="font-size:1.2rem; font-weight:800; color:#1f2937; margin:0 0 10px;">{{ terminalApprovalTitle }}</h3>
             <p style="font-size:.85rem; color:#4b5563; line-height:1.5; margin:0 0 24px; text-align:center; word-break:break-word;">{{ terminalApprovalMsg }}</p>
             <button type="button" (click)="isTerminalModalOpen = false" style="width:100%; height:42px; background:#0E9F6E; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">{{ terminalApprovalState === 'pending' ? 'Toi da hieu' : 'Dong' }}</button>
+        </div>
+    </div>
+    <!-- Avatar Update Modal -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 transition-all" *ngIf="isAvatarModalOpen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div class="bg-white rounded-xl shadow-lg max-w-md w-full overflow-hidden border border-gray-200" style="background: white; border-radius: 16px; max-width: 440px; w: 100%; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden;">
+            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #f0f4f2;">
+                <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: #111816; display: flex; align-items: center; gap: 8px;">
+                    <i class="bi bi-person-circle" style="color: var(--g, #174c39);"></i> Cập nhật ảnh đại diện
+                </h3>
+                <button (click)="closeAvatarModal()" style="border: none; background: transparent; font-size: 24px; cursor: pointer; color: #8d9691;">&times;</button>
+            </div>
+            
+            <div style="padding: 24px;">
+                <h4 style="margin: 0 0 16px; font-size: 13px; font-weight: 700; color: #5f6863;">Chọn từ các ảnh đại diện có sẵn:</h4>
+                <div style="display: flex; justify-content: space-around; gap: 12px; margin-bottom: 24px;">
+                    <div *ngFor="let avt of presetAvatars" 
+                         (click)="selectPresetAvatar(avt)"
+                         [style.border]="selectedAvatarPath === avt ? '3px solid var(--g, #174c39)' : '3px solid transparent'"
+                         style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                        <img [src]="avt" alt="Avatar option" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                </div>
+
+                <div style="border-top: 1px dashed #dde6e0; padding-top: 20px; margin-bottom: 24px;">
+                    <h4 style="margin: 0 0 12px; font-size: 13px; font-weight: 700; color: #5f6863;">Hoặc tải lên ảnh từ thiết bị:</h4>
+                    <input type="file" (change)="onAvatarFileSelected($event)" accept="image/*" style="font-size: 13px;">
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #f0f4f2; padding-top: 20px;">
+                    <button type="button" (click)="closeAvatarModal()" style="border: 1px solid #dde6e0; background: white; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; color: #5f6863;">Hủy</button>
+                    <button type="button" (click)="saveAvatar()" style="border: none; background: #174c39; color: white; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;">Lưu thay đổi</button>
+                </div>
+            </div>
         </div>
     </div>
 </main>

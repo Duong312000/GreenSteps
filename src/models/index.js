@@ -15,7 +15,8 @@ const User = sequelize.define('User', {
   address: { type: DataTypes.STRING },
   job: { type: DataTypes.STRING },
   last_interest: { type: DataTypes.STRING }, // user's last interested destination slug
-  company_name: { type: DataTypes.STRING }
+  company_name: { type: DataTypes.STRING },
+  avatarUrl: { type: DataTypes.STRING }
 }, { timestamps: true });
 
 // 2. Badge Model

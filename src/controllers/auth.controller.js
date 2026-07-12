@@ -142,7 +142,7 @@ function promptTerminalApproval(message) {
 
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { fullname, phone, dob, gender, address, job, role, company_name, companyName } = req.body;
+    const { fullname, phone, dob, gender, address, job, role, company_name, companyName, avatarUrl, avatar_url } = req.body;
     const userId = req.user ? req.user.id : req.params.userId;
 
     const user = await User.findByPk(userId);
@@ -171,9 +171,10 @@ exports.updateProfile = async (req, res, next) => {
     }
 
     const finalCompanyName = company_name || companyName || user.company_name;
+    const finalAvatarUrl = avatarUrl !== undefined ? avatarUrl : (avatar_url !== undefined ? avatar_url : user.avatarUrl);
 
     await User.update(
-      { fullname, phone, dob: dob || null, gender, address, job, role, company_name: finalCompanyName },
+      { fullname, phone, dob: dob || null, gender, address, job, role, company_name: finalCompanyName, avatarUrl: finalAvatarUrl },
       { where: { id: userId } }
     );
 

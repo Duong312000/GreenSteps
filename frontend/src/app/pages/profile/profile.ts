@@ -271,6 +271,14 @@ export class ProfileComponent implements OnInit {
   public readonly tripImage = 'image/4302842f8d693c25238f2141964a64b2.jpg';
   public readonly offerImage = 'image/1dc8619487310884c9d631d689ece1e7.jpg';
 
+  public isAvatarModalOpen: boolean = false;
+  public selectedAvatarPath: string = '';
+  public presetAvatars: string[] = [
+    'image/khach-hang/avatar-linh-ngo.jpg',
+    'image/khach-hang/avatar-pham-hoang-minh.jpg',
+    'image/khach-hang/avatar-vu-an-nhien.jpg'
+  ];
+
   public notificationsList: any[] = [];
   public notifFilter: 'all' | 'unread' = 'all';
   public selectedCategory: string = 'all';
@@ -618,5 +626,58 @@ export class ProfileComponent implements OnInit {
 
   public getFirstLetter(name: string): string {
     return name ? name.charAt(0).toUpperCase() : 'U';
+  }
+
+  // AVATAR EDITING IMPLEMENTATION
+  public openAvatarModal() {
+    this.selectedAvatarPath = this.profileUser?.avatarUrl || '';
+    this.isAvatarModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  public closeAvatarModal() {
+    this.isAvatarModalOpen = false;
+    this.cdr.detectChanges();
+  }
+
+  public selectPresetAvatar(path: string) {
+    this.selectedAvatarPath = path;
+    this.cdr.detectChanges();
+  }
+
+  public async onAvatarFileSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result as string;
+      const res = await this.apiService.uploadImageBase64(base64);
+      if (res && res.success) {
+        this.selectedAvatarPath = res.url;
+        this.cdr.detectChanges();
+      } else {
+        alert('Tải ảnh lên thất bại!');
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  public async saveAvatar() {
+    if (!this.profileUser) return;
+    const userId = this.profileUser.id || this.profileUser._id || '';
+    
+    const res = await this.authService.updateProfile(userId, {
+      avatarUrl: this.selectedAvatarPath
+    });
+
+    if (res && res.success && res.user) {
+      this.profileUser = res.user;
+      this.isAvatarModalOpen = false;
+      this.cdr.detectChanges();
+      alert('Cập nhật ảnh đại diện thành công!');
+    } else {
+      alert('Không thể lưu ảnh đại diện: ' + (res?.message || 'Lỗi kết nối'));
+    }
   }
 }

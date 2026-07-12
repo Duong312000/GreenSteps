@@ -70,7 +70,8 @@ export class AuthService {
           gender: res.user.gender,
           address: res.user.address,
           role: res.user.role,
-          companyName: res.user.companyName || res.user.company_name
+          companyName: res.user.companyName || res.user.company_name,
+          avatarUrl: res.user.avatarUrl || res.user.avatar_url
         };
         this.setCurrentUser(mappedUser);
         return { success: true, user: mappedUser };
@@ -101,7 +102,8 @@ export class AuthService {
           gender: res.user.gender,
           address: res.user.address,
           role: res.user.role,
-          companyName: res.user.companyName || res.user.company_name
+          companyName: res.user.companyName || res.user.company_name,
+          avatarUrl: res.user.avatarUrl || res.user.avatar_url
         };
         this.setCurrentUser(mappedUser);
         return { success: true, user: mappedUser };
@@ -202,7 +204,8 @@ export class AuthService {
           gender: res.user.gender,
           address: res.user.address,
           role: res.user.role,
-          companyName: res.user.companyName || res.user.company_name
+          companyName: res.user.companyName || res.user.company_name,
+          avatarUrl: res.user.avatarUrl || res.user.avatar_url
         };
         this.setCurrentUser(mappedUser);
         return { success: true, user: mappedUser };
