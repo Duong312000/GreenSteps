@@ -283,8 +283,15 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isSubmitting = false;
 
     if (res.success) {
-      this.successMessage = res.message || 'Đặt lại mật khẩu thành công.';
-      this.setStep('resetDone');
+      this.mode = 'login';
+      this.authStep = 'login';
+      this.loginUsername = this.verificationEmail;
+      this.loginPassword = '';
+      this.resetToken = '';
+      this.resetForm = { password: '', confirmPassword: '' };
+      this.errorMessage = '';
+      this.successMessage = res.message || 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.';
+      this.focusFirstField();
       return;
     }
 
