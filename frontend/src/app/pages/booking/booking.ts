@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
@@ -137,7 +137,8 @@ export class BookingComponent implements OnInit {
     private apiService: ApiService,
     private authService: AuthService,
     private loginModalService: LoginModalService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   async ngOnInit() {
@@ -462,14 +463,16 @@ export class BookingComponent implements OnInit {
           if (this.countdownInterval) {
             clearInterval(this.countdownInterval);
           }
-          this.countdownInterval = setInterval(() => {
-            if (this.qrCountdown > 0) {
-              this.qrCountdown--;
-              this.cdr.detectChanges();
-            } else {
-              this.handleQrExpired();
-            }
-          }, 1000);
+          this.ngZone.runOutsideAngular(() => {
+            this.countdownInterval = setInterval(() => {
+              if (this.qrCountdown > 0) {
+                this.qrCountdown--;
+                this.cdr.detectChanges();
+              } else {
+                this.ngZone.run(() => this.handleQrExpired());
+              }
+            }, 1000);
+          });
 
           // Poll until admin approves
           this.startBookingStatusPolling(res.bookingId);
