@@ -549,8 +549,20 @@
     </div>
 
 
+    <!-- Login Required State -->
+    <div class="bg-white/80 backdrop-blur-md rounded-3xl border border-[#184A37]/10 p-12 text-center shadow-sm" *ngIf="!currentUser">
+        <div class="w-16 h-16 bg-[#ECFDF5] rounded-full flex items-center justify-center mx-auto mb-6">
+            <i class="bi bi-shield-lock-fill text-3xl text-[#0E9F6E]"></i>
+        </div>
+        <h3 class="text-xl font-bold text-[#184A37]">Yêu cầu đăng nhập</h3>
+        <p class="text-sm text-[#184A37]/60 mt-2 max-w-md mx-auto">Vui lòng đăng nhập tài khoản GreenSteps để lưu trữ, quản lý và tùy chỉnh các lịch trình du lịch xanh của bạn.</p>
+        <button routerLink="/profile" class="mt-6 h-11 px-8 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-800 text-white font-bold text-sm shadow-md hover:-translate-y-0.5 transition-all border-0 cursor-pointer">
+            Đăng nhập ngay
+        </button>
+    </div>
+
     <!-- Empty State -->
-    <div class="bg-white/80 backdrop-blur-md rounded-3xl border border-[#184A37]/10 p-12 text-center shadow-sm" *ngIf="!isLoadingList && savedItineraries.length === 0">
+    <div class="bg-white/80 backdrop-blur-md rounded-3xl border border-[#184A37]/10 p-12 text-center shadow-sm" *ngIf="currentUser && !isLoadingList && savedItineraries.length === 0">
         <div class="w-16 h-16 bg-[#ECFDF5] rounded-full flex items-center justify-center mx-auto mb-6">
             <i class="bi bi-calendar-x text-3xl text-[#0E9F6E]"></i>
         </div>

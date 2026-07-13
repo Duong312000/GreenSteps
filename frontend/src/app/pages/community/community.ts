@@ -327,12 +327,30 @@ export class CommunityComponent implements OnInit {
     reader.readAsDataURL(file);
   }
 
+  public checkLoginAction(): boolean {
+    if (!this.currentUser) {
+      this.showAlert("Thông báo", "Vui lòng đăng nhập để thực hiện chức năng này!", "warning", () => {
+        this.router.navigate(['/profile']);
+      });
+      return false;
+    }
+    return true;
+  }
+
+  public openComposer() {
+    if (this.checkLoginAction()) {
+      this.showPostDetails = true;
+      this.cdr.detectChanges();
+    }
+  }
+
   public async submitPost(event: Event) {
     event.preventDefault();
+    if (!this.checkLoginAction() || !this.currentUser) return;
     if (!this.postText.trim()) return;
 
-    const authorName = this.currentUser ? this.currentUser.fullname : 'Nguyễn Minh Anh';
-    const authorId = this.currentUser ? (this.currentUser.id || this.currentUser._id || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d') : '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d';
+    const authorName = this.currentUser.fullname || '';
+    const authorId = this.currentUser.id || this.currentUser._id || '';
 
     const selectedIti = this.selectedItineraryId ? this.userItineraries.find(i => i.id === this.selectedItineraryId) : null;
 
@@ -416,6 +434,7 @@ export class CommunityComponent implements OnInit {
   }
 
   public async handleLike(post: CommunityPost) {
+    if (!this.checkLoginAction()) return;
     const isLiked = this.likedPostsSet.has(post.id);
     const originalLikes = post.likes;
 
@@ -503,11 +522,12 @@ export class CommunityComponent implements OnInit {
   }
 
   public async submitComment(postId: string, parentCommentId?: string) {
+    if (!this.checkLoginAction() || !this.currentUser) return;
     const text = parentCommentId ? this.replyInputs[parentCommentId] : this.commentInputs[postId];
     if (!text || !text.trim()) return;
 
-    const authorName = this.currentUser ? this.currentUser.fullname : 'Nguyễn Minh Anh';
-    const authorId = this.currentUser ? (this.currentUser.id || this.currentUser._id || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d') : '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d';
+    const authorName = this.currentUser.fullname || '';
+    const authorId = this.currentUser.id || this.currentUser._id || '';
     const imageUrl = parentCommentId ? '' : (this.commentImageDrafts[postId] || '');
 
     // 1. Save original state for potential rollback

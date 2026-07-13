@@ -59,15 +59,15 @@
             <img *ngIf="isAvatarUrl(currentUser?.avatarUrl)" [src]="currentUser?.avatarUrl" alt="Avatar" class="avatar-img">
             <span *ngIf="!isAvatarUrl(currentUser?.avatarUrl)">{{ getFirstLetter(currentUser ? currentUser.fullname : 'Khách') }}</span>
           </div>
-          <button type="button" class="composer-input-trigger" (click)="showPostDetails = true">
+          <button type="button" class="composer-input-trigger" (click)="openComposer()">
             {{ currentUser ? currentUser.fullname + ' ơi, bạn đang nghĩ gì thế?' : 'Bạn đang nghĩ gì thế?' }}
           </button>
         </div>
 
         <div class="composer-bottom-actions">
-          <button type="button" class="action-btn" (click)="showPostDetails = true"><i class="bi bi-image text-emerald-500" style="color: #10B981;"></i> Ảnh/Video</button>
-          <button type="button" class="action-btn" (click)="showPostDetails = true"><i class="bi bi-geo-alt-fill text-red-500" style="color: #EF4444;"></i> Check-in</button>
-          <button type="button" class="action-btn" (click)="showPostDetails = true"><i class="bi bi-emoji-smile-fill text-yellow-500" style="color: #F59E0B;"></i> Đánh giá sao</button>
+          <button type="button" class="action-btn" (click)="openComposer()"><i class="bi bi-image text-emerald-500" style="color: #10B981;"></i> Ảnh/Video</button>
+          <button type="button" class="action-btn" (click)="openComposer()"><i class="bi bi-geo-alt-fill text-red-500" style="color: #EF4444;"></i> Check-in</button>
+          <button type="button" class="action-btn" (click)="openComposer()"><i class="bi bi-emoji-smile-fill text-yellow-500" style="color: #F59E0B;"></i> Đánh giá sao</button>
         </div>
       </div>
 

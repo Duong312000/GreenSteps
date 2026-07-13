@@ -16,6 +16,7 @@ declare const google: any; // Google Maps SDK mapped globally
   templateUrl: './schedule-editor.html',
 })
 export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy {
+  public currentUser: any = null;
   public activeItinerary: any = null; // Internal Editor representation
   public activeDayIdx: number = 0;
   public walletBalance: number = 5000000;
@@ -178,23 +179,24 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   ) {}
 
   ngOnInit() {
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+      if (user) {
+        this.apiService.getWalletInfo(user.id || user._id || '').then(wallet => {
+          this.walletBalance = wallet.balance;
+          this.walletRegistered = wallet.registered;
+          this.cdr.detectChanges();
+        });
+      }
+      this.cdr.detectChanges();
+    });
+
     // Set default AI welcome message
     this.aiMessages.push({
       text: "Xin chào! Tôi là trợ lý hành trình xanh của GreenSteps. Hãy cho tôi biết bạn đang muốn đi đâu hoặc muốn ăn gì ở khu vực này, tôi sẽ gợi ý các điểm đến giảm thiểu phát thải carbon thấp nhất cho bạn!",
       isOutgoing: false
     });
     this.cdr.detectChanges();
-
-
-
-    const user = this.authService.getCurrentUser();
-    if (user) {
-      this.apiService.getWalletInfo(user.id || user._id || '').then(wallet => {
-        this.walletBalance = wallet.balance;
-        this.walletRegistered = wallet.registered;
-        this.cdr.detectChanges();
-      });
-    }
   }
 
   ngAfterViewInit() {
@@ -223,11 +225,18 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
 
   public async loadSavedItinerariesList() {
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.savedItineraries = [];
+      this.isLoadingList = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
     this.isLoadingList = true;
     this.cdr.detectChanges();
     try {
-      const user = this.authService.getCurrentUser();
-      const userId = user ? (user.id || user._id || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d') : '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d';
+      const userId = user.id || user._id || '';
       this.savedItineraries = await this.apiService.getItineraries(userId);
     } catch (e) {
       console.error(e);
