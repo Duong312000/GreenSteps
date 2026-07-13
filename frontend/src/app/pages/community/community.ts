@@ -34,6 +34,7 @@ export class CommunityComponent implements OnInit {
   // Custom Share Itinerary variables
   public userItineraries: Itinerary[] = [];
   public selectedItineraryId: string = '';
+  public activeDropdownPostId: string | null = null;
 
 
   // Comments bindings
@@ -312,6 +313,24 @@ export class CommunityComponent implements OnInit {
       await this.loadPosts();
     } else {
       this.showAlert("Lỗi", "Đăng bài viết thất bại. Vui lòng kiểm tra kết nối mạng!", "error");
+    }
+  }
+
+  public togglePostDropdown(postId: string, event: Event) {
+    event.stopPropagation();
+    if (this.activeDropdownPostId === postId) {
+      this.activeDropdownPostId = null;
+    } else {
+      this.activeDropdownPostId = postId;
+    }
+    this.cdr.detectChanges();
+  }
+
+  @HostListener('document:click')
+  public onDocumentClick() {
+    if (this.activeDropdownPostId) {
+      this.activeDropdownPostId = null;
+      this.cdr.detectChanges();
     }
   }
 

@@ -11445,4 +11445,13 @@ app-tour-detail .show-all-tile span {
   100% { transform: rotate(360deg); }
 }
 
+.fb-more-options-btn:hover {
+    background-color: #F0F2F5 !important;
+    color: #050505 !important;
+}
+
+.fb-dropdown-item-delete:hover {
+    background-color: #FEF2F2 !important;
+}
+
 
