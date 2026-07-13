@@ -216,6 +216,10 @@ export class AuthService {
           avatarUrl: res.user.avatarUrl || res.user.avatar_url
         };
         this.setCurrentUser(mappedUser);
+        this.apiService.clearCache('community_posts_');
+        this.apiService.clearCache('tour_reviews_');
+        this.apiService.clearCache('service_reviews_');
+        this.apiService.clearCache('preset_tour_');
         return { success: true, user: mappedUser };
       }
       return { success: false, message: res?.message || 'Cập nhật thất bại!' };
