@@ -162,10 +162,12 @@ export class BookingComponent implements OnInit {
           this.walletBalance = 0;
         }
       }
+      this.cdr.detectChanges();
     });
 
     await this.loadActiveTour();
     this.isPageLoading = false;
+    this.cdr.detectChanges();
   }
 
   private async loadActiveTour() {
@@ -210,6 +212,7 @@ export class BookingComponent implements OnInit {
       const tours = await this.apiService.getPresetTours();
       this.activeTour = tours[0] || null;
     }
+    this.cdr.detectChanges();
   }
 
 
