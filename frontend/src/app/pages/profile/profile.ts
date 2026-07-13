@@ -281,6 +281,23 @@ export class ProfileComponent implements OnInit {
   public avatarZoom: number = 1.0;
   public avatarPosX: number = 50;
   public avatarPosY: number = 50;
+  public isNotificationModalOpen: boolean = false;
+  public notificationModalTitle: string = '';
+  public notificationModalMessage: string = '';
+  public notificationModalType: 'success' | 'error' | 'info' = 'info';
+
+  public showNotification(title: string, message: string, type: 'success' | 'error' | 'info' = 'info') {
+    this.notificationModalTitle = title;
+    this.notificationModalMessage = message;
+    this.notificationModalType = type;
+    this.isNotificationModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  public closeNotificationModal() {
+    this.isNotificationModalOpen = false;
+    this.cdr.detectChanges();
+  }
 
   public notificationsList: any[] = [];
   public notifFilter: 'all' | 'unread' = 'all';
@@ -516,13 +533,13 @@ export class ProfileComponent implements OnInit {
       bio: this.detBio
     });
     if (res.success) {
-      alert('Lưu thông tin thành công!');
+      this.showNotification('Thành công', 'Lưu thông tin thành công!', 'success');
       // Update local profileUser info
       if (res.user) {
         this.applyProfileUser(res.user);
       }
     } else {
-      alert(res.message || 'Cập nhật thất bại!');
+      this.showNotification('Thất bại', res.message || 'Cập nhật thất bại!', 'error');
     }
     this.cdr.detectChanges();
   }
@@ -743,13 +760,13 @@ export class ProfileComponent implements OnInit {
         this.profileUser = res.user;
         this.isAvatarModalOpen = false;
         this.cdr.detectChanges();
-        alert('Cập nhật ảnh đại diện thành công!');
+        this.showNotification('Thành công', 'Cập nhật ảnh đại diện thành công!', 'success');
       } else {
-        alert('Không thể lưu ảnh đại diện: ' + (res?.message || 'Lỗi kết nối'));
+        this.showNotification('Thất bại', 'Không thể lưu ảnh đại diện: ' + (res?.message || 'Lỗi kết nối'), 'error');
       }
     } catch (err: any) {
       console.error('Save avatar failed:', err);
-      alert('Không thể lưu ảnh đại diện: ' + (err.message || 'Lỗi kết nối'));
+      this.showNotification('Thất bại', 'Không thể lưu ảnh đại diện: ' + (err.message || 'Lỗi kết nối'), 'error');
     }
   }
 }
