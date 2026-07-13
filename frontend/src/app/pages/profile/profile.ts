@@ -352,8 +352,6 @@ export class ProfileComponent implements OnInit {
         this.applyProfileUser(user);
         this.loadWalletAndTransactions();
         this.loadProfileNotifications();
-      } else {
-        this.loginModalService.open();
       }
       this.cdr.detectChanges();
     });
