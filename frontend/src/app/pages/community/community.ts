@@ -355,13 +355,31 @@ export class CommunityComponent implements OnInit {
       return;
     }
 
-    const res = await this.apiService.likePost(post.id);
-    if (res && res.success) {
-      post.likes = res.likes;
-      this.likedPostsSet.add(post.id);
+    // 1. Save original state for potential rollback
+    const originalLikes = post.likes;
+
+    // 2. Optimistic UI update: increment count and change button state instantly
+    post.likes = (post.likes || 0) + 1;
+    this.likedPostsSet.add(post.id);
+    localStorage.setItem('greensteps_liked_posts', JSON.stringify(Array.from(this.likedPostsSet)));
+    this.cdr.detectChanges();
+
+    try {
+      // 3. Make API call in the background
+      const res = await this.apiService.likePost(post.id);
+      if (res && res.success) {
+        // Sync with official likes count from server just in case
+        post.likes = res.likes;
+        this.cdr.detectChanges();
+      } else {
+        throw new Error('API reported failure');
+      }
+    } catch (e) {
+      // 4. Rollback state if the background call fails
+      post.likes = originalLikes;
+      this.likedPostsSet.delete(post.id);
       localStorage.setItem('greensteps_liked_posts', JSON.stringify(Array.from(this.likedPostsSet)));
       this.cdr.detectChanges();
-    } else {
       this.showAlert("Lỗi", "Thích bài viết thất bại!", "error");
     }
   }
@@ -397,26 +415,84 @@ export class CommunityComponent implements OnInit {
     const authorId = this.currentUser ? (this.currentUser.id || this.currentUser._id || '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d') : '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d';
     const imageUrl = parentCommentId ? '' : (this.commentImageDrafts[postId] || '');
 
-    // Call API passing text, parentCommentId, authorId, authorName, and comment imageUrl
-    const res = await this.apiService.addPostComment(postId, text, parentCommentId, authorId, authorName, imageUrl);
-    if (res && res.success) {
-      if (parentCommentId) {
-        this.replyInputs[parentCommentId] = '';
-        this.activeReplyTarget[parentCommentId] = false;
-      } else {
-        this.commentInputs[postId] = '';
-        this.commentImageDrafts[postId] = ''; // Clear image draft
+    // 1. Save original state for potential rollback
+    const previousComments = this.postComments[postId] ? [...this.postComments[postId]] : [];
+    const post = this.posts.find(p => p.id === postId);
+    const previousCommentsCount = post ? post.comments : 0;
+
+    // 2. Create a temporary local comment object for instant visual feedback
+    const tempId = 'temp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+    const tempComment = {
+      id: tempId,
+      text: text,
+      parentCommentId: parentCommentId || null,
+      createdAt: new Date().toISOString(),
+      imageUrl: imageUrl || null,
+      user: {
+        fullname: authorName,
+        avatar: this.currentUser && this.currentUser.avatarUrl ? this.currentUser.avatarUrl : authorName.charAt(0).toUpperCase()
+      },
+      replies: []
+    };
+
+    // Initialize list if undefined
+    this.postComments[postId] = this.postComments[postId] || [];
+
+    // 3. Optimistically insert the comment locally
+    if (parentCommentId) {
+      const parent = this.postComments[postId].find(c => c.id === parentCommentId);
+      if (parent) {
+        parent.replies = parent.replies || [];
+        parent.replies.push(tempComment);
       }
-      
-      await this.loadComments(postId);
-      
-      // Update count locally
-      const post = this.posts.find(p => p.id === postId);
-      if (post) {
-        post.comments = (post.comments || 0) + 1;
-      }
-      this.cdr.detectChanges();
     } else {
+      this.postComments[postId].push(tempComment);
+    }
+
+    // Increment comments counter
+    if (post) {
+      post.comments = (post.comments || 0) + 1;
+    }
+
+    // Clear inputs immediately so user can type next comment without delay
+    if (parentCommentId) {
+      this.replyInputs[parentCommentId] = '';
+      this.activeReplyTarget[parentCommentId] = false;
+    } else {
+      this.commentInputs[postId] = '';
+      this.commentImageDrafts[postId] = '';
+    }
+    
+    // Ensure parent comments box is expanded so they see their comment
+    this.expandedComments[postId] = true;
+    this.cdr.detectChanges();
+
+    try {
+      // 4. Send API request in background
+      const res = await this.apiService.addPostComment(postId, text, parentCommentId, authorId, authorName, imageUrl);
+      if (res && res.success) {
+        // Silently reload official comments from server to get correct database IDs and replies tree
+        await this.loadComments(postId);
+      } else {
+        throw new Error('Comment insertion failed');
+      }
+    } catch (e) {
+      // 5. Rollback on failure
+      this.postComments[postId] = previousComments;
+      if (post) {
+        post.comments = previousCommentsCount;
+      }
+      
+      // Restore inputs so they don't lose their typed message
+      if (parentCommentId) {
+        this.replyInputs[parentCommentId] = text;
+        this.activeReplyTarget[parentCommentId] = true;
+      } else {
+        this.commentInputs[postId] = text;
+        if (imageUrl) this.commentImageDrafts[postId] = imageUrl;
+      }
+      
+      this.cdr.detectChanges();
       this.showAlert("Thất bại", "Đăng bình luận thất bại!", "error");
     }
   }
