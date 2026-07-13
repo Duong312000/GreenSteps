@@ -2072,7 +2072,8 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       this.activeItinerary.days.forEach((day: any) => {
         if (day && day.activities) {
           day.activities.forEach((act: any) => {
-            if (act.cost > 0 && act.type !== 'lodging') {
+            const isShared = act.is_shared === true || act.isShared === true || act.type === 'lodging';
+            if (act.cost > 0 && !isShared) {
               cost += act.cost;
             }
           });
@@ -2088,7 +2089,8 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       this.activeItinerary.days.forEach((day: any) => {
         if (day && day.activities) {
           day.activities.forEach((act: any) => {
-            if (act.cost > 0 && act.type === 'lodging') {
+            const isShared = act.is_shared === true || act.isShared === true || act.type === 'lodging';
+            if (act.cost > 0 && isShared) {
               cost += act.cost;
             }
           });
@@ -2100,6 +2102,13 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   public get itineraryTotalCost(): number {
     return (this.itineraryPerPersonCost * this.guestCount) + this.itineraryFlatCost;
+  }
+
+  public toggleActivityShared(act: any) {
+    if (this.isItineraryLocked()) return;
+    const isShared = act.is_shared === true || act.isShared === true || act.type === 'lodging';
+    act.is_shared = !isShared;
+    this.saveItineraryToDb();
   }
 
   public incrementGuests() {

@@ -200,7 +200,8 @@ const ScheduleActivity = sequelize.define('ScheduleActivity', {
   carbon: { type: DataTypes.DOUBLE, defaultValue: 0.0 },
   icon: { type: DataTypes.STRING },
   type: { type: DataTypes.STRING },
-  coordinates: { type: DataTypes.STRING } // "lat, lng"
+  coordinates: { type: DataTypes.STRING }, // "lat, lng"
+  is_shared: { type: DataTypes.BOOLEAN, defaultValue: false }
 }, { timestamps: true });
 
 // 22. AdCampaign Model (DATE start_date, end_date)

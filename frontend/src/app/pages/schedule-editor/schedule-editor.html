@@ -241,11 +241,19 @@
                                     <button class="activity-control-btn btn-delete" (click)="deleteActivity(idx)" title="Xóa"><i class="bi bi-trash-fill"></i></button>
                                 </div>
                             </div>
-                            <div class="activity-card-meta">
-                                <span class="activity-meta-badge">{{ getActivityTypeLabel(act.type) }}</span>
-                                <span><i class="bi bi-cash"></i> {{ act.cost === 0 ? 'Miễn phí' : (act.cost | number:'1.0-0':'vi-VN') + 'đ' }}</span>
-                                <span><i class="bi bi-leaf-fill" style="color:var(--mint-accent);"></i> {{ act.carbon }} kg CO₂</span>
-                            </div>
+                            <div class="activity-card-meta" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                                 <span class="activity-meta-badge">{{ getActivityTypeLabel(act.type) }}</span>
+                                 <span><i class="bi bi-cash"></i> {{ act.cost === 0 ? 'Miễn phí' : (act.cost | number:'1.0-0':'vi-VN') + 'đ' }}</span>
+                                 <span *ngIf="act.cost > 0 && !isItineraryLocked()" style="display: inline-flex; align-items: center; gap: 3px; cursor: pointer; user-select: none;" (click)="toggleActivityShared(act)" [title]="(act.is_shared || act.type === 'lodging') ? 'Chia đều/Dùng chung cho cả đoàn' : 'Tính theo mỗi đầu người'">
+                                     <input type="checkbox" [checked]="act.is_shared || act.type === 'lodging'" style="pointer-events: none; width: 12px; height: 12px; margin: 0; cursor: pointer;">
+                                     <span style="font-size: 10px; color: var(--text-secondary);">Dùng chung</span>
+                                 </span>
+                                 <span *ngIf="act.cost > 0 && isItineraryLocked()" style="display: inline-flex; align-items: center; gap: 3px;">
+                                     <i class="bi" [ngClass]="(act.is_shared || act.type === 'lodging') ? 'bi-check-circle-fill text-[#0E9F6E]' : 'bi-person-fill text-gray-500'"></i>
+                                     <span style="font-size: 10px; color: var(--text-muted);">{{ (act.is_shared || act.type === 'lodging') ? 'Dùng chung' : 'Tính/người' }}</span>
+                                 </span>
+                                 <span><i class="bi bi-leaf-fill" style="color:var(--mint-accent);"></i> {{ act.carbon }} kg CO₂</span>
+                             </div>
                         </div>
                     </div>
                 </div>

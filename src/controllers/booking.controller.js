@@ -115,7 +115,7 @@ exports.createBooking = async (req, res, next) => {
         let flatCost = 0;
         activities.forEach(act => {
           if (act.cost) {
-            if (act.type === 'lodging') {
+            if (act.is_shared || act.type === 'lodging') {
               flatCost += act.cost;
             } else {
               perPersonCost += act.cost;

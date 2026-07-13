@@ -629,7 +629,8 @@ export class BookingComponent implements OnInit {
       this.activeTour.data.forEach((day: any) => {
         if (day) {
           day.forEach((act: any) => {
-            if (act && act.cost && act.type !== 'lodging') {
+            const isShared = act.is_shared === true || act.isShared === true || act.type === 'lodging';
+            if (act && act.cost && !isShared) {
               total += act.cost;
             }
           });
@@ -645,7 +646,8 @@ export class BookingComponent implements OnInit {
       this.activeTour.data.forEach((day: any) => {
         if (day) {
           day.forEach((act: any) => {
-            if (act && act.cost && act.type === 'lodging') {
+            const isShared = act.is_shared === true || act.isShared === true || act.type === 'lodging';
+            if (act && act.cost && isShared) {
               total += act.cost;
             }
           });

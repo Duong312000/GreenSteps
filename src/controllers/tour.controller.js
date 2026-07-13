@@ -32,6 +32,7 @@ function formatActivitiesIntoDays(schedule, activities) {
         carbon: act.carbon,
         icon: act.icon,
         type: act.type,
+        is_shared: act.is_shared,
         lat: act.coordinates ? parseFloat(act.coordinates.split(',')[0]) : null,
         lng: act.coordinates ? parseFloat(act.coordinates.split(',')[1]) : null
       });
@@ -337,6 +338,7 @@ exports.saveCustomItinerary = async (req, res, next) => {
               carbon: act.carbon || 0,
               icon: act.icon || 'bi-tree-fill',
               type: act.type || 'attraction',
+              is_shared: act.is_shared === true || act.isShared === true,
               coordinates: act.lat && act.lng ? `${act.lat}, ${act.lng}` : null
             });
           });
@@ -640,6 +642,7 @@ exports.cloneItinerary = async (req, res, next) => {
           carbon: act.carbon,
           icon: act.icon,
           type: act.type,
+          is_shared: act.is_shared,
           coordinates: act.coordinates
         };
       });
