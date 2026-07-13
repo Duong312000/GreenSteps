@@ -222,6 +222,37 @@ export class CommunityComponent implements OnInit {
     }
   }
 
+  public getFilteredUserItineraries(): Itinerary[] {
+    if (!this.postDest) return [];
+    const target = this.postDest.toLowerCase().trim();
+    
+    return this.userItineraries.filter(iti => {
+      const dest = (iti.destination || '').toLowerCase().trim();
+      
+      if (target.includes('đà nẵng') || target.includes('hội an') || target.includes('da nang') || target.includes('hoi an')) {
+        return dest.includes('đà nẵng') || dest.includes('hội an') || dest.includes('da nang') || dest.includes('hoi an');
+      }
+      
+      return dest.includes(target);
+    });
+  }
+
+  public onDestinationChange() {
+    if (this.selectedItineraryId) {
+      const filtered = this.getFilteredUserItineraries();
+      const stillValid = filtered.some(i => i.id === this.selectedItineraryId);
+      if (!stillValid) {
+        this.selectedItineraryId = '';
+      }
+    }
+  }
+
+  public getSelectedItineraryDays(): number {
+    if (!this.selectedItineraryId) return 3;
+    const selected = this.userItineraries.find(i => i.id === this.selectedItineraryId);
+    return selected ? selected.days : 3;
+  }
+
   public setRating(stars: number) {
     this.postRating = stars;
   }

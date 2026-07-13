@@ -111,36 +111,28 @@
                 </div>
               </div>
 
-              <!-- Select Itinerary to Share (Tùy chọn) -->
-              <div class="control-group" style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; background-color: #ECFDF5; padding: 12px; border-radius: 8px; border: 1px solid #A7F3D0;">
-                <label style="font-weight: 700; font-size: 12px; color: #065F46;">
-                  <i class="bi bi-share-fill"></i> Đính kèm lịch trình của tôi (Tùy chọn):
-                </label>
-                <select [(ngModel)]="selectedItineraryId" name="selectedItineraryId" style="height: 36px; border-radius: 6px; border: 1px solid #A7F3D0; padding: 0 8px; outline: none; background: #ffffff; color: #065F46; font-weight: 600;">
-                  <option value="">-- Không đính kèm --</option>
-                  <option *ngFor="let iti of userItineraries" [value]="iti.id">
-                    [{{ iti.destination }}] {{ iti.name }} ({{ iti.days }} ngày)
-                  </option>
-                </select>
-                <p class="text-[10px] text-emerald-700 m-0 mt-1">Khi đính kèm, người xem có thể sao chép trực tiếp lịch trình này để tham khảo.</p>
-              </div>
-
-              <!-- Select Dest & Days Row (Chỉ hiện khi không chọn lịch trình sẵn) -->
-              <div class="post-controls-row" *ngIf="!selectedItineraryId" style="margin-bottom: 12px; display: flex; gap: 12px; background-color: #F0F2F5; padding: 12px; border-radius: 8px;">
+              <!-- Select Dest & Days Row (ALWAYS visible for clear metadata filtering) -->
+              <div class="post-controls-row" style="margin-bottom: 12px; display: flex; gap: 12px; background-color: #F0F2F5; padding: 12px; border-radius: 8px;">
                 <!-- Select Dest (Bắt buộc) -->
                 <div class="control-group" style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-                  <label style="font-weight: 700; font-size: 12px; color: var(--text-secondary);"><i class="bi bi-geo-alt-fill text-red-500" style="color: #EF4444;"></i> Điểm đến *:</label>
-                  <select [(ngModel)]="postDest" name="postDest" required style="height: 36px; border-radius: 6px; border: 1px solid #E4E6EB; padding: 0 8px; outline: none; background: #ffffff;">
+                  <label style="font-weight: 700; font-size: 12px; color: var(--text-secondary);">
+                    <i class="bi bi-geo-alt-fill text-red-500" style="color: #EF4444;"></i> Điểm đến *:
+                  </label>
+                  <select [(ngModel)]="postDest" name="postDest" (change)="onDestinationChange()" required style="height: 36px; border-radius: 6px; border: 1px solid #E4E6EB; padding: 0 8px; outline: none; background: #ffffff; font-weight: 600; color: #1f2937;">
                     <option value="Đà Lạt">Đà Lạt</option>
                     <option value="Phú Yên">Phú Yên</option>
                     <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>
                   </select>
                 </div>
 
-                <!-- Select Days (Tùy chọn) -->
+                <!-- Select Days (Khóa khi chọn lịch trình sẵn) -->
                 <div class="control-group" style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
-                  <label style="font-weight: 700; font-size: 12px; color: var(--text-secondary);"><i class="bi bi-calendar-event text-blue-500" style="color: #3B82F6;"></i> Số ngày:</label>
-                  <select [(ngModel)]="postDays" name="postDays" style="height: 36px; border-radius: 6px; border: 1px solid #E4E6EB; padding: 0 8px; outline: none; background: #ffffff;">
+                  <label style="font-weight: 700; font-size: 12px; color: var(--text-secondary);">
+                    <i class="bi bi-calendar-event text-blue-500" style="color: #3B82F6;"></i> Số ngày:
+                  </label>
+                  
+                  <!-- Option A: No itinerary attached -> Manual select -->
+                  <select *ngIf="!selectedItineraryId" [(ngModel)]="postDays" name="postDays" style="height: 36px; border-radius: 6px; border: 1px solid #E4E6EB; padding: 0 8px; outline: none; background: #ffffff; font-weight: 600; color: #1f2937;">
                     <option [value]="0">Không có</option>
                     <option [value]="1">1 ngày</option>
                     <option [value]="2">2 ngày</option>
@@ -148,7 +140,39 @@
                     <option [value]="4">4 ngày</option>
                     <option [value]="5">5 ngày</option>
                   </select>
+
+                  <!-- Option B: Itinerary attached -> Read-only display of itinerary days -->
+                  <div *ngIf="selectedItineraryId" style="height: 36px; border-radius: 6px; border: 1px dashed #A7F3D0; padding: 0 12px; background: #ECFDF5; color: #065F46; font-weight: 700; display: flex; align-items: center; font-size: 13px;">
+                    {{ getSelectedItineraryDays() }} ngày
+                  </div>
                 </div>
+              </div>
+
+              <!-- Select Itinerary to Share (Filtered by selected destination) -->
+              <div class="control-group" style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; background-color: #ECFDF5; padding: 12px; border-radius: 8px; border: 1px solid #A7F3D0;">
+                <label style="font-weight: 700; font-size: 12px; color: #065F46; display: flex; justify-content: space-between; align-items: center;">
+                  <span><i class="bi bi-share-fill"></i> Đính kèm lịch trình của tôi (Tùy chọn):</span>
+                  <span style="font-size: 10px; background: #34D399; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 800;">
+                    Lọc theo: {{ postDest }}
+                  </span>
+                </label>
+
+                <!-- Select dropdown if filtered list is not empty -->
+                <select [(ngModel)]="selectedItineraryId" name="selectedItineraryId" style="width: 100%; height: 36px; border-radius: 6px; border: 1px solid #A7F3D0; padding: 0 8px; outline: none; background: #ffffff; color: #065F46; font-weight: 600;">
+                  <option value="">-- Không đính kèm --</option>
+                  <option *ngFor="let iti of getFilteredUserItineraries()" [value]="iti.id">
+                    {{ iti.name }} ({{ iti.days }} ngày)
+                  </option>
+                </select>
+                
+                <p class="text-[10px] text-emerald-700 m-0 mt-1" *ngIf="getFilteredUserItineraries().length > 0">
+                  Khi đính kèm, người xem có thể sao chép trực tiếp lịch trình này để tham khảo.
+                </p>
+                
+                <!-- Notice if no itineraries match the destination -->
+                <p class="text-[11px] text-red-600 font-semibold m-0 mt-1" *ngIf="getFilteredUserItineraries().length === 0">
+                  <i class="bi bi-exclamation-triangle-fill"></i> Bạn chưa thiết kế lịch trình nào cho điểm đến [{{ postDest }}].
+                </p>
               </div>
 
               <!-- Previews for selected image -->
