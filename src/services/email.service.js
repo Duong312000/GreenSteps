@@ -115,6 +115,13 @@ async function sendOtpEmail({ to, otp, purpose }) {
     if (!accepted.length || rejected.includes(to)) throwDeliveryError();
     return info;
   } catch (error) {
+    console.error('Nodemailer sendMail error details:', {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      stack: error.stack
+    });
     if (error.statusCode) throw error;
     throwDeliveryError();
   }
