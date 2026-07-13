@@ -252,198 +252,179 @@
         </div>
     </div>
 
-    <!-- Wizard Registration Modal Form (Add/Edit Service) -->
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-all" *ngIf="isAddModalOpen">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-gray-100 flex flex-col max-h-[90vh]">
-            
-            <!-- Header -->
-            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-teal-50/50">
+    <!-- Full Page Registration Overlay (Add/Edit Service) -->
+    <div class="fixed inset-0 bg-[#f8f9fa] z-50 overflow-y-auto font-sans animate-fade-in" *ngIf="isAddModalOpen">
+        <!-- Top Sticky Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-50 shadow-xs">
+            <div class="flex items-center gap-4">
+                <!-- Back button -->
+                <button (click)="closeAddModal()" type="button" class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">
+                    <i class="bi bi-arrow-left text-lg"></i>
+                </button>
                 <div>
-                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <i class="bi text-teal-600" [class.bi-plus-circle]="!editingServiceId" [class.bi-pencil-square]="editingServiceId"></i>
-                        {{ editingServiceId ? 'Cập nhật dịch vụ xanh' : 'Đăng ký dịch vụ xanh mới' }}
+                    <h3 class="text-lg font-bold text-gray-900 leading-snug">
+                        {{ editingServiceId ? 'Cập nhật dịch vụ xanh' : 'Thêm dịch vụ mới' }}
                     </h3>
-                    <p class="text-xs text-gray-500 mt-0.5">Vui lòng hoàn thành 7 bước thông tin để kích hoạt dịch vụ của bạn.</p>
-                </div>
-                <button (click)="closeAddModal()" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg border-none bg-transparent cursor-pointer transition-colors">&times;</button>
-            </div>
-            
-            <!-- Wizard Progress Stepper -->
-            <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 overflow-x-auto whitespace-nowrap scrollbar-thin">
-                <div class="flex items-center justify-between gap-2 min-w-[580px]">
-                    <div *ngFor="let step of [1,2,3,4,5,6,7]" class="flex items-center gap-2">
-                        <button (click)="goToStep(step)" type="button" class="w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold transition-all cursor-pointer"
-                                [ngClass]="currentStep === step ? 'bg-teal-600 border-teal-600 text-white shadow-md shadow-teal-600/20' : 
-                                           (currentStep > step ? 'bg-teal-100 border-teal-100 text-teal-700' : 'bg-white border-gray-200 text-gray-400')">
-                            {{ step }}
-                        </button>
-                        <span class="text-xs font-bold" [ngClass]="currentStep === step ? 'text-teal-700' : 'text-gray-400'">
-                            {{ step === 1 ? 'Cơ bản' : (step === 2 ? 'Ảnh' : (step === 3 ? 'Giá' : (step === 4 ? 'Lịch' : (step === 5 ? 'Chính sách' : (step === 6 ? 'Lịch trình' : 'Xem trước'))))) }}
-                        </span>
-                        <i class="bi bi-chevron-right text-gray-300 text-[10px]" *ngIf="step < 7"></i>
-                    </div>
+                    <p class="text-xs text-gray-500 mt-0.5">Điền thông tin chi tiết để đăng tải dịch vụ lên hệ thống.</p>
                 </div>
             </div>
+            <div class="flex items-center gap-3">
+                <button type="button" (click)="saveDraft()" class="px-4 py-2 border border-gray-200 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer bg-white flex items-center gap-1.5">
+                    <i class="bi bi-file-earmark-arrow-down"></i> Lưu nháp
+                </button>
+                <button type="button" (click)="previewService()" class="px-4 py-2 border border-teal-600 text-teal-600 rounded-xl text-xs font-bold hover:bg-teal-50 transition-colors cursor-pointer bg-white flex items-center gap-1.5">
+                    <i class="bi bi-eye"></i> Xem trước
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Form Container -->
+        <div class="max-w-3xl mx-auto px-4 py-8 space-y-6">
             
-            <!-- Wizard Step Panels -->
-            <div class="p-6 overflow-y-auto flex-1 space-y-5">
+            <!-- Card 1: 1. Thông tin cơ bản -->
+            <div class="bg-white border border-gray-250/60 rounded-2xl p-6 space-y-4 shadow-xs">
+                <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2 uppercase tracking-wider">1. Thông tin cơ bản</h4>
                 
-                <!-- Step 1: Basic Info -->
-                <div *ngIf="currentStep === 1" class="space-y-4">
-                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Thông tin cơ bản</h4>
-                    
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-600">Tên dịch vụ *</label>
+                    <input type="text" [(ngModel)]="serviceName" required placeholder="VD: Tour Trekking LangBiang 1 ngày" class="h-10 px-3.5 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1.5">
-                        <label for="srvName" class="text-xs font-bold text-gray-600 uppercase">Tên dịch vụ *</label>
-                        <input type="text" id="srvName" [(ngModel)]="serviceName" required placeholder="Ví dụ: Homestay Biển Xanh Phú Yên" class="h-11 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                        <label class="text-xs font-bold text-gray-600">Loại dịch vụ *</label>
+                        <select [(ngModel)]="serviceType" (ngModelChange)="onCostOrTypeChange()" required class="h-10 px-3 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                            <option value="attraction">Tour</option>
+                            <option value="stay">Khách sạn</option>
+                            <option value="food">Nhà hàng</option>
+                            <option value="transport">Vận chuyển</option>
+                        </select>
                     </div>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-1.5">
-                            <label for="srvDest" class="text-xs font-bold text-gray-600 uppercase">Khu vực *</label>
-                            <select id="srvDest" [(ngModel)]="serviceDest" required class="h-11 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
-                                <option value="Phú Yên">Phú Yên</option>
-                                <option value="Đà Lạt">Đà Lạt</option>
-                                <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>
-                            </select>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-600">Tỉnh / Thành phố *</label>
+                        <input type="text" [(ngModel)]="serviceDest" required placeholder="VD: Lâm Đồng" class="h-10 px-3.5 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-600">Địa chỉ cụ thể</label>
+                    <input type="text" [(ngModel)]="serviceAddress" placeholder="Số nhà, đường, phường/xã..." class="h-10 px-3.5 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-600">Thời lượng *</label>
+                        <input type="text" [(ngModel)]="serviceDuration" required placeholder="VD: 1 ngày, 3 giờ, 2N1Đ" class="h-10 px-3.5 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-600">Số khách tối đa / xuất *</label>
+                        <input type="number" [(ngModel)]="maxCapacity" required placeholder="VD: 15" class="h-10 px-3.5 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-600">Mô tả ngắn</label>
+                    <input type="text" [(ngModel)]="serviceShortDesc" placeholder="Tóm tắt điểm nổi bật của dịch vụ (hiển thị trên thẻ)" class="h-10 px-3.5 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-600">Mô tả chi tiết</label>
+                    <textarea [(ngModel)]="itineraryText" placeholder="Mô tả chi tiết lịch trình, hoạt động..." rows="4" class="p-3 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 resize-none"></textarea>
+                </div>
+            </div>
+
+            <!-- Card 2: 2. Hình ảnh -->
+            <div class="bg-white border border-gray-250/60 rounded-2xl p-6 space-y-4 shadow-xs">
+                <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2 uppercase tracking-wider">2. Hình ảnh</h4>
+                
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-600">Ảnh bìa (Tỷ lệ 16:9) *</label>
+                    <input type="text" [(ngModel)]="imageUrl" placeholder="Nhập đường dẫn URL ảnh bìa" class="h-10 px-3.5 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                </div>
+
+                <div class="border border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer h-[160px] relative overflow-hidden">
+                    <img [src]="imageUrl" alt="Cover Preview" class="w-full h-full object-cover absolute inset-0" *ngIf="imageUrl && imageUrl.startsWith('http')">
+                    <div class="flex flex-col items-center text-center z-10" [class.bg-white/80]="imageUrl && imageUrl.startsWith('http')" [class.p-2]="imageUrl && imageUrl.startsWith('http')" [class.rounded-xl]="imageUrl && imageUrl.startsWith('http')">
+                        <i class="bi bi-cloud-arrow-up text-3xl text-teal-600 mb-1"></i>
+                        <span class="text-xs font-bold text-teal-700">Tải ảnh lên hoặc kéo thả vào đây</span>
+                        <span class="text-[10px] text-gray-400">PNG, JPG, WEBP tối đa 5MB</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-gray-600 block">Thư viện ảnh (Tối đa 10 ảnh)</label>
+                    <div class="flex flex-wrap gap-3">
+                        <div class="w-20 h-20 border border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-white hover:bg-gray-50 transition-all cursor-pointer">
+                            <i class="bi bi-plus text-xl"></i>
+                            <span class="text-[10px] font-bold">Thêm ảnh</span>
                         </div>
                         
-                        <div class="flex flex-col gap-1.5">
-                            <label for="srvType" class="text-xs font-bold text-gray-600 uppercase">Loại hình *</label>
-                            <select id="srvType" [(ngModel)]="serviceType" (ngModelChange)="onCostOrTypeChange()" required class="h-11 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
-                                <option value="stay">Lưu trú (stay)</option>
-                                <option value="food">Ăn uống (food)</option>
-                                <option value="attraction">Khám phá (attraction)</option>
-                                <option value="transport">Vận chuyển xanh</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-1.5">
-                            <label for="maxCapacity" class="text-xs font-bold text-gray-600 uppercase">Số lượng chỗ tối đa *</label>
-                            <input type="number" id="maxCapacity" [(ngModel)]="maxCapacity" required min="1" class="h-11 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
-                        </div>
-                        <div class="flex flex-col gap-1.5">
-                            <label for="srvAddress" class="text-xs font-bold text-gray-600 uppercase">Địa chỉ chi tiết *</label>
-                            <input type="text" id="srvAddress" [(ngModel)]="serviceAddress" required placeholder="Ví dụ: 12 Hùng Vương, Phường 10" class="h-11 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 2: Images -->
-                <div *ngIf="currentStep === 2" class="space-y-4">
-                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Hình ảnh dịch vụ</h4>
-                    
-                    <div class="flex flex-col gap-1.5">
-                        <label for="imageUrl" class="text-xs font-bold text-gray-600 uppercase">Đường dẫn hình ảnh *</label>
-                        <input type="text" id="imageUrl" [(ngModel)]="imageUrl" required class="h-11 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
-                    </div>
-                    
-                    <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50 h-[220px] w-full flex items-center justify-center relative">
-                        <img [src]="imageUrl" alt="Preview Image" class="w-full h-full object-cover" *ngIf="imageUrl">
-                        <div class="text-center text-gray-400" *ngIf="!imageUrl">
-                            <i class="bi bi-image text-3xl block mb-2"></i>
-                            <span class="text-xs">Chưa có ảnh preview</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 3: Cost -->
-                <div *ngIf="currentStep === 3" class="space-y-4">
-                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Giá & Lượng giảm CO₂</h4>
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-1.5">
-                            <label for="srvCost" class="text-xs font-bold text-gray-600 uppercase">Giá niêm yết (VNĐ) *</label>
-                            <input type="number" id="srvCost" [(ngModel)]="serviceCost" (ngModelChange)="onCostOrTypeChange()" required placeholder="500000" min="0" class="h-11 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
-                        </div>
-                        
-                        <div class="flex flex-col gap-1.5">
-                            <label for="srvCarbon" class="text-xs font-bold text-gray-600 uppercase">CO₂ giảm (kg) (Hệ thống tự tính) *</label>
-                            <input type="number" id="srvCarbon" [(ngModel)]="serviceCarbon" readonly class="h-11 px-4 rounded-xl border border-gray-250 text-sm text-gray-500 bg-gray-50 cursor-not-allowed focus:outline-none">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 4: Schedule -->
-                <div *ngIf="currentStep === 4" class="space-y-4">
-                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Lịch mở bán & Số lượng chỗ</h4>
-                    
-                    <div class="flex flex-col gap-1.5">
-                        <label for="openingSchedule" class="text-xs font-bold text-gray-600 uppercase">Lịch trình mở bán *</label>
-                        <input type="text" id="openingSchedule" [(ngModel)]="openingSchedule" required placeholder="Ví dụ: Tất cả các ngày, hoặc Thứ 2 - Thứ 6" class="h-11 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
-                    </div>
-                </div>
-
-                <!-- Step 5: Refund Policy -->
-                <div *ngIf="currentStep === 5" class="space-y-4">
-                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Chính sách đổi trả & hoàn tiền</h4>
-                    
-                    <div class="flex flex-col gap-1.5">
-                        <label for="cancellationPolicy" class="text-xs font-bold text-gray-600 uppercase">Nội dung chính sách hoàn trả *</label>
-                        <textarea id="cancellationPolicy" [(ngModel)]="cancellationPolicy" required rows="4" class="p-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white resize-none"></textarea>
-                    </div>
-                </div>
-
-                <!-- Step 6: Itinerary -->
-                <div *ngIf="currentStep === 6" class="space-y-4">
-                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Lịch trình & Hoạt động</h4>
-                    
-                    <div class="flex flex-col gap-1.5">
-                        <label for="itineraryText" class="text-xs font-bold text-gray-600 uppercase">Lịch trình chi tiết *</label>
-                        <textarea id="itineraryText" [(ngModel)]="itineraryText" required rows="4" class="p-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white resize-none"></textarea>
-                    </div>
-                </div>
-
-                <!-- Step 7: Preview & Save -->
-                <div *ngIf="currentStep === 7" class="space-y-4">
-                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Xem trước dịch vụ</h4>
-                    
-                    <div class="border border-gray-100 rounded-2xl overflow-hidden shadow-xs bg-white divide-y divide-gray-150/40">
-                        <div class="p-4 flex gap-4">
-                            <img [src]="imageUrl" alt="Service Img" class="w-24 h-24 rounded-lg object-cover">
-                            <div>
-                                <h5 class="font-bold text-gray-900 text-sm mb-1">{{ serviceName }}</h5>
-                                <p class="text-xs text-gray-500 flex items-center gap-1"><i class="bi bi-geo-alt"></i> {{ serviceDest }}</p>
-                                <p class="text-xs text-gray-500 mt-1">Loại: {{ getActivityTypeLabel(serviceType) }}</p>
-                            </div>
-                        </div>
-                        
-                        <div class="p-4 grid grid-cols-2 gap-4 text-xs">
-                            <div>
-                                <p class="text-gray-400">Giá dịch vụ:</p>
-                                <p class="font-extrabold text-teal-600 text-sm mt-0.5">{{ serviceCost | number }}đ</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-400">Chỗ trống / Lượng giảm CO₂:</p>
-                                <p class="font-bold text-gray-700 mt-0.5">{{ maxCapacity }} chỗ / {{ serviceCarbon }} kg CO₂</p>
-                            </div>
-                        </div>
-                        
-                        <div class="p-4 text-xs space-y-2">
-                            <p><strong>Lịch mở bán:</strong> {{ openingSchedule }}</p>
-                            <p><strong>Chính sách hủy:</strong> {{ cancellationPolicy }}</p>
-                            <p><strong>Địa chỉ:</strong> {{ serviceAddress }}</p>
+                        <div class="w-20 h-20 rounded-xl border border-gray-200 overflow-hidden relative" *ngIf="imageUrl">
+                            <img [src]="imageUrl" alt="Gallery item" class="w-full h-full object-cover">
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Footer -->
-            <div class="px-6 py-4 border-t border-gray-100 flex justify-between bg-gray-50">
-                <button type="button" (click)="closeAddModal()" class="px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 text-sm hover:bg-gray-100 transition-colors cursor-pointer bg-white">
-                    Hủy
+
+            <!-- Card 3: 3. Giá & Cấu hình chỗ -->
+            <div class="bg-white border border-gray-250/60 rounded-2xl p-6 space-y-4 shadow-xs">
+                <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2 uppercase tracking-wider">3. Giá & Cấu hình chỗ</h4>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-600">Giá người lớn (VNĐ) *</label>
+                        <input type="number" [(ngModel)]="serviceCost" (ngModelChange)="onCostOrTypeChange()" required placeholder="VD: 460000" class="h-10 px-3.5 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-600">Giá trẻ em (VNĐ)</label>
+                        <input type="number" [(ngModel)]="childPrice" placeholder="Nếu không có, để trống" class="h-10 px-3.5 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                    </div>
+                </div>
+
+                <div class="p-3.5 bg-teal-50/20 border border-teal-500/10 rounded-xl text-teal-800 text-[11px] leading-relaxed flex items-start gap-2">
+                    <i class="bi bi-info-circle text-teal-600 mt-0.5"></i>
+                    <span>Lịch hoạt động sẽ được quản lý chi tiết trong phần "Quản lý lịch". Tại đây bạn thiết lập số chỗ cố định nếu có.</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-600">Số xuất mỗi ngày</label>
+                        <input type="number" [(ngModel)]="slotsPerDay" placeholder="Mặc định: 1" class="h-10 px-3.5 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-bold text-gray-600">Giờ bắt đầu</label>
+                        <input type="time" [(ngModel)]="startTime" class="h-10 px-3 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: 4. Chính sách & Lưu ý -->
+            <div class="bg-white border border-gray-250/60 rounded-2xl p-6 space-y-4 shadow-xs">
+                <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2 uppercase tracking-wider">4. Chính sách & Lưu ý</h4>
+                
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-600">Chính sách hủy / đổi lịch *</label>
+                    <textarea [(ngModel)]="cancellationPolicy" placeholder="Ví dụ: Miễn phí hủy trước 48h. Hủy trước 24h tính phí 50%..." rows="3" class="p-3 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 resize-none"></textarea>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-bold text-gray-600">Lưu ý cho khách hàng</label>
+                    <textarea [(ngModel)]="notesForCustomers" placeholder="Trang phục mang theo, yêu cầu sức khỏe..." rows="3" class="p-3 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 resize-none"></textarea>
+                </div>
+            </div>
+
+            <!-- Bottom Action Row -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-4 flex justify-between items-center shadow-xs">
+                <button type="button" (click)="closeAddModal()" class="px-5 py-2.5 border border-gray-200 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors bg-white cursor-pointer">
+                    Hủy bỏ
                 </button>
                 
                 <div class="flex gap-2">
-                    <button type="button" *ngIf="currentStep > 1" (click)="prevStep()" class="px-5 py-2.5 border border-teal-600 text-teal-700 bg-white font-bold text-sm rounded-xl hover:bg-teal-50 cursor-pointer transition-colors">
-                        Quay lại
+                    <button type="button" (click)="previewService()" class="px-5 py-2.5 border border-teal-600 text-teal-600 rounded-xl text-xs font-bold hover:bg-teal-50 transition-colors bg-white cursor-pointer">
+                        Xem trước
                     </button>
-                    <button type="button" *ngIf="currentStep < 7" (click)="nextStep()" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-xl border-none cursor-pointer transition-colors">
-                        Tiếp theo
-                    </button>
-                    <button type="button" *ngIf="currentStep === 7" (click)="submitNewService($event)" class="px-6 py-2.5 bg-[#F4C76D] hover:bg-[#eab34e] text-yellow-950 font-black text-sm rounded-xl border-none cursor-pointer transition-colors">
-                        {{ editingServiceId ? 'Cập nhật & Gửi duyệt' : 'Đăng dịch vụ xanh' }}
+                    <button type="button" (click)="submitNewService($event)" class="px-5 py-2.5 bg-gradient-to-r from-teal-600 to-teal-700 text-white rounded-xl text-xs font-bold hover:opacity-95 shadow-md shadow-teal-600/10 transition-all border-none cursor-pointer">
+                        {{ editingServiceId ? 'Cập nhật' : 'Gửi duyệt' }}
                     </button>
                 </div>
             </div>

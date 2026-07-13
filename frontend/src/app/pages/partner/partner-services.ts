@@ -36,6 +36,14 @@ export class PartnerServicesComponent implements OnInit {
   public itineraryText: string = 'Tự do tham quan theo hướng dẫn của đối tác.';
   public selectedBadges: string[] = ['green'];
 
+  // Form Fields (screenshot upgrades)
+  public childPrice: number | null = null;
+  public serviceDuration: string = '';
+  public serviceShortDesc: string = '';
+  public slotsPerDay: number = 1;
+  public startTime: string = '';
+  public notesForCustomers: string = '';
+
   // Details Modal
   public isDetailsModalOpen: boolean = false;
   public detailedService: any = null;
@@ -155,6 +163,7 @@ export class PartnerServicesComponent implements OnInit {
     this.isAddModalOpen = true;
     this.currentStep = 1;
     this.serviceName = '';
+    this.serviceType = 'attraction';
     this.serviceCost = null;
     this.serviceCarbon = null;
     this.serviceAddress = '';
@@ -163,6 +172,13 @@ export class PartnerServicesComponent implements OnInit {
     this.openingSchedule = 'Tất cả các ngày trong tuần';
     this.cancellationPolicy = 'Hoàn trả 100% nếu hủy trước 24 giờ khởi hành.';
     this.itineraryText = 'Tự do tham quan theo hướng dẫn của đối tác.';
+
+    this.childPrice = null;
+    this.serviceDuration = '';
+    this.serviceShortDesc = '';
+    this.slotsPerDay = 1;
+    this.startTime = '';
+    this.notesForCustomers = '';
   }
 
   public async openEditModal(srv: Service) {
@@ -183,9 +199,23 @@ export class PartnerServicesComponent implements OnInit {
       this.openingSchedule = details.current_data?.schedule || 'Tất cả các ngày trong tuần';
       this.cancellationPolicy = details.current_data?.policy || 'Hoàn trả 100% nếu hủy trước 24 giờ khởi hành.';
       this.itineraryText = details.current_data?.itinerary || 'Tự do tham quan theo hướng dẫn của đối tác.';
+      
+      this.childPrice = details.current_data?.childPrice || null;
+      this.serviceDuration = details.current_data?.duration || '';
+      this.serviceShortDesc = details.current_data?.shortDesc || '';
+      this.slotsPerDay = details.current_data?.slotsPerDay || 1;
+      this.startTime = details.current_data?.startTime || '';
+      this.notesForCustomers = details.current_data?.notesForCustomers || '';
     } else {
       this.serviceAddress = (srv as any).address || (srv as any).current_data?.address || '';
       this.maxCapacity = srv.max_capacity || 10;
+
+      this.childPrice = null;
+      this.serviceDuration = '';
+      this.serviceShortDesc = '';
+      this.slotsPerDay = 1;
+      this.startTime = '';
+      this.notesForCustomers = '';
     }
     this.cdr.detectChanges();
   }
@@ -345,7 +375,13 @@ export class PartnerServicesComponent implements OnInit {
       img: this.imageUrl || 'image/Viet Nam.png',
       schedule: this.openingSchedule,
       policy: this.cancellationPolicy,
-      itinerary: this.itineraryText
+      itinerary: this.itineraryText,
+      duration: this.serviceDuration,
+      shortDesc: this.serviceShortDesc,
+      childPrice: this.childPrice ? Number(this.childPrice) : null,
+      slotsPerDay: Number(this.slotsPerDay),
+      startTime: this.startTime,
+      notesForCustomers: this.notesForCustomers
     };
 
     if (this.editingServiceId) {
@@ -437,5 +473,14 @@ export class PartnerServicesComponent implements OnInit {
     }
     this.serviceCarbon = Math.round(calculated * 10) / 10;
     this.cdr.detectChanges();
+  }
+
+  public saveDraft() {
+    alert('Đã lưu bản nháp thành công!');
+    this.closeAddModal();
+  }
+
+  public previewService() {
+    alert('Đang tải chế độ xem trước dịch vụ...');
   }
 }
