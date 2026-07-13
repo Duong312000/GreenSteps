@@ -2060,7 +2060,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         tourId: this.activeItinerary.id,
         checkIn: this.activeItinerary.start_date || '2026-07-15',
         checkOut: this.activeItinerary.end_date || '2026-07-18',
-        guestCount: 2
+        guestCount: 1
       }
     });
   }

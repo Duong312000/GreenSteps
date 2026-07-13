@@ -617,15 +617,23 @@ export class BookingComponent implements OnInit {
     return 'Gói tour tiêu chuẩn GreenSteps';
   }
 
+  public isItineraryBooking(): boolean {
+    return this.activeTour?.id?.startsWith('iti_') || 
+           this.bookingContext.tourId?.startsWith('iti_') || 
+           this.route.snapshot.queryParamMap.get('bookingType') === 'itinerary';
+  }
+
   public get basePrice() {
     return Math.max(this.activeTour?.cost || 1890000, 0) * Math.max(this.bookingContext.guestCount, 1);
   }
 
   public get discountAmount() {
+    if (this.isItineraryBooking()) return 0;
     return Math.round(this.basePrice * 0.08);
   }
 
   public get serviceFee() {
+    if (this.isItineraryBooking()) return 0;
     return 120000;
   }
 
@@ -689,12 +697,15 @@ export class BookingComponent implements OnInit {
     }
 
     const query = this.route.snapshot.queryParamMap;
+    const tourId = query.get('tourId') || this.bookingContext.tourId;
+    const isItinerary = query.get('bookingType') === 'itinerary' || (tourId && tourId.startsWith('iti_'));
+
     this.bookingContext = {
       ...this.bookingContext,
-      tourId: query.get('tourId') || this.bookingContext.tourId,
+      tourId: tourId,
       checkIn: query.get('checkIn') || this.bookingContext.checkIn,
       checkOut: query.get('checkOut') || this.bookingContext.checkOut,
-      guestCount: Number(query.get('guestCount') || this.bookingContext.guestCount),
+      guestCount: Number(query.get('guestCount') || (isItinerary ? 1 : this.bookingContext.guestCount)),
       roomCount: Number(query.get('roomCount') || this.bookingContext.roomCount)
     };
   }
