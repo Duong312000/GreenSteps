@@ -215,7 +215,8 @@
                                 <span class="profile-wallet-status" [class.active]="walletRegistered">{{ walletRegistered ? 'Đã kích hoạt' : 'Chưa kích hoạt' }}</span>
                             </div>
                             <p *ngIf="!walletRegistered">Kích hoạt ví để thanh toán nhanh, nhận ưu đãi và tích điểm xanh cho mỗi chuyến đi.</p>
-                            <p *ngIf="walletRegistered">Ví GreenSteps của bạn đang hoạt động. Nhấp vào bên dưới để nạp tiền, rút tiền và xem lịch sử giao dịch.</p>
+                            <p *ngIf="walletRegistered && profileUser.role === 'provider'">Ví GreenSteps của bạn đang hoạt động. Nhấp vào bên dưới để nạp tiền, rút tiền và xem lịch sử giao dịch.</p>
+                            <p *ngIf="walletRegistered && profileUser.role !== 'provider'">Ví GreenSteps của bạn đang hoạt động. Nhấp vào bên dưới để nạp tiền và xem lịch sử giao dịch.</p>
                             <a href="#" (click)="$event.preventDefault()">Tìm hiểu thêm về GreenSteps <i class="bi bi-arrow-right"></i></a>
                         </div>
                         <div class="profile-wallet-action">
@@ -772,7 +773,7 @@
                     <h2>Tác vụ nhanh</h2>
                     <div>
                         <button type="button"><i class="bi bi-wallet2"></i><span>Nạp tiền</span><small>Thêm số dư ví</small></button>
-                        <button type="button"><i class="bi bi-upload"></i><span>Rút tiền</span><small>Về tài khoản</small></button>
+                        <button *ngIf="profileUser.role === 'provider'" type="button"><i class="bi bi-upload"></i><span>Rút tiền</span><small>Về tài khoản</small></button>
                         <button type="button"><i class="bi bi-arrow-repeat"></i><span>Chuyển điểm</span><small>Tặng điểm xanh</small></button>
                         <button type="button"><i class="bi bi-qr-code-scan"></i><span>Quét QR</span><small>Thanh toán nhanh</small></button>
                     </div>

@@ -736,7 +736,7 @@
             <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl mb-4 text-left flex flex-col gap-3 shadow-sm" *ngIf="!walletRegistered && !isItineraryPay">
                 <div>
                     <h4 class="text-xs font-bold text-emerald-950 mb-1 flex items-center gap-1"><i class="bi bi-wallet2 text-[#0E9F6E]"></i> Ví chưa được kích hoạt</h4>
-                    <p class="text-[11px] text-emerald-800 font-semibold leading-relaxed">Hãy kích hoạt ví GreenSteps của bạn để nạp tiền, rút tiền, và nhận quà tặng chào mừng 200.000đ.</p>
+                    <p class="text-[11px] text-emerald-800 font-semibold leading-relaxed">Hãy kích hoạt ví GreenSteps của bạn để nạp tiền và nhận quà tặng chào mừng 200.000đ.</p>
                 </div>
                 <button type="button" (click)="activateWalletInline()" [disabled]="isActivatingWallet" class="w-full h-9 bg-[#0E9F6E] hover:bg-[#0c875d] text-white font-bold rounded-xl border-0 cursor-pointer text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm">
                     <i class="bi bi-shield-check"></i> {{ isActivatingWallet ? 'Đang gửi yêu cầu...' : 'Kích hoạt ví ngay' }}
