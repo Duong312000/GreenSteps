@@ -418,12 +418,14 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  public shareSocial(platform: 'facebook' | 'twitter') {
+  public shareSocial(platform: 'facebook' | 'twitter' | 'messenger') {
     const url = encodeURIComponent(this.shareLink);
     const text = encodeURIComponent(this.shareMessage);
     let shareUrl = '';
     if (platform === 'facebook') {
       shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    } else if (platform === 'messenger') {
+      shareUrl = `https://www.facebook.com/dialog/send?app_id=2108319696129542&link=${url}&redirect_uri=${url}`;
     } else {
       shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
     }

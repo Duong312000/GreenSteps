@@ -1071,25 +1071,22 @@
             </div>
 
             <!-- Ngày bắt đầu & Ngày kết thúc -->
-            <div class="flex flex-col gap-1.5">
-                <label class="text-[11px] font-bold text-[#184A37] uppercase tracking-wider">Ngày đi (tùy chọn)</label>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div class="relative flex items-center">
-                        <span class="absolute left-3 text-[10px] font-bold text-[#184A37]/50 uppercase">Bắt đầu</span>
-                        <input type="date" [(ngModel)]="newTripStartDate" name="newTripStartDate" (change)="onTripDatesChange()"
-                               class="w-full h-10 pl-16 pr-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-xs text-[#184A37] outline-none focus:border-[#0E9F6E] transition-all">
-                    </div>
-                    <div class="relative flex items-center">
-                        <span class="absolute left-3 text-[10px] font-bold text-[#184A37]/50 uppercase">Kết thúc</span>
-                        <input type="date" [(ngModel)]="newTripEndDate" name="newTripEndDate" (change)="onTripDatesChange()"
-                               class="w-full h-10 pl-16 pr-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-xs text-[#184A37] outline-none focus:border-[#0E9F6E] transition-all">
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-[11px] font-bold text-[#184A37] uppercase tracking-wider">Ngày đi</label>
+                    <input type="date" [(ngModel)]="newTripStartDate" name="newTripStartDate" (change)="onTripDatesChange()"
+                           class="w-full h-10 px-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-xs text-[#184A37] outline-none focus:border-[#0E9F6E] transition-all">
                 </div>
-                <!-- Countdown notice when start date is picked -->
-                <p class="text-[11px] text-amber-600 font-semibold mt-1 flex items-center gap-1.5" *ngIf="newTripStartDate && countdownNotice">
-                    <i class="bi bi-clock-history animate-spin" style="animation-duration: 4s;"></i> {{ countdownNotice }}
-                </p>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-[11px] font-bold text-[#184A37] uppercase tracking-wider">Ngày về</label>
+                    <input type="date" [(ngModel)]="newTripEndDate" name="newTripEndDate" (change)="onTripDatesChange()"
+                           class="w-full h-10 px-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-xs text-[#184A37] outline-none focus:border-[#0E9F6E] transition-all">
+                </div>
             </div>
+            <!-- Countdown notice when start date is picked -->
+            <p class="text-[11px] text-amber-600 font-semibold mt-1 flex items-center gap-1.5" *ngIf="newTripStartDate && countdownNotice">
+                <i class="bi bi-clock-history animate-spin" style="animation-duration: 4s;"></i> {{ countdownNotice }}
+            </p>
 
             <!-- Mời bạn đồng hành -->
             <div class="flex flex-col gap-1.5">
@@ -1157,9 +1154,10 @@
 
             <!-- Option 2: Social Links -->
             <div class="grid grid-cols-3 gap-2">
-                <button (click)="shareSocial('facebook')"
-                        class="h-9 rounded-xl border border-gray-200 hover:bg-blue-50 text-blue-600 hover:text-blue-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer bg-transparent transition-colors">
-                    <i class="bi bi-facebook"></i> Facebook
+                <button (click)="shareSocial('messenger')"
+                        class="h-9 rounded-xl border border-gray-200 hover:bg-blue-50 text-blue-600 hover:text-blue-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer bg-transparent transition-colors"
+                        title="Chia sẻ qua Facebook Messenger">
+                    <i class="bi bi-messenger text-blue-500"></i> Messenger
                 </button>
                 <button (click)="shareSocial('twitter')"
                         class="h-9 rounded-xl border border-gray-200 hover:bg-sky-50 text-sky-500 hover:text-sky-600 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer bg-transparent transition-colors">
@@ -1219,9 +1217,10 @@
 
             <!-- Option 2: Facebook & Messenger Copy Link -->
             <div class="grid grid-cols-2 gap-2">
-                <button (click)="shareInviteSocial('facebook')"
-                        class="h-9 rounded-xl border border-gray-200 hover:bg-blue-50 text-blue-600 hover:text-blue-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer bg-transparent transition-colors">
-                    <i class="bi bi-facebook"></i> Facebook
+                <button (click)="shareInviteSocial('messenger')"
+                        class="h-9 rounded-xl border border-gray-200 hover:bg-blue-50 text-blue-600 hover:text-blue-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer bg-transparent transition-colors"
+                        title="Gửi lời mời qua Facebook Messenger">
+                    <i class="bi bi-messenger text-blue-500"></i> Messenger
                 </button>
                 <button (click)="copyInviteLink()"
                         class="h-9 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer bg-transparent transition-colors"
