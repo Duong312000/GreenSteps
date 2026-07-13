@@ -444,3 +444,17 @@ exports.trackInterest = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.logout = (req, res, next) => {
+  try {
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: '/'
+    });
+    res.json({ success: true, message: 'Đăng xuất thành công!' });
+  } catch (error) {
+    next(error);
+  }
+};

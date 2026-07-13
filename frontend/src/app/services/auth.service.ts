@@ -234,5 +234,15 @@ export class AuthService {
   public logout() {
     this.setCurrentUser(null);
     localStorage.removeItem('greensteps_token');
+    
+    // Send post logout request to clear secure HttpOnly cookies
+    this.http.post(`${this.BACKEND_URL}/logout`, {}, { withCredentials: true }).subscribe({
+      next: () => {
+        window.location.href = '/';
+      },
+      error: () => {
+        window.location.href = '/';
+      }
+    });
   }
 }
