@@ -974,35 +974,36 @@
 
                 <!-- Image Alignment Preview and Controls -->
                 <div *ngIf="selectedAvatarPath" style="border-top: 1px dashed #dde6e0; padding-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 16px;">
-                    <h4 style="margin: 0; width: 100%; font-size: 13px; font-weight: 700; color: #5f6863; text-align: left;">Căn chỉnh ảnh đại diện:</h4>
+                    <h4 style="margin: 0; width: 100%; font-size: 13px; font-weight: 700; color: #5f6863; text-align: left;">Căn chỉnh ảnh đại diện (Kéo thả ảnh trực tiếp):</h4>
                     
-                    <!-- Preview Circle Viewport -->
-                    <div style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid #174c39; overflow: hidden; position: relative; background: #f3f7f5; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex-shrink: 0;">
+                    <!-- Premium Drag to Crop Viewport -->
+                    <div style="position: relative; width: 200px; height: 200px; overflow: hidden; background: #0b0c0e; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); cursor: move; user-select: none; touch-action: none; flex-shrink: 0;"
+                         (mousedown)="onDragStart($event)"
+                         (touchstart)="onDragStart($event)">
+                        
+                        <!-- Original Image (scaled and centered) -->
                         <img [src]="selectedAvatarPath" 
+                             (load)="onImageLoaded($event)"
                              [style.width.%]="avatarZoom * 100" 
                              [style.height.%]="avatarZoom * 100"
                              [style.object-position]="avatarPosX + '% ' + avatarPosY + '%'"
-                             style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); object-fit: cover; transition: none; pointer-events: none;">
+                             style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); object-fit: cover; transition: none; pointer-events: none; user-select: none;">
+                        
+                        <!-- Circular Cutout Overlay with box-shadow mask -->
+                        <div style="position: absolute; left: 50%; top: 50%; width: 130px; height: 130px; transform: translate(-50%, -50%); border-radius: 50%; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6); border: 2px solid #ffffff; pointer-events: none; box-sizing: border-box;"></div>
+                        
+                        <!-- Drag helper hint -->
+                        <div *ngIf="!isDragging" style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; pointer-events: none; white-space: nowrap; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px;">
+                            <i class="bi bi-arrows-move" style="color: #fff; font-size: 11px;"></i> Kéo để dịch chuyển
+                        </div>
                     </div>
 
-                    <!-- Alignment Sliders -->
+                    <!-- Alignment Sliders (Zoom only) -->
                     <div style="width: 100%; display: flex; flex-direction: column; gap: 12px;">
                         <div style="display: flex; align-items: center; gap: 8px; justify-content: space-between;">
                           <span style="font-size: 12px; color: #5f6863; font-weight: 600; width: 80px; text-align: left;">Thu phóng:</span>
                           <input type="range" min="1" max="3" step="0.05" [(ngModel)]="avatarZoom" style="flex: 1; accent-color: #174c39; margin: 0; cursor: pointer;">
                           <span style="font-size: 11px; color: #8d9691; width: 35px; text-align: right;">{{ avatarZoom }}x</span>
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 8px; justify-content: space-between;">
-                          <span style="font-size: 12px; color: #5f6863; font-weight: 600; width: 80px; text-align: left;">Căn ngang:</span>
-                          <input type="range" min="0" max="100" step="1" [(ngModel)]="avatarPosX" style="flex: 1; accent-color: #174c39; margin: 0; cursor: pointer;">
-                          <span style="font-size: 11px; color: #8d9691; width: 35px; text-align: right;">{{ avatarPosX }}%</span>
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 8px; justify-content: space-between;">
-                          <span style="font-size: 12px; color: #5f6863; font-weight: 600; width: 80px; text-align: left;">Căn dọc:</span>
-                          <input type="range" min="0" max="100" step="1" [(ngModel)]="avatarPosY" style="flex: 1; accent-color: #174c39; margin: 0; cursor: pointer;">
-                          <span style="font-size: 11px; color: #8d9691; width: 35px; text-align: right;">{{ avatarPosY }}%</span>
                         </div>
                     </div>
                 </div>

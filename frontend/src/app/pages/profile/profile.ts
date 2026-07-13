@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -788,5 +788,84 @@ export class ProfileComponent implements OnInit {
       console.error('Save avatar failed:', err);
       this.showNotification('Thất bại', 'Không thể lưu ảnh đại diện: ' + (err.message || 'Lỗi kết nối'), 'error');
     }
+  }
+
+  // Drag to Crop Avatar Implementation
+  public avatarAspect = 1.0;
+  public isDragging = false;
+  private startDragX = 0;
+  private startDragY = 0;
+  private startPosX = 50;
+  private startPosY = 50;
+
+  public onImageLoaded(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (img && img.naturalWidth) {
+      this.avatarAspect = img.naturalWidth / img.naturalHeight;
+      this.cdr.detectChanges();
+    }
+  }
+
+  public onDragStart(event: MouseEvent | TouchEvent) {
+    if (!this.selectedAvatarPath) return;
+    this.isDragging = true;
+
+    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
+    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+
+    this.startDragX = clientX;
+    this.startDragY = clientY;
+    this.startPosX = this.avatarPosX;
+    this.startPosY = this.avatarPosY;
+
+    // Prevent default selection text behavior
+    event.preventDefault();
+  }
+
+  @HostListener('window:mousemove', ['$event'])
+  @HostListener('window:touchmove', ['$event'])
+  public onDragMove(event: MouseEvent | TouchEvent) {
+    if (!this.isDragging) return;
+
+    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
+    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+
+    const deltaX = clientX - this.startDragX;
+    const deltaY = clientY - this.startDragY;
+
+    // Dimensions of drag container (200px)
+    const containerSize = 200;
+    
+    let baseWidth = containerSize;
+    let baseHeight = containerSize;
+    if (this.avatarAspect > 1) {
+      baseWidth = containerSize * this.avatarAspect;
+    } else {
+      baseHeight = containerSize / this.avatarAspect;
+    }
+
+    const layoutWidth = baseWidth * this.avatarZoom;
+    const layoutHeight = baseHeight * this.avatarZoom;
+
+    const overflowX = layoutWidth - containerSize;
+    const overflowY = layoutHeight - containerSize;
+
+    if (overflowX > 0) {
+      const percentChangeX = (deltaX / overflowX) * 100;
+      this.avatarPosX = Math.max(0, Math.min(100, Math.round(this.startPosX - percentChangeX)));
+    }
+
+    if (overflowY > 0) {
+      const percentChangeY = (deltaY / overflowY) * 100;
+      this.avatarPosY = Math.max(0, Math.min(100, Math.round(this.startPosY - percentChangeY)));
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  @HostListener('window:mouseup')
+  @HostListener('window:touchend')
+  public onDragEnd() {
+    this.isDragging = false;
   }
 }
