@@ -351,13 +351,8 @@
       <!-- Booking code banner (always show) -->
       <div *ngIf="currentBookingId" style="background: linear-gradient(135deg,#e8f5e9,#dcfce7); border: 1.5px solid #a7f3d0; border-radius: 16px; padding: 18px 22px; margin: 16px 0; text-align: center;">
         <p style="font-size:0.8rem; color:#065f46; font-weight:600; margin:0 0 6px; text-transform:uppercase; letter-spacing:0.5px;">Mã đặt chỗ của bạn</p>
-        <p style="font-size:1.5rem; font-weight:900; color:#0E9F6E; letter-spacing:2px; margin:0 0 10px; font-family:monospace;">{{ currentBookingId }}</p>
-        <p style="font-size:0.8rem; color:#374151; margin:0 0 12px;">📋 Lưu mã này để tra cứu đơn bất cứ lúc nào, kể cả khi không đăng nhập.</p>
-        <a [routerLink]="['/booking/lookup']" [queryParams]="{code: currentBookingId}"
-           style="display:inline-flex; align-items:center; gap:6px; background:#0E9F6E; color:#fff; font-weight:700; font-size:0.85rem; padding:8px 18px; border-radius:10px; text-decoration:none; transition:opacity 0.2s;"
-           onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-          <i class="bi bi-search"></i> Tra cứu đơn hàng
-        </a>
+        <p style="font-size:1.5rem; font-weight:900; color:#0E9F6E; letter-spacing:2px; margin:0; font-family:monospace;">{{ currentBookingId }}</p>
+        <p style="font-size:0.8rem; color:#374151; margin:8px 0 0;">📧 Một email chứa thông tin đặt chỗ chi tiết và liên kết tra cứu đã được gửi đến bạn.</p>
       </div>
 
       <div class="confirm-summary">
@@ -368,7 +363,6 @@
       </div>
       <div class="confirm-actions">
         <button type="button" class="booking-submit" *ngIf="currentUser" (click)="router.navigate(['/profile'])">Xem hồ sơ đặt chỗ</button>
-        <button type="button" class="booking-submit" *ngIf="!currentUser" (click)="router.navigate(['/booking/lookup'])">Tra cứu đơn của tôi</button>
         <button type="button" class="secondary-button" (click)="router.navigate(['/tours'])">Tiếp tục khám phá</button>
       </div>
     </div>
