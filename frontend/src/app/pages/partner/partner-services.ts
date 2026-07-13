@@ -88,6 +88,56 @@ export class PartnerServicesComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  // Community Sharing State
+  public isShareModalOpen: boolean = false;
+  public sharingService: Service | null = null;
+  public shareMessage: string = '';
+
+  public openShareModal(srv: Service) {
+    this.sharingService = srv;
+    this.shareMessage = `Khám phá ngay dịch vụ xanh "${srv.name}" cực kỳ thân thiện với môi trường tại ${srv.destination}! Lượng CO2 giảm đến ${srv.carbon}kg.`;
+    this.isShareModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  public closeShareModal() {
+    this.isShareModalOpen = false;
+    this.sharingService = null;
+    this.shareMessage = '';
+    this.cdr.detectChanges();
+  }
+
+  public async submitShareToCommunity() {
+    if (!this.sharingService || !this.shareMessage.trim() || !this.currentUser) return;
+    try {
+      const payload = {
+        authorId: this.currentUser.id || this.currentUser._id || '',
+        author: this.currentUser.fullname || 'Hộ kinh doanh xanh',
+        text: this.shareMessage,
+        rating: 5,
+        tripName: this.sharingService.name,
+        dest: this.sharingService.destination,
+        days: 1,
+        likes: 0,
+        comments: 0,
+        image: this.sharingService.image_url || 'image/Viet Nam.png',
+        itineraryId: null,
+        current_data: { serviceId: this.sharingService.id }
+      };
+
+      const ok = await this.apiService.addCommunityPost(payload);
+      if (ok) {
+        this.closeShareModal();
+        this.showAlert('Đã chia sẻ dịch vụ lên cộng đồng GreenSteps thành công!', 'success');
+      } else {
+        this.showAlert('Chia sẻ lên cộng đồng thất bại!', 'error');
+      }
+    } catch (e) {
+      console.error(e);
+      this.showAlert('Lỗi chia sẻ dịch vụ!', 'error');
+    }
+  }
+
   // Details Modal
   public isDetailsModalOpen: boolean = false;
   public detailedService: any = null;

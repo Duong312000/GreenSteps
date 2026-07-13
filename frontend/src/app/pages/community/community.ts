@@ -43,6 +43,37 @@ export class CommunityComponent implements OnInit {
   public activeReplyTarget: { [commentId: string]: boolean } = {};
   public replyInputs: { [commentId: string]: string } = {};
 
+  // Service detail modal bindings
+  public detailedService: any = null;
+  public isDetailsModalOpen: boolean = false;
+
+  public getServiceImage(srv: any): string {
+    if (!srv) return 'image/Viet Nam.png';
+    return srv.image_url || srv.current_data?.img || 'image/Viet Nam.png';
+  }
+
+  public async viewSharedService(serviceId: string, event: Event) {
+    event.stopPropagation();
+    try {
+      const details = await this.apiService.getServiceDetails(serviceId);
+      this.detailedService = details ? { ...details, name: details.name_service } : null;
+      if (this.detailedService) {
+        this.isDetailsModalOpen = true;
+      } else {
+        this.showAlert("Không tìm thấy", "Dịch vụ xanh này không tồn tại hoặc đã bị gỡ bỏ.", "error");
+      }
+      this.cdr.detectChanges();
+    } catch (e) {
+      this.showAlert("Lỗi", "Không thể lấy thông tin chi tiết dịch vụ.", "error");
+    }
+  }
+
+  public closeDetailsModal() {
+    this.isDetailsModalOpen = false;
+    this.detailedService = null;
+    this.cdr.detectChanges();
+  }
+
   public likedPostsSet = new Set<string>();
 
   // New post optional details toggle

@@ -7262,6 +7262,7 @@
     padding: 8px;
     border-radius: 8px;
     transition: background-color 0.2s;
+    white-space: nowrap;
 }
 
 .composer-bottom-actions .action-btn:hover {

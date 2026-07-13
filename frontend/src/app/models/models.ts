@@ -141,6 +141,7 @@ export interface CommunityPost {
   image?: string;
   authorId?: string;
   itinerary_id?: string;
+  current_data?: any;
 }
 
 export interface Notification {
