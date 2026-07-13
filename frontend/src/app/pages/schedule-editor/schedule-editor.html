@@ -164,18 +164,9 @@
             <!-- Hidden File Input for Custom Cover Image -->
             <input type="file" #coverFileInput (change)="onCoverFileSelected($event)" accept="image/*" style="display: none;">
             
-            <!-- 3 Actions Buttons in a Row at the Top-Right -->
+            <!-- 3 Actions Buttons in a Row at the Top-Right (with merged avatar stack) -->
             <div style="position: absolute; top: 15px; right: 15px; display: flex; align-items: center; gap: 8px; z-index: 10;">
-                <!-- Button 1: Mời bạn đồng hành -->
-                <button *ngIf="!isItineraryLocked()" (click)="openInviteFriendModal()" 
-                        style="width: 36px; height: 36px; border-radius: 50%; background: rgba(0, 0, 0, 0.6); color: white; border: 1.5px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"
-                        onmouseover="this.style.background='rgba(14, 159, 110, 0.85)'"
-                        onmouseout="this.style.background='rgba(0, 0, 0, 0.6)'"
-                        title="Mời bạn đồng hành">
-                    <i class="bi bi-person-plus-fill" style="font-size: 15px;"></i>
-                </button>
-
-                <!-- Button 2: Chia sẻ lịch trình -->
+                <!-- Button 1: Chia sẻ lịch trình -->
                 <button (click)="openShareModal(activeItinerary, $event)" 
                         style="width: 36px; height: 36px; border-radius: 50%; background: rgba(0, 0, 0, 0.6); color: white; border: 1.5px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"
                         onmouseover="this.style.background='rgba(14, 159, 110, 0.85)'"
@@ -184,7 +175,7 @@
                     <i class="bi bi-share-fill" style="font-size: 14px;"></i>
                 </button>
 
-                <!-- Button 3: Thay đổi ảnh bìa -->
+                <!-- Button 2: Thay đổi ảnh bìa -->
                 <button *ngIf="!isItineraryLocked()" (click)="coverFileInput.click()" 
                         style="width: 36px; height: 36px; border-radius: 50%; background: rgba(0, 0, 0, 0.6); color: white; border: 1.5px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"
                         onmouseover="this.style.background='rgba(14, 159, 110, 0.85)'"
@@ -192,6 +183,34 @@
                         title="Thay đổi ảnh bìa lịch trình">
                     <i class="bi bi-camera-fill" style="font-size: 15px;"></i>
                 </button>
+
+                <!-- Button 3: Mời bạn / Avatar Stack merged (Add button triggers invite, avatars trailing behind) -->
+                <div style="display: flex; flex-direction: row-reverse; align-items: center;">
+                    <!-- Collaborators Avatars (stacked behind the Add button) -->
+                    <ng-container *ngIf="activeItinerary.collaborators && activeItinerary.collaborators.length > 0">
+                        <div *ngFor="let col of activeItinerary.collaborators; let idx = index"
+                             [style.margin-right.px]="-12"
+                             [style.z-index]="idx + 1"
+                             style="width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.4); background: #e6ede9; overflow: hidden; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.15); flex-shrink: 0;"
+                             [title]="col.fullname || col.username">
+                            <img *ngIf="col.avatarUrl" [src]="col.avatarUrl" style="width: 100%; height: 100%; object-fit: cover;">
+                            <div *ngIf="!col.avatarUrl" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #174c39; text-transform: uppercase;">
+                                {{ (col.fullname || col.username || '?').charAt(0) }}
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <!-- Add Collaborator trigger button (On top of stack) -->
+                    <button *ngIf="!isItineraryLocked()" (click)="openInviteFriendModal()" 
+                            [style.margin-right.px]="(activeItinerary.collaborators && activeItinerary.collaborators.length > 0) ? -12 : 0"
+                            [style.z-index]="(activeItinerary.collaborators ? activeItinerary.collaborators.length : 0) + 2"
+                            style="width: 36px; height: 36px; border-radius: 50%; background: #0E9F6E; color: white; border: 2px solid white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2); flex-shrink: 0; transition: transform 0.2s;" 
+                            onmouseover="this.style.transform='scale(1.1)'" 
+                            onmouseout="this.style.transform='scale(1)'"
+                            title="Mời bạn đồng hành">
+                        <i class="bi bi-person-plus-fill" style="font-size: 15px; color: white;"></i>
+                    </button>
+                </div>
             </div>
 
             <img id="timelineCoverImg" 
@@ -199,7 +218,7 @@
                  alt="Dest Cover" 
                  class="cover-bg-img">
 
-            <!-- Bottom Left Info & Bottom Right Collaborator Avatars Overlay -->
+            <!-- Bottom Left Info Overlay -->
             <div class="cover-overlay">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%;">
                     <!-- Title & Dates (Bottom-Left) -->
@@ -208,22 +227,6 @@
                         <span class="cover-dates" style="font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.85); margin-top: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
                             {{ activeItinerary.destLabel }} • {{ activeItinerary.days.length }} ngày
                         </span>
-                    </div>
-
-                    <!-- Collaborator Avatars (Bottom-Right) -->
-                    <div *ngIf="activeItinerary.collaborators && activeItinerary.collaborators.length > 0" style="display: flex; align-items: center; gap: 6px; z-index: 10; flex-shrink: 0; margin-bottom: 4px;">
-                        <div style="display: flex; flex-direction: row-reverse; align-items: center;">
-                            <div *ngFor="let col of activeItinerary.collaborators; let idx = index"
-                                 [style.margin-right.px]="-10"
-                                 [style.z-index]="idx + 1"
-                                 style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; background: #e6ede9; overflow: hidden; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.2); flex-shrink: 0;"
-                                 [title]="col.fullname || col.username">
-                                <img *ngIf="col.avatarUrl" [src]="col.avatarUrl" style="width: 100%; height: 100%; object-fit: cover;">
-                                <div *ngIf="!col.avatarUrl" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #174c39; text-transform: uppercase;">
-                                    {{ (col.fullname || col.username || '?').charAt(0) }}
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
