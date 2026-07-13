@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
+import { Router } from '@angular/router';
 import { User } from '../models/models';
 import { ApiService } from './api.service';
 
@@ -27,7 +28,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient, private apiService: ApiService) {
+  constructor(private http: HttpClient, private apiService: ApiService, private router: Router) {
     this.loadSession();
     const user = this.getCurrentUser();
     if (user) {
@@ -238,10 +239,10 @@ export class AuthService {
     // Send post logout request to clear secure HttpOnly cookies
     this.http.post(`${this.BACKEND_URL}/logout`, {}, { withCredentials: true }).subscribe({
       next: () => {
-        window.location.href = '/';
+        window.location.href = '/home';
       },
       error: () => {
-        window.location.href = '/';
+        window.location.href = '/home';
       }
     });
   }
