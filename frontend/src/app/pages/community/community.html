@@ -224,7 +224,7 @@
 
       <!-- Feed Posts List -->
       <div class="posts-feed-container" *ngIf="!isPageLoading">
-        <div class="feed-post-card fb-post-card" *ngFor="let post of posts">
+        <div class="feed-post-card fb-post-card" *ngFor="let post of posts" [id]="'post-card-' + post.id">
 
           <div class="post-header">
             <div class="post-author-avatar">
@@ -371,7 +371,13 @@
                 </div>
               </div>
               
-              <div *ngIf="!postComments[post.id] || postComments[post.id].length === 0" class="no-comments-placeholder">
+              <!-- Option A: Loading state -->
+              <div *ngIf="isCommentLoading[post.id]" class="no-comments-placeholder" style="color: #65676B;">
+                <i class="bi bi-arrow-repeat" style="display: inline-block; animation: spin 1.5s infinite linear; font-size: 14px; margin-right: 4px;"></i> Đang tải bình luận...
+              </div>
+
+              <!-- Option B: Empty state (Only show when not loading and is loaded but empty) -->
+              <div *ngIf="!isCommentLoading[post.id] && postComments[post.id] && postComments[post.id].length === 0" class="no-comments-placeholder">
                 Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ cảm nghĩ!
               </div>
             </div>

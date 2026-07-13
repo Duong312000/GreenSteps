@@ -40,6 +40,7 @@ export class CommunityComponent implements OnInit {
   // Comments bindings
   public expandedComments: { [postId: string]: boolean } = {};
   public postComments: { [postId: string]: any[] } = {};
+  public isCommentLoading: { [postId: string]: boolean } = {};
   public commentInputs: { [postId: string]: string } = {};
   public activeReplyTarget: { [commentId: string]: boolean } = {};
   public replyInputs: { [commentId: string]: string } = {};
@@ -170,17 +171,41 @@ export class CommunityComponent implements OnInit {
     await this.loadPosts();
   }
 
-  private preloadCommentsForPosts(newPosts: CommunityPost[]) {
-    newPosts.forEach(post => {
-      if (!this.postComments[post.id]) {
-        this.apiService.getPostComments(post.id).then(comments => {
-          this.postComments[post.id] = comments;
-          this.cdr.detectChanges();
-        }).catch(err => {
-          console.error(`Failed to preload comments for post ${post.id}:`, err);
-        });
-      }
+  public preloadCommentsForSinglePost(postId: string) {
+    if (this.postComments[postId] || this.isCommentLoading[postId]) return;
+    this.isCommentLoading[postId] = true;
+    
+    this.apiService.getPostComments(postId).then(comments => {
+      this.postComments[postId] = comments;
+      this.isCommentLoading[postId] = false;
+      this.cdr.detectChanges();
+    }).catch(err => {
+      console.error(`Failed to preload comments for post ${postId}:`, err);
+      this.isCommentLoading[postId] = false;
+      this.cdr.detectChanges();
     });
+  }
+
+  public checkAndPreloadVisiblePosts() {
+    setTimeout(() => {
+      this.posts.forEach(post => {
+        if (this.postComments[post.id] || this.isCommentLoading[post.id]) {
+          return;
+        }
+
+        const element = document.getElementById(`post-card-${post.id}`);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+          
+          // Preload comments if the post card is within viewport or close to it (within 750px of top/bottom)
+          const isNearViewport = rect.top < windowHeight + 750 && rect.bottom > -750;
+          if (isNearViewport) {
+            this.preloadCommentsForSinglePost(post.id);
+          }
+        }
+      });
+    }, 100);
   }
 
   private async loadPosts() {
@@ -194,8 +219,8 @@ export class CommunityComponent implements OnInit {
     this.isPageLoading = false;
     this.cdr.detectChanges();
 
-    // Preload comments in the background
-    this.preloadCommentsForPosts(this.posts);
+    // Trigger preloading check for initially visible posts
+    this.checkAndPreloadVisiblePosts();
   }
 
   public async loadMorePosts() {
@@ -211,8 +236,8 @@ export class CommunityComponent implements OnInit {
       }
       this.posts = [...this.posts, ...nextPosts];
       
-      // Preload comments for the newly added posts
-      this.preloadCommentsForPosts(nextPosts);
+      // Trigger preloading check for newly loaded posts
+      this.checkAndPreloadVisiblePosts();
     } catch (e) {
       console.error('Error loading more posts:', e);
     } finally {
@@ -223,13 +248,14 @@ export class CommunityComponent implements OnInit {
 
   @HostListener('window:scroll')
   onWindowScroll() {
-
     const pos = (document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.clientHeight;
     const max = document.documentElement.scrollHeight;
-    // Load more when scrolled to 85% of the page
     if (pos >= max * 0.85) {
       this.loadMorePosts();
     }
+    
+    // Check and preload comments for posts near the scrolled viewport
+    this.checkAndPreloadVisiblePosts();
   }
 
 
@@ -453,9 +479,17 @@ export class CommunityComponent implements OnInit {
   }
 
   public async loadComments(postId: string) {
-    const comments = await this.apiService.getPostComments(postId);
-    this.postComments[postId] = comments;
+    this.isCommentLoading[postId] = true;
     this.cdr.detectChanges();
+    try {
+      const comments = await this.apiService.getPostComments(postId);
+      this.postComments[postId] = comments;
+    } catch (e) {
+      console.error(e);
+    } finally {
+      this.isCommentLoading[postId] = false;
+      this.cdr.detectChanges();
+    }
   }
 
   public toggleReplyBox(commentId: string) {
