@@ -488,25 +488,48 @@ export class BookingComponent implements OnInit {
   }
 
   public startBookingStatusPolling(bookingId: string) {
-    this.pollingInterval = setInterval(async () => {
-      const target = await this.apiService.getBooking(bookingId);
-      if (target && target.status === 'deposit') {
+    this.ngZone.runOutsideAngular(() => {
+      this.pollingInterval = setInterval(async () => {
+        try {
+          const target = await this.apiService.getBooking(bookingId);
+          if (target && (target.status === 'deposit' || target.status === 'confirmed' || target.status === 'accepted')) {
+            if (this.pollingInterval) {
+              clearInterval(this.pollingInterval);
+              this.pollingInterval = null;
+            }
+            this.ngZone.run(() => {
+              this.isQrModalOpen = false;
+              if (this.countdownInterval) {
+                clearInterval(this.countdownInterval);
+                this.countdownInterval = null;
+              }
+              this.saveDraft();
+              this.router.navigate(['/booking/confirm']);
+            });
+          } else if (target && target.status === 'rejected') {
+            if (this.pollingInterval) {
+              clearInterval(this.pollingInterval);
+              this.pollingInterval = null;
+            }
+            this.ngZone.run(() => {
+              this.isQrModalOpen = false;
+              if (this.countdownInterval) {
+                clearInterval(this.countdownInterval);
+                this.countdownInterval = null;
+              }
+              this.showAlert('Thanh toán bị từ chối', 'Admin đã từ chối giao dịch của bạn. Vui lòng thử lại hoặc chọn phương thức khác.', 'error');
+            });
+          }
+        } catch (_) {}
+      }, 2500);
+
+      setTimeout(() => {
         if (this.pollingInterval) {
           clearInterval(this.pollingInterval);
           this.pollingInterval = null;
         }
-        this.isQrModalOpen = false;
-        this.saveDraft();
-        this.router.navigate(['/booking/confirm']);
-      }
-    }, 2500);
-
-    setTimeout(() => {
-      if (this.pollingInterval) {
-        clearInterval(this.pollingInterval);
-        this.pollingInterval = null;
-      }
-    }, 900000);
+      }, 900000);
+    });
   }
 
   // Custom Alert Helpers
