@@ -517,4 +517,23 @@
             </div>
         </div>
     </div>
+
+    <!-- Custom Center Alert Modal -->
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-all animate-fade-in" *ngIf="customAlert">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-gray-150 p-6 flex flex-col items-center text-center space-y-4 animate-scale-up">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center"
+                 [ngClass]="customAlert.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 
+                            (customAlert.type === 'error' ? 'bg-rose-50 text-rose-600' : 'bg-blue-50 text-blue-600')">
+                <i class="bi" [ngClass]="customAlert.type === 'success' ? 'bi-check-circle-fill text-2xl' : 
+                                         (customAlert.type === 'error' ? 'bi-x-circle-fill text-2xl' : 'bi-info-circle-fill text-2xl')"></i>
+            </div>
+            <div class="space-y-1">
+                <h4 class="font-extrabold text-gray-900 text-sm uppercase tracking-wider">Thông báo hệ thống</h4>
+                <p class="text-xs text-gray-600 leading-relaxed font-semibold">{{ customAlert.message }}</p>
+            </div>
+            <button type="button" (click)="closeCustomAlert()" class="w-full py-2 bg-teal-600 text-white rounded-xl text-xs font-bold hover:bg-teal-700 cursor-pointer border-none transition-colors">
+                Đồng ý
+            </button>
+        </div>
+    </div>
 </main>

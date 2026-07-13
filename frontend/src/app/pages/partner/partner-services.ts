@@ -44,6 +44,19 @@ export class PartnerServicesComponent implements OnInit {
   public startTime: string = '';
   public notesForCustomers: string = '';
 
+  // Custom Alert Modal
+  public customAlert: { message: string; type: 'success' | 'error' | 'info' } | null = null;
+
+  public showAlert(message: string, type: 'success' | 'error' | 'info' = 'success') {
+    this.customAlert = { message, type };
+    this.cdr.detectChanges();
+  }
+
+  public closeCustomAlert() {
+    this.customAlert = null;
+    this.cdr.detectChanges();
+  }
+
   // Details Modal
   public isDetailsModalOpen: boolean = false;
   public detailedService: any = null;
@@ -265,10 +278,10 @@ export class PartnerServicesComponent implements OnInit {
     if (confirm(`Bạn có chắc chắn muốn nhân bản dịch vụ "${srv.name}"?`)) {
       const ok = await this.apiService.cloneService(srv.id);
       if (ok) {
-        alert('Nhân bản dịch vụ thành công!');
+        this.showAlert('Nhân bản dịch vụ thành công!', 'success');
         await this.loadServices();
       } else {
-        alert('Lỗi nhân bản dịch vụ!');
+        this.showAlert('Lỗi nhân bản dịch vụ!', 'error');
       }
     }
   }
@@ -277,10 +290,10 @@ export class PartnerServicesComponent implements OnInit {
     if (confirm(`Bạn có chắc chắn muốn tạm ngừng hoạt động dịch vụ "${srv.name}"?`)) {
       const ok = await this.apiService.suspendService(srv.id);
       if (ok) {
-        alert('Đã tạm ngừng hoạt động dịch vụ!');
+        this.showAlert('Đã tạm ngừng hoạt động dịch vụ!', 'success');
         await this.loadServices();
       } else {
-        alert('Lỗi khi tạm ngừng dịch vụ!');
+        this.showAlert('Lỗi khi tạm ngừng dịch vụ!', 'error');
       }
     }
   }
@@ -289,10 +302,10 @@ export class PartnerServicesComponent implements OnInit {
     if (confirm(`Bạn muốn gửi duyệt lại dịch vụ "${srv.name}"?`)) {
       const ok = await this.apiService.resendServiceApproval(srv.id);
       if (ok) {
-        alert('Đã gửi duyệt lại dịch vụ xanh!');
+        this.showAlert('Đã gửi duyệt lại dịch vụ xanh!', 'success');
         await this.loadServices();
       } else {
-        alert('Lỗi gửi duyệt lại!');
+        this.showAlert('Lỗi gửi duyệt lại!', 'error');
       }
     }
   }
@@ -403,12 +416,12 @@ export class PartnerServicesComponent implements OnInit {
 
       const success = await this.apiService.updateMyService(this.editingServiceId, updateData);
       if (success) {
-        alert('Cập nhật dịch vụ xanh và gửi kiểm duyệt thành công!');
+        this.showAlert('Cập nhật dịch vụ xanh và gửi kiểm duyệt thành công!', 'success');
         this.isAddModalOpen = false;
         this.editingServiceId = null;
         await this.loadServices();
       } else {
-        alert('Có lỗi xảy ra khi cập nhật dịch vụ.');
+        this.showAlert('Có lỗi xảy ra khi cập nhật dịch vụ.', 'error');
       }
     } else {
       const newService = {
@@ -432,11 +445,11 @@ export class PartnerServicesComponent implements OnInit {
 
       const success = await this.apiService.addMyService(newService);
       if (success) {
-        alert('Đăng ký dịch vụ xanh mới thành công! Dịch vụ đang ở trạng thái Chờ duyệt.');
+        this.showAlert('Đăng ký dịch vụ xanh mới thành công! Dịch vụ đang ở trạng thái Chờ duyệt.', 'success');
         this.isAddModalOpen = false;
         await this.loadServices();
       } else {
-        alert('Có lỗi xảy ra khi thêm dịch vụ.');
+        this.showAlert('Có lỗi xảy ra khi thêm dịch vụ.', 'error');
       }
     }
     this.cdr.detectChanges();
@@ -476,19 +489,19 @@ export class PartnerServicesComponent implements OnInit {
   }
 
   public saveDraft() {
-    alert('Đã lưu bản nháp thành công!');
+    this.showAlert('Đã lưu bản nháp thành công!', 'success');
     this.closeAddModal();
   }
 
   public previewService() {
-    alert('Đang tải chế độ xem trước dịch vụ...');
+    this.showAlert('Đang tải chế độ xem trước dịch vụ...', 'info');
   }
 
   public onFileSelected(event: any) {
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('File quá lớn! Vui lòng chọn ảnh dưới 5MB.');
+        this.showAlert('File quá lớn! Vui lòng chọn ảnh dưới 5MB.', 'error');
         return;
       }
       const reader = new FileReader();

@@ -82,6 +82,19 @@ export class PartnerBookingsComponent implements OnInit {
   public editingNotesReviewId: string | null = null;
   public internalNotesText: string = '';
 
+  // Custom Alert Modal
+  public customAlert: { message: string; type: 'success' | 'error' | 'info' } | null = null;
+
+  public showAlert(message: string, type: 'success' | 'error' | 'info' = 'success') {
+    this.customAlert = { message, type };
+    this.cdr.detectChanges();
+  }
+
+  public closeCustomAlert() {
+    this.customAlert = null;
+    this.cdr.detectChanges();
+  }
+
   constructor(
     private apiService: ApiService,
     private authService: AuthService,
@@ -164,11 +177,11 @@ export class PartnerBookingsComponent implements OnInit {
     };
     const success = await this.apiService.updateBookingStatuses(this.selectedBooking.id, updateData);
     if (success) {
-      alert('Cập nhật trạng thái thành công!');
+      this.showAlert('Cập nhật trạng thái thành công!', 'success');
       await this.loadBookings();
       this.closeBookingDetails();
     } else {
-      alert('Lỗi cập nhật trạng thái.');
+      this.showAlert('Lỗi cập nhật trạng thái.', 'error');
     }
   }
 
@@ -176,11 +189,11 @@ export class PartnerBookingsComponent implements OnInit {
     if (confirm('Bạn có chắc chắn muốn phê duyệt cọc đơn này?')) {
       const ok = await this.apiService.approveBooking(id);
       if (ok) {
-        alert('Duyệt thành công!');
+        this.showAlert('Duyệt thành công!', 'success');
         await this.loadBookings();
         this.closeBookingDetails();
       } else {
-        alert('Lỗi phê duyệt.');
+        this.showAlert('Lỗi phê duyệt.', 'error');
       }
     }
   }
@@ -200,12 +213,12 @@ export class PartnerBookingsComponent implements OnInit {
         booking_status: 'rejected',
         rejection_reason: this.rejectReason
       });
-      alert('Đã từ chối đơn đặt chỗ thành công.');
+      this.showAlert('Đã từ chối đơn đặt chỗ thành công.', 'success');
       await this.loadBookings();
       this.showRejectModal = false;
       this.selectedBooking = null;
     } else {
-      alert('Lỗi từ chối đơn đặt.');
+      this.showAlert('Lỗi từ chối đơn đặt.', 'error');
     }
   }
 
@@ -213,11 +226,11 @@ export class PartnerBookingsComponent implements OnInit {
     if (confirm('Đơn dịch vụ đã phục vụ xong? Hãy đánh dấu hoàn thành.')) {
       const ok = await this.apiService.completeBooking(id);
       if (ok) {
-        alert('Đã cập nhật trạng thái đơn thành HOÀN THÀNH!');
+        this.showAlert('Đã cập nhật trạng thái đơn thành HOÀN THÀNH!', 'success');
         await this.loadBookings();
         this.closeBookingDetails();
       } else {
-        alert('Lỗi cập nhật.');
+        this.showAlert('Lỗi cập nhật.', 'error');
       }
     }
   }
@@ -263,13 +276,13 @@ export class PartnerBookingsComponent implements OnInit {
     if (!this.selectedRequest) return;
     const success = await this.apiService.approveChangeRequest(this.selectedRequest.id);
     if (success) {
-      alert('Đã phê duyệt và áp dụng thay đổi thành công!');
+      this.showAlert('Đã phê duyệt và áp dụng thay đổi thành công!', 'success');
       await this.loadChangeRequests();
       await this.loadBookings();
       this.showApproveChangeModal = false;
       this.selectedRequest = null;
     } else {
-      alert('Lỗi phê duyệt thay đổi.');
+      this.showAlert('Lỗi phê duyệt thay đổi.', 'error');
     }
   }
 
@@ -277,12 +290,12 @@ export class PartnerBookingsComponent implements OnInit {
     if (!this.selectedRequest) return;
     const success = await this.apiService.rejectChangeRequest(this.selectedRequest.id, this.rejectChangeReason);
     if (success) {
-      alert('Từ chối yêu cầu thay đổi thành công.');
+      this.showAlert('Từ chối yêu cầu thay đổi thành công.', 'success');
       await this.loadChangeRequests();
       this.showRejectChangeModal = false;
       this.selectedRequest = null;
     } else {
-      alert('Lỗi từ chối.');
+      this.showAlert('Lỗi từ chối.', 'error');
     }
   }
 
@@ -295,12 +308,12 @@ export class PartnerBookingsComponent implements OnInit {
     };
     const success = await this.apiService.proposeAlternativeChangeRequest(this.selectedRequest.id, proposeData);
     if (success) {
-      alert('Đã gửi đề xuất lịch và giá mới đến khách hàng!');
+      this.showAlert('Đã gửi đề xuất lịch và giá mới đến khách hàng!', 'success');
       await this.loadChangeRequests();
       this.showProposeChangeModal = false;
       this.selectedRequest = null;
     } else {
-      alert('Lỗi gửi đề xuất.');
+      this.showAlert('Lỗi gửi đề xuất.', 'error');
     }
   }
 
@@ -350,11 +363,11 @@ export class PartnerBookingsComponent implements OnInit {
     };
     const success = await this.apiService.assignStaffAndVehicle(this.selectedOperation.booking_id, data);
     if (success) {
-      alert('Cập nhật phân công và checklist thành công!');
+      this.showAlert('Cập nhật phân công và checklist thành công!', 'success');
       await this.loadOperations();
       this.closeAssignModal();
     } else {
-      alert('Lỗi lưu thông tin phân công.');
+      this.showAlert('Lỗi lưu thông tin phân công.', 'error');
     }
   }
 
@@ -365,7 +378,7 @@ export class PartnerBookingsComponent implements OnInit {
       item.done = isChecked;
       this.cdr.detectChanges();
     } else {
-      alert('Lỗi cập nhật checklist.');
+      this.showAlert('Lỗi cập nhật checklist.', 'error');
       event.target.checked = !isChecked; // revert
     }
   }
@@ -378,11 +391,11 @@ export class PartnerBookingsComponent implements OnInit {
     }
     const success = await this.apiService.updateAssignmentStatus(op.booking_id, status, incidents);
     if (success) {
-      alert('Cập nhật trạng thái vận hành thành công!');
+      this.showAlert('Cập nhật trạng thái vận hành thành công!', 'success');
       await this.loadOperations();
       await this.loadBookings();
     } else {
-      alert('Lỗi cập nhật trạng thái.');
+      this.showAlert('Lỗi cập nhật trạng thái.', 'error');
     }
   }
 
@@ -411,12 +424,12 @@ export class PartnerBookingsComponent implements OnInit {
     if (!this.replyText.trim()) return;
     const success = await this.apiService.replyToReview(reviewId, this.replyText.trim());
     if (success) {
-      alert('Đã phản hồi đánh giá thành công!');
+      this.showAlert('Đã phản hồi đánh giá thành công!', 'success');
       await this.loadReviews();
       this.replyingToReviewId = null;
       this.replyText = '';
     } else {
-      alert('Gửi phản hồi thất bại.');
+      this.showAlert('Gửi phản hồi thất bại.', 'error');
     }
   }
 
@@ -430,12 +443,12 @@ export class PartnerBookingsComponent implements OnInit {
     if (!this.reportReasonText.trim()) return;
     const success = await this.apiService.reportReview(reviewId, this.reportReasonText.trim());
     if (success) {
-      alert('Đã báo cáo đánh giá vi phạm thành công!');
+      this.showAlert('Đã báo cáo đánh giá vi phạm thành công!', 'success');
       await this.loadReviews();
       this.reportingReviewId = null;
       this.reportReasonText = '';
     } else {
-      alert('Báo cáo vi phạm thất bại.');
+      this.showAlert('Báo cáo vi phạm thất bại.', 'error');
     }
   }
 
@@ -448,12 +461,12 @@ export class PartnerBookingsComponent implements OnInit {
   public async submitNotes(reviewId: string) {
     const success = await this.apiService.updateInternalNotes(reviewId, this.internalNotesText.trim());
     if (success) {
-      alert('Cập nhật ghi chú nội bộ thành công!');
+      this.showAlert('Cập nhật ghi chú nội bộ thành công!', 'success');
       await this.loadReviews();
       this.editingNotesReviewId = null;
       this.internalNotesText = '';
     } else {
-      alert('Cập nhật thất bại.');
+      this.showAlert('Cập nhật thất bại.', 'error');
     }
   }
 
