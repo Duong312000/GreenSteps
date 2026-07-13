@@ -17,7 +17,7 @@
     border-radius: 24px;
     box-shadow: 0 12px 60px rgba(14,159,110,0.10), 0 2px 8px rgba(0,0,0,0.06);
     padding: 48px 40px 40px;
-    max-width: 520px;
+    max-width: 580px;
     width: 100%;
   }
 
@@ -54,11 +54,8 @@
     color: #111827;
     outline: none;
     transition: border-color 0.2s;
-    letter-spacing: 1px;
-    text-transform: uppercase;
   }
   .code-input:focus { border-color: #0E9F6E; }
-  .code-input::placeholder { font-weight: 400; letter-spacing: 0; text-transform: none; }
 
   .lookup-btn {
     padding: 14px 24px;
@@ -149,6 +146,41 @@
     transition: gap 0.2s;
   }
   .home-link:hover { gap: 11px; }
+
+  /* Multiple Results CSS */
+  .results-list-container {
+    margin-top: 28px;
+    animation: fadeIn 0.3s ease;
+  }
+  .list-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .booking-item-card {
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .booking-item-card:hover {
+    border-color: #0E9F6E;
+    box-shadow: 0 4px 16px rgba(14,159,110,0.06);
+  }
+  .booking-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    border-bottom: 1px dashed #f3f4f6;
+    padding-bottom: 10px;
+  }
 </style>
 
 <div class="lookup-page">
@@ -165,8 +197,7 @@
 
     <h1>Tra cứu đơn đặt chỗ</h1>
     <p class="subtitle">
-      Nhập mã đặt chỗ bạn nhận được sau khi đặt tour để xem trạng thái xử lý.
-      Mã có dạng <b>BKT-xxxxxxxxxx</b>.
+      Nhập <b>Mã đặt chỗ (BKT-xxxxxxxxxx)</b> hoặc <b>Số điện thoại</b> sử dụng khi đặt để kiểm tra thông tin & trạng thái xử lý.
     </p>
 
     <!-- Search input -->
@@ -175,7 +206,7 @@
         id="booking-code-input"
         class="code-input"
         type="text"
-        placeholder="VD: BKT-1783983309146"
+        placeholder="Nhập mã đặt chỗ hoặc SĐT di động..."
         [(ngModel)]="bookingCode"
         (keyup.enter)="lookup()"
         autocomplete="off"
@@ -193,8 +224,8 @@
       <i class="bi bi-exclamation-circle-fill"></i> {{ errorMsg }}
     </div>
 
-    <!-- Result -->
-    <div class="result-card" *ngIf="result">
+    <!-- Case 1: Single Result (searched by code) -->
+    <div class="result-card" *ngIf="result && !resultsList.length">
       <div class="result-header">
         <div>
           <div class="booking-id-label">Mã đặt chỗ</div>
@@ -211,25 +242,29 @@
 
       <div class="result-body">
         <div class="info-row" *ngIf="result.fullname">
-          <span class="info-label">Tên khách hàng</span>
+          <span class="info-label">Khách hàng</span>
           <span class="info-value">{{ result.fullname }}</span>
         </div>
-        <div class="info-row" *ngIf="result.tour_name || result.tourName">
-          <span class="info-label">Tour</span>
-          <span class="info-value">{{ result.tour_name || result.tourName }}</span>
+        <div class="info-row" *ngIf="result.customer_phone || result.customerPhone">
+          <span class="info-label">SĐT liên hệ</span>
+          <span class="info-value">{{ result.customer_phone || result.customerPhone }}</span>
+        </div>
+        <div class="info-row" *ngIf="result.tour_name || result.tourName || result.name_service">
+          <span class="info-label">Tên Tour / Dịch vụ</span>
+          <span class="info-value">{{ result.tour_name || result.tourName || result.name_service }}</span>
         </div>
         <div class="info-row" *ngIf="result.booking_date || result.bookingDate">
-          <span class="info-label">Ngày đặt</span>
+          <span class="info-label">Ngày khởi hành</span>
           <span class="info-value">{{ (result.booking_date || result.bookingDate) | date:'dd/MM/yyyy' }}</span>
         </div>
         <div class="info-row" *ngIf="result.guests">
           <span class="info-label">Số khách</span>
           <span class="info-value">{{ result.guests }} người</span>
         </div>
-        <div class="info-row" *ngIf="result.deposit_amount || result.total_amount">
-          <span class="info-label">Tiền cọc</span>
-          <span class="info-value" style="color:#0E9F6E;">
-            {{ (result.deposit_amount || result.total_amount) | number:'1.0-0':'vi-VN' }}đ
+        <div class="info-row" *ngIf="result.value">
+          <span class="info-label">Số tiền đặt cọc</span>
+          <span class="info-value" style="color:#0E9F6E; font-weight: 800;">
+            {{ result.value | number:'1.0-0':'vi-VN' }}đ
           </span>
         </div>
         <div class="info-row" *ngIf="result.payment_method">
@@ -241,14 +276,6 @@
                result.payment_method === 'card' ? 'Thẻ tín dụng' : result.payment_method }}
           </span>
         </div>
-        <div class="info-row" *ngIf="result.payment_status">
-          <span class="info-label">Trạng thái thanh toán</span>
-          <span class="info-value">
-            {{ result.payment_status === 'deposit_paid' ? 'Đã thanh toán cọc' :
-               result.payment_status === 'pending' ? 'Chờ xác nhận' :
-               result.payment_status === 'refunded' ? 'Đã hoàn tiền' : result.payment_status }}
-          </span>
-        </div>
         <div class="info-row" *ngIf="result.createdAt">
           <span class="info-label">Thời gian tạo</span>
           <span class="info-value">{{ result.createdAt | date:'HH:mm, dd/MM/yyyy' }}</span>
@@ -258,9 +285,53 @@
         <div class="pending-notice" *ngIf="result.status === 'pending'">
           <i class="bi bi-clock" style="font-size:1.1rem; margin-top:1px; flex-shrink:0;"></i>
           <span>
-            Đơn của bạn đang chờ admin xác nhận thanh toán. Thông thường trong vòng <b>1–2 giờ làm việc</b>.
-            Vui lòng lưu mã <b>{{ result.id }}</b> để tra cứu lại.
+            Đơn của bạn đang chờ Admin xác nhận thanh toán. Giao dịch thông thường được phê duyệt trong vòng <b>1–2 giờ làm việc</b>.
           </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Case 2: Multiple Results (searched by Phone Number) -->
+    <div class="results-list-container" *ngIf="resultsList.length > 0">
+      <div class="list-title">
+        <i class="bi bi-list-stars" style="color: #0E9F6E; font-size: 1.1rem;"></i>
+        <span>Tìm thấy {{ resultsList.length }} đơn đặt chỗ:</span>
+      </div>
+
+      <div class="booking-item-card" *ngFor="let item of resultsList">
+        <div class="booking-item-top">
+          <div>
+            <div style="font-size: 0.75rem; color: #9CA3AF; font-weight: 500;">Mã đặt chỗ</div>
+            <div style="font-size: 0.95rem; font-weight: 800; color: #111827; font-family: monospace;">{{ item.id }}</div>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(item.status)" style="padding: 4px 10px; font-size: 0.72rem;">
+            <i class="bi"
+               [class.bi-check-circle-fill]="getStatusClass(item.status) === 'ok'"
+               [class.bi-clock-fill]="getStatusClass(item.status) === 'wait'"
+               [class.bi-x-circle-fill]="getStatusClass(item.status) === 'bad'"></i>
+            {{ getStatusLabel(item.status) }}
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; font-size: 0.8rem; line-height: 1.4;">
+          <div>
+            <span style="color: #6B7280;">Tour/Dịch vụ:</span>
+            <div style="font-weight: 700; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {{ item.tour_name || item.name_service || 'Tour du lịch' }}
+            </div>
+          </div>
+          <div>
+            <span style="color: #6B7280;">Người đặt:</span>
+            <div style="font-weight: 700; color: #111827;">{{ item.fullname }}</div>
+          </div>
+          <div>
+            <span style="color: #6B7280;">Khởi hành:</span>
+            <div style="font-weight: 700; color: #111827;">{{ item.booking_date | date:'dd/MM/yyyy' }}</div>
+          </div>
+          <div>
+            <span style="color: #6B7280;">Tiền cọc:</span>
+            <div style="font-weight: 800; color: #0E9F6E;">{{ item.value | number:'1.0-0':'vi-VN' }}đ</div>
+          </div>
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ router.post('/checkin', softAuth, bookingController.checkInEVoucher);
 router.post('/cancel', softAuth, bookingController.cancelBooking);
 router.get('/', softAuth, bookingController.getBookings);
 router.get('/pending', softAuth, bookingController.getPendingBookings);
+router.get('/lookup/phone', softAuth, bookingController.lookupBookingsByPhone);
 router.get('/:id', softAuth, bookingController.getBookingDetails);
 router.post('/:id/approve', softAuth, bookingController.approveBooking);
 router.post('/:id/reject', softAuth, bookingController.rejectBooking);

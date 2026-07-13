@@ -491,6 +491,17 @@ export class ApiService {
     }
   }
 
+  public async lookupBookingsByPhone(phone: string): Promise<any[]> {
+    try {
+      const res = await firstValueFrom(
+        this.http.get<any>(`${this.BACKEND_URL}/bookings/lookup/phone?phone=${encodeURIComponent(phone)}`)
+      );
+      return res.bookings || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   public async createBooking(bookingData: any): Promise<{ success: boolean; bookingId?: string; message?: string }> {
     try {
       const res = await firstValueFrom(this.http.post<any>(`${this.BACKEND_URL}/bookings`, bookingData));

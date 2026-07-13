@@ -63,9 +63,9 @@ async function syncCustomItineraryStatus(itineraryId, transaction = null) {
 }
 
 exports.createBooking = async (req, res, next) => {
-  const { type, targetId, bookingDate, guests, paymentMethod, voucherCode } = req.body;
+  const { type, targetId, bookingDate, guests, paymentMethod, voucherCode, customerPhone } = req.body;
   const userId = req.user ? req.user.id : req.body.customerId;
-  const fullname = req.user ? req.user.fullname : (req.body.customerName || 'Khách hàng');
+  const fullname = (req.user && req.user.fullname) ? req.user.fullname : (req.body.customerName || 'Khách hàng');
 
   try {
     let bookingId;
@@ -175,7 +175,8 @@ exports.createBooking = async (req, res, next) => {
             status: 'pending', // Pending admin approval on Admin page
             evoucher_code: evoucherCode,
             escrow_status: 'none',
-            voucher_code: voucherCode || null
+            voucher_code: voucherCode || null,
+            customer_phone: customerPhone || null
           }, { transaction: t });
         } else {
           await TourBooking.create({
@@ -191,6 +192,7 @@ exports.createBooking = async (req, res, next) => {
             evoucher_code: evoucherCode,
             status: 'pending', // Pending admin approval on Admin page
             escrow_status: 'none',
+            customer_phone: customerPhone || null
           }, { transaction: t });
         }
 
@@ -253,7 +255,8 @@ exports.createBooking = async (req, res, next) => {
             status: 'deposit',
             evoucher_code: evoucherCode,
             escrow_status: 'holding',
-            voucher_code: voucherCode || null
+            voucher_code: voucherCode || null,
+            customer_phone: customerPhone || null
           }, { transaction: t });
         } else {
           await TourBooking.create({
@@ -269,6 +272,7 @@ exports.createBooking = async (req, res, next) => {
             evoucher_code: evoucherCode,
             status: 'deposit',
             escrow_status: 'holding',
+            customer_phone: customerPhone || null
           }, { transaction: t });
         }
 
@@ -314,7 +318,8 @@ exports.createBooking = async (req, res, next) => {
             status: 'pending', // Pending admin approval
             evoucher_code: evoucherCode,
             escrow_status: 'none',
-            voucher_code: voucherCode || null
+            voucher_code: voucherCode || null,
+            customer_phone: customerPhone || null
           }, { transaction: t });
         } else {
           await TourBooking.create({
@@ -330,7 +335,8 @@ exports.createBooking = async (req, res, next) => {
             evoucher_code: evoucherCode,
             status: 'pending', // Pending admin approval
             escrow_status: 'none',
-            voucher_code: voucherCode || null
+            voucher_code: voucherCode || null,
+            customer_phone: customerPhone || null
           }, { transaction: t });
         }
 
@@ -383,7 +389,8 @@ exports.createBooking = async (req, res, next) => {
           status: 'pending',
           evoucher_code: evoucherCode,
           escrow_status: 'none',
-          voucher_code: voucherCode || null
+          voucher_code: voucherCode || null,
+          customer_phone: customerPhone || null
         });
       } else {
         await TourBooking.create({
@@ -399,7 +406,8 @@ exports.createBooking = async (req, res, next) => {
           evoucher_code: evoucherCode,
           status: 'pending',
           escrow_status: 'none',
-          voucher_code: voucherCode || null
+          voucher_code: voucherCode || null,
+          customer_phone: customerPhone || null
         });
       }
     }
@@ -1016,6 +1024,47 @@ exports.updateBookingStatuses = async (req, res, next) => {
 
     await booking.save();
     res.json({ success: true, message: 'Cập nhật trạng thái thành công!', booking });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.lookupBookingsByPhone = async (req, res, next) => {
+  const { phone } = req.query;
+  if (!phone) {
+    return res.status(400).json({ success: false, message: 'Số điện thoại không hợp lệ!' });
+  }
+
+  try {
+    const cleanPhone = phone.trim();
+    const serviceBookings = await ServiceBooking.findAll({
+      where: { customer_phone: cleanPhone },
+      order: [['createdAt', 'DESC']]
+    });
+
+    const tourBookings = await TourBooking.findAll({
+      where: { customer_phone: cleanPhone },
+      order: [['createdAt', 'DESC']]
+    });
+
+    const mappedServices = serviceBookings.map(row => ({
+      ...row.toJSON(),
+      type: 'service'
+    }));
+
+    const mappedTours = tourBookings.map(row => ({
+      ...row.toJSON(),
+      type: 'tour'
+    }));
+
+    const allBookings = [...mappedServices, ...mappedTours].sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    res.json({
+      success: true,
+      bookings: allBookings
+    });
   } catch (error) {
     next(error);
   }

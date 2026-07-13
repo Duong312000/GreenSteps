@@ -337,14 +337,14 @@ export class BookingComponent implements OnInit {
     const userId = user ? (user.id || user._id || '') : null;
     const targetId = this.activeTour?.id || this.bookingContext.tourId || 'sample_tour_id';
 
-    // Prepare API booking data
     const bookingData: any = {
       type: targetId.startsWith('iti_') ? 'itinerary' : 'tour',
       targetId: targetId,
       bookingDate: this.bookingContext.checkIn,
       guests: this.bookingContext.guestCount,
       customerId: userId,
-      customerName: `${this.guestInfo.lastName} ${this.guestInfo.firstName}`
+      customerName: `${this.guestInfo.lastName} ${this.guestInfo.firstName}`,
+      customerPhone: this.guestInfo.phone
     };
 
     if (this.payTiming === 'later') {

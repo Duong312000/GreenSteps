@@ -14,7 +14,9 @@ export class BookingLookupComponent implements OnInit {
   public bookingCode = '';
   public isLoading = false;
   public result: any = null;
+  public resultsList: any[] = [];
   public errorMsg = '';
+  public searchPerformed = false;
 
   constructor(private apiService: ApiService, private cdr: ChangeDetectorRef, private route: ActivatedRoute) {}
 
@@ -27,20 +29,39 @@ export class BookingLookupComponent implements OnInit {
   }
 
   public async lookup() {
-    const code = this.bookingCode.trim();
-    if (!code) { this.errorMsg = 'Vui lòng nhập mã đặt chỗ.'; return; }
+    const input = this.bookingCode.trim();
+    if (!input) {
+      this.errorMsg = 'Vui lòng nhập mã đặt chỗ hoặc số điện thoại.';
+      return;
+    }
     this.isLoading = true;
     this.result = null;
+    this.resultsList = [];
     this.errorMsg = '';
+    this.searchPerformed = true;
+
+    // Detect if the query is a phone number
+    const isPhone = /^(\+?[0-9]{8,15}|0[0-9\s.-]{8,13})$/.test(input);
+
     try {
-      const data = await this.apiService.getBooking(code);
-      if (data) {
-        this.result = data;
+      if (isPhone) {
+        const cleanPhone = input.replace(/[\s.-]/g, '');
+        const list = await this.apiService.lookupBookingsByPhone(cleanPhone);
+        if (list && list.length > 0) {
+          this.resultsList = list;
+        } else {
+          this.errorMsg = 'Không tìm thấy đơn đặt chỗ nào liên kết với số điện thoại này.';
+        }
       } else {
-        this.errorMsg = 'Không tìm thấy đơn đặt chỗ với mã này. Vui lòng kiểm tra lại.';
+        const data = await this.apiService.getBooking(input);
+        if (data && data.success && data.booking) {
+          this.result = data.booking;
+        } else {
+          this.errorMsg = 'Không tìm thấy đơn đặt chỗ với mã này. Vui lòng kiểm tra lại.';
+        }
       }
     } catch {
-      this.errorMsg = 'Đã xảy ra lỗi. Vui lòng thử lại sau.';
+      this.errorMsg = 'Đã xảy ra lỗi khi tìm kiếm. Vui lòng thử lại sau.';
     } finally {
       this.isLoading = false;
       this.cdr.detectChanges();

@@ -204,7 +204,8 @@ const ServiceBooking = sequelize.define('ServiceBooking', {
   confirm_deadline: { type: DataTypes.DATE },
   payment_deadline: { type: DataTypes.DATE },
   special_requests: { type: DataTypes.TEXT },
-  rejection_reason: { type: DataTypes.TEXT }
+  rejection_reason: { type: DataTypes.TEXT },
+  customer_phone: { type: DataTypes.STRING(20) }
 }, { timestamps: true });
 
 // 19. TourBooking Model (NEW - for preset & custom tours checkouts)
@@ -226,7 +227,8 @@ const TourBooking = sequelize.define('TourBooking', {
   confirm_deadline: { type: DataTypes.DATE },
   payment_deadline: { type: DataTypes.DATE },
   special_requests: { type: DataTypes.TEXT },
-  rejection_reason: { type: DataTypes.TEXT }
+  rejection_reason: { type: DataTypes.TEXT },
+  customer_phone: { type: DataTypes.STRING(20) }
 }, { timestamps: true });
 
 // 20. WithdrawalRequest Model (NEW - B2B withdrawal tracking)
