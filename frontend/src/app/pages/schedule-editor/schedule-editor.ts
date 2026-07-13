@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { LoginModalService } from '../../services/login-modal.service';
 import { Itinerary } from '../../models/models';
 
 declare const L: any; // Leaflet mapped globally via index.html script tag
@@ -175,8 +176,13 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     private router: Router,
     private apiService: ApiService,
     private authService: AuthService,
+    private loginModalService: LoginModalService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  public openLoginModal() {
+    this.loginModalService.open();
+  }
 
   ngOnInit() {
     this.authService.currentUser$.subscribe(user => {

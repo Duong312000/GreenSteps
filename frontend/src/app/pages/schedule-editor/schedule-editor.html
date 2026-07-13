@@ -556,7 +556,7 @@
         </div>
         <h3 class="text-xl font-bold text-[#184A37]">Yêu cầu đăng nhập</h3>
         <p class="text-sm text-[#184A37]/60 mt-2 max-w-md mx-auto">Vui lòng đăng nhập tài khoản GreenSteps để lưu trữ, quản lý và tùy chỉnh các lịch trình du lịch xanh của bạn.</p>
-        <button routerLink="/profile" class="mt-6 h-11 px-8 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-800 text-white font-bold text-sm shadow-md hover:-translate-y-0.5 transition-all border-0 cursor-pointer">
+        <button (click)="openLoginModal()" class="mt-6 h-11 px-8 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-800 text-white font-bold text-sm shadow-md hover:-translate-y-0.5 transition-all border-0 cursor-pointer">
             Đăng nhập ngay
         </button>
     </div>
