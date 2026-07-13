@@ -348,6 +348,26 @@
       <h1>Đặt cọc thành công</h1>
       <p>GreenSteps đã ghi nhận thông tin đặt cọc của bạn. Chúng tôi sẽ gửi xác nhận qua email hoặc số điện thoại bạn đã cung cấp.</p>
 
+      <!-- Auto Created Account Alert -->
+      <div *ngIf="isNewUserCreated" style="background-color: #ebf8ff; border: 1.5px solid #bee3f8; border-radius: 16px; padding: 18px 22px; margin: 16px 0; text-align: left; animation: fadeIn 0.3s ease;">
+        <div style="display: flex; gap: 10px; align-items: flex-start; color: #2b6cb0;">
+          <i class="bi bi-person-check-fill" style="font-size: 1.3rem; margin-top: 2px;"></i>
+          <div>
+            <h4 style="margin: 0 0 6px; font-weight: 700; color: #2b6cb0;">Hệ thống đã cấp tài khoản tự động!</h4>
+            <p style="margin: 0 0 10px; font-size: 0.82rem; line-height: 1.4; color: #4a5568;">
+              Để tiện theo dõi và quản lý chuyến đi, hệ thống đã tạo sẵn một tài khoản và tự động đăng nhập cho bạn:
+            </p>
+            <div style="font-size: 0.8rem; line-height: 1.5; color: #2d3748; background: #fff; padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0; font-family: monospace;">
+              <div><strong>Tên đăng nhập:</strong> {{ newUsername }}</div>
+              <div><strong>Mật khẩu mặc định:</strong> {{ newPassword }}</div>
+            </div>
+            <p style="margin: 10px 0 0; font-size: 0.76rem; color: #718096;">
+              * Bạn có thể đổi lại mật khẩu trong trang cá nhân bất kỳ lúc nào.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- Booking code banner (always show) -->
       <div *ngIf="currentBookingId" style="background: linear-gradient(135deg,#e8f5e9,#dcfce7); border: 1.5px solid #a7f3d0; border-radius: 16px; padding: 18px 22px; margin: 16px 0; text-align: center;">
         <p style="font-size:0.8rem; color:#065f46; font-weight:600; margin:0 0 6px; text-transform:uppercase; letter-spacing:0.5px;">Mã đặt chỗ của bạn</p>

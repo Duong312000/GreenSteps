@@ -197,7 +197,7 @@ async function sendItineraryInviteEmail({ to, itineraryName, inviteUrl }) {
   }
 }
 
-async function sendBookingConfirmationEmail({ to, bookingId, tourName, bookingDate, guests, depositAmount, paymentMethod, lookupUrl }) {
+async function sendBookingConfirmationEmail({ to, bookingId, tourName, bookingDate, guests, depositAmount, paymentMethod, lookupUrl, credentials }) {
   const subject = `Xác nhận thông tin giữ chỗ GreenSteps - ${bookingId}`;
   
   const paymentMethodLabel = 
@@ -205,6 +205,18 @@ async function sendBookingConfirmationEmail({ to, bookingId, tourName, bookingDa
     paymentMethod === 'counter' ? 'Thanh toán tại quầy' :
     paymentMethod === 'wallet' ? 'Ví điện tử GreenSteps' :
     paymentMethod === 'card' ? 'Thẻ tín dụng' : paymentMethod;
+
+  let credentialsText = '';
+  if (credentials) {
+    credentialsText = `
+      <div style="margin-top:20px;padding:16px;background-color:#ebf8ff;border:1px solid #bee3f8;border-radius:8px;color:#2b6cb0;text-align:left;">
+        <p style="margin:0 0 8px;"><strong>🔑 Thông tin tài khoản được cấp sẵn:</strong></p>
+        <p style="margin:0 0 8px;font-size:13px;">Để tiện theo dõi chuyến đi, hệ thống đã cấp sẵn một tài khoản cho bạn với thông tin sau:</p>
+        <p style="margin:0 0 4px;font-size:13px;"><strong>Tên đăng nhập:</strong> ${credentials.username}</p>
+        <p style="margin:0;font-size:13px;"><strong>Mật khẩu mặc định:</strong> ${credentials.password}</p>
+      </div>
+    `;
+  }
 
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.6;color:#12372d;max-width:600px;margin:0 auto;border:1px solid #e2e8f0;border-radius:12px;padding:24px;">
@@ -222,7 +234,9 @@ async function sendBookingConfirmationEmail({ to, bookingId, tourName, bookingDa
         <p style="margin:0;"><strong>Phương thức:</strong> ${paymentMethodLabel}</p>
       </div>
 
-      <div style="text-align:center;margin-bottom:20px;">
+      ${credentialsText}
+
+      <div style="text-align:center;margin-top:20px;margin-bottom:20px;">
         <p style="font-size:14px;color:#4a5568;margin-bottom:12px;">Bạn có thể theo dõi và tra cứu trạng thái đơn hàng của mình bất kỳ lúc nào:</p>
         <a href="${lookupUrl}" style="background-color:#0E9F6E;color:white;text-decoration:none;padding:10px 20px;border-radius:6px;font-weight:bold;display:inline-block;">Tra Cứu Đơn Hàng</a>
       </div>

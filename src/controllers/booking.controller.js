@@ -65,11 +65,58 @@ async function syncCustomItineraryStatus(itineraryId, transaction = null) {
 
 exports.createBooking = async (req, res, next) => {
   const { type, targetId, bookingDate, guests, paymentMethod, voucherCode, customerPhone, customerEmail } = req.body;
-  const userId = req.user ? req.user.id : req.body.customerId;
+  let userId = req.user ? req.user.id : req.body.customerId;
   const fullname = (req.user && req.user.fullname) ? req.user.fullname : (req.body.customerName || 'Khách hàng');
   const email = customerEmail || (req.user ? req.user.email : null);
 
+  let autoCreatedCredentials = null;
+
   try {
+    if (!userId && email) {
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
+        userId = existingUser.id;
+      } else {
+        const newUserId = 'UG' + Math.floor(10000000 + Math.random() * 90000000);
+        const generatedUsername = fullname
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/đ/g, 'd').replace(/Đ/g, 'd')
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, '');
+
+        let finalUsername = generatedUsername || 'traveler';
+        let count = 1;
+        while (await User.findOne({ where: { username: finalUsername } })) {
+          finalUsername = (generatedUsername || 'traveler') + count;
+          count++;
+        }
+
+        const defaultPassword = finalUsername + '123';
+        const bcrypt = require('bcrypt');
+        const passwordHash = await bcrypt.hash(defaultPassword, 10);
+
+        await User.create({
+          id: newUserId,
+          role: 'traveler',
+          username: finalUsername,
+          password_hash: passwordHash,
+          email: email,
+          fullname: fullname,
+          phone: customerPhone || null,
+          gender: 'Khác',
+          address: '',
+          job: '',
+          is_verified: true
+        });
+
+        userId = newUserId;
+        autoCreatedCredentials = {
+          username: finalUsername,
+          password: defaultPassword
+        };
+      }
+    }
     let bookingId;
     let totalValue = 0;
     let tourNameOrServiceName = '';
@@ -432,7 +479,8 @@ exports.createBooking = async (req, res, next) => {
         guests,
         depositAmount: totalValue,
         paymentMethod: paymentMethod || 'counter',
-        lookupUrl
+        lookupUrl,
+        credentials: autoCreatedCredentials
       }).catch(err => console.error('Booking confirmation email sending error:', err));
     }
 
@@ -973,6 +1021,17 @@ exports.getPendingBookings = async (req, res, next) => {
   }
 };
 
+const JWT_SECRET = process.env.JWT_SECRET || 'greensteps_secret_key_123456';
+const jwt = require('jsonwebtoken');
+
+function localSignAuthToken(user) {
+  return jwt.sign(
+    { id: user.id, username: user.username, role: user.role, fullname: user.fullname },
+    JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+}
+
 exports.getBookingDetails = async (req, res, next) => {
   const { id } = req.params;
   try {
@@ -985,12 +1044,36 @@ exports.getBookingDetails = async (req, res, next) => {
     if (!booking) {
       return res.status(404).json({ success: false, message: 'Đơn đặt chỗ không tồn tại!' });
     }
+
+    let autoCreatedUser = null;
+    if (booking.User && (booking.status === 'deposit' || booking.status === 'confirmed' || booking.status === 'accepted')) {
+      const user = booking.User;
+      const userCreatedTime = new Date(user.createdAt).getTime();
+      const bookingCreatedTime = new Date(booking.createdAt).getTime();
+      if (Math.abs(userCreatedTime - bookingCreatedTime) < 15 * 60 * 1000) {
+        autoCreatedUser = {
+          username: user.username,
+          defaultPassword: user.username + '123',
+          token: localSignAuthToken(user),
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            fullname: user.fullname,
+            phone: user.phone
+          }
+        };
+      }
+    }
+
     res.json({
       success: true,
       booking: {
         ...booking.toJSON(),
         type
-      }
+      },
+      autoCreatedUser
     });
   } catch (error) {
     next(error);

@@ -52,6 +52,10 @@ export class BookingComponent implements OnInit {
   public toastMessage = '';
   public walletRegistered = false;
   public walletBalance = 0;
+  
+  public isNewUserCreated = false;
+  public newUsername = '';
+  public newPassword = '';
 
   // Custom Alert Modal properties
   public alertVisible = false;
@@ -144,6 +148,14 @@ export class BookingComponent implements OnInit {
   async ngOnInit() {
     this.syncStepFromUrl();
     this.loadContext();
+
+    this.route.queryParamMap.subscribe(params => {
+      if (params.get('newUser') === 'true') {
+        this.isNewUserCreated = true;
+        this.newUsername = params.get('username') || '';
+        this.newPassword = params.get('pwd') || '';
+      }
+    });
 
     if (this.isPaymentStep || this.isCompleteStep) {
       const draft = localStorage.getItem('greensteps_booking_draft');
@@ -505,8 +517,19 @@ export class BookingComponent implements OnInit {
                 clearInterval(this.countdownInterval);
                 this.countdownInterval = null;
               }
+
+              let queryParams = {};
+              if (res && res.autoCreatedUser) {
+                this.authService.loginWithToken(res.autoCreatedUser.user, res.autoCreatedUser.token);
+                queryParams = {
+                  newUser: 'true',
+                  username: res.autoCreatedUser.username,
+                  pwd: res.autoCreatedUser.defaultPassword
+                };
+              }
+
               this.saveDraft();
-              this.router.navigate(['/booking/confirm']);
+              this.router.navigate(['/booking/confirm'], { queryParams });
             });
           } else if (target && target.status === 'rejected') {
             if (this.pollingInterval) {

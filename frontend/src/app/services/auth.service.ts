@@ -110,6 +110,12 @@ export class AuthService {
     }
   }
 
+  public loginWithToken(rawUser: any, token: string) {
+    if (token) localStorage.setItem('greensteps_token', token);
+    const user = this.mapUser(rawUser);
+    this.setCurrentUser(user);
+  }
+
   public async register(payload: { username: string; email: string; password: string }): Promise<AuthResult> {
     try {
       const res = await firstValueFrom(
