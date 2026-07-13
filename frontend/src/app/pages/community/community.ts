@@ -18,7 +18,7 @@ export class CommunityComponent implements OnInit {
 
   // Pagination & Loading States
   public page: number = 0;
-  public limit: number = 15;
+  public limit: number = 5;
   public isPageLoading: boolean = true;
   public isLoadingMore: boolean = false;
   public hasMorePosts: boolean = true;
@@ -250,7 +250,9 @@ export class CommunityComponent implements OnInit {
   onWindowScroll() {
     const pos = (document.documentElement.scrollTop || document.body.scrollTop) + document.documentElement.clientHeight;
     const max = document.documentElement.scrollHeight;
-    if (pos >= max * 0.85) {
+    
+    // Load next batch when user is within 1200px (about 2-3 post cards) of the page bottom
+    if (pos >= max - 1200) {
       this.loadMorePosts();
     }
     
