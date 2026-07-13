@@ -113,7 +113,7 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (res.success && res.user) {
       this.requestClose();
-      this.router.navigate([res.user.role === 'admin' ? '/admin' : '/profile']);
+      this.router.navigate([res.user.role === 'admin' ? '/admin' : '/']);
       return;
     }
 
@@ -235,7 +235,7 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
     if (step === 'registerVerify') {
       this.successMessage = res.message || 'Xác thực tài khoản thành công.';
       this.requestClose();
-      this.router.navigate([res.user?.role === 'admin' ? '/admin' : '/profile']);
+      this.router.navigate([res.user?.role === 'admin' ? '/admin' : '/']);
       return;
     }
 
