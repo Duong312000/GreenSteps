@@ -310,7 +310,6 @@ export class CommunityComponent implements OnInit {
       this.selectedItineraryId = '';
       this.showPostDetails = false;
       await this.loadPosts();
-      this.showAlert("Thành công", "Đã chia sẻ bài viết lên cộng đồng GreenSteps thành công!", "success");
     } else {
       this.showAlert("Lỗi", "Đăng bài viết thất bại. Vui lòng kiểm tra kết nối mạng!", "error");
     }
