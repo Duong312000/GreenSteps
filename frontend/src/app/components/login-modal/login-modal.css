@@ -202,6 +202,7 @@
   background: #fff;
   color: #6b756f;
   transition: all 0.2s ease;
+  overflow: hidden; /* Prevent inner webkit autofill styling from covering the rounded corners */
 }
 
 .login-input:hover {
