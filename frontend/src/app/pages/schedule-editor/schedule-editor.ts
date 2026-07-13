@@ -110,6 +110,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   // Metrics progress calculations
   public totalCost: number = 0;
+  public guestCount: number = 1;
   public totalCarbon: number = 0;
   public budgetProgressPct: number = 0;
   public carbonProgressPct: number = 0;
@@ -2060,9 +2061,25 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         tourId: this.activeItinerary.id,
         checkIn: this.activeItinerary.start_date || '2026-07-15',
         checkOut: this.activeItinerary.end_date || '2026-07-18',
-        guestCount: 1
+        guestCount: this.guestCount
       }
     });
+  }
+
+  public incrementGuests() {
+    this.guestCount++;
+  }
+
+  public decrementGuests() {
+    if (this.guestCount > 1) {
+      this.guestCount--;
+    }
+  }
+
+  public onGuestCountChange() {
+    if (this.guestCount < 1) {
+      this.guestCount = 1;
+    }
   }
 
   public onCardNumberChange() {

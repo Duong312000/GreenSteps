@@ -97,15 +97,33 @@
             </div>
         </div>
 
+        <!-- Section 3.5: Guest Count Selector -->
+        <div style="padding: 10px 0px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-shrink: 0; margin-right: 20px;">
+            <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 4px;">
+                <i class="bi bi-people-fill" style="color: var(--primary-green);"></i> Số người đi du lịch:
+            </span>
+            <div style="display: flex; align-items: center; gap: 4px;">
+                <button type="button" (click)="decrementGuests()" style="width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--text-primary); transition: all 0.2s;">-</button>
+                <input type="number" [(ngModel)]="guestCount" (ngModelChange)="onGuestCountChange()" style="width: 38px; height: 26px; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; font-size: 12px; font-weight: 700; color: var(--text-primary); background: var(--bg-primary);" min="1">
+                <button type="button" (click)="incrementGuests()" style="width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--text-primary); transition: all 0.2s;">+</button>
+            </div>
+        </div>
+
         <!-- Resizer Handle for Metrics Panel inside Sidebar -->
         <div class="sidebar-metrics-resizer" (mousedown)="startMetricsResizing($event)"></div>
 
         <!-- Section 4: Budget & Checkout Metrics (Vertically resizable bottom panel) -->
         <div class="sidebar-metrics" [style.height]="isMetricsResizing || metricsHeight !== 90 ? metricsHeight + 'px' : 'auto'" style="border-top: none; padding-top: 6px; display: flex; flex-direction: column; justify-content: flex-start !important; gap: 6px; flex-shrink: 0; overflow-y: auto; padding-right: 20px;">
             <div class="metric-item">
-                <div class="metric-info" style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 2px;">
-                    <span class="label" style="font-weight: 600; color: var(--text-secondary);">Chi phí dự kiến (1 người):</span>
-                    <span class="value" id="sidebarBudgetVal" style="font-weight: 700; color: var(--text-primary);">{{ totalCost | number:'1.0-0':'vi-VN' }}đ</span>
+                <div class="metric-info" style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; margin-bottom: 4px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span class="label" style="font-weight: 600; color: var(--text-secondary);">Giá gốc / 1 người:</span>
+                        <span class="value" id="sidebarBudgetVal" style="font-weight: 700; color: var(--text-primary);">{{ totalCost | number:'1.0-0':'vi-VN' }}đ</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-top: 1px dashed var(--border-color); padding-top: 4px; margin-top: 2px;">
+                        <span class="label" style="font-weight: 700; color: var(--primary-green);">Tổng chi phí ({{ guestCount }} người):</span>
+                        <span class="value" style="font-weight: 800; color: var(--primary-green); font-size: 13px;">{{ (totalCost * guestCount) | number:'1.0-0':'vi-VN' }}đ</span>
+                    </div>
                 </div>
                 <div class="progress-bar-track" style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">
                     <div class="progress-bar-fill budget" id="budgetProgressBar" [style.width.%]="budgetProgressPct" style="height: 100%; background-color: var(--primary-green); border-radius: 3px;"></div>
@@ -194,7 +212,7 @@
                      (mouseleave)="highlightMapPin(idx, false)">
 
                     <div class="timeline-time-node">
-                        <input type="time" [(ngModel)]="act.time" (change)="onActivityTimeChanged()" [disabled]="isItineraryLocked()" style="font-size: 9px; font-weight: 700; color: var(--primary-green); background-color: var(--light-mint); border: none; padding: 2px 2px; border-radius: var(--border-radius-sm); z-index: 2; width: 82px; outline: none; text-align: center; cursor: pointer;">
+                        <input type="time" [(ngModel)]="act.time" (change)="onActivityTimeChanged()" [disabled]="isItineraryLocked()" style="font-size: 9px; font-weight: 700; color: var(--primary-green); background-color: var(--light-mint); border: none; padding: 2px 2px; border-radius: var(--border-radius-sm); z-index: 2; width: 96px; outline: none; text-align: center; cursor: pointer;">
                         <div class="node-icon-bullet" style="margin-top: 4px;">
                             <i class="bi" [ngClass]="act.type === 'lodging' ? 'bi-house-door-fill' : (act.type === 'dining' ? 'bi-cup-hot-fill' : (act.type === 'transport' ? 'bi-scooter' : 'bi-tree-fill'))"></i>
                         </div>
