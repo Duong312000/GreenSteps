@@ -197,4 +197,74 @@ async function sendItineraryInviteEmail({ to, itineraryName, inviteUrl }) {
   }
 }
 
-module.exports = { assertMailDomainCanReceive, sendOtpEmail, sendItineraryInviteEmail };
+async function sendBookingConfirmationEmail({ to, bookingId, tourName, bookingDate, guests, depositAmount, paymentMethod, lookupUrl }) {
+  const subject = `Xác nhận thông tin giữ chỗ GreenSteps - ${bookingId}`;
+  
+  const paymentMethodLabel = 
+    paymentMethod === 'bank_transfer' ? 'Chuyển khoản VietQR' :
+    paymentMethod === 'counter' ? 'Thanh toán tại quầy' :
+    paymentMethod === 'wallet' ? 'Ví điện tử GreenSteps' :
+    paymentMethod === 'card' ? 'Thẻ tín dụng' : paymentMethod;
+
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#12372d;max-width:600px;margin:0 auto;border:1px solid #e2e8f0;border-radius:12px;padding:24px;">
+      <div style="text-align:center;margin-bottom:20px;">
+        <h2 style="color:#0E9F6E;margin-bottom:4px;">Đặt Chỗ Thành Công!</h2>
+        <p style="color:#718096;font-size:14px;margin:0;">GreenSteps đã tiếp nhận yêu cầu đặt chỗ của bạn</p>
+      </div>
+      
+      <div style="background-color:#f7fafc;border-radius:8px;padding:16px;margin-bottom:20px;">
+        <p style="margin:0 0 8px;"><strong>Mã đặt chỗ:</strong> <span style="font-family:monospace;font-size:16px;color:#0E9F6E;font-weight:bold;">${bookingId}</span></p>
+        <p style="margin:0 0 8px;"><strong>Tên Tour / Dịch vụ:</strong> ${tourName}</p>
+        <p style="margin:0 0 8px;"><strong>Ngày khởi hành:</strong> ${bookingDate}</p>
+        <p style="margin:0 0 8px;"><strong>Số khách:</strong> ${guests} người</p>
+        <p style="margin:0 0 8px;"><strong>Tiền đặt cọc:</strong> ${Number(depositAmount).toLocaleString('vi-VN')}đ</p>
+        <p style="margin:0;"><strong>Phương thức:</strong> ${paymentMethodLabel}</p>
+      </div>
+
+      <div style="text-align:center;margin-bottom:20px;">
+        <p style="font-size:14px;color:#4a5568;margin-bottom:12px;">Bạn có thể theo dõi và tra cứu trạng thái đơn hàng của mình bất kỳ lúc nào:</p>
+        <a href="${lookupUrl}" style="background-color:#0E9F6E;color:white;text-decoration:none;padding:10px 20px;border-radius:6px;font-weight:bold;display:inline-block;">Tra Cứu Đơn Hàng</a>
+      </div>
+
+      <p style="font-size:12px;color:#a0aec0;text-align:center;margin:0;border-top:1px solid #edf2f7;padding-top:16px;">
+        Cảm ơn bạn đã lựa chọn du lịch xanh cùng GreenSteps!<br>Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ hotline hỗ trợ.
+      </p>
+    </div>
+  `;
+
+  if (process.env.GMAIL_API_URL) {
+    try {
+      const response = await fetch(process.env.GMAIL_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, html })
+      });
+      const resData = await response.json();
+      if (resData && resData.success) {
+        return true;
+      }
+    } catch (error) {
+      console.error('Google Apps Script sendBookingConfirmationEmail API error:', error);
+    }
+  }
+
+  // Fallback to standard Nodemailer SMTP
+  try {
+    const config = requireSmtpConfig();
+    const transporter = getTransporter();
+    await transporter.sendMail({
+      from: config.from,
+      to,
+      subject,
+      text: `Xác nhận giữ chỗ thành công cho đơn ${bookingId}. Trạng thái đang được xử lý.`,
+      html
+    });
+    return true;
+  } catch (error) {
+    console.error('Nodemailer sendBookingConfirmationEmail error:', error);
+    return false;
+  }
+}
+
+module.exports = { assertMailDomainCanReceive, sendOtpEmail, sendItineraryInviteEmail, sendBookingConfirmationEmail };

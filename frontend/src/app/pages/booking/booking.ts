@@ -344,7 +344,8 @@ export class BookingComponent implements OnInit {
       guests: this.bookingContext.guestCount,
       customerId: userId,
       customerName: `${this.guestInfo.lastName} ${this.guestInfo.firstName}`,
-      customerPhone: this.guestInfo.phone
+      customerPhone: this.guestInfo.phone,
+      customerEmail: this.guestInfo.email
     };
 
     if (this.payTiming === 'later') {

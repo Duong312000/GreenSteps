@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const { sendBookingConfirmationEmail } = require('../services/email.service');
 const {
   sequelize,
   User,
@@ -63,9 +64,10 @@ async function syncCustomItineraryStatus(itineraryId, transaction = null) {
 }
 
 exports.createBooking = async (req, res, next) => {
-  const { type, targetId, bookingDate, guests, paymentMethod, voucherCode, customerPhone } = req.body;
+  const { type, targetId, bookingDate, guests, paymentMethod, voucherCode, customerPhone, customerEmail } = req.body;
   const userId = req.user ? req.user.id : req.body.customerId;
   const fullname = (req.user && req.user.fullname) ? req.user.fullname : (req.body.customerName || 'Khách hàng');
+  const email = customerEmail || (req.user ? req.user.email : null);
 
   try {
     let bookingId;
@@ -176,7 +178,8 @@ exports.createBooking = async (req, res, next) => {
             evoucher_code: evoucherCode,
             escrow_status: 'none',
             voucher_code: voucherCode || null,
-            customer_phone: customerPhone || null
+            customer_phone: customerPhone || null,
+            customer_email: email || null
           }, { transaction: t });
         } else {
           await TourBooking.create({
@@ -192,7 +195,8 @@ exports.createBooking = async (req, res, next) => {
             evoucher_code: evoucherCode,
             status: 'pending', // Pending admin approval on Admin page
             escrow_status: 'none',
-            customer_phone: customerPhone || null
+            customer_phone: customerPhone || null,
+            customer_email: email || null
           }, { transaction: t });
         }
 
@@ -256,7 +260,8 @@ exports.createBooking = async (req, res, next) => {
             evoucher_code: evoucherCode,
             escrow_status: 'holding',
             voucher_code: voucherCode || null,
-            customer_phone: customerPhone || null
+            customer_phone: customerPhone || null,
+            customer_email: email || null
           }, { transaction: t });
         } else {
           await TourBooking.create({
@@ -272,7 +277,8 @@ exports.createBooking = async (req, res, next) => {
             evoucher_code: evoucherCode,
             status: 'deposit',
             escrow_status: 'holding',
-            customer_phone: customerPhone || null
+            customer_phone: customerPhone || null,
+            customer_email: email || null
           }, { transaction: t });
         }
 
@@ -319,7 +325,8 @@ exports.createBooking = async (req, res, next) => {
             evoucher_code: evoucherCode,
             escrow_status: 'none',
             voucher_code: voucherCode || null,
-            customer_phone: customerPhone || null
+            customer_phone: customerPhone || null,
+            customer_email: email || null
           }, { transaction: t });
         } else {
           await TourBooking.create({
@@ -336,7 +343,8 @@ exports.createBooking = async (req, res, next) => {
             status: 'pending', // Pending admin approval
             escrow_status: 'none',
             voucher_code: voucherCode || null,
-            customer_phone: customerPhone || null
+            customer_phone: customerPhone || null,
+            customer_email: email || null
           }, { transaction: t });
         }
 
@@ -390,7 +398,8 @@ exports.createBooking = async (req, res, next) => {
           evoucher_code: evoucherCode,
           escrow_status: 'none',
           voucher_code: voucherCode || null,
-          customer_phone: customerPhone || null
+          customer_phone: customerPhone || null,
+          customer_email: email || null
         });
       } else {
         await TourBooking.create({
@@ -407,9 +416,24 @@ exports.createBooking = async (req, res, next) => {
           status: 'pending',
           escrow_status: 'none',
           voucher_code: voucherCode || null,
-          customer_phone: customerPhone || null
+          customer_phone: customerPhone || null,
+          customer_email: email || null
         });
       }
+    }
+
+    if (email) {
+      const lookupUrl = `${req.headers.origin || 'http://localhost:4200'}/booking/lookup?code=${bookingId}`;
+      sendBookingConfirmationEmail({
+        to: email,
+        bookingId,
+        tourName: tourNameOrServiceName,
+        bookingDate,
+        guests,
+        depositAmount: totalValue,
+        paymentMethod: paymentMethod || 'counter',
+        lookupUrl
+      }).catch(err => console.error('Booking confirmation email sending error:', err));
     }
 
     res.json({
@@ -1030,20 +1054,27 @@ exports.updateBookingStatuses = async (req, res, next) => {
 };
 
 exports.lookupBookingsByPhone = async (req, res, next) => {
-  const { phone } = req.query;
-  if (!phone) {
-    return res.status(400).json({ success: false, message: 'Số điện thoại không hợp lệ!' });
+  const { phone, email } = req.query;
+  if (!phone && !email) {
+    return res.status(400).json({ success: false, message: 'Số điện thoại hoặc email không hợp lệ!' });
   }
 
   try {
-    const cleanPhone = phone.trim();
+    const whereClause = {};
+    if (phone) {
+      whereClause.customer_phone = phone.trim();
+    }
+    if (email) {
+      whereClause.customer_email = email.trim();
+    }
+
     const serviceBookings = await ServiceBooking.findAll({
-      where: { customer_phone: cleanPhone },
+      where: whereClause,
       order: [['createdAt', 'DESC']]
     });
 
     const tourBookings = await TourBooking.findAll({
-      where: { customer_phone: cleanPhone },
+      where: whereClause,
       order: [['createdAt', 'DESC']]
     });
 
