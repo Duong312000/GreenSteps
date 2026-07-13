@@ -7275,10 +7275,12 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px;
+    padding: 8px 12px;
     border-radius: 8px;
     transition: background-color 0.2s;
     white-space: nowrap;
+    width: auto;
+    height: auto;
 }
 
 .composer-bottom-actions .action-btn:hover {
