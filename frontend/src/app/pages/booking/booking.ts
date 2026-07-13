@@ -492,7 +492,8 @@ export class BookingComponent implements OnInit {
     this.ngZone.runOutsideAngular(() => {
       this.pollingInterval = setInterval(async () => {
         try {
-          const target = await this.apiService.getBooking(bookingId);
+          const res = await this.apiService.getBooking(bookingId);
+          const target = res?.booking;
           if (target && (target.status === 'deposit' || target.status === 'confirmed' || target.status === 'accepted')) {
             if (this.pollingInterval) {
               clearInterval(this.pollingInterval);
