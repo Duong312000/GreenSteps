@@ -7,9 +7,10 @@ const User = sequelize.define('User', {
   role: { type: DataTypes.ENUM('traveler', 'provider', 'admin'), defaultValue: 'traveler', allowNull: false },
   username: { type: DataTypes.STRING, unique: true, allowNull: false },
   password_hash: { type: DataTypes.STRING, allowNull: false },
-  fullname: { type: DataTypes.STRING, allowNull: false },
+  fullname: { type: DataTypes.STRING, allowNull: true },
   email: { type: DataTypes.STRING, unique: true, allowNull: false },
   phone: { type: DataTypes.STRING },
+  is_verified: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
   dob: { type: DataTypes.DATEONLY }, // DATEONLY
   gender: { type: DataTypes.ENUM('Nam', 'Nữ', 'Khác'), defaultValue: 'Khác' }, // ENUM
   address: { type: DataTypes.STRING },
@@ -18,6 +19,39 @@ const User = sequelize.define('User', {
   company_name: { type: DataTypes.STRING },
   avatarUrl: { type: DataTypes.TEXT }
 }, { timestamps: true });
+
+const AuthOtp = sequelize.define('AuthOtp', {
+  id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+  purpose: { type: DataTypes.ENUM('REGISTER', 'RESET_PASSWORD'), allowNull: false },
+  otp_hash: { type: DataTypes.STRING, allowNull: false },
+  expires_at: { type: DataTypes.DATE, allowNull: false },
+  consumed_at: { type: DataTypes.DATE },
+  attempt_count: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+  resend_available_at: { type: DataTypes.DATE, allowNull: false },
+  reset_token_hash: { type: DataTypes.STRING },
+  reset_token_expires_at: { type: DataTypes.DATE },
+  reset_token_consumed_at: { type: DataTypes.DATE }
+}, {
+  tableName: 'auth_otps',
+  underscored: true,
+  timestamps: true
+});
+
+const PendingRegistration = sequelize.define('PendingRegistration', {
+  id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
+  username: { type: DataTypes.STRING, allowNull: false },
+  email: { type: DataTypes.STRING, allowNull: false },
+  password_hash: { type: DataTypes.STRING, allowNull: false },
+  otp_hash: { type: DataTypes.STRING, allowNull: false },
+  expires_at: { type: DataTypes.DATE, allowNull: false },
+  consumed_at: { type: DataTypes.DATE },
+  attempt_count: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+  resend_available_at: { type: DataTypes.DATE, allowNull: false }
+}, {
+  tableName: 'pending_registrations',
+  underscored: true,
+  timestamps: true
+});
 
 // 2. Badge Model
 const Badge = sequelize.define('Badge', {
@@ -289,6 +323,10 @@ const Notification = sequelize.define('Notification', {
 User.hasMany(Notification, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 Notification.belongsTo(User, { foreignKey: 'user_id' });
 
+// User <-> Auth OTP
+User.hasMany(AuthOtp, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+AuthOtp.belongsTo(User, { foreignKey: 'user_id' });
+
 // Badge <-> User
 User.belongsToMany(Badge, { through: BadgeUser, foreignKey: 'user_id', otherKey: 'badge_name', onDelete: 'CASCADE' });
 Badge.belongsToMany(User, { through: BadgeUser, foreignKey: 'badge_name', otherKey: 'user_id', onDelete: 'CASCADE' });
@@ -473,6 +511,8 @@ CommentPost.addHook('afterDestroy', async (comment, options) => {
 module.exports = {
   sequelize,
   User,
+  AuthOtp,
+  PendingRegistration,
   Badge,
   BadgeUser,
   Wallet,

@@ -4,7 +4,7 @@ export interface User {
   username: string;
   fullname: string;
   email: string;
-  phone?: string;
+  phone?: string | null;
   dob?: string;
   gender?: string;
   address?: string;
@@ -12,6 +12,7 @@ export interface User {
   companyName?: string;
   company_name?: string;
   avatarUrl?: string;
+  is_verified?: boolean;
 }
 
 export interface Activity {

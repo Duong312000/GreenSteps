@@ -4,7 +4,12 @@ const authController = require('../controllers/auth.controller');
 const { softAuth } = require('../middlewares/auth.middleware');
 
 router.post('/register', authController.register);
+router.post('/register/verify-otp', authController.verifyRegisterOtp);
+router.post('/register/resend-otp', authController.resendRegisterOtp);
 router.post('/login', authController.login);
+router.post('/forgot-password/request-otp', authController.requestForgotPasswordOtp);
+router.post('/forgot-password/verify-otp', authController.verifyForgotPasswordOtp);
+router.post('/forgot-password/reset', authController.resetForgotPassword);
 router.get('/profile', softAuth, authController.getProfile);
 router.put('/profile', softAuth, authController.updateProfile);
 router.put('/change-password', softAuth, authController.changePassword);

@@ -4,13 +4,26 @@ import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { User } from '../models/models';
 import { ApiService } from './api.service';
 
+export interface AuthResult {
+  success: boolean;
+  message?: string;
+  user?: User;
+  token?: string;
+  code?: string;
+  email?: string;
+  requiresVerification?: boolean;
+  retryAfterSeconds?: number;
+  resetToken?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private BACKEND_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:5055/api/auth' 
+  private BACKEND_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:5055/api/auth'
     : 'https://greensteps-6swn.onrender.com/api/auth';
+
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
@@ -26,13 +39,11 @@ export class AuthService {
 
   private loadSession() {
     const userStr = localStorage.getItem('greensteps_user');
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        this.currentUserSubject.next(user);
-      } catch (e) {
-        localStorage.removeItem('greensteps_user');
-      }
+    if (!userStr) return;
+    try {
+      this.currentUserSubject.next(JSON.parse(userStr));
+    } catch {
+      localStorage.removeItem('greensteps_user');
     }
   }
 
@@ -46,7 +57,7 @@ export class AuthService {
       document.cookie = `isLoggedIn=true; path=/; max-age=86400`;
       document.cookie = `role=${user.role}; path=/; max-age=86400`;
       document.cookie = `userId=${user.id || user._id}; path=/; max-age=86400`;
-      document.cookie = `fullname=${encodeURIComponent(user.fullname)}; path=/; max-age=86400`;
+      document.cookie = `fullname=${encodeURIComponent(user.fullname || user.username)}; path=/; max-age=86400`;
       this.apiService.preloadAppData(user.id || user._id);
     } else {
       localStorage.removeItem('greensteps_user');
@@ -58,174 +69,126 @@ export class AuthService {
     this.currentUserSubject.next(user);
   }
 
-  public async login(username: string, password: string): Promise<{ success: boolean; message?: string; user?: User }> {
-    // 1. Try to connect to backend NodeJS
-    try {
-      const res = await firstValueFrom(
-        this.http.post<{ success: boolean; user?: any; token?: string; message?: string }>(`${this.BACKEND_URL}/login`, { username, password }, { withCredentials: true })
-      );
-      if (res && res.success && res.user) {
-        if (res.token) {
-          localStorage.setItem('greensteps_token', res.token);
-        }
-        const mappedUser: User = {
-          id: res.user.id || res.user._id,
-          username: res.user.username,
-          fullname: res.user.fullname,
-          email: res.user.email,
-          phone: res.user.phone,
-          dob: res.user.dob,
-          gender: res.user.gender,
-          address: res.user.address,
-          role: res.user.role,
-          companyName: res.user.companyName || res.user.company_name,
-          avatarUrl: res.user.avatarUrl || res.user.avatar_url
-        };
-        this.setCurrentUser(mappedUser);
-        return { success: true, user: mappedUser };
-      } else {
-        return { success: false, message: res?.message || 'Sai tên đăng nhập hoặc mật khẩu!' };
-      }
-    } catch (err: any) {
-      return { success: false, message: err?.error?.message || 'Sai tên đăng nhập hoặc mật khẩu!' };
-    }
-  }
-
-  public async register(formData: any): Promise<{ success: boolean; message?: string; user?: User }> {
-    try {
-      const res = await firstValueFrom(
-        this.http.post<{ success: boolean; user?: any; token?: string; message?: string }>(`${this.BACKEND_URL}/register`, formData, { withCredentials: true })
-      );
-      if (res && res.success && res.user) {
-        if (res.token) {
-          localStorage.setItem('greensteps_token', res.token);
-        }
-        const mappedUser: User = {
-          id: res.user.id || res.user._id,
-          username: res.user.username,
-          fullname: res.user.fullname,
-          email: res.user.email,
-          phone: res.user.phone,
-          dob: res.user.dob,
-          gender: res.user.gender,
-          address: res.user.address,
-          role: res.user.role,
-          companyName: res.user.companyName || res.user.company_name,
-          avatarUrl: res.user.avatarUrl || res.user.avatar_url
-        };
-        this.setCurrentUser(mappedUser);
-        return { success: true, user: mappedUser };
-      }
-      return { success: false, message: res?.message || 'Đăng ký thất bại!' };
-    } catch (err) {
-      console.error('Registration failed:', err);
-      return { success: false, message: 'Lỗi kết nối server đăng ký!' };
-    }
-  }
-
-  public async loginOrCreateWithIdentifier(identifier: string): Promise<{ success: boolean; message?: string; user?: User }> {
-    const normalized = identifier.trim();
-    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized);
-    const canonicalIdentifier = isEmail ? normalized.toLowerCase() : this.normalizePhone(normalized);
-    const storedUsers = this.dedupeOtpUsers(this.getOtpUsers());
-    const existingStoredUser = storedUsers.find(user =>
-      (isEmail && user.email?.toLowerCase() === canonicalIdentifier) ||
-      (!isEmail && this.normalizePhone(user.phone || '') === canonicalIdentifier)
-    );
-
-    const backendLogin = await this.login(normalized, '123456');
-    if (backendLogin.success && backendLogin.user) {
-      this.saveOtpUsers(storedUsers.filter(user =>
-        isEmail
-          ? user.email?.toLowerCase() !== canonicalIdentifier
-          : this.normalizePhone(user.phone || '') !== canonicalIdentifier
-      ));
-      return backendLogin;
-    }
-
-    const demoUser = this.findDemoUser(normalized, isEmail);
-    if (demoUser) {
-      this.setCurrentUser(demoUser);
-      return { success: true, user: demoUser };
-    }
-
-    if (existingStoredUser) {
-      this.setCurrentUser(existingStoredUser);
-      return { success: true, user: existingStoredUser };
-    }
-
-    const username = isEmail ? normalized.split('@')[0].toLowerCase() : canonicalIdentifier;
-    const registerResult = await this.register({
-      username,
-      password: '123456',
-      fullname: isEmail ? username : `GreenSteps ${canonicalIdentifier.slice(-4)}`,
-      email: isEmail ? canonicalIdentifier : `${canonicalIdentifier}@greensteps.local`,
-      phone: isEmail ? '' : normalized,
-      dob: '',
-      gender: '0',
-      address: '',
-      role: 'traveler'
-    });
-
-    if (registerResult.success && registerResult.user) {
-      this.saveOtpUsers(storedUsers.filter(user =>
-        isEmail
-          ? user.email?.toLowerCase() !== canonicalIdentifier
-          : this.normalizePhone(user.phone || '') !== canonicalIdentifier
-      ));
-      return registerResult;
-    }
-
-    const lowerMessage = registerResult.message?.toLowerCase() || '';
-    if (lowerMessage.includes('email') || lowerMessage.includes('sử dụng') || lowerMessage.includes('dụng')) {
-      const retryLogin = await this.login(normalized, '123456');
-      if (retryLogin.success && retryLogin.user) return retryLogin;
-    }
-
-    const user: User = {
-      id: `otp_${Date.now()}`,
-      username,
-      fullname: isEmail ? username : `GreenSteps ${canonicalIdentifier.slice(-4)}`,
-      email: isEmail ? canonicalIdentifier : `${canonicalIdentifier}@greensteps.local`,
-      phone: isEmail ? '' : normalized,
-      role: 'traveler'
+  private mapUser(raw: any): User {
+    return {
+      id: raw.id || raw._id,
+      username: raw.username,
+      fullname: raw.fullname || raw.username,
+      email: raw.email,
+      phone: raw.phone ?? null,
+      dob: raw.dob,
+      gender: raw.gender,
+      address: raw.address,
+      role: raw.role || 'traveler',
+      companyName: raw.companyName || raw.company_name,
+      avatarUrl: raw.avatarUrl || raw.avatar_url,
+      is_verified: raw.is_verified
     };
+  }
 
-    this.saveOtpUsers([...storedUsers, user]);
-    this.setCurrentUser(user);
-    return { success: true, user };
+  public async login(identifier: string, password: string): Promise<AuthResult> {
+    try {
+      const res = await firstValueFrom(
+        this.http.post<any>(`${this.BACKEND_URL}/login`, { identifier, password }, { withCredentials: true })
+      );
+      if (res?.success && res.user) {
+        if (res.token) localStorage.setItem('greensteps_token', res.token);
+        const user = this.mapUser(res.user);
+        this.setCurrentUser(user);
+        return { success: true, user, token: res.token, message: res.message };
+      }
+      return { success: false, message: res?.message || 'Đăng nhập thất bại.' };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err?.error?.message || 'Email/tên đăng nhập hoặc mật khẩu không chính xác!',
+        code: err?.error?.code,
+        email: err?.error?.email
+      };
+    }
+  }
+
+  public async register(payload: { username: string; email: string; password: string }): Promise<AuthResult> {
+    try {
+      const res = await firstValueFrom(
+        this.http.post<any>(`${this.BACKEND_URL}/register`, payload, { withCredentials: true })
+      );
+      return {
+        success: !!res?.success,
+        message: res?.message,
+        requiresVerification: res?.requiresVerification,
+        user: res?.user ? this.mapUser(res.user) : undefined
+      };
+    } catch (err: any) {
+      return { success: false, message: err?.error?.message || 'Đăng ký thất bại.' };
+    }
+  }
+
+  public async verifyRegisterOtp(email: string, otp: string): Promise<AuthResult> {
+    return this.postAuth('/register/verify-otp', { email, otp }, 'Xác thực OTP thất bại.', true);
+  }
+
+  public async resendRegisterOtp(email: string): Promise<AuthResult> {
+    return this.postAuth('/register/resend-otp', { email }, 'Gửi lại mã thất bại.');
+  }
+
+  public async requestForgotPasswordOtp(email: string): Promise<AuthResult> {
+    return this.postAuth('/forgot-password/request-otp', { email }, 'Không thể gửi mã xác thực.');
+  }
+
+  public async verifyForgotPasswordOtp(email: string, otp: string): Promise<AuthResult> {
+    return this.postAuth('/forgot-password/verify-otp', { email, otp }, 'Xác thực OTP thất bại.');
+  }
+
+  public async resetForgotPassword(resetToken: string, newPassword: string): Promise<AuthResult> {
+    return this.postAuth('/forgot-password/reset', { resetToken, newPassword }, 'Đặt lại mật khẩu thất bại.');
+  }
+
+  private async postAuth(path: string, body: any, fallbackMessage: string, persistSession = false): Promise<AuthResult> {
+    try {
+      const res = await firstValueFrom(
+        this.http.post<any>(`${this.BACKEND_URL}${path}`, body, { withCredentials: true })
+      );
+      const user = res?.user ? this.mapUser(res.user) : undefined;
+      if (persistSession && res?.success && user) {
+        if (res.token) localStorage.setItem('greensteps_token', res.token);
+        this.setCurrentUser(user);
+      }
+      return {
+        success: !!res?.success,
+        message: res?.message,
+        user,
+        token: res?.token,
+        retryAfterSeconds: res?.retryAfterSeconds,
+        resetToken: res?.resetToken
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        message: err?.error?.message || fallbackMessage,
+        retryAfterSeconds: err?.error?.retryAfterSeconds,
+        code: err?.error?.code
+      };
+    }
   }
 
   public async updateProfile(userId: string, profileData: any): Promise<{ success: boolean; message?: string; user?: User }> {
     try {
       const res = await firstValueFrom(
-        this.http.put<{ success: boolean; user?: any; message?: string }>(`${this.BACKEND_URL}/profile/${userId}`, profileData, { withCredentials: true })
+        this.http.put<any>(`${this.BACKEND_URL}/profile/${userId}`, profileData, { withCredentials: true })
       );
-      if (res && res.success && res.user) {
-        const mappedUser: User = {
-          id: res.user.id || res.user._id,
-          username: res.user.username,
-          fullname: res.user.fullname,
-          email: res.user.email,
-          phone: res.user.phone,
-          dob: res.user.dob,
-          gender: res.user.gender,
-          address: res.user.address,
-          role: res.user.role,
-          companyName: res.user.companyName || res.user.company_name,
-          avatarUrl: res.user.avatarUrl || res.user.avatar_url
-        };
-        this.setCurrentUser(mappedUser);
+      if (res?.success && res.user) {
+        const user = this.mapUser(res.user);
+        this.setCurrentUser(user);
         this.apiService.clearCache('community_posts_');
         this.apiService.clearCache('tour_reviews_');
         this.apiService.clearCache('service_reviews_');
         this.apiService.clearCache('preset_tour_');
-        return { success: true, user: mappedUser };
+        return { success: true, user };
       }
       return { success: false, message: res?.message || 'Cập nhật thất bại!' };
-    } catch (err) {
-      console.error('Update profile failed:', err);
-      return { success: false, message: 'Lỗi kết nối server cập nhật!' };
+    } catch (err: any) {
+      return { success: false, message: err?.error?.message || 'Lỗi kết nối server cập nhật!' };
     }
   }
 
@@ -237,14 +200,13 @@ export class AuthService {
       const res = await firstValueFrom(
         this.http.post<{ success: boolean; role: 'traveler' | 'provider' }>(`${this.BACKEND_URL}/role/${userId}`, {}, { withCredentials: true })
       );
-      if (res && res.success) {
+      if (res?.success) {
         user.role = res.role;
         this.setCurrentUser(user);
         return res.role;
       }
       return null;
-    } catch (err: any) {
-      console.error('Backend toggle role failed:', err);
+    } catch {
       return null;
     }
   }
@@ -252,65 +214,5 @@ export class AuthService {
   public logout() {
     this.setCurrentUser(null);
     localStorage.removeItem('greensteps_token');
-  }
-
-  private getOtpUsers(): User[] {
-    try {
-      return JSON.parse(localStorage.getItem('greensteps_otp_users') || '[]');
-    } catch (e) {
-      localStorage.removeItem('greensteps_otp_users');
-      return [];
-    }
-  }
-
-  private saveOtpUsers(users: User[]) {
-    localStorage.setItem('greensteps_otp_users', JSON.stringify(this.dedupeOtpUsers(users)));
-  }
-
-  private dedupeOtpUsers(users: User[]): User[] {
-    const seen = new Set<string>();
-    return users.filter(user => {
-      const key = user.email
-        ? `email:${user.email.toLowerCase()}`
-        : `phone:${this.normalizePhone(user.phone || '')}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  }
-
-  private findDemoUser(identifier: string, isEmail: boolean): User | null {
-    const demoUsers: User[] = [
-      {
-        id: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d',
-        username: 'traveler',
-        fullname: 'Nguyễn Minh Anh',
-        email: 'minhanh.greentravel@gmail.com',
-        phone: '0901 234 567',
-        dob: '12/08/1996',
-        gender: 'Nữ',
-        address: 'Quận 1, TP. Hồ Chí Minh',
-        role: 'traveler'
-      },
-      {
-        id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-        username: 'partner',
-        fullname: 'Trần Văn A',
-        companyName: 'Green Valley Travel',
-        email: 'partner.greentravel@gmail.com',
-        phone: '0902 987 654',
-        address: 'Quận 3, TP. Hồ Chí Minh',
-        role: 'provider'
-      }
-    ];
-
-    return demoUsers.find(user =>
-      (isEmail && user.email?.toLowerCase() === identifier.toLowerCase()) ||
-      (!isEmail && this.normalizePhone(user.phone || '') === this.normalizePhone(identifier))
-    ) || null;
-  }
-
-  private normalizePhone(value: string): string {
-    return value.replace(/\D/g, '').replace(/^84/, '0');
   }
 }

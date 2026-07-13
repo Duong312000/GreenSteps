@@ -1,101 +1,297 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { User, Wallet } = require('../models/index');
+const { Op } = require('sequelize');
+const { User } = require('../models/index');
 const { JWT_SECRET } = require('../middlewares/auth.middleware');
+const {
+  PASSWORD_MESSAGE,
+  normalizeEmail,
+  normalizeText,
+  isValidEmail,
+  isValidPassword,
+  isValidOtp
+} = require('../utils/auth.validation');
+const {
+  createAndSendOtp,
+  createAndSendPendingRegistrationOtp,
+  resendPendingRegistrationOtp,
+  verifyPendingRegistrationOtp,
+  verifyOtp,
+  createResetToken,
+  consumeResetToken
+} = require('../services/otp.service');
+
+function publicUser(user) {
+  return {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    fullname: user.fullname,
+    phone: user.phone,
+    dob: user.dob,
+    gender: user.gender,
+    address: user.address,
+    company_name: user.company_name,
+    avatarUrl: user.avatarUrl,
+    is_verified: user.is_verified
+  };
+}
+
+function createUserId() {
+  return 'UG' + Math.floor(10000000 + Math.random() * 90000000);
+}
+
+function signAuthToken(user) {
+  return jwt.sign(
+    { id: user.id, username: user.username, role: user.role, fullname: user.fullname },
+    JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+}
+
+function setAuthCookie(res, token) {
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'none',
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  });
+}
+
+async function findUserByIdentifier(identifier) {
+  const normalized = normalizeText(identifier);
+  const email = normalizeEmail(normalized);
+  return User.findOne({
+    where: {
+      [Op.or]: [
+        { username: normalized },
+        { email }
+      ]
+    }
+  });
+}
 
 exports.register = async (req, res, next) => {
   try {
-    const { username, password, fullname, email, phone, dob, gender, address, job } = req.body;
+    const username = normalizeText(req.body.username);
+    const email = normalizeEmail(req.body.email);
+    const password = String(req.body.password || '');
 
-    // 1. Check if user already exists
+    if (!username) return res.status(400).json({ success: false, message: 'Tên đăng nhập không được để trống.' });
+    if (username.length < 3) return res.status(400).json({ success: false, message: 'Tên đăng nhập phải có ít nhất 3 ký tự.' });
+    if (!email) return res.status(400).json({ success: false, message: 'Email không được để trống.' });
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, message: 'Email không hợp lệ.' });
+    if (!password) return res.status(400).json({ success: false, message: 'Mật khẩu không được để trống.' });
+    if (!isValidPassword(password)) return res.status(400).json({ success: false, message: PASSWORD_MESSAGE });
+
     const existingUser = await User.findOne({ where: { username } });
-    if (existingUser) {
-      return res.status(400).json({ success: false, message: 'Tên tài khoản này đã được sử dụng!' });
-    }
+    if (existingUser) return res.status(400).json({ success: false, message: 'Tên tài khoản này đã được sử dụng!' });
 
     const existingEmail = await User.findOne({ where: { email } });
-    if (existingEmail) {
-      return res.status(400).json({ success: false, message: 'Email này đã được sử dụng!' });
-    }
+    if (existingEmail) return res.status(400).json({ success: false, message: 'Email này đã được sử dụng!' });
 
-    // 2. Hash password
     const password_hash = await bcrypt.hash(password, 10);
 
-    // 3. Generate ID (UGXXXXXXXX)
-    const customId = 'UG' + Math.floor(10000000 + Math.random() * 90000000);
-
-    // 4. Create User & Wallet inside database transaction
-    const result = await User.sequelize.transaction(async (t) => {
-      const newUser = await User.create({
-        id: customId,
-        role: 'traveler', // default role
+    await User.sequelize.transaction(async (transaction) => {
+      await createAndSendPendingRegistrationOtp({
         username,
-        password_hash,
-        fullname,
         email,
-        phone,
-        dob: dob || null,
-        gender: gender || 'Khác',
-        address: address || '',
-        job: job || ''
-      }, { transaction: t });
-
-      return newUser;
+        passwordHash: password_hash
+      }, transaction);
     });
 
     res.status(201).json({
       success: true,
-      message: 'Đăng ký tài khoản du khách thành công!',
-      userId: result.id
+      message: 'Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.',
+      requiresVerification: true,
+      user: {
+        username,
+        email,
+        is_verified: false
+      }
+    });
+  } catch (error) {
+    if (error.code === 'OTP_RESEND_TOO_SOON') {
+      return res.status(429).json({
+        success: false,
+        code: error.code,
+        message: error.message,
+        retryAfterSeconds: error.retryAfterSeconds
+      });
+    }
+    next(error);
+  }
+};
+
+exports.verifyRegisterOtp = async (req, res, next) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const otp = String(req.body.otp || '').trim();
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, message: 'Email không hợp lệ.' });
+    if (!isValidOtp(otp)) return res.status(400).json({ success: false, message: 'Mã OTP phải gồm đúng 6 chữ số.' });
+
+    const pending = await verifyPendingRegistrationOtp({ email, otp });
+    const createdAccount = await User.sequelize.transaction(async (transaction) => {
+      const existingUser = await User.findOne({
+        where: {
+          [Op.or]: [
+            { username: pending.username },
+            { email: pending.email }
+          ]
+        },
+        transaction
+      });
+
+      if (existingUser) {
+        const error = new Error('Email hoặc tên đăng nhập đã được sử dụng.');
+        error.statusCode = 400;
+        error.code = 'ACCOUNT_ALREADY_EXISTS';
+        throw error;
+      }
+
+      const createdUser = await User.create({
+        id: createUserId(),
+        role: 'traveler',
+        username: pending.username,
+        password_hash: pending.password_hash,
+        email: pending.email,
+        fullname: null,
+        phone: null,
+        dob: null,
+        gender: 'Khác',
+        address: '',
+        job: '',
+        is_verified: true
+      }, { transaction });
+
+      pending.consumed_at = new Date();
+      await pending.save({ transaction });
+      return createdUser;
+    });
+
+    const token = signAuthToken(createdAccount);
+    setAuthCookie(res, token);
+
+    return res.json({
+      success: true,
+      message: 'Xác thực tài khoản thành công.',
+      token,
+      user: publicUser(createdAccount)
     });
   } catch (error) {
     next(error);
   }
 };
 
+exports.resendRegisterOtp = async (req, res, next) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, message: 'Email không hợp lệ.' });
+
+    await resendPendingRegistrationOtp(email);
+    res.json({ success: true, message: 'Mã xác thực mới đã được gửi.' });
+  } catch (error) {
+    if (error.code === 'OTP_RESEND_TOO_SOON') {
+      return res.status(429).json({
+        success: false,
+        code: error.code,
+        message: error.message,
+        retryAfterSeconds: error.retryAfterSeconds
+      });
+    }
+    next(error);
+  }
+};
+
 exports.login = async (req, res, next) => {
   try {
-    const { username, password } = req.body;
+    const identifier = normalizeText(req.body.identifier || req.body.username);
+    const password = String(req.body.password || '');
+    if (!identifier) return res.status(400).json({ success: false, message: 'Vui lòng nhập email hoặc tên đăng nhập.' });
+    if (!password) return res.status(400).json({ success: false, message: 'Vui lòng nhập mật khẩu.' });
 
-    // 1. Find user in DB
-    const user = await User.findOne({ where: { username } });
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'Tên đăng nhập hoặc mật khẩu không chính xác!' });
-    }
+    const user = await findUserByIdentifier(identifier);
+    if (!user) return res.status(401).json({ success: false, message: 'Email/tên đăng nhập hoặc mật khẩu không chính xác!' });
 
-    // 2. Check password hash
     const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Tên đăng nhập hoặc mật khẩu không chính xác!' });
+    if (!isMatch) return res.status(401).json({ success: false, message: 'Email/tên đăng nhập hoặc mật khẩu không chính xác!' });
+
+    if (!user.is_verified) {
+      return res.status(403).json({
+        success: false,
+        code: 'EMAIL_NOT_VERIFIED',
+        message: 'Tài khoản chưa được xác thực.',
+        email: user.email
+      });
     }
 
-    // 3. Sign JWT
-    const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role, fullname: user.fullname },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    // 4. Set Http-only cookie
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
+    const token = signAuthToken(user);
+    setAuthCookie(res, token);
 
     res.json({
       success: true,
       message: 'Đăng nhập hệ thống thành công!',
       token,
-      user: {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        fullname: user.fullname,
-        email: user.email
-      }
+      user: publicUser(user)
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.requestForgotPasswordOtp = async (req, res, next) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, message: 'Email không hợp lệ.' });
+
+    const user = await User.findOne({ where: { email } });
+    if (user) await createAndSendOtp(user, 'RESET_PASSWORD');
+
+    res.json({
+      success: true,
+      message: 'Nếu email tồn tại trong hệ thống, mã xác thực đã được gửi.'
+    });
+  } catch (error) {
+    if (error.code === 'OTP_RESEND_TOO_SOON') {
+      return res.status(429).json({
+        success: false,
+        code: error.code,
+        message: error.message,
+        retryAfterSeconds: error.retryAfterSeconds
+      });
+    }
+    next(error);
+  }
+};
+
+exports.verifyForgotPasswordOtp = async (req, res, next) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const otp = String(req.body.otp || '').trim();
+    if (!isValidEmail(email)) return res.status(400).json({ success: false, message: 'Email không hợp lệ.' });
+    if (!isValidOtp(otp)) return res.status(400).json({ success: false, message: 'Mã OTP phải gồm đúng 6 chữ số.' });
+
+    const { user, otpRecord } = await verifyOtp({ email, otp, purpose: 'RESET_PASSWORD' });
+    const resetToken = await createResetToken(user, otpRecord);
+    res.json({ success: true, message: 'Xác thực OTP thành công.', resetToken });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.resetForgotPassword = async (req, res, next) => {
+  try {
+    const resetToken = String(req.body.resetToken || '');
+    const newPassword = String(req.body.newPassword || '');
+    if (!resetToken) return res.status(400).json({ success: false, message: 'Thiếu reset token.' });
+    if (!isValidPassword(newPassword)) return res.status(400).json({ success: false, message: PASSWORD_MESSAGE });
+
+    const user = await consumeResetToken(resetToken);
+    user.password_hash = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({ success: true, message: 'Đặt lại mật khẩu thành công.' });
   } catch (error) {
     next(error);
   }
@@ -104,12 +300,8 @@ exports.login = async (req, res, next) => {
 exports.getProfile = async (req, res, next) => {
   try {
     const userId = req.user ? req.user.id : req.params.userId;
-    const user = await User.findByPk(userId, {
-      attributes: { exclude: ['password_hash'] }
-    });
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy thông tin tài khoản!' });
-    }
+    const user = await User.findByPk(userId, { attributes: { exclude: ['password_hash'] } });
+    if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy thông tin tài khoản!' });
     res.json({ success: true, user });
   } catch (error) {
     next(error);
@@ -124,18 +316,10 @@ function promptTerminalApproval(message) {
     console.log('========================================\n');
 
     const readline = require('readline');
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     rl.question('Phê duyệt yêu cầu này? (y/n): ', (answer) => {
       rl.close();
-      if (answer.toLowerCase().trim() === 'y') {
-        resolve(true);
-      } else {
-        resolve(false);
-      }
+      resolve(answer.toLowerCase().trim() === 'y');
     });
   });
 }
@@ -144,23 +328,16 @@ exports.updateProfile = async (req, res, next) => {
   try {
     const { fullname, phone, dob, gender, address, job, role, company_name, companyName, avatarUrl, avatar_url } = req.body;
     const userId = req.user ? req.user.id : req.params.userId;
-
     const user = await User.findByPk(userId);
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản!' });
-    }
+    if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản!' });
 
     if (role === 'provider' && user.role !== 'provider') {
       const displayCompanyName = company_name || companyName || 'Chưa đặt tên doanh nghiệp';
-      const msg = `Tài khoản #${userId} (${fullname || user.fullname}) YÊU CẦU ĐĂNG KÝ LÀM NHÀ CUNG CẤP ĐỐI TÁC - Doanh nghiệp: "${displayCompanyName}"`;
-      const approved = await promptTerminalApproval(msg);
-      if (!approved) {
-        return res.status(400).json({ success: false, message: 'Yêu cầu đăng ký nhà cung cấp bị từ chối bởi Quản trị viên tại Terminal.' });
-      }
+      const approved = await promptTerminalApproval(`Tài khoản #${userId} (${fullname || user.fullname || user.username}) yêu cầu đăng ký làm nhà cung cấp: "${displayCompanyName}"`);
+      if (!approved) return res.status(400).json({ success: false, message: 'Yêu cầu đăng ký nhà cung cấp bị từ chối.' });
 
-      // Automatically create a Vender record for this user if it doesn't exist
       const { Vender } = require('../models/index');
-      let vender = await Vender.findOne({ where: { user_id: userId } });
+      const vender = await Vender.findOne({ where: { user_id: userId } });
       if (!vender) {
         await Vender.create({
           id: 'vender_' + Date.now().toString().slice(-6),
@@ -170,23 +347,20 @@ exports.updateProfile = async (req, res, next) => {
       }
     }
 
-    const finalCompanyName = company_name || companyName || user.company_name;
-    const finalAvatarUrl = avatarUrl !== undefined ? avatarUrl : (avatar_url !== undefined ? avatar_url : user.avatarUrl);
+    await User.update({
+      fullname,
+      phone,
+      dob: dob || null,
+      gender,
+      address,
+      job,
+      role,
+      company_name: company_name || companyName || user.company_name,
+      avatarUrl: avatarUrl !== undefined ? avatarUrl : (avatar_url !== undefined ? avatar_url : user.avatarUrl)
+    }, { where: { id: userId } });
 
-    await User.update(
-      { fullname, phone, dob: dob || null, gender, address, job, role, company_name: finalCompanyName, avatarUrl: finalAvatarUrl },
-      { where: { id: userId } }
-    );
-
-    const updatedUser = await User.findByPk(userId, {
-      attributes: { exclude: ['password_hash'] }
-    });
-
-    res.json({
-      success: true,
-      message: 'Cập nhật hồ sơ cá nhân thành công!',
-      user: updatedUser
-    });
+    const updatedUser = await User.findByPk(userId, { attributes: { exclude: ['password_hash'] } });
+    res.json({ success: true, message: 'Cập nhật hồ sơ cá nhân thành công!', user: updatedUser });
   } catch (error) {
     next(error);
   }
@@ -196,16 +370,16 @@ exports.changePassword = async (req, res, next) => {
   try {
     const { oldPassword, newPassword } = req.body;
     const userId = req.user.id;
+    if (!isValidPassword(String(newPassword || ''))) {
+      return res.status(400).json({ success: false, message: PASSWORD_MESSAGE });
+    }
 
     const user = await User.findByPk(userId);
     const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
-    if (!isMatch) {
-      return res.status(400).json({ success: false, message: 'Mật khẩu cũ không chính xác!' });
-    }
+    if (!isMatch) return res.status(400).json({ success: false, message: 'Mật khẩu cũ không chính xác!' });
 
-    const hashedNewPwd = await bcrypt.hash(newPassword, 10);
-    await User.update({ password_hash: hashedNewPwd }, { where: { id: userId } });
-
+    user.password_hash = await bcrypt.hash(newPassword, 10);
+    await user.save();
     res.json({ success: true, message: 'Đổi mật khẩu thành công!' });
   } catch (error) {
     next(error);
@@ -216,11 +390,7 @@ exports.trackInterest = async (req, res, next) => {
   try {
     const { destination } = req.body;
     const userId = req.user ? req.user.id : (req.body.userId || req.body.customerId);
-
-    if (!destination) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp điểm đến quan tâm!' });
-    }
-
+    if (!destination) return res.status(400).json({ success: false, message: 'Vui lòng cung cấp điểm đến quan tâm!' });
     await User.update({ last_interest: destination }, { where: { id: userId } });
     res.json({ success: true, message: 'Ghi nhận địa điểm quan tâm thành công.' });
   } catch (error) {
