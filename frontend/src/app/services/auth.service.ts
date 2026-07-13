@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
-import { Router } from '@angular/router';
 import { User } from '../models/models';
 import { ApiService } from './api.service';
 
@@ -28,7 +27,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient, private apiService: ApiService, private router: Router) {
+  constructor(private http: HttpClient, private apiService: ApiService) {
     this.loadSession();
     const user = this.getCurrentUser();
     if (user) {
