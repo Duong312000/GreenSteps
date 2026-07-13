@@ -70,7 +70,9 @@ export class BookingComponent implements OnInit {
   public qrAmount = 0;
   public qrDescription = '';
   public currentBookingId = '';
+  public qrCountdown = 600;
   private pollingInterval: any = null;
+  private countdownInterval: any = null;
 
   public bookingContext: BookingContext = {
     hotelId: 'hotel_dahlia_dalat',
@@ -411,6 +413,20 @@ export class BookingComponent implements OnInit {
         const res = await this.apiService.createBooking(bookingData);
         if (res.success && res.bookingId) {
           this.currentBookingId = res.bookingId;
+          this.qrCountdown = 600; // Reset to 10 minutes (600 seconds)
+
+          // Start the 10-minute countdown timer
+          if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+          }
+          this.countdownInterval = setInterval(() => {
+            if (this.qrCountdown > 0) {
+              this.qrCountdown--;
+            } else {
+              this.handleQrExpired();
+            }
+          }, 1000);
+
           // Poll until admin approves
           this.startBookingStatusPolling(res.bookingId);
         } else {
@@ -474,11 +490,15 @@ export class BookingComponent implements OnInit {
       clearInterval(this.pollingInterval);
       this.pollingInterval = null;
     }
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
+    }
   }
 
   public async cancelPendingBooking() {
     if (!this.currentBookingId) {
-      this.isQrModalOpen = false;
+      this.closeQrModal();
       return;
     }
     
@@ -486,30 +506,55 @@ export class BookingComponent implements OnInit {
     try {
       const res = await this.apiService.cancelBooking(this.currentBookingId);
       this.isBookingLoading = false;
-      this.isQrModalOpen = false;
-      if (this.pollingInterval) {
-        clearInterval(this.pollingInterval);
-        this.pollingInterval = null;
-      }
+      this.closeQrModal();
       this.showAlert("Đã hủy giao dịch", "Yêu cầu đặt cọc của bạn đã được hủy thành công.", "info");
     } catch (e) {
       this.isBookingLoading = false;
-      this.isQrModalOpen = false;
-      if (this.pollingInterval) {
-        clearInterval(this.pollingInterval);
-        this.pollingInterval = null;
-      }
+      this.closeQrModal();
       this.showAlert("Đã hủy giao dịch", "Yêu cầu đặt cọc của bạn đã được hủy.", "info");
     }
   }
 
   public temporaryExitQr() {
     this.isQrModalOpen = false;
+    // Clear countdown on temporary exit since they are closing the QR screen, but keep polling active
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
+    }
     this.showAlert(
       "Giao dịch đang chờ duyệt",
       "Yêu cầu thanh toán chuyển khoản đặt cọc của bạn đang được hệ thống xử lý. Bạn có thể tiếp tục xem các thông tin khác trong thời gian chờ đợi. Trạng thái sẽ tự động cập nhật khi giao dịch thành công.",
       "info"
     );
+  }
+
+  public get qrCountdownFormatted(): string {
+    const minutes = Math.floor(this.qrCountdown / 60);
+    const seconds = this.qrCountdown % 60;
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes.toString();
+    const secondsStr = seconds < 10 ? '0' + seconds : seconds.toString();
+    return `${minutesStr}:${secondsStr}`;
+  }
+
+  public handleQrExpired() {
+    this.closeQrModal();
+    // Silently trigger booking cancellation on backend
+    this.cancelPendingBookingSilently();
+    this.showAlert(
+      "Giao dịch hết hạn", 
+      "Mã QR chuyển khoản đã hết hạn sau 10 phút. Đơn đặt cọc của bạn đã được hủy tự động.", 
+      "warning"
+    );
+  }
+
+  private async cancelPendingBookingSilently() {
+    if (!this.currentBookingId) return;
+    try {
+      await this.apiService.cancelBooking(this.currentBookingId);
+    } catch (e) {
+      console.warn("Failed to cancel expired booking:", e);
+    }
   }
 
   public triggerAlertAction() {

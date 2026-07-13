@@ -432,6 +432,11 @@
         </div>
       </div>
 
+      <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:12px; color:#92400E; font-size:0.8rem; font-weight:700; background:#FEF3C7; border:1px solid #FDE68A; padding:8px 12px; border-radius:8px; width: 100%; box-sizing: border-box;">
+        <i class="bi bi-clock-history animate-spin" style="animation-duration: 4s; color:#D97706;"></i>
+        <span>Mã QR hết hạn sau: <strong style="font-size:0.95rem; color:#DC2626; font-family: monospace;">{{ qrCountdownFormatted }}</strong></span>
+      </div>
+
       <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:8px; display:inline-block; margin-bottom:12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center;">
         <img [src]="qrCodeUrl" alt="VietQR OCB Code" style="width:200px; height:200px; display:block; border-radius:6px; margin: 0 auto;">
       </div>
