@@ -31,10 +31,10 @@
 
 
     <!-- 1. LEFT SIDEBAR: Professional Days & Navigation Panel -->
-    <aside class="sidebar-panel" [style.width.px]="sidebarWidth" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 20px 0 20px 12px; overflow: visible !important;">
+    <aside class="sidebar-panel" [style.width.px]="sidebarWidth" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 20px 0 0 12px !important; overflow: visible !important;">
         <!-- Fixed Header & AI Button Area (Overflow Visible) -->
         <div style="display: flex; flex-direction: column; padding-right: 12px; margin-bottom: 20px; overflow: visible !important; position: relative; z-index: 20;">
-            <div class="sidebar-header" style="border: none; padding-bottom: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <div class="sidebar-header" style="border: none; padding-bottom: 8px; margin-bottom: 10px; display: flex; flex-direction: row !important; align-items: center; justify-content: space-between; width: 100%;">
                 <button type="button" (click)="goBackToList()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 4px 0; outline: none; box-shadow: none;">
                     <i class="bi bi-arrow-left"></i> Quay lại
                 </button>
@@ -148,7 +148,7 @@
         </div>
 
         <!-- Section 5: Pinned Checkout & Wallet Actions (Fixed at bottom left corner) -->
-        <div class="checkout-actions" style="display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-right: 20px; flex-shrink: 0; padding-bottom: 10px;">
+        <div class="checkout-actions" style="display: flex; flex-direction: column; gap: 6px; margin-top: auto; padding-right: 20px; flex-shrink: 0; padding-bottom: 0 !important; margin-bottom: 0 !important;">
             <div *ngIf="isItineraryLocked()" class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-center py-2.5 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 mb-2">
                 <i class="bi bi-lock-fill"></i> Đã đặt cọc & Khóa sửa đổi
             </div>
