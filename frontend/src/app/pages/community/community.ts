@@ -170,6 +170,19 @@ export class CommunityComponent implements OnInit {
     await this.loadPosts();
   }
 
+  private preloadCommentsForPosts(newPosts: CommunityPost[]) {
+    newPosts.forEach(post => {
+      if (!this.postComments[post.id]) {
+        this.apiService.getPostComments(post.id).then(comments => {
+          this.postComments[post.id] = comments;
+          this.cdr.detectChanges();
+        }).catch(err => {
+          console.error(`Failed to preload comments for post ${post.id}:`, err);
+        });
+      }
+    });
+  }
+
   private async loadPosts() {
     this.isPageLoading = true;
     this.page = 0;
@@ -180,6 +193,9 @@ export class CommunityComponent implements OnInit {
     }
     this.isPageLoading = false;
     this.cdr.detectChanges();
+
+    // Preload comments in the background
+    this.preloadCommentsForPosts(this.posts);
   }
 
   public async loadMorePosts() {
@@ -194,6 +210,9 @@ export class CommunityComponent implements OnInit {
         this.hasMorePosts = false;
       }
       this.posts = [...this.posts, ...nextPosts];
+      
+      // Preload comments for the newly added posts
+      this.preloadCommentsForPosts(nextPosts);
     } catch (e) {
       console.error('Error loading more posts:', e);
     } finally {
@@ -425,7 +444,10 @@ export class CommunityComponent implements OnInit {
     const postId = post.id;
     this.expandedComments[postId] = !this.expandedComments[postId];
     if (this.expandedComments[postId]) {
-      await this.loadComments(postId);
+      // Only make API call if comments have not been preloaded yet
+      if (!this.postComments[postId]) {
+        await this.loadComments(postId);
+      }
     }
     this.cdr.detectChanges();
   }
