@@ -305,7 +305,7 @@ exports.resetForgotPassword = async (req, res, next) => {
     user.password_hash = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-    res.json({ success: true, message: 'Đặt lại mật khẩu thành công.' });
+    res.json({ success: true, message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.' });
   } catch (error) {
     next(error);
   }

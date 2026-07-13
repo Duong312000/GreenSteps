@@ -24,6 +24,11 @@ function hashOtp(otp) {
   return `sha256:${hash}`;
 }
 
+function hashResetJti(jti) {
+  const hash = crypto.createHmac('sha256', JWT_SECRET).update(`reset:${jti}`).digest('hex');
+  return `sha256:${hash}`;
+}
+
 async function compareOtp(otp, storedHash) {
   if (String(storedHash || '').startsWith('sha256:')) {
     const expected = Buffer.from(hashOtp(otp));
@@ -32,6 +37,16 @@ async function compareOtp(otp, storedHash) {
   }
 
   return bcrypt.compare(otp, storedHash);
+}
+
+async function compareResetJti(jti, storedHash) {
+  if (String(storedHash || '').startsWith('sha256:')) {
+    const expected = Buffer.from(hashResetJti(jti));
+    const actual = Buffer.from(storedHash);
+    return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+  }
+
+  return bcrypt.compare(jti, storedHash);
 }
 
 function sendOtpEmailInBackground({ to, otp, purpose }) {
@@ -277,7 +292,7 @@ async function createResetToken(user, otpRecord) {
     { expiresIn: `${RESET_TOKEN_MINUTES}m` }
   );
 
-  otpRecord.reset_token_hash = await bcrypt.hash(resetJti, 10);
+  otpRecord.reset_token_hash = hashResetJti(resetJti);
   otpRecord.reset_token_expires_at = futureDate(RESET_TOKEN_MINUTES * 60 * 1000);
   await otpRecord.save();
 
@@ -313,7 +328,7 @@ async function consumeResetToken(resetToken) {
     order: [['updated_at', 'DESC']]
   });
 
-  if (!otpRecord || !(await bcrypt.compare(decoded.jti, otpRecord.reset_token_hash))) {
+  if (!otpRecord || !(await compareResetJti(decoded.jti, otpRecord.reset_token_hash))) {
     const error = new Error('Reset token không hợp lệ hoặc đã được sử dụng.');
     error.statusCode = 400;
     error.code = 'RESET_TOKEN_INVALID';
