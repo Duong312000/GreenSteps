@@ -2117,6 +2117,13 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.saveItineraryToDb();
   }
 
+  public scrollToSuggestions() {
+    const el = document.querySelector('.suggestions-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   private checkIfSharedByDefault(name: string, type: string): boolean {
     if (!name) return type === 'lodging';
     const lowerName = name.toLowerCase();
