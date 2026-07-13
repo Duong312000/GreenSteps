@@ -875,7 +875,7 @@ export class ApiService {
   public async getPendingBookings(): Promise<any[]> {
     try {
       return await firstValueFrom(
-        this.http.get<any[]>(`${this.BACKEND_URL}/booking/pending`, { withCredentials: true })
+        this.http.get<any[]>(`${this.BACKEND_URL}/bookings/pending`, { withCredentials: true })
       );
     } catch (e) {
       return [];
