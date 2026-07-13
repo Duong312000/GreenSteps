@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { LoginModalService } from '../../services/login-modal.service';
 import { User, CommunityPost, Itinerary } from '../../models/models';
 
 @Component({
@@ -102,6 +103,7 @@ export class CommunityComponent implements OnInit {
   constructor(
     private apiService: ApiService,
     private authService: AuthService,
+    private loginModalService: LoginModalService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -330,7 +332,7 @@ export class CommunityComponent implements OnInit {
   public checkLoginAction(): boolean {
     if (!this.currentUser) {
       this.showAlert("Thông báo", "Vui lòng đăng nhập để thực hiện chức năng này!", "warning", () => {
-        this.router.navigate(['/profile']);
+        this.loginModalService.open();
       });
       return false;
     }
