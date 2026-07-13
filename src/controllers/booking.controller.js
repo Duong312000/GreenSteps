@@ -216,14 +216,16 @@ exports.createBooking = async (req, res, next) => {
         }, { transaction: t });
 
         // Create pending notification
-        await Notification.create({
-          id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-          user_id: userId,
-          title: 'Đang chờ duyệt giao dịch',
-          message: `Giao dịch thanh toán bằng ví cho đơn ${bookingId} đang chờ quản trị viên phê duyệt.`,
-          type: 'booking',
-          read: false
-        }, { transaction: t });
+        if (userId) {
+          await Notification.create({
+            id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+            user_id: userId,
+            title: 'Đang chờ duyệt giao dịch',
+            message: `Giao dịch thanh toán bằng ví cho đơn ${bookingId} đang chờ quản trị viên phê duyệt.`,
+            type: 'booking',
+            read: false
+          }, { transaction: t });
+        }
       });
 
       return res.json({
@@ -354,14 +356,16 @@ exports.createBooking = async (req, res, next) => {
         }
 
         // Create pending notification
-        await Notification.create({
-          id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-          user_id: userId,
-          title: 'Đang chờ duyệt giao dịch',
-          message: `Giao dịch chuyển khoản đặt cọc cho đơn ${bookingId} đang chờ quản trị viên phê duyệt.`,
-          type: 'booking',
-          read: false
-        }, { transaction: t });
+        if (userId) {
+          await Notification.create({
+            id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+            user_id: userId,
+            title: 'Đang chờ duyệt giao dịch',
+            message: `Giao dịch chuyển khoản đặt cọc cho đơn ${bookingId} đang chờ quản trị viên phê duyệt.`,
+            type: 'booking',
+            read: false
+          }, { transaction: t });
+        }
       });
     } else {
       // Just save booking as pending/unpaid
@@ -781,14 +785,16 @@ exports.approveBooking = async (req, res, next) => {
     );
 
     // Create success notification
-    await Notification.create({
-      id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      user_id: booking.user_id,
-      title: 'Giao dịch thành công',
-      message: `Giao dịch chuyển khoản đặt cọc cho đơn ${id} đã được phê duyệt thành công!`,
-      type: 'booking',
-      read: false
-    });
+    if (booking.user_id) {
+      await Notification.create({
+        id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        user_id: booking.user_id,
+        title: 'Giao dịch thành công',
+        message: `Giao dịch chuyển khoản đặt cọc cho đơn ${id} đã được phê duyệt thành công!`,
+        type: 'booking',
+        read: false
+      });
+    }
 
     res.json({ success: true, message: 'Đã phê duyệt đơn đặt chỗ thành công!' });
   } catch (error) {
