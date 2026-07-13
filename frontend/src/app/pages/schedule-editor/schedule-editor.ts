@@ -131,6 +131,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public mapSearchQuery: string = '';
   public activeTab: 'timeline' | 'suggestions' | 'bucket' = 'timeline';
   public dynamicRecs: any[] = [];
+  public allCombinedRecs: any[] = [];
   public localServices: any[] = [];
 
   // Custom categorized list builder properties
@@ -856,8 +857,10 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       } else {
         services = await this.apiService.getServicesByDestination(destLabel);
       }
+      
+      let recsList: any[] = [];
       if (services && services.length > 0) {
-        this.dynamicRecs = services.map(srv => {
+        recsList = services.map(srv => {
           let recType = srv.type;
           if (recType === 'stay') recType = 'lodging';
           else if (recType === 'food') recType = 'dining';
@@ -874,13 +877,43 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
             badges: srv.badges || ['green']
           };
         });
-      } else {
-        this.loadStaticFallbackRecommendations();
       }
+
+      // Also map static list
+      const destSlug = this.activeItinerary.dest || 'da-lat';
+      const staticList = this.samplePlacesRecs[destSlug] || [];
+      const mappedStatic = staticList.map(rec => ({
+        name: rec.name,
+        category: rec.category || 'Khám phá',
+        type: rec.type,
+        cost: rec.cost,
+        carbon: rec.carbon,
+        img: rec.img,
+        lat: rec.lat,
+        lng: rec.lng,
+        badges: rec.badges || ['green']
+      }));
+
+      // Combine dynamic and static recommendations, avoiding duplicate names
+      const combined: any[] = [...recsList];
+      mappedStatic.forEach(st => {
+        const alreadyExists = combined.some(item => 
+          item.name.toLowerCase().trim() === st.name.toLowerCase().trim() ||
+          item.name.toLowerCase().includes(st.name.toLowerCase()) ||
+          st.name.toLowerCase().includes(item.name.toLowerCase())
+        );
+        if (!alreadyExists) {
+          combined.push(st);
+        }
+      });
+
+      this.allCombinedRecs = combined;
     } catch (e) {
       console.error('Error loading dynamic recommendations', e);
       this.loadStaticFallbackRecommendations();
     }
+    
+    this.filterOutCurrentActivities();
     this.cdr.detectChanges();
     this.plotMapMarkers();
   }
@@ -888,9 +921,9 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   private loadStaticFallbackRecommendations() {
     const destSlug = this.activeItinerary.dest || 'da-lat';
     const staticList = this.samplePlacesRecs[destSlug] || [];
-    this.dynamicRecs = staticList.map(rec => ({
+    this.allCombinedRecs = staticList.map(rec => ({
       name: rec.name,
-      category: rec.category,
+      category: rec.category || 'Khám phá',
       type: rec.type,
       cost: rec.cost,
       carbon: rec.carbon,
@@ -899,6 +932,31 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       lng: rec.lng,
       badges: ['green']
     }));
+  }
+
+  public filterOutCurrentActivities() {
+    if (!this.activeItinerary) return;
+    const currentActivityNames = new Set<string>();
+    this.activeItinerary.days.forEach((day: any) => {
+      if (day.activities) {
+        day.activities.forEach((act: any) => {
+          const name = (act.name || act.title || '').trim().toLowerCase();
+          if (name) {
+            currentActivityNames.add(name);
+          }
+        });
+      }
+    });
+
+    this.dynamicRecs = this.allCombinedRecs.filter(rec => {
+      const recName = (rec.name || '').trim().toLowerCase();
+      for (const currentName of currentActivityNames) {
+        if (recName === currentName || recName.includes(currentName) || currentName.includes(recName)) {
+          return false; // hide duplicate
+        }
+      }
+      return true; // keep
+    });
   }
 
   private getServiceFallbackImage(type: string): string {
@@ -977,6 +1035,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
     this.plotMapMarkers();
     this.recalculateMetrics();
+    this.filterOutCurrentActivities();
     await this.saveItineraryToDb();
   }
 
@@ -1242,6 +1301,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.sortActivitiesByTime(this.activeDayIdx);
     this.plotMapMarkers();
     this.recalculateMetrics();
+    this.filterOutCurrentActivities();
     await this.saveItineraryToDb();
   }
 
