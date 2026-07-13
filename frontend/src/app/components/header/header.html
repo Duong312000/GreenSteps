@@ -159,8 +159,9 @@
                                border border-[#184A37]/10 px-2 pr-3 font-bold text-[#0F6B4C]
                                hover:bg-white hover:border-[#0E9F6E] transition-all duration-300
                                focus:outline-none cursor-pointer">
-                    <span class="grid h-7 w-7 place-items-center rounded-full bg-[#0E9F6E] text-xs text-white flex-shrink-0">
-                        {{ getFirstLetter(currentUser.fullname) }}
+                    <span class="grid h-7 w-7 place-items-center rounded-full bg-[#0E9F6E] text-xs text-white flex-shrink-0 overflow-hidden">
+                        <img *ngIf="currentUser.avatarUrl" [src]="currentUser.avatarUrl" style="width: 100%; height: 100%; object-fit: cover;">
+                        <span *ngIf="!currentUser.avatarUrl">{{ getFirstLetter(currentUser.fullname) }}</span>
                     </span>
                     <span class="max-w-[90px] truncate text-xs">{{ currentUser.fullname }}</span>
                     <i class="bi bi-chevron-down text-[10px] text-[#184A37]/50 transition-transform duration-300"
@@ -341,8 +342,9 @@
                class="w-full h-14 flex items-center gap-3 rounded-full bg-gray-50 px-4 py-2
                       text-sm font-bold text-[#0F6B4C]"
                style="text-decoration:none;">
-                <span class="grid h-9 w-9 place-items-center rounded-full bg-[#0E9F6E] text-xs text-white">
-                    {{ getFirstLetter(currentUser.fullname) }}
+                <span class="grid h-9 w-9 place-items-center rounded-full bg-[#0E9F6E] text-xs text-white flex-shrink-0 overflow-hidden">
+                    <img *ngIf="currentUser.avatarUrl" [src]="currentUser.avatarUrl" style="width: 100%; height: 100%; object-fit: cover;">
+                    <span *ngIf="!currentUser.avatarUrl">{{ getFirstLetter(currentUser.fullname) }}</span>
                 </span>
                 <span class="truncate">{{ currentUser.fullname }}</span>
             </a>
