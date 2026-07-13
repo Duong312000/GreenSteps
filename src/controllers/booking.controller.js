@@ -143,17 +143,9 @@ exports.createBooking = async (req, res, next) => {
 
     // 3. Process Payment based on paymentMethod
     if (paymentMethod === 'wallet') {
-      // Wallet balance deduction with Admin Terminal Check
       const wallet = await Wallet.findOne({ where: { user_id: userId } });
       if (!wallet || wallet.balance < totalValue) {
         return res.status(400).json({ success: false, message: 'Số dư ví không đủ để thanh toán cọc đơn đặt!' });
-      }
-
-      const msg = `Khách hàng #${userId} yêu cầu THANH TOÁN VÍ cho #${bookingId} - SỐ TIỀN: ${totalValue.toLocaleString('vi-VN')} đ`;
-      const approved = await promptTerminalApproval(msg);
-
-      if (!approved) {
-        return res.status(400).json({ success: false, message: 'Giao dịch thanh toán bị quản trị viên từ chối ở terminal.' });
       }
 
       // Start transaction to execute payment and book
@@ -164,14 +156,14 @@ exports.createBooking = async (req, res, next) => {
           lock: t.LOCK.UPDATE
         });
 
+        // Deduct balance immediately as escrow hold
         lockedWallet.balance -= totalValue;
         await lockedWallet.save({ transaction: t });
 
         const evoucherCode = 'EV-' + Math.floor(1000000000 + Math.random() * 9000000000);
 
-        let bookingRecord;
         if (type === 'service') {
-          bookingRecord = await ServiceBooking.create({
+          await ServiceBooking.create({
             id: bookingId,
             user_id: userId,
             service_id: targetId,
@@ -180,13 +172,13 @@ exports.createBooking = async (req, res, next) => {
             booking_date: bookingDate,
             guests: guests,
             value: totalValue,
-            status: 'deposit',
+            status: 'pending', // Pending admin approval on Admin page
             evoucher_code: evoucherCode,
-            escrow_status: 'holding',
+            escrow_status: 'none',
             voucher_code: voucherCode || null
           }, { transaction: t });
         } else {
-          bookingRecord = await TourBooking.create({
+          await TourBooking.create({
             id: bookingId,
             user_id: userId,
             schedule_id: targetId,
@@ -197,8 +189,8 @@ exports.createBooking = async (req, res, next) => {
             value: totalValue,
             payment_method: 'wallet',
             evoucher_code: evoucherCode,
-            status: 'deposit',
-            escrow_status: 'holding',
+            status: 'pending', // Pending admin approval on Admin page
+            escrow_status: 'none',
           }, { transaction: t });
         }
 
@@ -212,16 +204,32 @@ exports.createBooking = async (req, res, next) => {
           );
         }
 
-        // Save wallet transaction
+        // Save wallet transaction as pending escrow hold
         await WalletTransaction.create({
           id: 'GD-' + Date.now(),
           wallet_id: lockedWallet.id,
           type: 'escrow_hold',
           amount: totalValue,
           description: `Thanh toán cọc ví cho đơn #${bookingId}`,
-          status: 'success',
+          status: 'pending', // Pending admin approval
           reference_id: bookingId
         }, { transaction: t });
+
+        // Create pending notification
+        await Notification.create({
+          id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          user_id: userId,
+          title: 'Đang chờ duyệt giao dịch',
+          message: `Giao dịch thanh toán bằng ví cho đơn ${bookingId} đang chờ quản trị viên phê duyệt.`,
+          type: 'booking',
+          read: false
+        }, { transaction: t });
+      });
+
+      return res.json({
+        success: true,
+        pending: true,
+        message: 'Đơn đặt chỗ bằng ví đã được tạo thành công và đang chờ Admin phê duyệt.'
       });
 
     } else if (paymentMethod === 'card') {
@@ -821,11 +829,36 @@ exports.rejectBooking = async (req, res, next) => {
     booking.rejection_reason = req.body.reason || 'Dịch vụ đã hết chỗ';
     await booking.save();
 
-    // Sync pending QR transfer transaction
-    await WalletTransaction.update(
-      { status: 'failed' },
-      { where: { reference_id: id, status: 'pending' } }
-    );
+    // Sync pending transaction & process wallet refund if type is escrow_hold
+    const pendingTx = await WalletTransaction.findOne({
+      where: { reference_id: id, status: 'pending' }
+    });
+
+    if (pendingTx) {
+      if (pendingTx.type === 'escrow_hold') {
+        const t = await sequelize.transaction();
+        try {
+          const travelerWallet = await Wallet.findOne({
+            where: { id: pendingTx.wallet_id },
+            transaction: t,
+            lock: t.LOCK.UPDATE
+          });
+          if (travelerWallet) {
+            travelerWallet.balance += Math.abs(pendingTx.amount);
+            await travelerWallet.save({ transaction: t });
+          }
+          pendingTx.status = 'failed';
+          await pendingTx.save({ transaction: t });
+          await t.commit();
+        } catch (err) {
+          await t.rollback();
+          throw err;
+        }
+      } else {
+        pendingTx.status = 'failed';
+        await pendingTx.save();
+      }
+    }
 
     res.json({ success: true, message: 'Đã từ chối đơn đặt chỗ thành công!' });
   } catch (error) {

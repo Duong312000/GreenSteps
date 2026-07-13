@@ -76,13 +76,23 @@ export class PartnerRegisterComponent implements OnInit {
     try {
       const res = await this.authService.updateProfile(userId, updateData);
       if (res.success) {
-        this.terminalApprovalState = 'success';
-        this.terminalApprovalTitle = 'Đăng Ký Thành Công';
-        this.terminalApprovalMsg = 'Chúc mừng! Đăng ký Kênh nhà cung cấp đối tác thành công. Phân hệ Quản lý dịch vụ đã được kích hoạt.';
-        setTimeout(() => {
-          this.isTerminalModalOpen = false;
-          this.router.navigate(['/partner-dashboard']);
-        }, 2000);
+        if (res.pending) {
+          this.terminalApprovalState = 'success';
+          this.terminalApprovalTitle = 'Đăng Ký Đang Chờ Duyệt';
+          this.terminalApprovalMsg = 'Yêu cầu đăng ký nhà cung cấp của bạn đã được gửi thành công và đang chờ Quản trị viên phê duyệt.';
+          setTimeout(() => {
+            this.isTerminalModalOpen = false;
+            this.router.navigate(['/profile']);
+          }, 3000);
+        } else {
+          this.terminalApprovalState = 'success';
+          this.terminalApprovalTitle = 'Đăng Ký Thành Công';
+          this.terminalApprovalMsg = 'Chúc mừng! Đăng ký Kênh nhà cung cấp đối tác thành công. Phân hệ Quản lý dịch vụ đã được kích hoạt.';
+          setTimeout(() => {
+            this.isTerminalModalOpen = false;
+            this.router.navigate(['/partner-dashboard']);
+          }, 2000);
+        }
       } else {
         this.terminalApprovalState = 'error';
         this.terminalApprovalTitle = 'Đăng Ký Thất Bại';

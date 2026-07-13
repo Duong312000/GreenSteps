@@ -228,22 +228,8 @@ exports.approveWithdrawal = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Yêu cầu rút tiền này đã được xử lý trước đó!' });
     }
 
-    // Call terminal approval
-    const isCloud = !process.stdin.isTTY;
-    const isAdminRequest = req.user && req.user.role === 'admin';
-    let approved = isCloud || isAdminRequest;
-
-    if (!approved) {
-      const msg = `Đối tác #${withdrawal.user_id} yêu cầu RÚT TIỀN: ${withdrawal.amount.toLocaleString('vi-VN')} đ về ngân hàng ${withdrawal.bank_name}`;
-      approved = await promptTerminalApproval(msg);
-    }
-
-    if (!approved) {
-      // Set withdrawal status to rejected
-      withdrawal.status = 'rejected';
-      await withdrawal.save();
-      return res.status(400).json({ success: false, message: 'Yêu cầu rút tiền bị Quản trị viên từ chối!' });
-    }
+    // Admin request is already verified by checkRole(['admin']) middleware
+    const approved = true;
 
     const t = await sequelize.transaction();
     try {

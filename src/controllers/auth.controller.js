@@ -345,18 +345,42 @@ exports.updateProfile = async (req, res, next) => {
     const user = await User.findByPk(userId);
     if (!user) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản!' });
 
+    let pendingApproval = false;
     if (role === 'provider' && user.role !== 'provider') {
+      pendingApproval = true;
       const displayCompanyName = company_name || companyName || 'Chưa đặt tên doanh nghiệp';
-      const approved = await promptTerminalApproval(`Tài khoản #${userId} (${fullname || user.fullname || user.username}) yêu cầu đăng ký làm nhà cung cấp: "${displayCompanyName}"`);
-      if (!approved) return res.status(400).json({ success: false, message: 'Yêu cầu đăng ký nhà cung cấp bị từ chối.' });
 
-      const { Vender } = require('../models/index');
-      const vender = await Vender.findOne({ where: { user_id: userId } });
+      const { Vender, Provider, VenderContract } = require('../models/index');
+      
+      let vender = await Vender.findOne({ where: { user_id: userId } });
       if (!vender) {
-        await Vender.create({
+        vender = await Vender.create({
           id: 'vender_' + Date.now().toString().slice(-6),
           user_id: userId,
           registration_date: new Date()
+        });
+      }
+
+      // Check or create Provider record
+      const providerId = 'PROV-' + Date.now().toString().slice(-6);
+      await Provider.create({
+        id: providerId,
+        contract_id: 'CON0001',
+        name_provider: displayCompanyName,
+        field: 'Dịch vụ sinh thái',
+        destination: address || user.address || 'Việt Nam',
+        image_url: 'image/Viet Nam.png',
+        provider_status: 'pending'
+      });
+
+      // Create VenderContract record to show up in Admin Dashboard pending list
+      let venderContract = await VenderContract.findOne({ where: { user_id: userId } });
+      if (!venderContract) {
+        await VenderContract.create({
+          id: 'VC-' + Date.now().toString().slice(-6),
+          user_id: userId,
+          name_contract: 'Hợp đồng đăng ký Nhà cung cấp',
+          text: `Tài khoản #${userId} (${fullname || user.fullname || user.username}) yêu cầu đăng ký làm nhà cung cấp cho doanh nghiệp: "${displayCompanyName}"`
         });
       }
     }
@@ -368,13 +392,22 @@ exports.updateProfile = async (req, res, next) => {
       gender,
       address,
       job,
-      role,
+      role: (role === 'provider' && user.role !== 'provider') ? user.role : role,
       company_name: company_name || companyName || user.company_name,
       avatarUrl: avatarUrl !== undefined ? avatarUrl : (avatar_url !== undefined ? avatar_url : user.avatarUrl)
     }, { where: { id: userId } });
 
     const updatedUser = await User.findByPk(userId, { attributes: { exclude: ['password_hash'] } });
-    res.json({ success: true, message: 'Cập nhật hồ sơ cá nhân thành công!', user: updatedUser });
+    if (pendingApproval) {
+      res.json({
+        success: true,
+        pending: true,
+        message: 'Yêu cầu đăng ký làm nhà cung cấp đã được gửi và đang chờ Admin phê duyệt!',
+        user: updatedUser
+      });
+    } else {
+      res.json({ success: true, message: 'Cập nhật hồ sơ cá nhân thành công!', user: updatedUser });
+    }
   } catch (error) {
     next(error);
   }
