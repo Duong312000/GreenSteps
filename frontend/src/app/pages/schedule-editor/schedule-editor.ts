@@ -147,35 +147,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     "da-nang": [16.0544, 108.2022]
   };
 
-  // Sample AI recommendations based on destinations
-  public samplePlacesRecs: { [key: string]: any[] } = {
-    "da-lat": [
-      { name: "Hồ Xuân Hương", category: "Khám phá", type: "attraction", cost: 0, carbon: 1, img: "image/1dc8619487310884c9d631d689ece1e7.jpg", lat: 11.9425, lng: 108.4385 },
-      { name: "Lẩu bò Ba Toa quán gỗ", category: "Ăn uống", type: "dining", cost: 150000, carbon: 3, img: "image/2eee566424c1f35fbeacf85496b4b6e7.jpg", lat: 11.9325, lng: 108.4452 },
-      { name: "Thác Datanla máng trượt", category: "Khám phá", type: "attraction", cost: 200000, carbon: 4, img: "image/2eee566424c1f35fbeacf85496b4b6e7.jpg", lat: 11.9015, lng: 108.4485 },
-      { name: "Vườn hoa Thành phố", category: "Khám phá", type: "attraction", cost: 50000, carbon: 1, img: "image/1dc8619487310884c9d631d689ece1e7.jpg", lat: 11.9480, lng: 108.4500 },
-      { name: "Đường Hầm Điêu Khắc", category: "Khám phá", type: "attraction", cost: 90000, carbon: 3, img: "image/1dc8619487310884c9d631d689ece1e7.jpg", lat: 11.8900, lng: 108.4100 },
-      { name: "Chợ đêm Đà Lạt", category: "Khám phá", type: "attraction", cost: 0, carbon: 1, img: "image/1dc8619487310884c9d631d689ece1e7.jpg", lat: 11.9423, lng: 108.4360 },
-      { name: "An Cafe", category: "Ăn uống", type: "dining", cost: 60000, carbon: 2, img: "image/2eee566424c1f35fbeacf85496b4b6e7.jpg", lat: 11.9400, lng: 108.4335 }
-    ],
-    "phu-yen": [
-      { name: "Gành Đá Đĩa kỳ vĩ", category: "Khám phá", type: "attraction", cost: 40000, carbon: 8, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 13.3650, lng: 109.2990 },
-      { name: "Mắt cá ngừ đại dương bà Tám", category: "Ăn uống", type: "dining", cost: 120000, carbon: 2, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 13.0882, lng: 109.3025 },
-      { name: "Tháp Nhạn cổ kính", category: "Khám phá", type: "attraction", cost: 20000, carbon: 1, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 13.0898, lng: 109.3005 },
-      { name: "Bãi Xép (Tôi thấy hoa vàng...)", category: "Khám phá", type: "attraction", cost: 20000, carbon: 2, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 13.2040, lng: 109.2890 },
-      { name: "Hải đăng Mũi Điện", category: "Khám phá", type: "attraction", cost: 20000, carbon: 4, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 12.8980, lng: 109.4600 },
-      { name: "Cơm gà Tuyết Nhung", category: "Ăn uống", type: "dining", cost: 45000, carbon: 2, img: "image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg", lat: 13.0905, lng: 109.3032 }
-    ],
-    "da-nang": [
-      { name: "Bà Nà Hills cáp treo", category: "Khám phá", type: "attraction", cost: 950000, carbon: 15, img: "image/Viet Nam.png", lat: 15.9960, lng: 107.9880 },
-      { name: "Bánh tráng cuốn thịt heo Trần", category: "Ăn uống", type: "dining", cost: 120000, carbon: 2, img: "image/Viet Nam.png", lat: 16.0544, lng: 108.2022 },
-      { name: "Chùa Linh Ứng Sơn Trà", category: "Khám phá", type: "attraction", cost: 0, carbon: 2, img: "image/Viet Nam.png", lat: 16.1000, lng: 108.2780 },
-      { name: "Ngũ Hành Sơn", category: "Khám phá", type: "attraction", cost: 40000, carbon: 1, img: "image/Viet Nam.png", lat: 16.0125, lng: 108.2635 },
-      { name: "Cầu Rồng Đà Nẵng", category: "Khám phá", type: "attraction", cost: 0, carbon: 1, img: "image/Viet Nam.png", lat: 16.0612, lng: 108.2268 },
-      { name: "Bán đảo Sơn Trà", category: "Khám phá", type: "attraction", cost: 0, carbon: 3, img: "image/Viet Nam.png", lat: 16.1200, lng: 108.2800 },
-      { name: "Mì Quảng Ếch Bếp Trang", category: "Ăn uống", type: "dining", cost: 65000, carbon: 2, img: "image/Viet Nam.png", lat: 16.0680, lng: 108.2215 }
-    ]
-  };
+  // Suggestions are loaded dynamically from the database only (GreenServices)
 
   @HostListener('document:mousedown', ['$event'])
   public onDocumentClick(event: MouseEvent) {
@@ -612,10 +584,12 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private getCoordinatesForPlace(name: string, destSlug: string): { lat: number | undefined; lng: number | undefined } {
-    const recs = this.samplePlacesRecs[destSlug] || [];
-    const foundRec = recs.find(r => r.name.toLowerCase().includes(name.toLowerCase()) || name.toLowerCase().includes(r.name.toLowerCase()));
-    if (foundRec) {
-      return { lat: foundRec.lat, lng: foundRec.lng };
+    const match = this.localServices.find(s => 
+      (s.name || s.name_service || '').toLowerCase().includes(name.toLowerCase()) ||
+      name.toLowerCase().includes((s.name || s.name_service || '').toLowerCase())
+    );
+    if (match && match.current_data && match.current_data.lat && match.current_data.lng) {
+      return { lat: match.current_data.lat, lng: match.current_data.lng };
     }
     return { lat: undefined, lng: undefined };
   }
@@ -844,30 +818,19 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.activeItinerary) return;
     const destLabel = this.activeItinerary.destLabel || this.mapSlugToDestLabel(this.activeItinerary.dest);
     try {
-      const user = this.authService.getCurrentUser();
-      let services: any[] = [];
-      if (user) {
-        const userId = user.id || user._id || '';
-        const allRecommended = await this.apiService.getRecommendedServices(userId);
-        // Filter recommended services to match the active itinerary's destination
-        services = allRecommended.filter(srv => 
-          srv.destination.toLowerCase().includes(destLabel.toLowerCase()) || 
-          destLabel.toLowerCase().includes(srv.destination.toLowerCase())
-        );
-      } else {
-        services = await this.apiService.getServicesByDestination(destLabel);
-      }
+      // Query only services matching the destination from the database
+      const services = await this.apiService.getServicesByDestination(destLabel);
       
       let recsList: any[] = [];
       if (services && services.length > 0) {
         recsList = services.map(srv => {
           let recType = srv.type;
-          if (recType === 'stay') recType = 'lodging';
-          else if (recType === 'food') recType = 'dining';
+          if (recType === 'stay' || recType === 'lodging') recType = 'lodging';
+          else if (recType === 'food' || recType === 'dining') recType = 'dining';
           
           return {
             name: srv.name || srv.name_service,
-            category: srv.current_data?.category || (srv.type === 'food' ? 'Ăn uống' : srv.type === 'stay' ? 'Lưu trú' : 'Khám phá'),
+            category: srv.current_data?.category || (srv.type === 'food' || srv.type === 'dining' ? 'Ăn uống' : srv.type === 'stay' || srv.type === 'lodging' ? 'Lưu trú' : 'Khám phá'),
             type: recType,
             cost: srv.cost,
             carbon: srv.carbon,
@@ -879,59 +842,15 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
         });
       }
 
-      // Also map static list
-      const destSlug = this.activeItinerary.dest || 'da-lat';
-      const staticList = this.samplePlacesRecs[destSlug] || [];
-      const mappedStatic = staticList.map(rec => ({
-        name: rec.name,
-        category: rec.category || 'Khám phá',
-        type: rec.type,
-        cost: rec.cost,
-        carbon: rec.carbon,
-        img: rec.img,
-        lat: rec.lat,
-        lng: rec.lng,
-        badges: rec.badges || ['green']
-      }));
-
-      // Combine dynamic and static recommendations, avoiding duplicate names
-      const combined: any[] = [...recsList];
-      mappedStatic.forEach(st => {
-        const alreadyExists = combined.some(item => 
-          item.name.toLowerCase().trim() === st.name.toLowerCase().trim() ||
-          item.name.toLowerCase().includes(st.name.toLowerCase()) ||
-          st.name.toLowerCase().includes(item.name.toLowerCase())
-        );
-        if (!alreadyExists) {
-          combined.push(st);
-        }
-      });
-
-      this.allCombinedRecs = combined;
+      this.allCombinedRecs = recsList;
     } catch (e) {
-      console.error('Error loading dynamic recommendations', e);
-      this.loadStaticFallbackRecommendations();
+      console.error('Error loading recommendations from database', e);
+      this.allCombinedRecs = [];
     }
     
     this.filterOutCurrentActivities();
     this.cdr.detectChanges();
     this.plotMapMarkers();
-  }
-
-  private loadStaticFallbackRecommendations() {
-    const destSlug = this.activeItinerary.dest || 'da-lat';
-    const staticList = this.samplePlacesRecs[destSlug] || [];
-    this.allCombinedRecs = staticList.map(rec => ({
-      name: rec.name,
-      category: rec.category || 'Khám phá',
-      type: rec.type,
-      cost: rec.cost,
-      carbon: rec.carbon,
-      img: rec.img,
-      lat: rec.lat,
-      lng: rec.lng,
-      badges: ['green']
-    }));
   }
 
   public filterOutCurrentActivities() {
@@ -1191,11 +1110,8 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       lat = meta.lat || undefined;
       lng = meta.lng || undefined;
     } else {
-      // Try samplePlacesRecs mapping first
-      const destSlug = this.activeItinerary.dest || 'da-lat';
-      const coords = this.getCoordinatesForPlace(val, destSlug);
-      lat = coords.lat;
-      lng = coords.lng;
+      lat = undefined;
+      lng = undefined;
     }
 
     // Ultimate fallback: Do not show on map if invalid or not found
