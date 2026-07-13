@@ -262,6 +262,8 @@ export class ApiService {
   }
 
   public async deleteItinerary(id: string): Promise<boolean> {
+    this.clearCache('itineraries_');
+    this.clearCache(`itinerary_${id}`);
     try {
       await firstValueFrom(this.http.delete(`${this.BACKEND_URL}/itineraries/${id}`));
       return true;

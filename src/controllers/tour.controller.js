@@ -457,9 +457,11 @@ exports.deleteCustomItinerary = async (req, res, next) => {
   try {
     await sequelize.transaction(async (t) => {
       await ScheduleActivity.destroy({ where: { schedule_id: id }, transaction: t });
+      await UserSchedule.destroy({ where: { schedule_id: id }, transaction: t });
       await ScheduleCustom.destroy({ where: { id }, transaction: t });
       await Schedule.destroy({ where: { id }, transaction: t });
     });
+
     res.json({ success: true, message: 'Đã xóa lịch trình thành công!' });
   } catch (error) {
     next(error);
