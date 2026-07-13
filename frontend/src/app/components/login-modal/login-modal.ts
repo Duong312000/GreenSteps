@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -56,7 +56,8 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -353,8 +354,10 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
   private startCountdown(seconds: number) {
     this.clearCountdown();
     this.resendSeconds = Math.max(0, Math.ceil(seconds));
+    this.cdr.detectChanges();
     this.countdownTimer = window.setInterval(() => {
       this.resendSeconds = Math.max(0, this.resendSeconds - 1);
+      this.cdr.detectChanges();
       if (this.resendSeconds === 0) this.clearCountdown();
     }, 1000);
   }
@@ -362,6 +365,7 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
   private clearCountdown() {
     if (this.countdownTimer) window.clearInterval(this.countdownTimer);
     this.countdownTimer = undefined;
+    this.cdr.detectChanges();
   }
 
   private focusFirstField() {
