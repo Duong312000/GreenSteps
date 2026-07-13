@@ -34,19 +34,6 @@
     <aside class="sidebar-panel" [style.width.px]="sidebarWidth" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 20px 0 20px 12px; overflow: visible !important;">
         <!-- Fixed Header & AI Button Area (Overflow Visible) -->
         <div style="display: flex; flex-direction: column; padding-right: 12px; margin-bottom: 20px; overflow: visible !important; position: relative; z-index: 20;">
-            <div class="sidebar-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                <button (click)="goBackToList()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 4px 0;">
-                    <i class="bi bi-arrow-left"></i> Quay lại
-                </button>
-                <span *ngIf="isAutoSaving" class="text-xs text-emerald-600 font-bold flex items-center gap-1" style="font-size: 10px;">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                    Đang lưu...
-                </span>
-                <span *ngIf="!isAutoSaving && !isItineraryLocked()" class="text-[10px] text-gray-400 font-medium bg-gray-50 border border-gray-150 px-2 py-0.5 rounded-full flex items-center gap-1" style="font-size: 9px; padding: 2px 6px;">
-                    <i class="bi bi-check-all"></i> Tự động lưu
-                </span>
-            </div>
-            
             <button class="btn-ai-assistant" (click)="toggleAiChat()">
                 <i class="bi bi-magic"></i> Trợ lý AI
             </button>
@@ -154,6 +141,20 @@
             </div>
             <button *ngIf="!isItineraryLocked()" class="btn-checkout-pay" (click)="triggerCheckout()" style="width: 100%; background-color: var(--primary-green); color: white; border: none; border-radius: var(--border-radius-sm); padding: 10px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="bi bi-credit-card-fill"></i> Thanh Toán Gộp Ví</button>
             <button class="btn-wallet-open" (click)="openCheckout()" style="width: 100%; background-color: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-secondary); border-radius: var(--border-radius-sm); padding: 10px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;"><i class="bi bi-wallet2"></i> Số dư Ví: {{ walletBalance | number:'1.0-0':'vi-VN' }}đ</button>
+            
+            <!-- Compact Back & Auto-save row at the bottom with no border -->
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: 8px; border: none; padding: 4px 0 0 0;">
+                <button type="button" (click)="goBackToList()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 4px 0; outline: none; box-shadow: none;">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </button>
+                <span *ngIf="isAutoSaving" class="text-xs text-emerald-600 font-bold flex items-center gap-1" style="font-size: 10px;">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    Đang lưu...
+                </span>
+                <span *ngIf="!isAutoSaving && !isItineraryLocked()" class="text-[10px] text-gray-400 font-medium bg-gray-50 border border-gray-150 px-2 py-0.5 rounded-full flex items-center gap-1" style="font-size: 9px; padding: 2px 6px;">
+                    <i class="bi bi-check-all"></i> Tự động lưu
+                </span>
+            </div>
         </div>
     </aside>
     <div class="layout-resizer" (mousedown)="startResizing($event, 'left')"></div>
