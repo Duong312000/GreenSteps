@@ -1,17 +1,17 @@
 const { Op } = require('sequelize');
-const { 
-  sequelize, 
-  User, 
-  Wallet, 
-  WalletTransaction, 
-  ServiceBooking, 
-  TourBooking, 
-  GreenService, 
-  Schedule, 
-  ScheduleSample, 
+const {
+  sequelize,
+  User,
+  Wallet,
+  WalletTransaction,
+  ServiceBooking,
+  TourBooking,
+  GreenService,
+  Schedule,
+  ScheduleSample,
   ScheduleCustom,
   ScheduleActivity,
-  Vender, 
+  Vender,
   Voucher,
   Notification
 } = require('../models/index');
@@ -52,7 +52,7 @@ async function syncCustomItineraryStatus(itineraryId, transaction = null) {
       const yyyy = dateObj.getFullYear();
       const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
       const dd = String(dateObj.getDate()).padStart(2, '0');
-      
+
       scheduleCustom.status = 'deposited';
       scheduleCustom.deposit_deadline = `${yyyy}-${mm}-${dd}`;
       await scheduleCustom.save(opts);
@@ -745,7 +745,7 @@ exports.approveBooking = async (req, res, next) => {
 
         // Update custom itinerary status & deadline (+7 days)
         await ScheduleCustom.update(
-          { 
+          {
             status: 'deposited',
             deposit_deadline: sequelize.literal("CURRENT_DATE + 7")
           },
@@ -1002,7 +1002,7 @@ exports.updateBookingStatuses = async (req, res, next) => {
     if (operation_status !== undefined) booking.operation_status = operation_status;
     if (confirm_deadline !== undefined) booking.confirm_deadline = confirm_deadline;
     if (payment_deadline !== undefined) booking.payment_deadline = payment_deadline;
-    
+
     // Map to legacy status for safety/backward-compat
     if (booking.booking_status === 'rejected') {
       booking.status = 'rejected';
