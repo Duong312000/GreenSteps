@@ -879,4 +879,8 @@ export class ProfileComponent implements OnInit {
   public onDragEnd() {
     this.isDragging = false;
   }
+
+  public openLoginModal() {
+    this.loginModalService.open();
+  }
 }
