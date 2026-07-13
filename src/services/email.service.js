@@ -86,13 +86,42 @@ function throwDeliveryError() {
 async function sendOtpEmail({ to, otp, purpose }) {
   await assertMailDomainCanReceive(to);
 
-  const config = requireSmtpConfig();
-  const transporter = getTransporter();
   const isRegister = purpose === 'REGISTER';
   const subject = isRegister
     ? 'Mã xác thực tài khoản GreenSteps'
     : 'Mã xác thực đặt lại mật khẩu GreenSteps';
   const title = isRegister ? 'Xác thực tài khoản GreenSteps' : 'Đặt lại mật khẩu GreenSteps';
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#12372d">
+      <h2>${title}</h2>
+      <p>Mã OTP của bạn là:</p>
+      <p style="font-size:28px;font-weight:700;letter-spacing:6px;color:#0E9F6E">${otp}</p>
+      <p>Mã có hiệu lực trong 5 phút. Không chia sẻ mã này với bất kỳ ai.</p>
+    </div>
+  `;
+
+  // 1. If Google Apps Script Web App URL is configured, send email via HTTPS API to bypass SMTP block
+  if (process.env.GMAIL_API_URL) {
+    try {
+      const response = await fetch(process.env.GMAIL_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, html })
+      });
+      const resData = await response.json();
+      if (resData && resData.success) {
+        return { accepted: [to] };
+      }
+      throw new Error(resData.error || 'Google Apps Script Web App execution failed');
+    } catch (error) {
+      console.error('Google Apps Script email API error:', error);
+      throwDeliveryError();
+    }
+  }
+
+  // 2. Fallback to standard SMTP Nodemailer
+  const config = requireSmtpConfig();
+  const transporter = getTransporter();
 
   try {
     const info = await transporter.sendMail({
@@ -100,14 +129,7 @@ async function sendOtpEmail({ to, otp, purpose }) {
       to,
       subject,
       text: `${title}\n\nMã OTP của bạn là: ${otp}\nMã có hiệu lực trong 5 phút. Không chia sẻ mã này với bất kỳ ai.`,
-      html: `
-        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#12372d">
-          <h2>${title}</h2>
-          <p>Mã OTP của bạn là:</p>
-          <p style="font-size:28px;font-weight:700;letter-spacing:6px;color:#0E9F6E">${otp}</p>
-          <p>Mã có hiệu lực trong 5 phút. Không chia sẻ mã này với bất kỳ ai.</p>
-        </div>
-      `
+      html
     });
 
     const accepted = info.accepted || [];
