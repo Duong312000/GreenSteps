@@ -174,7 +174,7 @@ export class AuthService {
     }
   }
 
-  public async updateProfile(userId: string, profileData: any): Promise<{ success: boolean; message?: string; user?: User }> {
+  public async updateProfile(userId: string, profileData: any): Promise<{ success: boolean; pending?: boolean; message?: string; user?: User }> {
     try {
       const res = await firstValueFrom(
         this.http.put<any>(`${this.BACKEND_URL}/profile/${userId}`, profileData, { withCredentials: true })
@@ -186,7 +186,7 @@ export class AuthService {
         this.apiService.clearCache('tour_reviews_');
         this.apiService.clearCache('service_reviews_');
         this.apiService.clearCache('preset_tour_');
-        return { success: true, user };
+        return { success: true, pending: res.pending, user };
       }
       return { success: false, message: res?.message || 'Cập nhật thất bại!' };
     } catch (err: any) {
