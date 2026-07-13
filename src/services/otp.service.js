@@ -50,6 +50,13 @@ async function compareResetJti(jti, storedHash) {
 }
 
 async function sendOtpEmailInBackground({ to, otp, purpose }) {
+  // Always print the OTP to server console logs for easier debugging and demo tracking
+  console.log(`\n==================================================`);
+  console.log(`[OTP LOG] Mã xác thực gửi tới: ${to}`);
+  console.log(`Mục đích: ${purpose}`);
+  console.log(`MÃ OTP: ${otp}`);
+  console.log(`==================================================\n`);
+
   await sendOtpEmail({ to, otp, purpose }).catch((error) => {
     console.error('OTP email delivery failed:', {
       to,
