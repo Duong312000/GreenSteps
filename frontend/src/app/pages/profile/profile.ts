@@ -82,6 +82,7 @@ export class ProfileComponent implements OnInit {
   public userGreenPoints = 0;
 
   public isQrModalOpen = false;
+  public isDepositModalOpen = false;
   public qrCodeUrl = '';
   public qrAmount = 0;
   public qrDescription = '';
@@ -612,6 +613,7 @@ export class ProfileComponent implements OnInit {
       this.qrDescription = `GS DEP ${txId}`;
       this.qrCodeUrl = `https://img.vietqr.io/image/OCB-0392851304-compact.png?amount=${this.qrAmount}&addInfo=${encodeURIComponent(this.qrDescription)}&accountName=KIEU%20HOANG%20DUONG`;
       this.isQrModalOpen = true;
+      this.isDepositModalOpen = false;
 
       this.depositAmount = null;
       this.loadWalletAndTransactions();
@@ -623,6 +625,15 @@ export class ProfileComponent implements OnInit {
   public closeQrModal() {
     this.isQrModalOpen = false;
     this.loadWalletAndTransactions();
+  }
+
+  public closeDepositModal() {
+    this.isDepositModalOpen = false;
+    this.depositAmount = null;
+  }
+
+  public selectDepositPreset(amount: number) {
+    this.depositAmount = amount;
   }
 
   public async handleRoleToggle() {

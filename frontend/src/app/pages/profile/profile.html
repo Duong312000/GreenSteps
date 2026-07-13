@@ -772,7 +772,7 @@
                 <article class="profile-card wallet-quick-card">
                     <h2>Tác vụ nhanh</h2>
                     <div>
-                        <button type="button"><i class="bi bi-wallet2"></i><span>Nạp tiền</span><small>Thêm số dư ví</small></button>
+                        <button type="button" (click)="isDepositModalOpen = true"><i class="bi bi-wallet2"></i><span>Nạp tiền</span><small>Thêm số dư ví</small></button>
                         <button *ngIf="profileUser.role === 'provider'" type="button"><i class="bi bi-upload"></i><span>Rút tiền</span><small>Về tài khoản</small></button>
                         <button type="button"><i class="bi bi-arrow-repeat"></i><span>Chuyển điểm</span><small>Tặng điểm xanh</small></button>
                         <button type="button"><i class="bi bi-qr-code-scan"></i><span>Quét QR</span><small>Thanh toán nhanh</small></button>
@@ -931,6 +931,94 @@
                 <img [src]="qrCodeUrl" alt="VietQR OCB Code" style="width:250px; height:250px; display:block; border-radius:8px;">
             </div>
             <button type="button" (click)="closeQrModal()" style="width:100%; height:42px; background:#0E9F6E; border:none; border-radius:8px; color:#fff; font-weight:700; cursor:pointer;">Toi da chuyen khoan - Dong popup</button>
+        </div>
+    </div>
+
+    <!-- Deposit Money Modal -->
+    <div class="modal-overlay" [class.active]="isDepositModalOpen" style="position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000;" [style.display]="isDepositModalOpen ? 'flex' : 'none'">
+        <div class="modal-content" style="background:#fff; border-radius:16px; padding:24px; max-width:440px; width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.15); position:relative; text-align:left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1.5px solid #f3f4f6; padding-bottom:12px;">
+                <h3 style="font-size:1.15rem; font-weight:800; color:#111827; margin:0; display:flex; align-items:center; gap:8px;">
+                    <i class="bi bi-wallet2" style="color:#0E9F6E; font-size:1.3rem;"></i> Nạp tiền ví GreenSteps
+                </h3>
+                <button type="button" (click)="closeDepositModal()" style="background:none; border:none; font-size:1.4rem; color:#9ca3af; cursor:pointer; padding:0 4px;"><i class="bi bi-x-lg"></i></button>
+            </div>
+            
+            <div style="margin-bottom:20px;">
+                <label style="display:block; font-size:.85rem; font-weight:600; color:#4b5563; margin-bottom:8px;">Nhập số tiền cần nạp (đ):</label>
+                <div style="position:relative;">
+                    <input type="number" [(ngModel)]="depositAmount" placeholder="Nhập số tiền..." min="20000" step="10000"
+                           style="width:100%; height:48px; padding:0 16px; border:1.5px solid #e5e7eb; border-radius:10px; font-size:1.15rem; font-weight:700; color:#111827; outline:none; transition: border-color 0.2s;"
+                           onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#e5e7eb'">
+                    <span style="position:absolute; right:16px; top:12px; font-size:1.1rem; font-weight:700; color:#9ca3af;">đ</span>
+                </div>
+                <small style="display:block; color:#9ca3af; font-size:.75rem; margin-top:6px; font-style:italic;">
+                    * Số tiền nạp tối thiểu là 20.000đ
+                </small>
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <span style="display:block; font-size:.85rem; font-weight:600; color:#4b5563; margin-bottom:10px;">Chọn nhanh số tiền:</span>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
+                    <button type="button" (click)="selectDepositPreset(50000)" 
+                            style="padding:10px 4px; border:1px solid #e5e7eb; border-radius:8px; font-size:.85rem; font-weight:700; color:#4b5563; background:#fff; cursor:pointer; transition: all 0.2s;"
+                            [style.borderColor]="depositAmount === 50000 ? '#10b981' : '#e5e7eb'"
+                            [style.background]="depositAmount === 50000 ? '#f0fdf4' : '#fff'"
+                            [style.color]="depositAmount === 50000 ? '#0E9F6E' : '#4b5563'">
+                        50k
+                    </button>
+                    <button type="button" (click)="selectDepositPreset(100000)"
+                            style="padding:10px 4px; border:1px solid #e5e7eb; border-radius:8px; font-size:.85rem; font-weight:700; color:#4b5563; background:#fff; cursor:pointer; transition: all 0.2s;"
+                            [style.borderColor]="depositAmount === 100000 ? '#10b981' : '#e5e7eb'"
+                            [style.background]="depositAmount === 100000 ? '#f0fdf4' : '#fff'"
+                            [style.color]="depositAmount === 100000 ? '#0E9F6E' : '#4b5563'">
+                        100k
+                    </button>
+                    <button type="button" (click)="selectDepositPreset(200000)"
+                            style="padding:10px 4px; border:1px solid #e5e7eb; border-radius:8px; font-size:.85rem; font-weight:700; color:#4b5563; background:#fff; cursor:pointer; transition: all 0.2s;"
+                            [style.borderColor]="depositAmount === 200000 ? '#10b981' : '#e5e7eb'"
+                            [style.background]="depositAmount === 200000 ? '#f0fdf4' : '#fff'"
+                            [style.color]="depositAmount === 200000 ? '#0E9F6E' : '#4b5563'">
+                        200k
+                    </button>
+                    <button type="button" (click)="selectDepositPreset(500000)"
+                            style="padding:10px 4px; border:1px solid #e5e7eb; border-radius:8px; font-size:.85rem; font-weight:700; color:#4b5563; background:#fff; cursor:pointer; transition: all 0.2s;"
+                            [style.borderColor]="depositAmount === 500000 ? '#10b981' : '#e5e7eb'"
+                            [style.background]="depositAmount === 500000 ? '#f0fdf4' : '#fff'"
+                            [style.color]="depositAmount === 500000 ? '#0E9F6E' : '#4b5563'">
+                        500k
+                    </button>
+                    <button type="button" (click)="selectDepositPreset(1000000)"
+                            style="padding:10px 4px; border:1px solid #e5e7eb; border-radius:8px; font-size:.85rem; font-weight:700; color:#4b5563; background:#fff; cursor:pointer; transition: all 0.2s;"
+                            [style.borderColor]="depositAmount === 1000000 ? '#10b981' : '#e5e7eb'"
+                            [style.background]="depositAmount === 1000000 ? '#f0fdf4' : '#fff'"
+                            [style.color]="depositAmount === 1000000 ? '#0E9F6E' : '#4b5563'">
+                        1.000k
+                    </button>
+                    <button type="button" (click)="selectDepositPreset(2000000)"
+                            style="padding:10px 4px; border:1px solid #e5e7eb; border-radius:8px; font-size:.85rem; font-weight:700; color:#4b5563; background:#fff; cursor:pointer; transition: all 0.2s;"
+                            [style.borderColor]="depositAmount === 2000000 ? '#10b981' : '#e5e7eb'"
+                            [style.background]="depositAmount === 2000000 ? '#f0fdf4' : '#fff'"
+                            [style.color]="depositAmount === 2000000 ? '#0E9F6E' : '#4b5563'">
+                        2.000k
+                    </button>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:12px;">
+                <button type="button" (click)="closeDepositModal()" 
+                        style="flex:1; height:45px; border:1.5px solid #d1d5db; border-radius:8px; background:#fff; color:#4b5563; font-weight:700; cursor:pointer; transition: all 0.2s;"
+                        onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='#fff'">
+                    Hủy bỏ
+                </button>
+                <button type="button" (click)="handleDeposit()" [disabled]="!depositAmount || depositAmount < 20000"
+                        style="flex:1; height:45px; border:none; border-radius:8px; background:#0E9F6E; color:#fff; font-weight:700; cursor:pointer; transition: all 0.2s; box-shadow:0 4px 12px rgba(14,159,110,0.2);"
+                        onmouseover="this.style.background='#057a55'" onmouseout="this.style.background='#0E9F6E'"
+                        [style.opacity]="(!depositAmount || depositAmount < 20000) ? '0.5' : '1'"
+                        [style.cursor]="(!depositAmount || depositAmount < 20000) ? 'not-allowed' : 'pointer'">
+                    Xác nhận nạp
+                </button>
+            </div>
         </div>
     </div>
 
