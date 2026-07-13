@@ -28,6 +28,9 @@ export class PartnerDashboardComponent implements OnInit {
   public conversionRate: number = 18.5;
   public marketingPerformance: string = '+24%';
 
+  // Tooltip State
+  public activeTooltip: { x: number; y: number; text: string } | null = null;
+
   // Dynamic datasets computed from real bookings
   public topProducts: any[] = [];
   public campaignPerformance: any[] = [];
@@ -40,6 +43,30 @@ export class PartnerDashboardComponent implements OnInit {
   public visitorPathViews: string = 'M 40 180 L 580 180';
   public visitorPathBookings: string = 'M 40 180 L 580 180';
   public visitorPathInquiries: string = 'M 40 180 L 580 180';
+
+  // Tooltip mouse handlers
+  public showTooltip(event: MouseEvent, text: string) {
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    const container = (event.target as HTMLElement).closest('.relative-chart-container')?.getBoundingClientRect();
+    if (container) {
+      this.activeTooltip = {
+        x: rect.left - container.left + rect.width / 2,
+        y: rect.top - container.top - 40,
+        text: text
+      };
+    }
+    this.cdr.detectChanges();
+  }
+
+  public hideTooltip() {
+    this.activeTooltip = null;
+    this.cdr.detectChanges();
+  }
+
+  public formatNumber(val: number): string {
+    if (val === null || val === undefined) return '0';
+    return Number(val).toLocaleString('vi-VN');
+  }
 
   constructor(
     private apiService: ApiService,
