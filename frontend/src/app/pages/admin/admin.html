@@ -200,7 +200,17 @@
             <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                 <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
                     <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wider">Yêu cầu duyệt chuyển khoản QR & Giữ chỗ</h3>
-                    <button (click)="loadBookings()" class="text-xs text-[#0E9F6E] hover:underline bg-transparent border-none cursor-pointer font-semibold"><i class="bi bi-arrow-clockwise"></i> Tải lại</button>
+                    <div class="flex items-center gap-2">
+                        <button (click)="approveAllBookings()" *ngIf="pendingBookings.length > 0"
+                                class="text-xs px-3 py-1.5 bg-[#0E9F6E] hover:bg-[#0c875d] text-white font-bold rounded-lg border-none cursor-pointer transition-colors shadow-sm">
+                            <i class="bi bi-check-all"></i> Duyệt tất cả ({{ pendingBookings.length }})
+                        </button>
+                        <button (click)="rejectAllBookings()" *ngIf="pendingBookings.length > 0"
+                                class="text-xs px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-lg border border-red-200 cursor-pointer transition-colors">
+                            <i class="bi bi-x-circle"></i> Từ chối tất cả
+                        </button>
+                        <button (click)="loadBookings()" class="text-xs text-[#0E9F6E] hover:underline bg-transparent border-none cursor-pointer font-semibold"><i class="bi bi-arrow-clockwise"></i> Tải lại</button>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">

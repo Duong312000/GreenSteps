@@ -227,4 +227,38 @@ export class AdminComponent implements OnInit {
       }
     });
   }
+
+  public async approveAllBookings() {
+    if (this.pendingBookings.length === 0) return;
+    this.showConfirm(`Phê duyệt tất cả ${this.pendingBookings.length} đơn hàng đang chờ duyệt?`, async () => {
+      let successCount = 0;
+      let failCount = 0;
+      for (const item of this.pendingBookings) {
+        const ok = await this.apiService.approveBooking(item.id);
+        if (ok) successCount++; else failCount++;
+      }
+      await this.loadBookings();
+      this.showAlert(
+        `Hoàn thành: ${successCount} thành công${failCount > 0 ? ', ' + failCount + ' thất bại' : ''}.`,
+        failCount > 0 ? 'error' : 'success'
+      );
+    });
+  }
+
+  public async rejectAllBookings() {
+    if (this.pendingBookings.length === 0) return;
+    this.showConfirm(`Từ chối tất cả ${this.pendingBookings.length} đơn hàng đang chờ duyệt? Hành động này không thể hoàn tác!`, async () => {
+      let successCount = 0;
+      let failCount = 0;
+      for (const item of this.pendingBookings) {
+        const ok = await this.apiService.rejectBooking(item.id);
+        if (ok) successCount++; else failCount++;
+      }
+      await this.loadBookings();
+      this.showAlert(
+        `Đã từ chối: ${successCount} đơn${failCount > 0 ? ', ' + failCount + ' thất bại' : ''}.`,
+        failCount > 0 ? 'error' : 'success'
+      );
+    });
+  }
 }
