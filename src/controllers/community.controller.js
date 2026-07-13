@@ -266,3 +266,22 @@ exports.getPostComments = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.unlikePost = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const post = await CommunityPost.findByPk(id);
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Bài viết không tồn tại!' });
+    }
+
+    // Decrement like in DB (min 0)
+    post.likes_count = Math.max(0, post.likes_count - 1);
+    await post.save();
+
+    res.json({ success: true, likes: post.likes_count });
+  } catch (error) {
+    next(error);
+  }
+};

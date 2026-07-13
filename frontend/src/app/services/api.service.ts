@@ -725,6 +725,14 @@ export class ApiService {
     }
   }
 
+  public async unlikePost(postId: string): Promise<{ success: boolean; likes: number }> {
+    try {
+      return await firstValueFrom(this.http.post<{ success: boolean; likes: number }>(`${this.BACKEND_URL}/community/posts/${postId}/unlike`, {}));
+    } catch (e) {
+      return { success: false, likes: 0 };
+    }
+  }
+
   public async addPostComment(postId: string, text: string, parentCommentId?: string, userId?: string, fullname?: string, imageUrl?: string): Promise<{ success: boolean; comment: any }> {
     try {
       return await firstValueFrom(

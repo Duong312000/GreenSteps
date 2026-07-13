@@ -369,37 +369,55 @@ export class CommunityComponent implements OnInit {
   }
 
   public async handleLike(post: CommunityPost) {
-    if (this.likedPostsSet.has(post.id)) {
-      this.showAlert("Thông báo", "Bạn đã thích bài viết này rồi!", "warning");
-      return;
-    }
-
-    // 1. Save original state for potential rollback
+    const isLiked = this.likedPostsSet.has(post.id);
     const originalLikes = post.likes;
 
-    // 2. Optimistic UI update: increment count and change button state instantly
-    post.likes = (post.likes || 0) + 1;
-    this.likedPostsSet.add(post.id);
-    localStorage.setItem('greensteps_liked_posts', JSON.stringify(Array.from(this.likedPostsSet)));
-    this.cdr.detectChanges();
-
-    try {
-      // 3. Make API call in the background
-      const res = await this.apiService.likePost(post.id);
-      if (res && res.success) {
-        // Sync with official likes count from server just in case
-        post.likes = res.likes;
-        this.cdr.detectChanges();
-      } else {
-        throw new Error('API reported failure');
-      }
-    } catch (e) {
-      // 4. Rollback state if the background call fails
-      post.likes = originalLikes;
+    if (isLiked) {
+      // 1. OPTIMISTIC UNLIKE
+      post.likes = Math.max(0, (post.likes || 0) - 1);
       this.likedPostsSet.delete(post.id);
       localStorage.setItem('greensteps_liked_posts', JSON.stringify(Array.from(this.likedPostsSet)));
       this.cdr.detectChanges();
-      this.showAlert("Lỗi", "Thích bài viết thất bại!", "error");
+
+      try {
+        const res = await this.apiService.unlikePost(post.id);
+        if (res && res.success) {
+          post.likes = res.likes;
+          this.cdr.detectChanges();
+        } else {
+          throw new Error('API reported failure');
+        }
+      } catch (e) {
+        // Rollback unlike
+        post.likes = originalLikes;
+        this.likedPostsSet.add(post.id);
+        localStorage.setItem('greensteps_liked_posts', JSON.stringify(Array.from(this.likedPostsSet)));
+        this.cdr.detectChanges();
+        this.showAlert("Lỗi", "Bỏ thích thất bại!", "error");
+      }
+    } else {
+      // 2. OPTIMISTIC LIKE
+      post.likes = (post.likes || 0) + 1;
+      this.likedPostsSet.add(post.id);
+      localStorage.setItem('greensteps_liked_posts', JSON.stringify(Array.from(this.likedPostsSet)));
+      this.cdr.detectChanges();
+
+      try {
+        const res = await this.apiService.likePost(post.id);
+        if (res && res.success) {
+          post.likes = res.likes;
+          this.cdr.detectChanges();
+        } else {
+          throw new Error('API reported failure');
+        }
+      } catch (e) {
+        // Rollback like
+        post.likes = originalLikes;
+        this.likedPostsSet.delete(post.id);
+        localStorage.setItem('greensteps_liked_posts', JSON.stringify(Array.from(this.likedPostsSet)));
+        this.cdr.detectChanges();
+        this.showAlert("Lỗi", "Thích bài viết thất bại!", "error");
+      }
     }
   }
 
