@@ -84,24 +84,24 @@
                         <section class="profile-stats-grid stats-grid" aria-label="GreenSteps stats">
                             <article class="profile-stat-card stat-item stat-item--trips">
                                 <div class="profile-stat-icon"><i class="bi bi-luggage"></i></div>
-                                <strong class="stat-number">3</strong>
+                                <strong class="stat-number">{{ savedItinerariesCount }}</strong>
                                 <span class="stat-label">Lịch trình<br>đã lưu</span>
                                 <span class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> +1 so với 7 ngày trước</span>
-                                <a href="#" (click)="$event.preventDefault()">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+                                <a routerLink="/schedule">Xem tất cả <i class="bi bi-arrow-right"></i></a>
                             </article>
                             <article class="profile-stat-card stat-item stat-item--tours">
                                 <div class="profile-stat-icon"><i class="bi bi-ticket-perforated"></i></div>
-                                <strong class="stat-number">0</strong>
+                                <strong class="stat-number">{{ bookedToursCount }}</strong>
                                 <span class="stat-label">Tour đã đặt</span>
                                 <span class="stat-trend trend-neutral">Không thay đổi</span>
-                                <a href="#" (click)="$event.preventDefault()">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+                                <a href="#" (click)="activeSection = 'wallet'; $event.preventDefault()">Xem tất cả <i class="bi bi-arrow-right"></i></a>
                             </article>
                             <article class="profile-stat-card stat-item stat-item--points">
                                 <div class="profile-stat-icon"><i class="bi bi-tree-fill"></i></div>
-                                <strong class="stat-number">120</strong>
+                                <strong class="stat-number">{{ userGreenPoints }}</strong>
                                 <span class="stat-label">Điểm xanh</span>
                                 <span class="stat-trend trend-up"><i class="bi bi-arrow-up"></i> +24 điểm</span>
-                                <a href="#" (click)="$event.preventDefault()">Chi tiết <i class="bi bi-arrow-right"></i></a>
+                                <a href="#" (click)="activeSection = 'wallet'; $event.preventDefault()">Chi tiết <i class="bi bi-arrow-right"></i></a>
                             </article>
                         </section>
                     </article>

@@ -104,6 +104,7 @@ export interface Booking {
 export interface WalletInfo {
   registered: boolean;
   balance: number;
+  green_points?: number;
 }
 
 export interface WalletTransaction {

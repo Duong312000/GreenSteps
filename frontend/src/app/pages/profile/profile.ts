@@ -77,6 +77,9 @@ export class ProfileComponent implements OnInit {
   public walletBalance = 0;
   public depositAmount: number | null = null;
   public transactions: WalletTransaction[] = [];
+  public savedItinerariesCount = 0;
+  public bookedToursCount = 0;
+  public userGreenPoints = 0;
 
   public isQrModalOpen = false;
   public qrCodeUrl = '';
@@ -432,7 +435,23 @@ export class ProfileComponent implements OnInit {
     const wallet = await this.apiService.getWalletInfo(userId);
     this.walletRegistered = wallet.registered;
     this.walletBalance = wallet.balance;
+    this.userGreenPoints = wallet.green_points || 0;
     this.transactions = await this.apiService.getTransactions(userId);
+
+    try {
+      const itineraries = await this.apiService.getItineraries(userId);
+      this.savedItinerariesCount = itineraries.length;
+    } catch (e) {
+      this.savedItinerariesCount = 0;
+    }
+
+    try {
+      const bookings = await this.apiService.getBookings(undefined, userId);
+      this.bookedToursCount = bookings.length;
+    } catch (e) {
+      this.bookedToursCount = 0;
+    }
+
     this.cdr.detectChanges();
   }
 
