@@ -82,16 +82,44 @@ export class PartnerBookingsComponent implements OnInit {
   public editingNotesReviewId: string | null = null;
   public internalNotesText: string = '';
 
-  // Custom Alert Modal
-  public customAlert: { message: string; type: 'success' | 'error' | 'info' } | null = null;
+  // Custom Dialog Modal
+  public customDialog: { 
+    message: string; 
+    type: 'success' | 'error' | 'info' | 'confirm'; 
+    onConfirm?: () => void; 
+    onCancel?: () => void;
+  } | null = null;
 
-  public showAlert(message: string, type: 'success' | 'error' | 'info' = 'success') {
-    this.customAlert = { message, type };
+  public showAlert(message: string, type: 'success' | 'error' | 'info' = 'success', callback?: () => void) {
+    this.customDialog = {
+      message,
+      type,
+      onConfirm: () => {
+        this.closeCustomDialog();
+        if (callback) callback();
+      }
+    };
     this.cdr.detectChanges();
   }
 
-  public closeCustomAlert() {
-    this.customAlert = null;
+  public showConfirm(message: string, onConfirm: () => void, onCancel?: () => void) {
+    this.customDialog = {
+      message,
+      type: 'confirm',
+      onConfirm: () => {
+        this.closeCustomDialog();
+        onConfirm();
+      },
+      onCancel: () => {
+        this.closeCustomDialog();
+        if (onCancel) onCancel();
+      }
+    };
+    this.cdr.detectChanges();
+  }
+
+  public closeCustomDialog() {
+    this.customDialog = null;
     this.cdr.detectChanges();
   }
 
@@ -186,7 +214,7 @@ export class PartnerBookingsComponent implements OnInit {
   }
 
   public async confirmBookingDirect(id: string) {
-    if (confirm('Bạn có chắc chắn muốn phê duyệt cọc đơn này?')) {
+    this.showConfirm('Bạn có chắc chắn muốn phê duyệt cọc đơn này?', async () => {
       const ok = await this.apiService.approveBooking(id);
       if (ok) {
         this.showAlert('Duyệt thành công!', 'success');
@@ -195,7 +223,7 @@ export class PartnerBookingsComponent implements OnInit {
       } else {
         this.showAlert('Lỗi phê duyệt.', 'error');
       }
-    }
+    });
   }
 
   public triggerRejectModal(booking: any) {
@@ -223,7 +251,7 @@ export class PartnerBookingsComponent implements OnInit {
   }
 
   public async completeBookingDirect(id: string) {
-    if (confirm('Đơn dịch vụ đã phục vụ xong? Hãy đánh dấu hoàn thành.')) {
+    this.showConfirm('Đơn dịch vụ đã phục vụ xong? Hãy đánh dấu hoàn thành.', async () => {
       const ok = await this.apiService.completeBooking(id);
       if (ok) {
         this.showAlert('Đã cập nhật trạng thái đơn thành HOÀN THÀNH!', 'success');
@@ -232,7 +260,7 @@ export class PartnerBookingsComponent implements OnInit {
       } else {
         this.showAlert('Lỗi cập nhật.', 'error');
       }
-    }
+    });
   }
 
   // 2. Change Requests handlers

@@ -238,5 +238,45 @@
             </div>
         </div>
 
+        <!-- Custom Center Alert & Confirm Dialog Modal -->
+        <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-all animate-fade-in" *ngIf="customDialog">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden border border-gray-150 p-6 flex flex-col items-center text-center space-y-4 animate-scale-up">
+                <!-- Icon -->
+                <div class="w-12 h-12 rounded-full flex items-center justify-center"
+                     [ngClass]="customDialog.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 
+                                (customDialog.type === 'error' ? 'bg-rose-50 text-rose-600' : 
+                                (customDialog.type === 'confirm' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'))">
+                    <i class="bi" [ngClass]="customDialog.type === 'success' ? 'bi-check-circle-fill text-2xl' : 
+                                             (customDialog.type === 'error' ? 'bi-x-circle-fill text-2xl' : 
+                                             (customDialog.type === 'confirm' ? 'bi-question-circle-fill text-2xl' : 'bi-info-circle-fill text-2xl'))"></i>
+                </div>
+                
+                <!-- Message -->
+                <div class="space-y-1">
+                    <h4 class="font-extrabold text-gray-900 text-sm uppercase tracking-wider">
+                        {{ customDialog.type === 'confirm' ? 'Xác nhận yêu cầu' : 'Thông báo hệ thống' }}
+                    </h4>
+                    <p class="text-xs text-gray-600 leading-relaxed font-semibold">{{ customDialog.message }}</p>
+                </div>
+                
+                <!-- Buttons -->
+                <div class="flex gap-2 w-full pt-1">
+                    <ng-container *ngIf="customDialog.type === 'confirm'; else alertButton">
+                        <button type="button" (click)="customDialog.onCancel ? customDialog.onCancel() : closeCustomDialog()" class="flex-1 py-2.5 border border-gray-200 text-gray-500 hover:bg-gray-50 font-bold rounded-xl text-xs cursor-pointer bg-white transition-colors">
+                            Hủy bỏ
+                        </button>
+                        <button type="button" (click)="customDialog.onConfirm && customDialog.onConfirm()" class="flex-1 py-2.5 bg-teal-600 text-white font-bold rounded-xl text-xs hover:bg-teal-700 cursor-pointer border-none transition-colors">
+                            Đồng ý
+                        </button>
+                    </ng-container>
+                    <ng-template #alertButton>
+                        <button type="button" (click)="closeCustomDialog()" class="w-full py-2.5 bg-teal-600 text-white font-bold rounded-xl text-xs hover:bg-teal-700 cursor-pointer border-none transition-colors">
+                            Đồng ý
+                        </button>
+                    </ng-template>
+                </div>
+            </div>
+        </div>
+
     </div>
 </main>

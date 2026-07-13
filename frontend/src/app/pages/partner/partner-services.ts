@@ -29,7 +29,7 @@ export class PartnerServicesComponent implements OnInit {
   public serviceCarbon: number | null = null;
   public serviceDest: string = 'Đà Lạt';
   public serviceAddress: string = '';
-  public maxCapacity: number = 10;
+  public maxCapacity: number | null = null;
   public imageUrl: string = 'image/Viet Nam.png';
   public openingSchedule: string = 'Tất cả các ngày trong tuần';
   public cancellationPolicy: string = 'Hoàn trả 100% nếu hủy trước 24 giờ khởi hành.';
@@ -44,16 +44,47 @@ export class PartnerServicesComponent implements OnInit {
   public startTime: string = '';
   public notesForCustomers: string = '';
 
-  // Custom Alert Modal
-  public customAlert: { message: string; type: 'success' | 'error' | 'info' } | null = null;
+  // Drag and Drop Image state
+  public isDragging: boolean = false;
 
-  public showAlert(message: string, type: 'success' | 'error' | 'info' = 'success') {
-    this.customAlert = { message, type };
+  // Custom Dialog Modal
+  public customDialog: { 
+    message: string; 
+    type: 'success' | 'error' | 'info' | 'confirm'; 
+    onConfirm?: () => void; 
+    onCancel?: () => void;
+  } | null = null;
+
+  public showAlert(message: string, type: 'success' | 'error' | 'info' = 'success', callback?: () => void) {
+    this.customDialog = {
+      message,
+      type,
+      onConfirm: () => {
+        this.closeCustomDialog();
+        if (callback) callback();
+      }
+    };
     this.cdr.detectChanges();
   }
 
-  public closeCustomAlert() {
-    this.customAlert = null;
+  public showConfirm(message: string, onConfirm: () => void, onCancel?: () => void) {
+    this.customDialog = {
+      message,
+      type: 'confirm',
+      onConfirm: () => {
+        this.closeCustomDialog();
+        onConfirm();
+      },
+      onCancel: () => {
+        this.closeCustomDialog();
+        if (onCancel) onCancel();
+      }
+    };
+    this.cdr.detectChanges();
+  }
+
+  public closeCustomDialog() {
+    this.customDialog = null;
     this.cdr.detectChanges();
   }
 
@@ -176,11 +207,11 @@ export class PartnerServicesComponent implements OnInit {
     this.isAddModalOpen = true;
     this.currentStep = 1;
     this.serviceName = '';
-    this.serviceType = 'attraction';
+    this.serviceType = 'tour'; // Default to tour type
     this.serviceCost = null;
     this.serviceCarbon = null;
     this.serviceAddress = '';
-    this.maxCapacity = 10;
+    this.maxCapacity = null;
     this.imageUrl = 'image/Viet Nam.png';
     this.openingSchedule = 'Tất cả các ngày trong tuần';
     this.cancellationPolicy = 'Hoàn trả 100% nếu hủy trước 24 giờ khởi hành.';
@@ -207,7 +238,7 @@ export class PartnerServicesComponent implements OnInit {
     const details = await this.apiService.getServiceDetails(srv.id);
     if (details) {
       this.serviceAddress = details.current_data?.address || '';
-      this.maxCapacity = details.max_capacity || 10;
+      this.maxCapacity = details.max_capacity || null;
       this.imageUrl = details.image_url || details.current_data?.img || 'image/Viet Nam.png';
       this.openingSchedule = details.current_data?.schedule || 'Tất cả các ngày trong tuần';
       this.cancellationPolicy = details.current_data?.policy || 'Hoàn trả 100% nếu hủy trước 24 giờ khởi hành.';
@@ -221,7 +252,7 @@ export class PartnerServicesComponent implements OnInit {
       this.notesForCustomers = details.current_data?.notesForCustomers || '';
     } else {
       this.serviceAddress = (srv as any).address || (srv as any).current_data?.address || '';
-      this.maxCapacity = srv.max_capacity || 10;
+      this.maxCapacity = srv.max_capacity || null;
 
       this.childPrice = null;
       this.serviceDuration = '';
@@ -275,7 +306,7 @@ export class PartnerServicesComponent implements OnInit {
 
   // Quick actions
   public async cloneService(srv: Service) {
-    if (confirm(`Bạn có chắc chắn muốn nhân bản dịch vụ "${srv.name}"?`)) {
+    this.showConfirm(`Bạn có chắc chắn muốn nhân bản dịch vụ "${srv.name}"?`, async () => {
       const ok = await this.apiService.cloneService(srv.id);
       if (ok) {
         this.showAlert('Nhân bản dịch vụ thành công!', 'success');
@@ -283,11 +314,11 @@ export class PartnerServicesComponent implements OnInit {
       } else {
         this.showAlert('Lỗi nhân bản dịch vụ!', 'error');
       }
-    }
+    });
   }
 
   public async suspendService(srv: Service) {
-    if (confirm(`Bạn có chắc chắn muốn tạm ngừng hoạt động dịch vụ "${srv.name}"?`)) {
+    this.showConfirm(`Bạn có chắc chắn muốn tạm ngừng hoạt động dịch vụ "${srv.name}"?`, async () => {
       const ok = await this.apiService.suspendService(srv.id);
       if (ok) {
         this.showAlert('Đã tạm ngừng hoạt động dịch vụ!', 'success');
@@ -295,11 +326,11 @@ export class PartnerServicesComponent implements OnInit {
       } else {
         this.showAlert('Lỗi khi tạm ngừng dịch vụ!', 'error');
       }
-    }
+    });
   }
 
   public async resendServiceApproval(srv: Service) {
-    if (confirm(`Bạn muốn gửi duyệt lại dịch vụ "${srv.name}"?`)) {
+    this.showConfirm(`Bạn muốn gửi duyệt lại dịch vụ "${srv.name}"?`, async () => {
       const ok = await this.apiService.resendServiceApproval(srv.id);
       if (ok) {
         this.showAlert('Đã gửi duyệt lại dịch vụ xanh!', 'success');
@@ -307,7 +338,7 @@ export class PartnerServicesComponent implements OnInit {
       } else {
         this.showAlert('Lỗi gửi duyệt lại!', 'error');
       }
-    }
+    });
   }
 
   public getStatusLabel(status?: string): string {
@@ -356,7 +387,7 @@ export class PartnerServicesComponent implements OnInit {
     if (!this.currentUser) return;
 
     const providerId = this.currentUser.id || this.currentUser._id || '';
-    const categoryMap: Record<string, string> = { stay: 'Lưu trú', food: 'Ăn uống', tour: 'Khám phá', transport: 'Di chuyển', attraction: 'Khám phá' };
+    const categoryMap: Record<string, string> = { stay: 'Lưu trú', food: 'Ăn uống', tour: 'Tour', transport: 'Di chuyển', attraction: 'Giải trí' };
 
     let resolvedLat: number | null = null;
     let resolvedLng: number | null = null;
@@ -456,10 +487,11 @@ export class PartnerServicesComponent implements OnInit {
   }
 
   public getActivityTypeLabel(type: string): string {
-    if (type === "stay" || type === "lodging") return "Nơi lưu trú";
+    if (type === "stay" || type === "lodging") return "Lưu trú";
     if (type === "food" || type === "dining") return "Ăn uống";
     if (type === "transport") return "Di chuyển";
-    return "Trải nghiệm / Tour";
+    if (type === "tour") return "Tour";
+    return "Giải trí";
   }
 
   public onCostOrTypeChange() {
@@ -478,6 +510,9 @@ export class PartnerServicesComponent implements OnInit {
         break;
       case 'transport':
         calculated = 0.5 + Math.min(7.5, cost / 200000);
+        break;
+      case 'tour':
+        calculated = 1.5 + Math.min(10.0, cost / 200000);
         break;
       case 'attraction':
       default:
@@ -500,16 +535,44 @@ export class PartnerServicesComponent implements OnInit {
   public onFileSelected(event: any) {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        this.showAlert('File quá lớn! Vui lòng chọn ảnh dưới 5MB.', 'error');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.imageUrl = reader.result as string;
-        this.cdr.detectChanges();
-      };
-      reader.readAsDataURL(file);
+      this.uploadSingleFile(file);
+    }
+  }
+
+  private uploadSingleFile(file: File) {
+    if (file.size > 5 * 1024 * 1024) {
+      this.showAlert('File quá lớn! Vui lòng chọn ảnh dưới 5MB.', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imageUrl = reader.result as string;
+      this.cdr.detectChanges();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  public onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+    this.cdr.detectChanges();
+  }
+
+  public onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+    this.cdr.detectChanges();
+  }
+
+  public onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+    const file = event.dataTransfer?.files?.[0];
+    if (file) {
+      this.uploadSingleFile(file);
     }
   }
 

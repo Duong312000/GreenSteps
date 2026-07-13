@@ -168,7 +168,7 @@ const UserSchedule = sequelize.define('UserSchedule', {}, { timestamps: true });
 const GreenService = sequelize.define('GreenService', {
   id: { type: DataTypes.STRING, primaryKey: true },
   name_service: { type: DataTypes.STRING, allowNull: false },
-  type: { type: DataTypes.ENUM('stay', 'food', 'transport', 'attraction'), allowNull: false },
+  type: { type: DataTypes.ENUM('stay', 'food', 'transport', 'attraction', 'tour'), allowNull: false },
   cost: { type: DataTypes.DOUBLE, allowNull: false },
   destination: { type: DataTypes.STRING, allowNull: false },
   carbon: { type: DataTypes.DOUBLE, defaultValue: 0.0 },

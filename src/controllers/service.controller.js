@@ -75,7 +75,11 @@ exports.getProviderServices = async (req, res, next) => {
       cost: s.cost,
       status: s.status || 'active',
       views_count: s.views_count || 0,
-      bookingsCount: s.bookings_count
+      bookingsCount: s.bookings_count,
+      max_capacity: s.max_capacity,
+      carbon: s.carbon,
+      image_url: s.image_url,
+      current_data: s.current_data || {}
     }));
 
     res.json(mapped);
@@ -86,7 +90,7 @@ exports.getProviderServices = async (req, res, next) => {
 
 // 3. Add Service (creates Vender if not exists)
 exports.addService = async (req, res, next) => {
-  const { providerId, name, type, destination, cost, carbon, icon, lat, lng, category, badges, maxCapacity, address } = req.body;
+  const { providerId, name, type, destination, cost, carbon, icon, lat, lng, category, badges, maxCapacity, address, status, imageUrl, current_data } = req.body;
 
   try {
     let vender = await Vender.findOne({ where: { user_id: providerId } });
@@ -99,13 +103,18 @@ exports.addService = async (req, res, next) => {
     }
 
     const serviceId = 'ser_' + Date.now();
-    const currentData = {
+    const resolvedCurrentData = current_data || {
       lat: lat ? parseFloat(lat) : null,
       lng: lng ? parseFloat(lng) : null,
       address: address || null,
       category: category || (type === 'food' ? 'Ăn uống' : type === 'stay' ? 'Lưu trú' : 'Khám phá'),
-      img: 'image/Viet Nam.png'
+      img: imageUrl || 'image/Viet Nam.png'
     };
+
+    // Ensure image in current_data is aligned
+    if (imageUrl) {
+      resolvedCurrentData.img = imageUrl;
+    }
 
     const service = await GreenService.create({
       id: serviceId,
@@ -115,11 +124,12 @@ exports.addService = async (req, res, next) => {
       cost: cost,
       destination: destination,
       carbon: carbon || 0.5,
-      image_url: 'image/Viet Nam.png',
+      image_url: imageUrl || 'image/Viet Nam.png',
       rating: 5.0,
       bookings_count: 0,
-      current_data: currentData,
-      max_capacity: maxCapacity || 10
+      current_data: resolvedCurrentData,
+      max_capacity: maxCapacity !== undefined && maxCapacity !== null ? Number(maxCapacity) : 10,
+      status: status || 'pending'
     });
 
     const badgeList = badges && badges.length > 0 ? badges : ['green'];
@@ -136,9 +146,9 @@ exports.addService = async (req, res, next) => {
       cost: service.cost,
       carbon: service.carbon,
       icon: icon || 'bi-tree-fill',
-      status: 'active',
+      status: service.status,
       badges: badgeList,
-      current_data: currentData
+      current_data: service.current_data
     });
   } catch (error) {
     next(error);
@@ -286,7 +296,7 @@ exports.getServiceReviews = async (req, res, next) => {
 // 7. Update Service
 exports.updateService = async (req, res, next) => {
   const { id } = req.params;
-  const { name, type, destination, cost, carbon, lat, lng, address, category, status } = req.body;
+  const { name, type, destination, cost, carbon, lat, lng, address, category, status, maxCapacity, imageUrl, current_data } = req.body;
   try {
     const service = await GreenService.findByPk(id);
     if (!service) {
@@ -299,14 +309,28 @@ exports.updateService = async (req, res, next) => {
     if (cost !== undefined) service.cost = Number(cost);
     if (carbon !== undefined) service.carbon = Number(carbon);
     if (status !== undefined) service.status = status;
+    if (maxCapacity !== undefined) service.max_capacity = Number(maxCapacity);
+    if (req.body.max_capacity !== undefined) service.max_capacity = Number(req.body.max_capacity);
+    if (imageUrl !== undefined) service.image_url = imageUrl;
 
     const currentData = service.current_data || {};
     if (lat !== undefined) currentData.lat = lat ? parseFloat(lat) : null;
     if (lng !== undefined) currentData.lng = lng ? parseFloat(lng) : null;
     if (address !== undefined) currentData.address = address;
     if (category !== undefined) currentData.category = category;
+    if (imageUrl !== undefined) currentData.img = imageUrl;
 
-    service.current_data = { ...currentData };
+    if (current_data !== undefined) {
+      service.current_data = { ...currentData, ...current_data };
+    } else {
+      service.current_data = { ...currentData };
+    }
+    
+    // Ensure image in current_data is aligned
+    if (imageUrl) {
+      service.current_data.img = imageUrl;
+    }
+    
     service.changed('current_data', true);
 
     await service.save();

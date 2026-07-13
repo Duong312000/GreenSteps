@@ -25,11 +25,53 @@ export class AdminComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
 
+  // Custom Dialog Modal
+  public customDialog: { 
+    message: string; 
+    type: 'success' | 'error' | 'info' | 'confirm'; 
+    onConfirm?: () => void; 
+    onCancel?: () => void;
+  } | null = null;
+
+  public showAlert(message: string, type: 'success' | 'error' | 'info' = 'success', callback?: () => void) {
+    this.customDialog = {
+      message,
+      type,
+      onConfirm: () => {
+        this.closeCustomDialog();
+        if (callback) callback();
+      }
+    };
+    this.cdr.detectChanges();
+  }
+
+  public showConfirm(message: string, onConfirm: () => void, onCancel?: () => void) {
+    this.customDialog = {
+      message,
+      type: 'confirm',
+      onConfirm: () => {
+        this.closeCustomDialog();
+        onConfirm();
+      },
+      onCancel: () => {
+        this.closeCustomDialog();
+        if (onCancel) onCancel();
+      }
+    };
+    this.cdr.detectChanges();
+  }
+
+  public closeCustomDialog() {
+    this.customDialog = null;
+    this.cdr.detectChanges();
+  }
+
   async ngOnInit() {
     const user = this.authService.getCurrentUser();
     if (!user || user.role !== 'admin') {
-      alert('Bạn không có quyền truy cập trang này!');
-      this.router.navigate(['/home']);
+      this.showAlert('Bạn không có quyền truy cập trang này!', 'error', () => {
+        this.router.navigate(['/home']);
+      });
       return;
     }
 
@@ -79,110 +121,110 @@ export class AdminComponent implements OnInit {
   // Approvals & Rejections
   public async approveProvider(targetUserId: string) {
     if (!targetUserId) return;
-    if (confirm('Bạn có chắc chắn muốn phê duyệt đối tác này và kích hoạt các quyền B2B của họ?')) {
+    this.showConfirm('Bạn có chắc chắn muốn phê duyệt đối tác này và kích hoạt các quyền B2B của họ?', async () => {
       const success = await this.apiService.approveProvider(targetUserId);
       if (success) {
-        alert('Phê duyệt đối tác thành công!');
+        this.showAlert('Phê duyệt đối tác thành công!', 'success');
         await this.loadProviders();
       } else {
-        alert('Phê duyệt thất bại. Vui lòng thử lại!');
+        this.showAlert('Phê duyệt thất bại. Vui lòng thử lại!', 'error');
       }
-    }
+    });
   }
 
   public async approveDeposit(txId: string) {
-    if (confirm('Xác nhận số tiền nạp đã vào tài khoản ngân hàng và duyệt giao dịch này?')) {
+    this.showConfirm('Xác nhận số tiền nạp đã vào tài khoản ngân hàng và duyệt giao dịch này?', async () => {
       const success = await this.apiService.approveDeposit(txId);
       if (success) {
-        alert('Đã duyệt nạp tiền ví thành công!');
+        this.showAlert('Đã duyệt nạp tiền ví thành công!', 'success');
         await this.loadDeposits();
       } else {
-        alert('Phê duyệt thất bại!');
+        this.showAlert('Phê duyệt thất bại!', 'error');
       }
-    }
+    });
   }
 
   public async rejectDeposit(txId: string) {
-    if (confirm('Từ chối giao dịch nạp tiền này?')) {
+    this.showConfirm('Từ chối giao dịch nạp tiền này?', async () => {
       const success = await this.apiService.rejectDeposit(txId);
       if (success) {
-        alert('Đã từ chối giao dịch nạp tiền ví!');
+        this.showAlert('Đã từ chối giao dịch nạp tiền ví!', 'success');
         await this.loadDeposits();
       } else {
-        alert('Thao tác thất bại!');
+        this.showAlert('Thao tác thất bại!', 'error');
       }
-    }
+    });
   }
 
   public async approveWithdrawal(wdId: string) {
-    if (confirm('Xác nhận đối soát rút tiền ví và chuyển tiền về tài khoản ngân hàng đối tác?')) {
+    this.showConfirm('Xác nhận đối soát rút tiền ví và chuyển tiền về tài khoản ngân hàng đối tác?', async () => {
       const success = await this.apiService.approveWithdrawal(wdId);
       if (success) {
-        alert('Phê duyệt rút tiền thành công!');
+        this.showAlert('Phê duyệt rút tiền thành công!', 'success');
         await this.loadWithdrawals();
       } else {
-        alert('Phê duyệt thất bại!');
+        this.showAlert('Phê duyệt thất bại!', 'error');
       }
-    }
+    });
   }
 
   public async rejectWithdrawal(wdId: string) {
-    if (confirm('Từ chối giao dịch rút tiền này?')) {
+    this.showConfirm('Từ chối giao dịch rút tiền này?', async () => {
       const success = await this.apiService.rejectWithdrawal(wdId);
       if (success) {
-        alert('Đã từ chối giao dịch rút tiền ví!');
+        this.showAlert('Đã từ chối giao dịch rút tiền ví!', 'success');
         await this.loadWithdrawals();
       } else {
-        alert('Thao tác thất bại!');
+        this.showAlert('Thao tác thất bại!', 'error');
       }
-    }
+    });
   }
 
   public async approveWallet(txId: string) {
-    if (confirm('Phê duyệt kích hoạt ví GreenSteps cho khách hàng này và tặng 200k?')) {
+    this.showConfirm('Phê duyệt kích hoạt ví GreenSteps cho khách hàng này và tặng 200k?', async () => {
       const success = await this.apiService.approveWallet(txId);
       if (success) {
-        alert('Kích hoạt ví và cộng quà thưởng thành công!');
+        this.showAlert('Kích hoạt ví và cộng quà thưởng thành công!', 'success');
         await this.loadWallets();
       } else {
-        alert('Duyệt ví thất bại!');
+        this.showAlert('Duyệt ví thất bại!', 'error');
       }
-    }
+    });
   }
 
   public async rejectWallet(txId: string) {
-    if (confirm('Từ chối yêu cầu kích hoạt ví này?')) {
+    this.showConfirm('Từ chối yêu cầu kích hoạt ví này?', async () => {
       const success = await this.apiService.rejectWallet(txId);
       if (success) {
-        alert('Đã từ chối yêu cầu kích hoạt ví!');
+        this.showAlert('Đã từ chối yêu cầu kích hoạt ví!', 'success');
         await this.loadWallets();
       } else {
-        alert('Thao tác thất bại!');
+        this.showAlert('Thao tác thất bại!', 'error');
       }
-    }
+    });
   }
 
   public async approveBooking(bookingId: string) {
-    if (confirm('Phê duyệt và xác nhận thanh toán/giữ chỗ cho đơn hàng này?')) {
+    this.showConfirm('Phê duyệt và xác nhận thanh toán/giữ chỗ cho đơn hàng này?', async () => {
       const success = await this.apiService.approveBooking(bookingId);
       if (success) {
-        alert('Phê duyệt đơn hàng thành công!');
+        this.showAlert('Phê duyệt đơn hàng thành công!', 'success');
         await this.loadBookings();
       } else {
-        alert('Phê duyệt thất bại!');
+        this.showAlert('Phê duyệt thất bại!', 'error');
       }
-    }
+    });
   }
 
   public async rejectBooking(bookingId: string) {
-    if (confirm('Từ chối đơn hàng này?')) {
+    this.showConfirm('Từ chối đơn hàng này?', async () => {
       const success = await this.apiService.rejectBooking(bookingId);
       if (success) {
-        alert('Đã từ chối đơn đặt chỗ!');
+        this.showAlert('Đã từ chối đơn đặt chỗ!', 'success');
         await this.loadBookings();
       } else {
-        alert('Thao tác thất bại!');
+        this.showAlert('Thao tác thất bại!', 'error');
       }
-    }
+    });
   }
 }
