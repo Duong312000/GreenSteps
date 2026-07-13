@@ -9,6 +9,8 @@ const {
   GreenService, 
   Schedule, 
   ScheduleSample, 
+  ScheduleCustom,
+  ScheduleActivity,
   Vender, 
   Voucher,
   Notification
@@ -35,6 +37,29 @@ function promptTerminalApproval(message) {
       resolve(approved);
     });
   });
+}
+
+async function syncCustomItineraryStatus(itineraryId, transaction = null) {
+  try {
+    const opts = transaction ? { transaction } : {};
+    const scheduleCustom = await ScheduleCustom.findOne({
+      where: { id: itineraryId },
+      ...opts
+    });
+    if (scheduleCustom) {
+      const dateObj = new Date();
+      dateObj.setDate(dateObj.getDate() + 7);
+      const yyyy = dateObj.getFullYear();
+      const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const dd = String(dateObj.getDate()).padStart(2, '0');
+      
+      scheduleCustom.status = 'deposited';
+      scheduleCustom.deposit_deadline = `${yyyy}-${mm}-${dd}`;
+      await scheduleCustom.save(opts);
+    }
+  } catch (err) {
+    console.error('Failed to sync custom itinerary status:', err);
+  }
 }
 
 exports.createBooking = async (req, res, next) => {
@@ -74,19 +99,29 @@ exports.createBooking = async (req, res, next) => {
       totalValue = service.cost * guests;
       tourNameOrServiceName = service.name_service;
       bookingId = 'BKS-' + Date.now();
-    } else if (type === 'tour') {
-      const sampleTour = await ScheduleSample.findOne({ where: { id: targetId } });
+    } else if (type === 'tour' || type === 'itinerary') {
       const baseTour = await Schedule.findByPk(targetId);
       if (!baseTour) {
-        return res.status(404).json({ success: false, message: 'Tour du lịch không tồn tại!' });
+        return res.status(404).json({ success: false, message: 'Lịch trình hoặc Tour không tồn tại!' });
       }
 
-      const tourCost = sampleTour ? sampleTour.cost : 0;
+      let tourCost = 0;
+      const sampleTour = await ScheduleSample.findOne({ where: { id: targetId } });
+      if (sampleTour) {
+        tourCost = sampleTour.cost;
+      } else {
+        // It's a custom itinerary! Fetch costs of activities
+        const activities = await ScheduleActivity.findAll({ where: { schedule_id: targetId } });
+        activities.forEach(act => {
+          if (act.cost) tourCost += act.cost;
+        });
+      }
+
       totalValue = tourCost * guests;
-      tourNameOrServiceName = baseTour.tour_name;
+      tourNameOrServiceName = baseTour.tour_name || 'Lịch trình tự chọn';
       bookingId = 'BKT-' + Date.now();
     } else {
-      return res.status(400).json({ success: false, message: 'Loại đặt chỗ không hợp lệ (yêu cầu service hoặc tour)!' });
+      return res.status(400).json({ success: false, message: 'Loại đặt chỗ không hợp lệ (yêu cầu service hoặc tour/itinerary)!' });
     }
 
     // 2. Validate voucher if applied
@@ -158,9 +193,10 @@ exports.createBooking = async (req, res, next) => {
             evoucher_code: evoucherCode,
             status: 'deposit',
             escrow_status: 'holding',
-            voucher_code: voucherCode || null
           }, { transaction: t });
         }
+
+        await syncCustomItineraryStatus(targetId, t);
 
         // Set voucher status to used
         if (voucherCode) {
@@ -217,9 +253,10 @@ exports.createBooking = async (req, res, next) => {
             evoucher_code: evoucherCode,
             status: 'deposit',
             escrow_status: 'holding',
-            voucher_code: voucherCode || null
           }, { transaction: t });
         }
+
+        await syncCustomItineraryStatus(targetId, t);
 
         // Set voucher status to used
         if (voucherCode) {
@@ -701,6 +738,10 @@ exports.approveBooking = async (req, res, next) => {
     booking.status = 'deposit';
     booking.escrow_status = 'holding';
     await booking.save();
+
+    if (booking.schedule_id) {
+      await syncCustomItineraryStatus(booking.schedule_id);
+    }
 
     // Sync pending QR transfer transaction
     await WalletTransaction.update(

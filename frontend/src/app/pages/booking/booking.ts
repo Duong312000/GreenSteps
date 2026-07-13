@@ -143,6 +143,12 @@ export class BookingComponent implements OnInit {
   async ngOnInit() {
     this.syncStepFromUrl();
     this.loadContext();
+
+    if (this.isPaymentStep || this.isCompleteStep) {
+      const draft = localStorage.getItem('greensteps_booking_draft');
+      if (draft) this.restoreDraft(JSON.parse(draft));
+    }
+
     this.authService.currentUser$.subscribe(async user => {
       this.currentUser = user;
       this.prefillUserInfo(user);
@@ -158,19 +164,52 @@ export class BookingComponent implements OnInit {
       }
     });
 
-    if (this.bookingContext.tourId) {
-      this.activeTour = await this.apiService.getPresetTour(this.bookingContext.tourId);
+    await this.loadActiveTour();
+    this.isPageLoading = false;
+  }
+
+  private async loadActiveTour() {
+    const query = this.route.snapshot.queryParamMap;
+    const isItinerary = query.get('bookingType') === 'itinerary' || 
+                        (this.bookingContext.tourId && this.bookingContext.tourId.startsWith('iti_'));
+
+    if (isItinerary && this.bookingContext.tourId) {
+      try {
+        const itinerary = await this.apiService.getItinerary(this.bookingContext.tourId);
+        if (itinerary) {
+          let totalCost = 0;
+          const daysData = itinerary.daysData || itinerary.days_data || [];
+          daysData.forEach((day: any) => {
+            if (day) {
+              day.forEach((act: any) => {
+                if (act && act.cost) totalCost += act.cost;
+              });
+            }
+          });
+
+          this.activeTour = {
+            id: itinerary.id,
+            title: itinerary.name || 'Lịch trình tùy chỉnh của bạn',
+            destination: itinerary.destination || 'Đà Lạt',
+            days: itinerary.days || 1,
+            cost: totalCost,
+            carbon: itinerary.totalCarbon || itinerary.total_carbon || 0,
+            data: daysData
+          } as any;
+        }
+      } catch (err) {
+        console.error('Failed to load itinerary for booking:', err);
+      }
+    } else {
+      if (this.bookingContext.tourId) {
+        this.activeTour = await this.apiService.getPresetTour(this.bookingContext.tourId);
+      }
     }
+
     if (!this.activeTour) {
       const tours = await this.apiService.getPresetTours();
       this.activeTour = tours[0] || null;
     }
-
-    if (this.isPaymentStep || this.isCompleteStep) {
-      const draft = localStorage.getItem('greensteps_booking_draft');
-      if (draft) this.restoreDraft(JSON.parse(draft));
-    }
-    this.isPageLoading = false;
   }
 
 
@@ -296,7 +335,7 @@ export class BookingComponent implements OnInit {
 
     // Prepare API booking data
     const bookingData: any = {
-      type: 'tour',
+      type: targetId.startsWith('iti_') ? 'itinerary' : 'tour',
       targetId: targetId,
       bookingDate: this.bookingContext.checkIn,
       guests: this.bookingContext.guestCount,

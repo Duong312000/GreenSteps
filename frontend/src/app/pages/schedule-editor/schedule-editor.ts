@@ -2053,38 +2053,16 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   public triggerCheckout() {
     if (!this.activeItinerary) return;
-    this.isCheckoutModalOpen = true;
-    this.isItineraryPay = true;
-    this.checkoutPaymentMethod = 'wallet';
-    this.reloadWalletInfo();
-
-    // Auto-fill contact details from currentUser
-    const user = this.authService.getCurrentUser();
-    if (user) {
-      this.checkoutEmail = user.email || '';
-      this.checkoutPhone = user.phone || '';
-      const nameParts = (user.fullname || '').split(' ');
-      if (nameParts.length > 1) {
-        this.checkoutLastName = nameParts[0];
-        this.checkoutFirstName = nameParts.slice(1).join(' ');
-      } else {
-        this.checkoutFirstName = user.fullname || user.username || '';
-        this.checkoutLastName = '';
+    this.router.navigate(['/booking'], {
+      queryParams: {
+        bookingType: 'itinerary',
+        itineraryId: this.activeItinerary.id,
+        tourId: this.activeItinerary.id,
+        checkIn: this.activeItinerary.start_date || '2026-07-15',
+        checkOut: this.activeItinerary.end_date || '2026-07-18',
+        guestCount: 2
       }
-    }
-
-    this.checkoutItems = [];
-    let total = 0;
-    this.activeItinerary.days.forEach((day: any) => {
-      day.activities.forEach((act: any) => {
-        if (act.cost > 0) {
-          total += act.cost;
-          this.checkoutItems.push({ title: act.title, cost: act.cost });
-        }
-      });
     });
-
-    this.checkoutTotal = total;
   }
 
   public onCardNumberChange() {
