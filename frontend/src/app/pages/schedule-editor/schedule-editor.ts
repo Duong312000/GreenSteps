@@ -42,6 +42,11 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public shareMessage: string = '';
   public shareLink: string = '';
 
+  // Collaborator Invitation properties
+  public isInviteFriendModalOpen: boolean = false;
+  public inviteEmails: string = '';
+  public isSendingInvites: boolean = false;
+
   // Custom Premium Dialog Modal properties (Alert & Confirm)
   public dialogVisible = false;
   public dialogTitle = '';
@@ -343,6 +348,14 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.cdr.detectChanges();
 
     if (success) {
+      if (this.newTripCompanionEmail.trim()) {
+        const sender = this.authService.getCurrentUser();
+        const senderName = sender ? (sender.fullname || sender.username) : 'Một người bạn';
+        const inviteUrl = `${window.location.origin}/?inviteItineraryId=${newIti.id}&senderName=${encodeURIComponent(senderName)}`;
+        this.apiService.inviteCollaborator(newIti.id, this.newTripCompanionEmail.trim(), inviteUrl)
+          .then(() => console.log('Initial collaborator invites sent'))
+          .catch(err => console.error('Initial invites failed:', err));
+      }
       localStorage.setItem('greensteps_working_itinerary_id', newIti.id);
       this.router.navigate(['/schedule', newIti.id]);
     } else {
@@ -2372,6 +2385,8 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
 
   public getItineraryCoverImage(): string {
     if (!this.activeItinerary) return 'image/Viet Nam.png';
+    if (this.activeItinerary.imageUrl) return this.activeItinerary.imageUrl;
+    
     const dest = (this.activeItinerary.dest || '').toLowerCase();
     const destLabel = (this.activeItinerary.destLabel || this.activeItinerary.destination || '').toLowerCase();
     
@@ -2386,6 +2401,95 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       return 'image/da38f44902391ce9a9e4f0fd4b69fb04.jpg';
     }
     return 'image/Viet Nam.png';
+  }
+
+  public async onCoverFileSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (!file || !this.activeItinerary) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64Data = reader.result as string;
+      try {
+        const uploadRes = await this.apiService.uploadImageBase64(base64Data);
+        if (uploadRes && uploadRes.success && uploadRes.url) {
+          this.activeItinerary.imageUrl = uploadRes.url;
+          await this.saveItineraryToDb();
+          this.cdr.detectChanges();
+        } else {
+          this.showAlert('Tải ảnh bìa lên thất bại!', 'error');
+        }
+      } catch (err) {
+        console.error('Upload cover failed:', err);
+        this.showAlert('Tải ảnh bìa lên thất bại!', 'error');
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Collaborator Invitation actions
+  public openInviteFriendModal() {
+    this.isInviteFriendModalOpen = true;
+    this.inviteEmails = '';
+    this.isSendingInvites = false;
+    this.cdr.detectChanges();
+  }
+
+  public closeInviteFriendModal() {
+    this.isInviteFriendModalOpen = false;
+    this.inviteEmails = '';
+    this.cdr.detectChanges();
+  }
+
+  private getCollaboratorInviteLink(): string {
+    if (!this.activeItinerary) return window.location.origin;
+    const user = this.authService.getCurrentUser();
+    const senderName = user ? (user.fullname || user.username) : 'Một người bạn';
+    return `${window.location.origin}/?inviteItineraryId=${this.activeItinerary.id}&senderName=${encodeURIComponent(senderName)}`;
+  }
+
+  public async sendCollaboratorInvites() {
+    if (!this.activeItinerary || !this.inviteEmails.trim()) {
+      this.showAlert('Vui lòng nhập địa chỉ email hợp lệ!', 'warning');
+      return;
+    }
+
+    this.isSendingInvites = true;
+    this.cdr.detectChanges();
+
+    const inviteUrl = this.getCollaboratorInviteLink();
+
+    try {
+      const res = await this.apiService.inviteCollaborator(
+        this.activeItinerary.id,
+        this.inviteEmails.trim(),
+        inviteUrl
+      );
+      this.isSendingInvites = false;
+      if (res && res.success) {
+        this.closeInviteFriendModal();
+        this.showAlert(res.message || 'Đã gửi lời mời qua email thành công!', 'success');
+      } else {
+        this.showAlert(res.message || 'Gửi lời mời thất bại!', 'error');
+      }
+    } catch (e: any) {
+      this.isSendingInvites = false;
+      this.showAlert(e.error?.message || 'Đã xảy ra lỗi khi gửi lời mời.', 'error');
+    }
+  }
+
+  public shareInviteSocial(platform: 'facebook') {
+    const inviteLink = this.getCollaboratorInviteLink();
+    const url = encodeURIComponent(inviteLink);
+    const message = encodeURIComponent(`Đồng hành cùng tôi lập lịch trình cho chuyến đi bằng GreenSteps nhé! 🌿`);
+    let shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${message}`;
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+  }
+
+  public copyInviteLink() {
+    const inviteLink = this.getCollaboratorInviteLink();
+    navigator.clipboard.writeText(inviteLink);
+    this.showAlert('Đã sao chép liên kết mời gửi qua Messenger/Zalo!', 'success');
   }
 
   public async payCheckoutItinerary() {

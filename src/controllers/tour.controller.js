@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const { sendItineraryInviteEmail } = require('../services/email.service');
 const { 
   sequelize, 
   Schedule, 
@@ -224,7 +225,7 @@ exports.getRecommendations = async (req, res, next) => {
 
 // 4. Custom Itineraries: Save or Update Itinerary (calculates carbon footprint)
 exports.saveCustomItinerary = async (req, res, next) => {
-  const { id, name, user_id, destination, days, totalCost, daysData, status, deposit_deadline, start_date, end_date, companion_email } = req.body;
+  const { id, name, user_id, destination, days, totalCost, daysData, status, deposit_deadline, start_date, end_date, companion_email, imageUrl, image_url } = req.body;
 
   try {
     // Sum carbon emissions from activities
@@ -260,7 +261,7 @@ exports.saveCustomItinerary = async (req, res, next) => {
         days: days,
         discount: 0,
         carbon: computedCarbon,
-        image_url: 'image/Viet Nam.png',
+        image_url: imageUrl || image_url || 'image/Viet Nam.png',
         tour_description: `Hành trình tự thiết kế đi ${destination}`
       }, { transaction: t });
 
@@ -357,8 +358,18 @@ exports.saveCustomItinerary = async (req, res, next) => {
 exports.getUserCustomItineraries = async (req, res, next) => {
   const { userId } = req.params;
   try {
+    const userSchedules = await UserSchedule.findAll({
+      where: { user_id: userId }
+    });
+    const scheduleIds = userSchedules.map(us => us.schedule_id);
+
     const customs = await ScheduleCustom.findAll({
-      where: { user_id: userId },
+      where: {
+        [Op.or]: [
+          { user_id: userId },
+          { id: { [Op.in]: scheduleIds } }
+        ]
+      },
       include: [{
         model: Schedule,
         include: [{ model: ScheduleActivity }]
@@ -379,7 +390,8 @@ exports.getUserCustomItineraries = async (req, res, next) => {
         deposit_deadline: c.deposit_deadline || null,
         start_date: c.start_date || null,
         end_date: c.end_date || null,
-        companion_email: c.companion_email || null
+        companion_email: c.companion_email || null,
+        imageUrl: c.Schedule.image_url
       }));
 
     res.json(result);
@@ -402,6 +414,16 @@ exports.getCustomItineraryById = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy lịch trình!' });
     }
 
+    // Fetch collaborators via UserSchedule
+    const userSchedules = await UserSchedule.findAll({
+      where: { schedule_id: id }
+    });
+    const collaboratorIds = userSchedules.map(us => us.user_id);
+    const collaborators = await User.findAll({
+      where: { id: { [Op.in]: collaboratorIds } },
+      attributes: ['id', 'username', 'fullname', 'avatarUrl', 'email']
+    });
+
     res.json({
       id: c.id,
       name: c.Schedule.tour_name,
@@ -414,7 +436,15 @@ exports.getCustomItineraryById = async (req, res, next) => {
       deposit_deadline: c.deposit_deadline || null,
       start_date: c.start_date || null,
       end_date: c.end_date || null,
-      companion_email: c.companion_email || null
+      companion_email: c.companion_email || null,
+      imageUrl: c.Schedule.image_url,
+      collaborators: collaborators.map(u => ({
+        id: u.id,
+        username: u.username,
+        fullname: u.fullname || u.username,
+        avatarUrl: u.avatarUrl,
+        email: u.email
+      }))
     });
   } catch (error) {
     next(error);
@@ -676,6 +706,85 @@ exports.cloneItinerary = async (req, res, next) => {
     });
 
     res.json({ success: true, message: 'Đã sao chép lịch trình thành công!', newItineraryId: newId });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 8. Invite Friends/Collaborators to Custom Itinerary
+exports.inviteCollaborator = async (req, res, next) => {
+  const { id } = req.params;
+  const { emails, inviteUrl } = req.body;
+
+  try {
+    const c = await ScheduleCustom.findByPk(id, {
+      include: [{ model: Schedule }]
+    });
+    if (!c || !c.Schedule) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy lịch trình!' });
+    }
+
+    const emailList = typeof emails === 'string' 
+      ? emails.split(',').map(e => e.trim()).filter(e => e.length > 0)
+      : (Array.isArray(emails) ? emails : []);
+
+    if (emailList.length === 0) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp danh sách email hợp lệ!' });
+    }
+
+    c.companion_email = emailList.join(', ');
+    await c.save();
+
+    let successCount = 0;
+    for (const email of emailList) {
+      const emailSent = await sendItineraryInviteEmail({
+        to: email,
+        itineraryName: c.Schedule.tour_name,
+        inviteUrl: inviteUrl
+      });
+      if (emailSent) successCount++;
+    }
+
+    if (successCount > 0) {
+      res.json({ success: true, message: `Đã gửi thành công ${successCount}/${emailList.length} thư mời!` });
+    } else {
+      res.status(500).json({ success: false, message: 'Gửi email lời mời thất bại. Vui lòng kiểm tra lại địa chỉ email hoặc thử lại!' });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 9. Join Custom Itinerary (for invited friends)
+exports.joinItinerary = async (req, res, next) => {
+  const { id } = req.params;
+  const { userId } = req.body;
+
+  try {
+    const c = await ScheduleCustom.findByPk(id, {
+      include: [{ model: Schedule }]
+    });
+    if (!c || !c.Schedule) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy lịch trình!' });
+    }
+
+    await UserSchedule.findOrCreate({
+      where: { user_id: userId, schedule_id: id }
+    });
+
+    const joinedUser = await User.findByPk(userId);
+    if (joinedUser && c.user_id !== userId) {
+      await Notification.create({
+        id: `notif_${Date.now()}_join_${Math.random().toString(36).substring(2, 7)}`,
+        user_id: c.user_id,
+        title: 'Đồng hành mới',
+        message: `${joinedUser.fullname || joinedUser.username} đã chấp nhận lời mời và tham gia lập lịch trình "${c.Schedule.tour_name}" cùng bạn!`,
+        type: 'community',
+        read: false
+      });
+    }
+
+    res.json({ success: true, message: 'Bạn đã tham gia lịch trình thành công!' });
   } catch (error) {
     next(error);
   }

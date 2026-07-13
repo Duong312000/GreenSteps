@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { LoginModalService } from '../../services/login-modal.service';
 import { Tour } from '../../models/models';
 
 type DestinationPosition = 'left' | 'center' | 'right';
@@ -222,13 +223,89 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  // Itinerary Invite properties
+  public inviteItineraryId: string | null = null;
+  public inviteSenderName: string | null = null;
+  public showInviteConfirmPopup: boolean = false;
+  public inviteNotificationMessage: string | null = null;
+  public showInviteNotification: boolean = false;
+  public inviteNotificationType: 'success' | 'error' | 'info' = 'success';
+
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private apiService: ApiService,
-    private authService: AuthService
+    private authService: AuthService,
+    private loginModalService: LoginModalService
   ) {}
 
+  public showInviteNotificationBanner(message: string, type: 'success' | 'error' | 'info' = 'success') {
+    this.inviteNotificationMessage = message;
+    this.inviteNotificationType = type;
+    this.showInviteNotification = true;
+    setTimeout(() => {
+      this.showInviteNotification = false;
+    }, 6000);
+  }
+
+  public async acceptInvite() {
+    if (!this.inviteItineraryId) return;
+    const user = this.authService.getCurrentUser();
+    if (!user) {
+      this.showInviteNotificationBanner('Vui lòng đăng nhập để chấp nhận lời mời!', 'error');
+      this.loginModalService.open();
+      return;
+    }
+
+    try {
+      const res = await this.apiService.joinItinerary(this.inviteItineraryId, user.id || user._id || '');
+      if (res && res.success) {
+        this.showInviteConfirmPopup = false;
+        this.showInviteNotificationBanner('Chấp nhận lời mời tham gia lịch trình thành công! Đang chuyển hướng...', 'success');
+        
+        this.router.navigate([], {
+          queryParams: { inviteItineraryId: null, senderName: null },
+          queryParamsHandling: 'merge'
+        });
+
+        setTimeout(() => {
+          this.router.navigate(['/schedule', this.inviteItineraryId]);
+        }, 1500);
+      } else {
+        this.showInviteNotificationBanner(res.message || 'Chấp nhận lời mời thất bại!', 'error');
+      }
+    } catch (e) {
+      this.showInviteNotificationBanner('Đã xảy ra lỗi khi tham gia lịch trình.', 'error');
+    }
+  }
+
+  public rejectInvite() {
+    this.showInviteConfirmPopup = false;
+    this.showInviteNotificationBanner('Bạn đã từ chối lời mời tham gia lịch trình.', 'info');
+    
+    this.router.navigate([], {
+      queryParams: { inviteItineraryId: null, senderName: null },
+      queryParamsHandling: 'merge'
+    });
+  }
+
   async ngOnInit() {
+    this.route.queryParams.subscribe(async params => {
+      const inviteId = params['inviteItineraryId'];
+      const senderName = params['senderName'];
+      if (inviteId) {
+        this.inviteItineraryId = inviteId;
+        this.inviteSenderName = senderName || 'Một người bạn';
+
+        const user = this.authService.getCurrentUser();
+        if (!user) {
+          this.showInviteNotificationBanner('Vui lòng đăng nhập hoặc đăng ký tài khoản để xác nhận lời mời đồng hành du lịch.', 'info');
+          this.loginModalService.open();
+        } else {
+          this.showInviteConfirmPopup = true;
+        }
+      }
+    });
     try {
       const dbDests = await this.apiService.getDestinations();
       if (dbDests && dbDests.length > 0) {

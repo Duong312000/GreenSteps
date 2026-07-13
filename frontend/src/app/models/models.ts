@@ -67,6 +67,8 @@ export interface Itinerary {
   start_date?: string | null;
   end_date?: string | null;
   companion_email?: string | null;
+  imageUrl?: string | null;
+  collaborators?: any[];
 }
 
 export interface Service {

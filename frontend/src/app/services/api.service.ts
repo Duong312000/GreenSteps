@@ -152,7 +152,9 @@ export class ApiService {
         deposit_deadline: iti.deposit_deadline || null,
         start_date: iti.start_date || null,
         end_date: iti.end_date || null,
-        companion_email: iti.companion_email || null
+        companion_email: iti.companion_email || null,
+        imageUrl: iti.imageUrl || iti.image_url || null,
+        collaborators: iti.collaborators || []
       };
       this.setCachedData(cacheKey, data);
       return data;
@@ -181,13 +183,38 @@ export class ApiService {
           deposit_deadline: itinerary.deposit_deadline,
           start_date: itinerary.start_date,
           end_date: itinerary.end_date,
-          companion_email: itinerary.companion_email
+          companion_email: itinerary.companion_email,
+          imageUrl: itinerary.imageUrl
         })
       );
       return true;
     } catch (e) {
       console.error('Error saving itinerary to server:', e);
       return false;
+    }
+  }
+
+  public async inviteCollaborator(itineraryId: string, emails: string, inviteUrl: string): Promise<any> {
+    try {
+      return await firstValueFrom(
+        this.http.post<any>(`${this.BACKEND_URL}/itineraries/${itineraryId}/invite`, { emails, inviteUrl })
+      );
+    } catch (e) {
+      console.error('Error inviting collaborator:', e);
+      throw e;
+    }
+  }
+
+  public async joinItinerary(itineraryId: string, userId: string): Promise<any> {
+    this.clearCache('itineraries_');
+    this.clearCache(`itinerary_${itineraryId}`);
+    try {
+      return await firstValueFrom(
+        this.http.post<any>(`${this.BACKEND_URL}/itineraries/${itineraryId}/join`, { userId })
+      );
+    } catch (e) {
+      console.error('Error joining itinerary:', e);
+      throw e;
     }
   }
 

@@ -149,4 +149,52 @@ async function sendOtpEmail({ to, otp, purpose }) {
   }
 }
 
-module.exports = { assertMailDomainCanReceive, sendOtpEmail };
+async function sendItineraryInviteEmail({ to, itineraryName, inviteUrl }) {
+  const subject = `Lời mời tham gia hành trình du lịch: ${itineraryName}`;
+  const html = `
+    <div style="font-family:Arial,sans-serif;line-height:1.6;color:#12372d">
+      <h2>Đồng hành du lịch cùng GreenSteps!</h2>
+      <p>Bạn đã được mời cùng tham gia lên lịch trình cho chuyến đi <strong>"${itineraryName}"</strong>.</p>
+      <p>Hãy bấm vào liên kết dưới đây để chấp nhận lời mời và cùng lên kế hoạch:</p>
+      <p style="margin: 20px 0;">
+        <a href="${inviteUrl}" style="background-color:#0E9F6E;color:white;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;display:inline-block;">Chấp nhận Lời mời</a>
+      </p>
+      <p>Nếu nút trên không hoạt động, bạn có thể sao chép liên kết này dán vào trình duyệt: <br>${inviteUrl}</p>
+    </div>
+  `;
+
+  if (process.env.GMAIL_API_URL) {
+    try {
+      const response = await fetch(process.env.GMAIL_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, html })
+      });
+      const resData = await response.json();
+      if (resData && resData.success) {
+        return true;
+      }
+    } catch (error) {
+      console.error('Google Apps Script sendItineraryInviteEmail API error:', error);
+    }
+  }
+
+  // Fallback to standard Nodemailer SMTP
+  try {
+    const config = requireSmtpConfig();
+    const transporter = getTransporter();
+    await transporter.sendMail({
+      from: config.from,
+      to,
+      subject,
+      text: `Bạn đã được mời tham gia chuyến đi "${itineraryName}". Bấm vào đây để tham gia: ${inviteUrl}`,
+      html
+    });
+    return true;
+  } catch (error) {
+    console.error('Nodemailer sendItineraryInviteEmail error:', error);
+    return false;
+  }
+}
+
+module.exports = { assertMailDomainCanReceive, sendOtpEmail, sendItineraryInviteEmail };

@@ -160,16 +160,56 @@
 
     <!-- 2. CENTER PANEL: Cover, Timeline activities & AI Search -->
     <section class="editor-main-panel">
-        <div class="timeline-cover-container">
+        <div class="timeline-cover-container" style="position: relative;">
+            <!-- Hidden File Input for Custom Cover Image -->
+            <input type="file" #coverFileInput (change)="onCoverFileSelected($event)" accept="image/*" style="display: none;">
+            
+            <!-- Camera Edit Cover Button (Top-Right) -->
+            <button *ngIf="!isItineraryLocked()" (click)="coverFileInput.click()" class="change-cover-btn" 
+                    style="position: absolute; top: 15px; right: 15px; z-index: 10; background: rgba(0, 0, 0, 0.6); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; border: 1.5px solid rgba(255,255,255,0.4);" 
+                    title="Thay đổi ảnh bìa lịch trình">
+                <i class="bi bi-camera-fill" style="font-size: 15px;"></i>
+            </button>
+
             <img id="timelineCoverImg" 
                  [src]="getItineraryCoverImage()" 
                  alt="Dest Cover" 
                  class="cover-bg-img">
-            <div class="cover-overlay">
-                <h2>{{ activeItinerary.title }}</h2>
-                <span class="cover-dates" style="font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.85); margin-top: 4px;">
-                    {{ activeItinerary.destLabel }} • {{ activeItinerary.days.length }} ngày
-                </span>
+
+            <div class="cover-overlay" style="display: flex; justify-content: space-between; align-items: flex-end; width: 100%; box-sizing: border-box; padding: 20px 24px;">
+                <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1;">
+                    <h2 style="margin: 0; line-clamp: 1;">{{ activeItinerary.title }}</h2>
+                    <span class="cover-dates" style="font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.85); margin-top: 2px;">
+                        {{ activeItinerary.destLabel }} • {{ activeItinerary.days.length }} ngày
+                    </span>
+                </div>
+
+                <!-- Collaborators Overlapping Avatar Stack & Invite Button -->
+                <div style="display: flex; align-items: center; gap: 8px; z-index: 10; flex-shrink: 0;">
+                    <!-- Add Friends Button -->
+                    <button *ngIf="!isItineraryLocked()" (click)="openInviteFriendModal()" 
+                            style="width: 32px; height: 32px; border-radius: 50%; background: #0E9F6E; color: white; border: 2px solid white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: transform 0.2s;" 
+                            onmouseover="this.style.transform='scale(1.1)'" 
+                            onmouseout="this.style.transform='scale(1)'"
+                            title="Mời bạn đồng hành">
+                        <i class="bi bi-person-plus-fill" style="font-size: 13px; color: white;"></i>
+                    </button>
+                    
+                    <!-- Avatar Stack (Overlap) -->
+                    <div style="display: flex; flex-direction: row-reverse; align-items: center; margin-left: 4px;">
+                        <!-- Creator & Collaborators loop -->
+                        <div *ngFor="let col of (activeItinerary.collaborators || []); let idx = index"
+                             [style.margin-right.px]="-10"
+                             [style.z-index]="idx + 1"
+                             style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; background: #e6ede9; overflow: hidden; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.15); flex-shrink: 0;"
+                             [title]="col.fullname || col.username">
+                            <img *ngIf="col.avatarUrl" [src]="col.avatarUrl" style="width: 100%; height: 100%; object-fit: cover;">
+                            <div *ngIf="!col.avatarUrl" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #174c39; text-transform: uppercase;">
+                                {{ (col.fullname || col.username || '?').charAt(0) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -539,8 +579,9 @@
 
                                 <div class="absolute top-4 right-4 flex items-center gap-2">
                                     <button (click)="openShareModal(iti, $event)"
-                                            class="h-7 px-2.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/20 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all">
-                                        <i class="bi bi-share"></i> Chia sẻ
+                                            class="h-7 w-7 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/20 text-white flex items-center justify-center cursor-pointer transition-all"
+                                            title="Chia sẻ">
+                                        <i class="bi bi-share-fill" style="font-size: 11px;"></i>
                                     </button>
                                     <span class="bg-white/90 backdrop-blur-sm border border-[#184A37]/10 px-3 py-1 rounded-full text-xs font-bold text-[#184A37]">{{ iti.days }} ngày</span>
                                 </div>
@@ -618,8 +659,9 @@
 
                                 <div class="absolute top-4 right-4 flex items-center gap-2">
                                     <button (click)="openShareModal(iti, $event)"
-                                            class="h-7 px-2.5 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/20 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all">
-                                        <i class="bi bi-share"></i> Chia sẻ
+                                            class="h-7 w-7 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/20 text-white flex items-center justify-center cursor-pointer transition-all"
+                                            title="Chia sẻ">
+                                        <i class="bi bi-share-fill" style="font-size: 11px;"></i>
                                     </button>
                                     <span class="bg-white/90 backdrop-blur-sm border border-[#184A37]/10 px-3 py-1 rounded-full text-xs font-bold text-[#184A37]">{{ iti.days }} ngày</span>
                                 </div>
@@ -1032,10 +1074,10 @@
 
             <!-- Mời bạn đồng hành -->
             <div class="flex flex-col gap-1.5">
-                <label class="text-[11px] font-bold text-[#184A37] uppercase tracking-wider">Mời bạn đồng hành bằng email</label>
+                <label class="text-[11px] font-bold text-[#184A37] uppercase tracking-wider">Mời bạn đồng hành (nhập nhiều email cách nhau bằng dấu phẩy)</label>
                 <div class="relative">
                     <i class="bi bi-envelope absolute left-3 top-3 text-[#0E9F6E] text-sm"></i>
-                    <input type="email" [(ngModel)]="newTripCompanionEmail" name="newTripCompanionEmail" placeholder="partner@gmail.com"
+                    <input type="text" [(ngModel)]="newTripCompanionEmail" name="newTripCompanionEmail" placeholder="partner1@gmail.com, partner2@gmail.com..."
                            class="w-full h-10 pl-9 pr-4 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white text-xs text-[#184A37] outline-none focus:border-[#0E9F6E] transition-all">
                 </div>
             </div>
@@ -1107,6 +1149,65 @@
                 <button (click)="copyShareLink()"
                         class="h-9 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer bg-transparent transition-colors">
                     <i class="bi bi-link-45deg text-sm"></i> Copy Link
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- INVITE FRIEND MODAL -->
+<div class="fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300" *ngIf="isInviteFriendModalOpen">
+    <div class="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-[#184A37]/10 mx-4 animate-in fade-in zoom-in-95 duration-200">
+        <!-- Header -->
+        <div class="px-5 py-4 border-b border-[#184A37]/10 flex justify-between items-center bg-gradient-to-r from-emerald-50 to-teal-50">
+            <h3 class="text-base font-bold text-[#184A37] flex items-center gap-2">
+                <i class="bi bi-person-plus-fill text-[#0E9F6E]"></i>
+                Mời bạn đồng hành
+            </h3>
+            <button (click)="closeInviteFriendModal()" class="h-7 w-7 rounded-full hover:bg-black/5 flex items-center justify-center text-[#184A37]/60 hover:text-[#184A37] border-0 bg-transparent cursor-pointer">
+                <i class="bi bi-x-lg text-xs"></i>
+            </button>
+        </div>
+
+        <div class="p-5 space-y-4">
+            <!-- Details -->
+            <div class="p-3 bg-gray-50 border border-gray-100 rounded-2xl flex items-center gap-3">
+                <i class="bi bi-journal-text text-2xl text-[#0E9F6E]"></i>
+                <div class="flex-grow min-w-0">
+                    <h4 class="text-xs font-bold text-[#184A37] truncate">{{ activeItinerary?.title }}</h4>
+                    <span class="text-[10px] text-gray-500 font-semibold uppercase">{{ activeItinerary?.destLabel }} • {{ activeItinerary?.days?.length }} ngày</span>
+                </div>
+            </div>
+
+            <!-- Option 1: Invite via Email -->
+            <div class="space-y-2">
+                <label class="text-[10px] font-bold text-[#184A37]/60 uppercase tracking-wider block">Mời qua địa chỉ Email (cách nhau bằng dấu phẩy)</label>
+                <input type="text" [(ngModel)]="inviteEmails" placeholder="email1@gmail.com, email2@gmail.com..."
+                       class="w-full p-3 rounded-xl border border-gray-200 text-xs text-[#184A37] outline-none focus:border-[#0E9F6E] bg-gray-50 focus:bg-white transition-all">
+                <button (click)="sendCollaboratorInvites()" [disabled]="isSendingInvites"
+                        class="w-full h-9 rounded-xl bg-[#0E9F6E] hover:bg-[#0F6B4C] text-white font-bold text-xs shadow-sm cursor-pointer border-0 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50">
+                    <i class="bi animate-spin bi-arrow-repeat" *ngIf="isSendingInvites"></i>
+                    <i class="bi bi-envelope-paper-fill" *ngIf="!isSendingInvites"></i>
+                    Gửi lời mời qua Email
+                </button>
+            </div>
+
+            <div class="relative flex py-1 items-center">
+                <div class="flex-grow border-t border-gray-200"></div>
+                <span class="flex-shrink mx-3 text-[10px] font-bold text-[#184A37]/40 uppercase">Hoặc mời qua mạng xã hội</span>
+                <div class="flex-grow border-t border-gray-200"></div>
+            </div>
+
+            <!-- Option 2: Facebook & Messenger Copy Link -->
+            <div class="grid grid-cols-2 gap-2">
+                <button (click)="shareInviteSocial('facebook')"
+                        class="h-9 rounded-xl border border-gray-200 hover:bg-blue-50 text-blue-600 hover:text-blue-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer bg-transparent transition-colors">
+                    <i class="bi bi-facebook"></i> Facebook
+                </button>
+                <button (click)="copyInviteLink()"
+                        class="h-9 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer bg-transparent transition-colors"
+                        title="Sao chép link gửi qua Messenger/Zalo">
+                    <i class="bi bi-messenger text-blue-500"></i> Copy Link Messenger
                 </button>
             </div>
         </div>
