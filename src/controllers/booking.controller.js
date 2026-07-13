@@ -10,7 +10,8 @@ const {
   Schedule, 
   ScheduleSample, 
   Vender, 
-  Voucher 
+  Voucher,
+  Notification
 } = require('../models/index');
 
 // Helper for terminal interactive transaction approval (preserving original codebase prompt)
@@ -300,6 +301,16 @@ exports.createBooking = async (req, res, next) => {
             reference_id: bookingId
           }, { transaction: t });
         }
+
+        // Create pending notification
+        await Notification.create({
+          id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          user_id: userId,
+          title: 'Đang chờ duyệt giao dịch',
+          message: `Giao dịch chuyển khoản đặt cọc cho đơn ${bookingId} đang chờ quản trị viên phê duyệt.`,
+          type: 'booking',
+          read: false
+        }, { transaction: t });
       });
     } else {
       // Just save booking as pending/unpaid
@@ -482,6 +493,20 @@ exports.cancelBooking = async (req, res, next) => {
     if (!booking) {
       await t.rollback();
       return res.status(404).json({ success: false, message: 'Đơn đặt chỗ không tồn tại!' });
+    }
+
+    if (booking.status === 'pending') {
+      booking.status = 'rejected';
+      booking.escrow_status = 'none';
+      await booking.save({ transaction: t });
+
+      await WalletTransaction.update(
+        { status: 'failed' },
+        { where: { reference_id: bookingId, status: 'pending' }, transaction: t }
+      );
+
+      await t.commit();
+      return res.json({ success: true, message: 'Đã hủy đơn đặt chỗ thành công!' });
     }
 
     if (booking.status !== 'deposit' || booking.escrow_status !== 'holding') {
@@ -682,6 +707,16 @@ exports.approveBooking = async (req, res, next) => {
       { status: 'success' },
       { where: { reference_id: id, status: 'pending' } }
     );
+
+    // Create success notification
+    await Notification.create({
+      id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      user_id: booking.user_id,
+      title: 'Giao dịch thành công',
+      message: `Giao dịch chuyển khoản đặt cọc cho đơn ${id} đã được phê duyệt thành công!`,
+      type: 'booking',
+      read: false
+    });
 
     res.json({ success: true, message: 'Đã phê duyệt đơn đặt chỗ thành công!' });
   } catch (error) {

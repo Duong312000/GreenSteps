@@ -69,6 +69,7 @@ export class BookingComponent implements OnInit {
   public qrCodeUrl = '';
   public qrAmount = 0;
   public qrDescription = '';
+  public currentBookingId = '';
   private pollingInterval: any = null;
 
   public bookingContext: BookingContext = {
@@ -409,6 +410,7 @@ export class BookingComponent implements OnInit {
       try {
         const res = await this.apiService.createBooking(bookingData);
         if (res.success && res.bookingId) {
+          this.currentBookingId = res.bookingId;
           // Poll until admin approves
           this.startBookingStatusPolling(res.bookingId);
         } else {
@@ -472,6 +474,42 @@ export class BookingComponent implements OnInit {
       clearInterval(this.pollingInterval);
       this.pollingInterval = null;
     }
+  }
+
+  public async cancelPendingBooking() {
+    if (!this.currentBookingId) {
+      this.isQrModalOpen = false;
+      return;
+    }
+    
+    this.isBookingLoading = true;
+    try {
+      const res = await this.apiService.cancelBooking(this.currentBookingId);
+      this.isBookingLoading = false;
+      this.isQrModalOpen = false;
+      if (this.pollingInterval) {
+        clearInterval(this.pollingInterval);
+        this.pollingInterval = null;
+      }
+      this.showAlert("Đã hủy giao dịch", "Yêu cầu đặt cọc của bạn đã được hủy thành công.", "info");
+    } catch (e) {
+      this.isBookingLoading = false;
+      this.isQrModalOpen = false;
+      if (this.pollingInterval) {
+        clearInterval(this.pollingInterval);
+        this.pollingInterval = null;
+      }
+      this.showAlert("Đã hủy giao dịch", "Yêu cầu đặt cọc của bạn đã được hủy.", "info");
+    }
+  }
+
+  public temporaryExitQr() {
+    this.isQrModalOpen = false;
+    this.showAlert(
+      "Giao dịch đang chờ duyệt",
+      "Yêu cầu thanh toán chuyển khoản đặt cọc của bạn đang được hệ thống xử lý. Bạn có thể tiếp tục xem các thông tin khác trong thời gian chờ đợi. Trạng thái sẽ tự động cập nhật khi giao dịch thành công.",
+      "info"
+    );
   }
 
   public triggerAlertAction() {

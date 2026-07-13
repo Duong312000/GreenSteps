@@ -442,11 +442,11 @@
       </div>
 
       <div style="display: flex; gap: 10px;">
-        <button type="button" (click)="closeQrModal()" style="flex: 1; height:38px; background:#f3f4f6; border:none; border-radius:8px; color:#4b5563; font-weight:700; cursor:pointer; font-size:0.85rem; transition: background 0.2s;">
-          Hủy / Quay lại
+        <button type="button" (click)="cancelPendingBooking()" style="flex: 1; height:38px; background:#fde8e8; border:1px solid #f8b4b4; border-radius:8px; color:#e02424; font-weight:700; cursor:pointer; font-size:0.85rem; transition: background 0.2s;">
+          Hủy
         </button>
-        <button type="button" (click)="closeQrModal()" style="flex: 1.5; height:38px; background:#0E9F6E; border:none; border-radius:8px; color:#fff; font-weight:700; cursor:pointer; font-size:0.85rem; transition: background 0.2s;">
-          Tôi đã chuyển khoản
+        <button type="button" (click)="temporaryExitQr()" style="flex: 1.5; height:38px; background:#0E9F6E; border:none; border-radius:8px; color:#fff; font-weight:700; cursor:pointer; font-size:0.85rem; transition: background 0.2s;">
+          Tạm thoát
         </button>
       </div>
     </div>
