@@ -85,13 +85,27 @@ exports.register = async (req, res, next) => {
     if (!password) return res.status(400).json({ success: false, message: 'Mật khẩu không được để trống.' });
     if (!isValidPassword(password)) return res.status(400).json({ success: false, message: PASSWORD_MESSAGE });
 
-    const existingUser = await User.findOne({ where: { username } });
-    if (existingUser) return res.status(400).json({ success: false, message: 'Tên tài khoản này đã được sử dụng!' });
+    // Run database query and bcrypt hashing in parallel to minimize latency
+    const [existingUser, password_hash] = await Promise.all([
+      User.findOne({
+        where: {
+          [Op.or]: [
+            { username },
+            { email }
+          ]
+        }
+      }),
+      bcrypt.hash(password, 10)
+    ]);
 
-    const existingEmail = await User.findOne({ where: { email } });
-    if (existingEmail) return res.status(400).json({ success: false, message: 'Email này đã được sử dụng!' });
-
-    const password_hash = await bcrypt.hash(password, 10);
+    if (existingUser) {
+      if (existingUser.username === username) {
+        return res.status(400).json({ success: false, message: 'Tên tài khoản này đã được sử dụng!' });
+      }
+      if (existingUser.email === email) {
+        return res.status(400).json({ success: false, message: 'Email này đã được sử dụng!' });
+      }
+    }
 
     await User.sequelize.transaction(async (transaction) => {
       await createAndSendPendingRegistrationOtp({

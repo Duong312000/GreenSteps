@@ -342,6 +342,7 @@ export class ProfileComponent implements OnInit {
     if (existingUser) {
       this.applyProfileUser(existingUser);
       this.loadProfileNotifications();
+      this.authService.refreshProfile().catch(() => {});
     }
 
     this.authService.currentUser$.subscribe(user => {

@@ -95,6 +95,8 @@ export class AuthService {
         if (res.token) localStorage.setItem('greensteps_token', res.token);
         const user = this.mapUser(res.user);
         this.setCurrentUser(user);
+        // Refresh profile in background to get latest data (avatarUrl, etc.)
+        this.refreshProfile().catch(() => {});
         return { success: true, user, token: res.token, message: res.message };
       }
       return { success: false, message: res?.message || 'Đăng nhập thất bại.' };
@@ -208,6 +210,24 @@ export class AuthService {
       return null;
     } catch {
       return null;
+    }
+  }
+
+  public async refreshProfile(): Promise<void> {
+    const current = this.getCurrentUser();
+    if (!current) return;
+    const userId = current.id || current._id || '';
+    if (!userId) return;
+    try {
+      const res = await firstValueFrom(
+        this.http.get<any>(`${this.BACKEND_URL}/profile/${userId}`, { withCredentials: true })
+      );
+      if (res?.success && res.user) {
+        const freshUser = this.mapUser(res.user);
+        this.setCurrentUser(freshUser);
+      }
+    } catch {
+      // Silently ignore – keep cached user data
     }
   }
 
