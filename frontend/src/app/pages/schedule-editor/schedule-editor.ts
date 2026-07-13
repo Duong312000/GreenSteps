@@ -2542,7 +2542,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
             this.activeDayIdx = currentDayIdx < freshEditor.days.length ? currentDayIdx : 0;
             
             this.recalculateMetrics();
-            this.renderTimelineMarkersOnMap();
+            this.plotMapMarkers();
             this.cdr.detectChanges();
           }
         }
