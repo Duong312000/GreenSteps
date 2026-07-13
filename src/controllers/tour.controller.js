@@ -442,7 +442,7 @@ exports.getCustomItineraryById = async (req, res, next) => {
         id: u.id,
         username: u.username,
         fullname: u.fullname || u.username,
-        avatarUrl: u.avatarUrl,
+        avatarUrl: u.avatarUrl || u.avatar_url || '',
         email: u.email
       }))
     });
