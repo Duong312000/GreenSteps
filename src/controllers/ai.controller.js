@@ -101,6 +101,27 @@ Nếu không có gợi ý địa điểm cụ thể hoặc chỉ chat chào hỏ
       recommendation: responseJson.recommendation
     });
   } catch (error) {
-    next(error);
+    console.error('Gemini AI execution failed:', error);
+    
+    // Check for 429/quota exceeded error
+    const isRateLimit = error.status === 429 || 
+                       String(error.message || '').toLowerCase().includes('quota') ||
+                       String(error.message || '').toLowerCase().includes('429') ||
+                       String(error.statusText || '').toLowerCase().includes('too many requests');
+
+    if (isRateLimit) {
+      return res.json({
+        success: true,
+        reply: 'Chào bạn! Cảm ơn bạn đã nhắn tin. Hiện tại số lượng yêu cầu gửi đến AI Chatbot của GreenSteps đã vượt quá hạn mức miễn phí trong ngày. Bạn vui lòng thử lại sau ít phút nhé!',
+        recommendation: null
+      });
+    }
+
+    // Default friendly AI fallback response
+    return res.json({
+      success: true,
+      reply: 'Chào bạn! Kết nối đến trợ lý ảo AI của GreenSteps đang bị gián đoạn tạm thời. Bạn vui lòng thử lại sau ít phút hoặc tra cứu các điểm đến trên hệ thống nhé!',
+      recommendation: null
+    });
   }
 };
