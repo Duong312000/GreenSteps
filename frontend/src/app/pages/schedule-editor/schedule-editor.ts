@@ -46,6 +46,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   public isInviteFriendModalOpen: boolean = false;
   public inviteEmails: string = '';
   public isSendingInvites: boolean = false;
+  private backgroundSyncInterval: any = null;
 
   // Custom Premium Dialog Modal properties (Alert & Confirm)
   public dialogVisible = false;
@@ -212,6 +213,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngOnDestroy() {
+    this.stopBackgroundSync();
     this.clearSearchMarkers();
     if (this.map) {
       this.map.remove();
@@ -834,6 +836,9 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     setTimeout(() => {
       this.initLeafletMap();
     }, 100);
+
+    // Start silent background synchronization polling
+    this.startBackgroundSync();
   }
 
   public async loadDynamicRecommendations() {
@@ -2483,18 +2488,75 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     }
   }
 
-  public shareInviteSocial(platform: 'facebook') {
+  public shareInviteSocial(platform: 'facebook' | 'messenger') {
     const inviteLink = this.getCollaboratorInviteLink();
     const url = encodeURIComponent(inviteLink);
-    const message = encodeURIComponent(`Đồng hành cùng tôi lập lịch trình cho chuyến đi bằng GreenSteps nhé! 🌿`);
-    let shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${message}`;
-    window.open(shareUrl, '_blank', 'width=600,height=400');
+    if (platform === 'facebook' || platform === 'messenger') {
+      const shareUrl = `https://www.facebook.com/dialog/send?app_id=2108319696129542&link=${url}&redirect_uri=${url}`;
+      window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
   }
 
   public copyInviteLink() {
     const inviteLink = this.getCollaboratorInviteLink();
     navigator.clipboard.writeText(inviteLink);
     this.showAlert('Đã sao chép liên kết mời gửi qua Messenger/Zalo!', 'success');
+  }
+
+  private startBackgroundSync() {
+    this.stopBackgroundSync();
+    this.backgroundSyncInterval = setInterval(async () => {
+      if (!this.activeItinerary || this.isAutoSaving || this.isCheckoutModalOpen) return;
+      
+      try {
+        const fresh = await this.apiService.getItinerary(this.activeItinerary.id, true);
+        if (fresh) {
+          // 1. Update collaborators
+          const localCollabsStr = JSON.stringify(this.activeItinerary.collaborators || []);
+          const freshCollabsStr = JSON.stringify(fresh.collaborators || []);
+          if (localCollabsStr !== freshCollabsStr) {
+            this.activeItinerary.collaborators = fresh.collaborators || [];
+            this.cdr.detectChanges();
+          }
+
+          // 2. Update cover image
+          if (this.activeItinerary.imageUrl !== fresh.imageUrl) {
+            this.activeItinerary.imageUrl = fresh.imageUrl;
+            this.cdr.detectChanges();
+          }
+
+          // 3. Update title
+          if (this.activeItinerary.title !== fresh.name) {
+            this.activeItinerary.title = fresh.name;
+            this.cdr.detectChanges();
+          }
+
+          // 4. Update activities
+          const freshEditor = this.convertApiToEditorItinerary(fresh);
+          const localDaysStr = JSON.stringify(this.activeItinerary.days);
+          const freshDaysStr = JSON.stringify(freshEditor.days);
+          
+          if (localDaysStr !== freshDaysStr) {
+            const currentDayIdx = this.activeDayIdx;
+            this.activeItinerary.days = freshEditor.days;
+            this.activeDayIdx = currentDayIdx < freshEditor.days.length ? currentDayIdx : 0;
+            
+            this.recalculateMetrics();
+            this.renderTimelineMarkersOnMap();
+            this.cdr.detectChanges();
+          }
+        }
+      } catch (e) {
+        console.error('Background sync failed:', e);
+      }
+    }, 4000);
+  }
+
+  private stopBackgroundSync() {
+    if (this.backgroundSyncInterval) {
+      clearInterval(this.backgroundSyncInterval);
+      this.backgroundSyncInterval = null;
+    }
   }
 
   public async payCheckoutItinerary() {

@@ -132,10 +132,12 @@ export class ApiService {
     }
   }
 
-  public async getItinerary(id: string): Promise<Itinerary | null> {
+  public async getItinerary(id: string, bypassCache = false): Promise<Itinerary | null> {
     const cacheKey = `itinerary_${id}`;
-    const cached = this.getCachedData(cacheKey);
-    if (cached) return cached;
+    if (!bypassCache) {
+      const cached = this.getCachedData(cacheKey);
+      if (cached) return cached;
+    }
 
     try {
       const iti = await firstValueFrom(this.http.get<any>(`${this.BACKEND_URL}/itineraries/${id}`));
