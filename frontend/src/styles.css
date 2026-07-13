@@ -133,6 +133,12 @@
             -ms-user-select: text !important;
         }
 
+        /* Disable native Edge/IE password reveal button */
+        input::-ms-reveal,
+        input::-ms-clear {
+            display: none;
+        }
+
 .schedule-editor-container input,
 .schedule-editor-container textarea,
 .schedule-editor-container select {
