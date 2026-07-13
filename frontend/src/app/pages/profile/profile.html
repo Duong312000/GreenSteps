@@ -977,11 +977,12 @@
                     <h4 style="margin: 0; width: 100%; font-size: 13px; font-weight: 700; color: #5f6863; text-align: left;">Căn chỉnh ảnh đại diện:</h4>
                     
                     <!-- Preview Circle Viewport -->
-                    <div style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid #174c39; overflow: hidden; position: relative; background: #f3f7f5; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex-shrink: 0;">
+                    <div style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid #174c39; overflow: hidden; position: relative; background: #f3f7f5; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex-shrink: 0;">
                         <img [src]="selectedAvatarPath" 
-                             [style.transform]="'scale(' + avatarZoom + ')'" 
+                             [style.width.%]="avatarZoom * 100" 
+                             [style.height.%]="avatarZoom * 100"
                              [style.object-position]="avatarPosX + '% ' + avatarPosY + '%'"
-                             style="width: 100%; height: 100%; object-fit: cover; transition: none; pointer-events: none;">
+                             style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); object-fit: cover; transition: none; pointer-events: none;">
                     </div>
 
                     <!-- Alignment Sliders -->
