@@ -686,7 +686,9 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       destination: destLabel,
       days: days,
       status: apiIti.status || 'draft',
-      deposit_deadline: apiIti.deposit_deadline || null
+      deposit_deadline: apiIti.deposit_deadline || null,
+      imageUrl: apiIti.imageUrl || apiIti.image_url || null,
+      collaborators: apiIti.collaborators || []
     };
   }
 
@@ -734,7 +736,8 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       totalCarbon: totalCarbon,
       daysData: daysData,
       status: editorIti.status || 'draft',
-      deposit_deadline: editorIti.deposit_deadline || null
+      deposit_deadline: editorIti.deposit_deadline || null,
+      imageUrl: editorIti.imageUrl || null
     };
   }
 
