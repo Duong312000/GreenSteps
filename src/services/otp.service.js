@@ -49,8 +49,8 @@ async function compareResetJti(jti, storedHash) {
   return bcrypt.compare(jti, storedHash);
 }
 
-function sendOtpEmailInBackground({ to, otp, purpose }) {
-  sendOtpEmail({ to, otp, purpose }).catch((error) => {
+async function sendOtpEmailInBackground({ to, otp, purpose }) {
+  await sendOtpEmail({ to, otp, purpose }).catch((error) => {
     console.error('OTP email delivery failed:', {
       to,
       purpose,

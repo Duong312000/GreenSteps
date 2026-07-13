@@ -27,14 +27,22 @@ function requireSmtpConfig() {
   };
 }
 
-function createTransport() {
-  const config = requireSmtpConfig();
-  return nodemailer.createTransport({
-    host: config.host,
-    port: config.port,
-    secure: config.port === 465,
-    auth: config.auth
-  });
+let transporterInstance = null;
+
+function getTransporter() {
+  if (!transporterInstance) {
+    const config = requireSmtpConfig();
+    transporterInstance = nodemailer.createTransport({
+      // Disable pooling on Render to avoid delayed email sending
+      pool: false,
+      host: config.host,
+      port: config.port,
+      secure: config.port === 465,
+      auth: config.auth,
+      tls: { rejectUnauthorized: false }
+    });
+  }
+  return transporterInstance;
 }
 
 async function assertMailDomainCanReceive(email) {
@@ -79,7 +87,7 @@ async function sendOtpEmail({ to, otp, purpose }) {
   await assertMailDomainCanReceive(to);
 
   const config = requireSmtpConfig();
-  const transporter = createTransport();
+  const transporter = getTransporter();
   const isRegister = purpose === 'REGISTER';
   const subject = isRegister
     ? 'Mã xác thực tài khoản GreenSteps'
