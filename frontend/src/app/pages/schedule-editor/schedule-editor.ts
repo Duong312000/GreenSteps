@@ -635,12 +635,15 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
           else type = "attraction";
         }
         
+        const isShared = act.is_shared !== undefined ? (act.is_shared === true || act.isShared === true) : this.checkIfSharedByDefault(title, type);
         activities.push({
+          id: act.id || ('act_' + Date.now() + '_' + Math.random().toString(36).substring(2,7)),
           time: act.time || "08:00",
           title: title,
           type: type,
           cost: act.cost || 0,
           carbon: act.carbon || 0,
+          is_shared: isShared,
           lat: lat,
           lng: lng
         });
@@ -1067,6 +1070,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       carbon: carbon,
       icon: type === 'lodging' ? 'bi-house-door-fill' : (type === 'dining' ? 'bi-cup-hot-fill' : 'bi-tree-fill'),
       type: type,
+      is_shared: this.checkIfSharedByDefault(this.customPlaceTitle, type),
       lat: sug.lat,
       lng: sug.lng
     });
@@ -1127,6 +1131,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       type: type,
       cost: cost,
       carbon: carbon,
+      is_shared: this.checkIfSharedByDefault(title, type),
       lat: lat,
       lng: lng
     };
@@ -1209,6 +1214,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
       type: finalType,
       cost: finalCost,
       carbon: finalCarbon,
+      is_shared: this.checkIfSharedByDefault(name, finalType),
       lat: finalLat,
       lng: finalLng
     };
@@ -2109,6 +2115,17 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     const isShared = act.is_shared === true || act.isShared === true || act.type === 'lodging';
     act.is_shared = !isShared;
     this.saveItineraryToDb();
+  }
+
+  private checkIfSharedByDefault(name: string, type: string): boolean {
+    if (!name) return type === 'lodging';
+    const lowerName = name.toLowerCase();
+    const groupKeywords = [
+      'lẩu', 'mâm', 'combo', 'bbq', 'nướng bàn', 'nguyên con', 'bàn ăn', 'phòng', 
+      'homestay', 'khách sạn', 'hotel', 'villa', 'thuê xe', 'xe taxi', 'taxi', 
+      'ô tô', 'car', 'xe hơi', 'vé trọn gói cả đoàn', 'bữa ăn gia đình'
+    ];
+    return type === 'lodging' || groupKeywords.some(keyword => lowerName.includes(keyword));
   }
 
   public incrementGuests() {
