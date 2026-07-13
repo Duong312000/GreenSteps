@@ -278,6 +278,9 @@ export class ProfileComponent implements OnInit {
     'image/khach-hang/avatar-pham-hoang-minh.jpg',
     'image/khach-hang/avatar-vu-an-nhien.jpg'
   ];
+  public avatarZoom: number = 1.0;
+  public avatarPosX: number = 50;
+  public avatarPosY: number = 50;
 
   public notificationsList: any[] = [];
   public notifFilter: 'all' | 'unread' = 'all';
@@ -631,6 +634,9 @@ export class ProfileComponent implements OnInit {
   // AVATAR EDITING IMPLEMENTATION
   public openAvatarModal() {
     this.selectedAvatarPath = this.profileUser?.avatarUrl || '';
+    this.avatarZoom = 1.0;
+    this.avatarPosX = 50;
+    this.avatarPosY = 50;
     this.isAvatarModalOpen = true;
     this.cdr.detectChanges();
   }
@@ -642,6 +648,9 @@ export class ProfileComponent implements OnInit {
 
   public selectPresetAvatar(path: string) {
     this.selectedAvatarPath = path;
+    this.avatarZoom = 1.0;
+    this.avatarPosX = 50;
+    this.avatarPosY = 50;
     this.cdr.detectChanges();
   }
 
@@ -651,33 +660,96 @@ export class ProfileComponent implements OnInit {
 
     const reader = new FileReader();
     reader.onload = async () => {
-      const base64 = reader.result as string;
-      const res = await this.apiService.uploadImageBase64(base64);
-      if (res && res.success) {
-        this.selectedAvatarPath = res.url;
-        this.cdr.detectChanges();
-      } else {
-        alert('Tải ảnh lên thất bại!');
-      }
+      this.selectedAvatarPath = reader.result as string;
+      this.avatarZoom = 1.0;
+      this.avatarPosX = 50;
+      this.avatarPosY = 50;
+      this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
+  }
+
+  private cropAndUploadAvatar(base64Data: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = base64Data;
+      img.onload = async () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 250;
+          canvas.height = 250;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(base64Data);
+            return;
+          }
+
+          ctx.clearRect(0, 0, 250, 250);
+
+          const iw = img.width;
+          const ih = img.height;
+          const aspect = iw / ih;
+
+          let sWidth, sHeight;
+          if (aspect > 1) {
+            sHeight = ih;
+            sWidth = ih;
+          } else {
+            sWidth = iw;
+            sHeight = iw;
+          }
+
+          sWidth = sWidth / this.avatarZoom;
+          sHeight = sHeight / this.avatarZoom;
+
+          const sx = (iw - sWidth) * (this.avatarPosX / 100);
+          const sy = (ih - sHeight) * (this.avatarPosY / 100);
+
+          ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, 250, 250);
+
+          const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
+          
+          const uploadRes = await this.apiService.uploadImageBase64(croppedBase64);
+          if (uploadRes && uploadRes.success) {
+            resolve(uploadRes.url);
+          } else {
+            reject(new Error('Tải ảnh đại diện lên server thất bại!'));
+          }
+        } catch (err) {
+          reject(err);
+        }
+      };
+      img.onerror = (err) => {
+        reject(err);
+      };
+    });
   }
 
   public async saveAvatar() {
     if (!this.profileUser) return;
     const userId = this.profileUser.id || this.profileUser._id || '';
     
-    const res = await this.authService.updateProfile(userId, {
-      avatarUrl: this.selectedAvatarPath
-    });
+    try {
+      let finalAvatarPath = this.selectedAvatarPath;
+      if (finalAvatarPath.startsWith('data:image/')) {
+        finalAvatarPath = await this.cropAndUploadAvatar(finalAvatarPath);
+      }
 
-    if (res && res.success && res.user) {
-      this.profileUser = res.user;
-      this.isAvatarModalOpen = false;
-      this.cdr.detectChanges();
-      alert('Cập nhật ảnh đại diện thành công!');
-    } else {
-      alert('Không thể lưu ảnh đại diện: ' + (res?.message || 'Lỗi kết nối'));
+      const res = await this.authService.updateProfile(userId, {
+        avatarUrl: finalAvatarPath
+      });
+
+      if (res && res.success && res.user) {
+        this.profileUser = res.user;
+        this.isAvatarModalOpen = false;
+        this.cdr.detectChanges();
+        alert('Cập nhật ảnh đại diện thành công!');
+      } else {
+        alert('Không thể lưu ảnh đại diện: ' + (res?.message || 'Lỗi kết nối'));
+      }
+    } catch (err: any) {
+      console.error('Save avatar failed:', err);
+      alert('Không thể lưu ảnh đại diện: ' + (err.message || 'Lỗi kết nối'));
     }
   }
 }

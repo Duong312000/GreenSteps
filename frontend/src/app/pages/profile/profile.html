@@ -966,9 +966,43 @@
                     </div>
                 </div>
 
-                <div style="border-top: 1px dashed #dde6e0; padding-top: 20px; margin-bottom: 24px;">
+                <div style="border-top: 1px dashed #dde6e0; padding-top: 20px; margin-bottom: 20px;">
                     <h4 style="margin: 0 0 12px; font-size: 13px; font-weight: 700; color: #5f6863;">Hoặc tải lên ảnh từ thiết bị:</h4>
                     <input type="file" (change)="onAvatarFileSelected($event)" accept="image/*" style="font-size: 13px;">
+                </div>
+
+                <!-- Image Alignment Preview and Controls -->
+                <div *ngIf="selectedAvatarPath" style="border-top: 1px dashed #dde6e0; padding-top: 20px; margin-bottom: 24px; display: flex; flex-direction: column; align-items: center; gap: 16px;">
+                    <h4 style="margin: 0; width: 100%; font-size: 13px; font-weight: 700; color: #5f6863; text-align: left;">Căn chỉnh ảnh đại diện:</h4>
+                    
+                    <!-- Preview Circle Viewport -->
+                    <div style="width: 120px; height: 120px; border-radius: 50%; border: 3px solid #174c39; overflow: hidden; position: relative; background: #f3f7f5; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                        <img [src]="selectedAvatarPath" 
+                             [style.transform]="'scale(' + avatarZoom + ')'" 
+                             [style.object-position]="avatarPosX + '% ' + avatarPosY + '%'"
+                             style="width: 100%; height: 100%; object-fit: cover; transition: none; pointer-events: none;">
+                    </div>
+
+                    <!-- Alignment Sliders -->
+                    <div style="width: 100%; display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px; justify-content: space-between;">
+                          <span style="font-size: 12px; color: #5f6863; font-weight: 600; width: 80px; text-align: left;">Thu phóng:</span>
+                          <input type="range" min="1" max="3" step="0.05" [(ngModel)]="avatarZoom" style="flex: 1; accent-color: #174c39; margin: 0; cursor: pointer;">
+                          <span style="font-size: 11px; color: #8d9691; width: 35px; text-align: right;">{{ avatarZoom }}x</span>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 8px; justify-content: space-between;">
+                          <span style="font-size: 12px; color: #5f6863; font-weight: 600; width: 80px; text-align: left;">Căn ngang:</span>
+                          <input type="range" min="0" max="100" step="1" [(ngModel)]="avatarPosX" style="flex: 1; accent-color: #174c39; margin: 0; cursor: pointer;">
+                          <span style="font-size: 11px; color: #8d9691; width: 35px; text-align: right;">{{ avatarPosX }}%</span>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 8px; justify-content: space-between;">
+                          <span style="font-size: 12px; color: #5f6863; font-weight: 600; width: 80px; text-align: left;">Căn dọc:</span>
+                          <input type="range" min="0" max="100" step="1" [(ngModel)]="avatarPosY" style="flex: 1; accent-color: #174c39; margin: 0; cursor: pointer;">
+                          <span style="font-size: 11px; color: #8d9691; width: 35px; text-align: right;">{{ avatarPosY }}%</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div style="display: flex; justify-content: flex-end; gap: 12px; border-top: 1px solid #f0f4f2; padding-top: 20px;">
