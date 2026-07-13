@@ -810,7 +810,6 @@ export class BookingComponent implements OnInit {
     if (!this.acceptedTerms) errors['acceptedTerms'] = 'Bạn cần đồng ý với điều kiện thanh toán.';
     return errors;
   }
-
   private saveDraft() {
     const draft = {
       hotelId: this.bookingContext.hotelId,
@@ -831,6 +830,7 @@ export class BookingComponent implements OnInit {
       paymentMethod: this.paymentMethod,
       cardForm: this.cardForm,
       acceptedTerms: this.acceptedTerms,
+      bookingId: this.currentBookingId,
       createdAt: new Date().toISOString()
     };
 
@@ -848,6 +848,7 @@ export class BookingComponent implements OnInit {
     this.paymentMethod = draft.paymentMethod || 'wallet';
     this.cardForm = { ...this.cardForm, ...(draft.cardForm || {}) };
     this.acceptedTerms = !!draft.acceptedTerms;
+    if (draft.bookingId) this.currentBookingId = draft.bookingId;
     this.bookingContext = { ...this.bookingContext, ...draft };
   }
 

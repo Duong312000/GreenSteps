@@ -1,0 +1,278 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css');
+
+  .lookup-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #e8f5e9 0%, #f0fdf4 40%, #dcfce7 100%);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 48px 16px 80px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .lookup-card {
+    background: #fff;
+    border-radius: 24px;
+    box-shadow: 0 12px 60px rgba(14,159,110,0.10), 0 2px 8px rgba(0,0,0,0.06);
+    padding: 48px 40px 40px;
+    max-width: 520px;
+    width: 100%;
+  }
+
+  .lookup-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .lookup-logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #0E9F6E, #34D399);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: #fff;
+  }
+  .lookup-logo-text { font-size: 1.2rem; font-weight: 800; color: #111827; }
+  .lookup-logo-sub { font-size: 0.78rem; color: #6b7280; font-weight: 500; }
+
+  h1 { font-size: 1.5rem; font-weight: 800; color: #111827; margin: 0 0 6px; }
+  .subtitle { color: #6b7280; font-size: 0.92rem; margin-bottom: 28px; line-height: 1.5; }
+
+  .input-row {
+    display: flex; gap: 10px; align-items: stretch;
+  }
+  .code-input {
+    flex: 1;
+    padding: 14px 18px;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .code-input:focus { border-color: #0E9F6E; }
+  .code-input::placeholder { font-weight: 400; letter-spacing: 0; text-transform: none; }
+
+  .lookup-btn {
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #0E9F6E, #34D399);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    display: flex; align-items: center; gap: 7px;
+    white-space: nowrap;
+  }
+  .lookup-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .lookup-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+  .error-msg {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    color: #dc2626;
+    font-size: 0.88rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* Result card */
+  .result-card {
+    margin-top: 28px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 18px;
+    overflow: hidden;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .result-header {
+    padding: 18px 22px;
+    background: linear-gradient(90deg, #f0fdf4, #dcfce7);
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .booking-id-label { font-size: 0.78rem; color: #6b7280; font-weight: 500; margin-bottom: 2px; }
+  .booking-id-value { font-size: 1rem; font-weight: 800; color: #111827; letter-spacing: 0.5px; }
+
+  .status-badge {
+    padding: 6px 14px;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .status-badge.ok { background: #d1fae5; color: #065f46; }
+  .status-badge.wait { background: #fef3c7; color: #92400e; }
+  .status-badge.bad { background: #fee2e2; color: #991b1b; }
+
+  .result-body { padding: 20px 22px; }
+  .info-row {
+    display: flex; justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.88rem;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { color: #6b7280; font-weight: 500; }
+  .info-value { font-weight: 700; color: #111827; text-align: right; max-width: 60%; }
+
+  .pending-notice {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: #92400e;
+    line-height: 1.5;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+
+  .home-link {
+    display: inline-flex; align-items: center; gap: 7px;
+    margin-top: 28px;
+    color: #0E9F6E;
+    font-weight: 600; font-size: 0.9rem;
+    text-decoration: none;
+    transition: gap 0.2s;
+  }
+  .home-link:hover { gap: 11px; }
+</style>
+
+<div class="lookup-page">
+  <div class="lookup-card">
+
+    <!-- Logo -->
+    <div class="lookup-logo">
+      <div class="lookup-logo-icon"><i class="bi bi-leaf-fill"></i></div>
+      <div>
+        <div class="lookup-logo-text">GreenSteps</div>
+        <div class="lookup-logo-sub">Tra cứu đặt chỗ</div>
+      </div>
+    </div>
+
+    <h1>Tra cứu đơn đặt chỗ</h1>
+    <p class="subtitle">
+      Nhập mã đặt chỗ bạn nhận được sau khi đặt tour để xem trạng thái xử lý.
+      Mã có dạng <b>BKT-xxxxxxxxxx</b>.
+    </p>
+
+    <!-- Search input -->
+    <div class="input-row">
+      <input
+        id="booking-code-input"
+        class="code-input"
+        type="text"
+        placeholder="VD: BKT-1783983309146"
+        [(ngModel)]="bookingCode"
+        (keyup.enter)="lookup()"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="lookup-btn" (click)="lookup()" [disabled]="isLoading" id="lookup-btn">
+        <i class="bi" [class.bi-search]="!isLoading" [class.bi-arrow-repeat]="isLoading"
+           [class.spin]="isLoading"></i>
+        {{ isLoading ? 'Đang tìm...' : 'Tra cứu' }}
+      </button>
+    </div>
+
+    <!-- Error -->
+    <div class="error-msg" *ngIf="errorMsg">
+      <i class="bi bi-exclamation-circle-fill"></i> {{ errorMsg }}
+    </div>
+
+    <!-- Result -->
+    <div class="result-card" *ngIf="result">
+      <div class="result-header">
+        <div>
+          <div class="booking-id-label">Mã đặt chỗ</div>
+          <div class="booking-id-value">{{ result.id }}</div>
+        </div>
+        <span class="status-badge" [ngClass]="getStatusClass(result.status)">
+          <i class="bi"
+             [class.bi-check-circle-fill]="getStatusClass(result.status) === 'ok'"
+             [class.bi-clock-fill]="getStatusClass(result.status) === 'wait'"
+             [class.bi-x-circle-fill]="getStatusClass(result.status) === 'bad'"></i>
+          {{ getStatusLabel(result.status) }}
+        </span>
+      </div>
+
+      <div class="result-body">
+        <div class="info-row" *ngIf="result.fullname">
+          <span class="info-label">Tên khách hàng</span>
+          <span class="info-value">{{ result.fullname }}</span>
+        </div>
+        <div class="info-row" *ngIf="result.tour_name || result.tourName">
+          <span class="info-label">Tour</span>
+          <span class="info-value">{{ result.tour_name || result.tourName }}</span>
+        </div>
+        <div class="info-row" *ngIf="result.booking_date || result.bookingDate">
+          <span class="info-label">Ngày đặt</span>
+          <span class="info-value">{{ (result.booking_date || result.bookingDate) | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="info-row" *ngIf="result.guests">
+          <span class="info-label">Số khách</span>
+          <span class="info-value">{{ result.guests }} người</span>
+        </div>
+        <div class="info-row" *ngIf="result.deposit_amount || result.total_amount">
+          <span class="info-label">Tiền cọc</span>
+          <span class="info-value" style="color:#0E9F6E;">
+            {{ (result.deposit_amount || result.total_amount) | number:'1.0-0':'vi-VN' }}đ
+          </span>
+        </div>
+        <div class="info-row" *ngIf="result.payment_method">
+          <span class="info-label">Phương thức</span>
+          <span class="info-value">
+            {{ result.payment_method === 'bank_transfer' ? 'Chuyển khoản QR' :
+               result.payment_method === 'counter' ? 'Tại quầy' :
+               result.payment_method === 'wallet' ? 'Ví GreenSteps' :
+               result.payment_method === 'card' ? 'Thẻ tín dụng' : result.payment_method }}
+          </span>
+        </div>
+        <div class="info-row" *ngIf="result.payment_status">
+          <span class="info-label">Trạng thái thanh toán</span>
+          <span class="info-value">
+            {{ result.payment_status === 'deposit_paid' ? 'Đã thanh toán cọc' :
+               result.payment_status === 'pending' ? 'Chờ xác nhận' :
+               result.payment_status === 'refunded' ? 'Đã hoàn tiền' : result.payment_status }}
+          </span>
+        </div>
+        <div class="info-row" *ngIf="result.createdAt">
+          <span class="info-label">Thời gian tạo</span>
+          <span class="info-value">{{ result.createdAt | date:'HH:mm, dd/MM/yyyy' }}</span>
+        </div>
+
+        <!-- Pending notice -->
+        <div class="pending-notice" *ngIf="result.status === 'pending'">
+          <i class="bi bi-clock" style="font-size:1.1rem; margin-top:1px; flex-shrink:0;"></i>
+          <span>
+            Đơn của bạn đang chờ admin xác nhận thanh toán. Thông thường trong vòng <b>1–2 giờ làm việc</b>.
+            Vui lòng lưu mã <b>{{ result.id }}</b> để tra cứu lại.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back home -->
+    <a routerLink="/home" class="home-link">
+      <i class="bi bi-arrow-left"></i> Về trang chủ
+    </a>
+  </div>
+</div>
+
+<style>
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { animation: spin 0.8s linear infinite; display: inline-block; }
+</style>
