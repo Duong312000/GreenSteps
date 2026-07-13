@@ -858,4 +858,190 @@ export class ApiService {
       return null;
     }
   }
+
+  // Cải tiến Quản trị Đối tác (Partner Dashboard Upgrades)
+  public async getServiceDetails(id: string): Promise<any> {
+    try {
+      return await firstValueFrom(this.http.get<any>(`${this.BACKEND_URL}/services/${id}`, { withCredentials: true }));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  public async cloneService(id: string): Promise<boolean> {
+    this.clearCache('services_');
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/services/${id}/clone`, {}, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async suspendService(id: string): Promise<boolean> {
+    this.clearCache('services_');
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/services/${id}/suspend`, {}, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async resendServiceApproval(id: string): Promise<boolean> {
+    this.clearCache('services_');
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/services/${id}/resend-approval`, {}, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async getBookingDetails(id: string): Promise<any> {
+    try {
+      const res = await firstValueFrom(this.http.get<any>(`${this.BACKEND_URL}/bookings/${id}`, { withCredentials: true }));
+      return res?.success ? res.booking : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  public async completeBooking(id: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/bookings/${id}/complete`, {}, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async updateBookingStatuses(id: string, statuses: any): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/bookings/${id}/status`, statuses, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async getChangeRequests(providerId?: string, customerId?: string): Promise<any[]> {
+    try {
+      let query = '';
+      if (providerId) query = `providerId=${providerId}`;
+      else if (customerId) query = `customerId=${customerId}`;
+      return await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/change-requests?${query}`, { withCredentials: true }));
+    } catch (e) {
+      return [];
+    }
+  }
+
+  public async createChangeRequest(data: any): Promise<any> {
+    try {
+      return await firstValueFrom(this.http.post<any>(`${this.BACKEND_URL}/change-requests`, data, { withCredentials: true }));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  public async approveChangeRequest(id: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/change-requests/${id}/approve`, {}, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async rejectChangeRequest(id: string, reason: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/change-requests/${id}/reject`, { reason }, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async proposeAlternativeChangeRequest(id: string, data: any): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/change-requests/${id}/propose`, data, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async getOperationsAssignments(providerId: string): Promise<any[]> {
+    try {
+      return await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/operations?providerId=${providerId}`, { withCredentials: true }));
+    } catch (e) {
+      return [];
+    }
+  }
+
+  public async assignStaffAndVehicle(bookingId: string, data: any): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/operations/${bookingId}/assign`, data, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async updateChecklistItem(bookingId: string, itemLabel: string, done: boolean): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/operations/${bookingId}/checklist`, { itemLabel, done }, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async updateAssignmentStatus(bookingId: string, status: string, incidents?: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/operations/${bookingId}/status`, { status, incidents }, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async getProviderReviews(providerId: string, filters: any): Promise<any[]> {
+    try {
+      let query = `providerId=${providerId}`;
+      if (filters.rating) query += `&rating=${filters.rating}`;
+      if (filters.serviceId) query += `&serviceId=${filters.serviceId}`;
+      if (filters.answered !== undefined) query += `&answered=${filters.answered}`;
+      return await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/reviews/provider?${query}`, { withCredentials: true }));
+    } catch (e) {
+      return [];
+    }
+  }
+
+  public async replyToReview(commentId: string, text: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/reviews/${commentId}/reply`, { text }, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async reportReview(commentId: string, reason: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/reviews/${commentId}/report`, { reason }, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async updateInternalNotes(commentId: string, notes: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post(`${this.BACKEND_URL}/reviews/${commentId}/notes`, { notes }, { withCredentials: true }));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

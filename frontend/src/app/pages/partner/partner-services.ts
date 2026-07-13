@@ -17,16 +17,28 @@ export class PartnerServicesComponent implements OnInit {
   public currentUser: User | null = null;
   public myServices: Service[] = [];
 
-  // Add / Edit Service Form
+  // Add / Edit Service Form (Wizard State)
   public isAddModalOpen: boolean = false;
   public editingServiceId: string | null = null;
+  public currentStep: number = 1;
+
+  // Form Fields
   public serviceName: string = '';
   public serviceType: string = 'stay';
   public serviceCost: number | null = null;
   public serviceCarbon: number | null = null;
   public serviceDest: string = 'Đà Lạt';
   public serviceAddress: string = '';
+  public maxCapacity: number = 10;
+  public imageUrl: string = 'image/Viet Nam.png';
+  public openingSchedule: string = 'Tất cả các ngày trong tuần';
+  public cancellationPolicy: string = 'Hoàn trả 100% nếu hủy trước 24 giờ khởi hành.';
+  public itineraryText: string = 'Tự do tham quan theo hướng dẫn của đối tác.';
   public selectedBadges: string[] = ['green'];
+
+  // Details Modal
+  public isDetailsModalOpen: boolean = false;
+  public detailedService: any = null;
 
   // Filters State
   public searchQuery: string = '';
@@ -102,7 +114,6 @@ export class PartnerServicesComponent implements OnInit {
       const matchType = this.selectedTypes.length === 0 || this.selectedTypes.includes(s.type);
       const matchLocation = this.selectedLocations.length === 0 || this.selectedLocations.includes(s.destination);
       
-      // Default all items to active if status is missing
       const status = s.status || 'active';
       const matchStatus = this.selectedStatuses.length === 0 || this.selectedStatuses.includes(status);
       
@@ -116,18 +127,19 @@ export class PartnerServicesComponent implements OnInit {
   }
 
   public get activeCount(): number {
-    return this.myServices.filter(s => !s.status || s.status === 'active').length;
+    return this.myServices.filter(s => s.status === 'active').length;
   }
 
   public get pendingCount(): number {
     return this.myServices.filter(s => s.status === 'pending').length;
   }
 
-  public get rejectedCount(): number {
-    return this.myServices.filter(s => s.status === 'rejected' || s.status === 'hidden' || s.status === 'sold_out' || s.status === 'inactive').length;
+  public get draftCount(): number {
+    return this.myServices.filter(s => s.status === 'draft').length;
   }
 
   public getServiceImage(srv: Service): string {
+    if (srv.image_url) return srv.image_url;
     if (srv.type === 'stay') {
       return 'image/1dc8619487310884c9d631d689ece1e7.jpg';
     } else if (srv.type === 'food') {
@@ -141,27 +153,132 @@ export class PartnerServicesComponent implements OnInit {
   public openAddModal() {
     this.editingServiceId = null;
     this.isAddModalOpen = true;
+    this.currentStep = 1;
     this.serviceName = '';
     this.serviceCost = null;
     this.serviceCarbon = null;
     this.serviceAddress = '';
+    this.maxCapacity = 10;
+    this.imageUrl = 'image/Viet Nam.png';
+    this.openingSchedule = 'Tất cả các ngày trong tuần';
+    this.cancellationPolicy = 'Hoàn trả 100% nếu hủy trước 24 giờ khởi hành.';
+    this.itineraryText = 'Tự do tham quan theo hướng dẫn của đối tác.';
   }
 
-  public openEditModal(srv: Service) {
+  public async openEditModal(srv: Service) {
     this.editingServiceId = srv.id;
     this.isAddModalOpen = true;
+    this.currentStep = 1;
     this.serviceName = srv.name;
     this.serviceType = srv.type;
     this.serviceCost = srv.cost;
     this.serviceCarbon = srv.carbon || null;
     this.serviceDest = srv.destination;
-    this.serviceAddress = (srv as any).address || (srv as any).current_data?.address || '';
+    
+    const details = await this.apiService.getServiceDetails(srv.id);
+    if (details) {
+      this.serviceAddress = details.current_data?.address || '';
+      this.maxCapacity = details.max_capacity || 10;
+      this.imageUrl = details.image_url || details.current_data?.img || 'image/Viet Nam.png';
+      this.openingSchedule = details.current_data?.schedule || 'Tất cả các ngày trong tuần';
+      this.cancellationPolicy = details.current_data?.policy || 'Hoàn trả 100% nếu hủy trước 24 giờ khởi hành.';
+      this.itineraryText = details.current_data?.itinerary || 'Tự do tham quan theo hướng dẫn của đối tác.';
+    } else {
+      this.serviceAddress = (srv as any).address || (srv as any).current_data?.address || '';
+      this.maxCapacity = srv.max_capacity || 10;
+    }
     this.cdr.detectChanges();
   }
 
   public closeAddModal() {
     this.isAddModalOpen = false;
     this.editingServiceId = null;
+    this.currentStep = 1;
+  }
+
+  // Wizard Navigation
+  public nextStep() {
+    if (this.currentStep < 7) {
+      this.currentStep++;
+      this.cdr.detectChanges();
+    }
+  }
+
+  public prevStep() {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+      this.cdr.detectChanges();
+    }
+  }
+
+  public goToStep(step: number) {
+    this.currentStep = step;
+    this.cdr.detectChanges();
+  }
+
+  // Details modal
+  public async openDetailsModal(srv: Service) {
+    const details = await this.apiService.getServiceDetails(srv.id);
+    this.detailedService = details ? { ...details, name: details.name_service } : srv;
+    this.isDetailsModalOpen = true;
+    this.cdr.detectChanges();
+  }
+
+  public closeDetailsModal() {
+    this.isDetailsModalOpen = false;
+    this.detailedService = null;
+    this.cdr.detectChanges();
+  }
+
+  // Quick actions
+  public async cloneService(srv: Service) {
+    if (confirm(`Bạn có chắc chắn muốn nhân bản dịch vụ "${srv.name}"?`)) {
+      const ok = await this.apiService.cloneService(srv.id);
+      if (ok) {
+        alert('Nhân bản dịch vụ thành công!');
+        await this.loadServices();
+      } else {
+        alert('Lỗi nhân bản dịch vụ!');
+      }
+    }
+  }
+
+  public async suspendService(srv: Service) {
+    if (confirm(`Bạn có chắc chắn muốn tạm ngừng hoạt động dịch vụ "${srv.name}"?`)) {
+      const ok = await this.apiService.suspendService(srv.id);
+      if (ok) {
+        alert('Đã tạm ngừng hoạt động dịch vụ!');
+        await this.loadServices();
+      } else {
+        alert('Lỗi khi tạm ngừng dịch vụ!');
+      }
+    }
+  }
+
+  public async resendServiceApproval(srv: Service) {
+    if (confirm(`Bạn muốn gửi duyệt lại dịch vụ "${srv.name}"?`)) {
+      const ok = await this.apiService.resendServiceApproval(srv.id);
+      if (ok) {
+        alert('Đã gửi duyệt lại dịch vụ xanh!');
+        await this.loadServices();
+      } else {
+        alert('Lỗi gửi duyệt lại!');
+      }
+    }
+  }
+
+  public getStatusLabel(status?: string): string {
+    const s = status || 'active';
+    switch (s) {
+      case 'draft': return 'Bản nháp';
+      case 'pending': return 'Chờ duyệt';
+      case 'approved': return 'Đã duyệt';
+      case 'rejected': return 'Bị từ chối';
+      case 'active': return 'Đang hoạt động';
+      case 'suspended': return 'Tạm ngừng';
+      case 'expired': return 'Hết thời hạn';
+      default: return 'Hoạt động';
+    }
   }
 
   public toggleBadge(badge: string) {
@@ -175,9 +292,9 @@ export class PartnerServicesComponent implements OnInit {
   }
 
   public exportServicesList() {
-    let csv = "Tên dịch vụ,Loại hình,Khu vực,Giá dịch vụ\n";
+    let csv = "Tên dịch vụ,Loại hình,Khu vực,Giá dịch vụ,Trạng thái\n";
     this.myServices.forEach(srv => {
-      csv += `"${srv.name}","${srv.type}","${srv.destination}",${srv.cost}\n`;
+      csv += `"${srv.name}","${srv.type}","${srv.destination}",${srv.cost},"${this.getStatusLabel(srv.status)}"\n`;
     });
 
     const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
@@ -192,7 +309,7 @@ export class PartnerServicesComponent implements OnInit {
   }
 
   public async submitNewService(event: Event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
     if (!this.currentUser) return;
 
     const providerId = this.currentUser.id || this.currentUser._id || '';
@@ -201,7 +318,6 @@ export class PartnerServicesComponent implements OnInit {
     let resolvedLat: number | null = null;
     let resolvedLng: number | null = null;
 
-    // Resolve address to GPS coordinates using Nominatim API behind the scenes
     if (this.serviceAddress) {
       try {
         const query = `${this.serviceAddress}, ${this.serviceDest}, Vietnam`;
@@ -221,6 +337,17 @@ export class PartnerServicesComponent implements OnInit {
       }
     }
 
+    const currentData = {
+      lat: resolvedLat,
+      lng: resolvedLng,
+      address: this.serviceAddress,
+      category: categoryMap[this.serviceType] || 'Khám phá',
+      img: this.imageUrl || 'image/Viet Nam.png',
+      schedule: this.openingSchedule,
+      policy: this.cancellationPolicy,
+      itinerary: this.itineraryText
+    };
+
     if (this.editingServiceId) {
       const updateData = {
         name: this.serviceName,
@@ -232,21 +359,20 @@ export class PartnerServicesComponent implements OnInit {
         lng: resolvedLng,
         address: this.serviceAddress,
         category: categoryMap[this.serviceType] || 'Khám phá',
-        status: 'active'
+        status: 'pending',
+        maxCapacity: this.maxCapacity,
+        imageUrl: this.imageUrl,
+        current_data: currentData
       };
 
       const success = await this.apiService.updateMyService(this.editingServiceId, updateData);
       if (success) {
-        alert('Cập nhật dịch vụ thành công!');
+        alert('Cập nhật dịch vụ xanh và gửi kiểm duyệt thành công!');
         this.isAddModalOpen = false;
         this.editingServiceId = null;
-        this.serviceName = '';
-        this.serviceCost = null;
-        this.serviceCarbon = null;
-        this.serviceAddress = '';
         await this.loadServices();
       } else {
-        alert('Có lỗi xảy ra khi cập nhật dịch vụ. Vui lòng kiểm tra lại!');
+        alert('Có lỗi xảy ra khi cập nhật dịch vụ.');
       }
     } else {
       const newService = {
@@ -261,21 +387,20 @@ export class PartnerServicesComponent implements OnInit {
         lng: resolvedLng,
         address: this.serviceAddress,
         category: categoryMap[this.serviceType] || 'Khám phá',
-        badges: ['green'], // Assigned by system/admin by default
-        status: 'active'
+        badges: ['green'],
+        status: 'pending',
+        maxCapacity: this.maxCapacity,
+        imageUrl: this.imageUrl,
+        current_data: currentData
       };
 
       const success = await this.apiService.addMyService(newService);
       if (success) {
-        alert('Đăng ký dịch vụ xanh thành công!');
+        alert('Đăng ký dịch vụ xanh mới thành công! Dịch vụ đang ở trạng thái Chờ duyệt.');
         this.isAddModalOpen = false;
-        this.serviceName = '';
-        this.serviceCost = null;
-        this.serviceCarbon = null;
-        this.serviceAddress = '';
         await this.loadServices();
       } else {
-        alert('Có lỗi xảy ra khi thêm dịch vụ. Vui lòng kiểm tra lại!');
+        alert('Có lỗi xảy ra khi thêm dịch vụ.');
       }
     }
     this.cdr.detectChanges();

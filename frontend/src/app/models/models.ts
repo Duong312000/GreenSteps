@@ -78,12 +78,15 @@ export interface Service {
   cost: number;
   carbon: number;
   icon?: string;
-  status: 'active' | 'inactive' | 'pending' | 'rejected' | 'hidden' | 'sold_out';
+  status: string;
   views_count?: number;
   rating?: number;
   bookings_count?: number;
   bookingsCount?: number;
   badges?: string[];
+  image_url?: string;
+  max_capacity?: number;
+  rejection_reason?: string;
 }
 
 export interface Booking {
@@ -98,7 +101,14 @@ export interface Booking {
   booking_date?: string;
   guests: number;
   value: number;
-  status: 'pending' | 'deposit' | 'completed' | 'rejected';
+  status: string;
+  booking_status?: string;
+  payment_status?: string;
+  operation_status?: string;
+  confirm_deadline?: string;
+  payment_deadline?: string;
+  special_requests?: string;
+  rejection_reason?: string;
 }
 
 export interface WalletInfo {

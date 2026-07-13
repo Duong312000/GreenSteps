@@ -177,8 +177,9 @@ const GreenService = sequelize.define('GreenService', {
   bookings_count: { type: DataTypes.INTEGER, defaultValue: 0 },
   current_data: { type: DataTypes.JSONB },
   max_capacity: { type: DataTypes.INTEGER, defaultValue: 10 },
-  status: { type: DataTypes.ENUM('active', 'inactive', 'sold_out', 'pending'), defaultValue: 'active', allowNull: false },
-  views_count: { type: DataTypes.INTEGER, defaultValue: 0 }
+  status: { type: DataTypes.STRING, defaultValue: 'active', allowNull: false },
+  views_count: { type: DataTypes.INTEGER, defaultValue: 0 },
+  rejection_reason: { type: DataTypes.TEXT }
 }, { timestamps: true });
 
 // 17. BadgeService Junction
@@ -196,7 +197,14 @@ const ServiceBooking = sequelize.define('ServiceBooking', {
   votes_count: { type: DataTypes.INTEGER, defaultValue: 0 },
   voucher_code: { type: DataTypes.STRING },
   evoucher_code: { type: DataTypes.STRING, allowNull: false },
-  escrow_status: { type: DataTypes.ENUM('none', 'holding', 'released', 'refunded'), defaultValue: 'none', allowNull: false }
+  escrow_status: { type: DataTypes.ENUM('none', 'holding', 'released', 'refunded'), defaultValue: 'none', allowNull: false },
+  booking_status: { type: DataTypes.STRING, defaultValue: 'new', allowNull: false },
+  payment_status: { type: DataTypes.STRING, defaultValue: 'pending', allowNull: false },
+  operation_status: { type: DataTypes.STRING, defaultValue: 'preparing', allowNull: false },
+  confirm_deadline: { type: DataTypes.DATE },
+  payment_deadline: { type: DataTypes.DATE },
+  special_requests: { type: DataTypes.TEXT },
+  rejection_reason: { type: DataTypes.TEXT }
 }, { timestamps: true });
 
 // 19. TourBooking Model (NEW - for preset & custom tours checkouts)
@@ -211,7 +219,14 @@ const TourBooking = sequelize.define('TourBooking', {
   voucher_code: { type: DataTypes.STRING },
   evoucher_code: { type: DataTypes.STRING, allowNull: false },
   status: { type: DataTypes.ENUM('pending', 'deposit', 'completed', 'rejected', 'refunded'), defaultValue: 'pending', allowNull: false },
-  escrow_status: { type: DataTypes.ENUM('none', 'holding', 'released', 'refunded'), defaultValue: 'none', allowNull: false }
+  escrow_status: { type: DataTypes.ENUM('none', 'holding', 'released', 'refunded'), defaultValue: 'none', allowNull: false },
+  booking_status: { type: DataTypes.STRING, defaultValue: 'new', allowNull: false },
+  payment_status: { type: DataTypes.STRING, defaultValue: 'pending', allowNull: false },
+  operation_status: { type: DataTypes.STRING, defaultValue: 'preparing', allowNull: false },
+  confirm_deadline: { type: DataTypes.DATE },
+  payment_deadline: { type: DataTypes.DATE },
+  special_requests: { type: DataTypes.TEXT },
+  rejection_reason: { type: DataTypes.TEXT }
 }, { timestamps: true });
 
 // 20. WithdrawalRequest Model (NEW - B2B withdrawal tracking)
@@ -276,7 +291,11 @@ const CommentPost = sequelize.define('CommentPost', {
   tour_id: { type: DataTypes.STRING, allowNull: true },
   service_id: { type: DataTypes.STRING, allowNull: true },
   parent_comment_id: { type: DataTypes.STRING, allowNull: true },
-  likes_count: { type: DataTypes.INTEGER, defaultValue: 0 }
+  likes_count: { type: DataTypes.INTEGER, defaultValue: 0 },
+  booking_id: { type: DataTypes.STRING, allowNull: true },
+  is_reported: { type: DataTypes.BOOLEAN, defaultValue: false, allowNull: false },
+  report_reason: { type: DataTypes.TEXT },
+  internal_notes: { type: DataTypes.TEXT }
 }, { timestamps: true });
 
 // 25. CPSS Junction
@@ -300,7 +319,40 @@ const FAQ = sequelize.define('FAQ', {
   answer: { type: DataTypes.TEXT, allowNull: false }
 }, { timestamps: true });
 
-// 29. Notification Model
+// 29. ChangeRequest Model
+const ChangeRequest = sequelize.define('ChangeRequest', {
+  id: { type: DataTypes.STRING, primaryKey: true },
+  booking_id: { type: DataTypes.STRING, allowNull: false },
+  booking_type: { type: DataTypes.ENUM('service', 'tour'), defaultValue: 'service' },
+  type: { 
+    type: DataTypes.ENUM('date_change', 'time_change', 'guests_change', 'info_change', 'package_change', 'add_service', 'cancel_booking', 'refund'), 
+    allowNull: false 
+  },
+  old_content: { type: DataTypes.JSONB },
+  new_content: { type: DataTypes.JSONB },
+  status: { 
+    type: DataTypes.ENUM('pending', 'checking', 'pending_customer_confirm', 'pending_additional_payment', 'pending_refund', 'accepted', 'rejected', 'completed'), 
+    defaultValue: 'pending' 
+  },
+  rejection_reason: { type: DataTypes.TEXT },
+  price_diff: { type: DataTypes.DOUBLE, defaultValue: 0.0 },
+  notes: { type: DataTypes.TEXT }
+}, { tableName: 'change_requests', timestamps: true });
+
+// 30. OperationsAssignment Model
+const OperationsAssignment = sequelize.define('OperationsAssignment', {
+  id: { type: DataTypes.STRING, primaryKey: true },
+  booking_id: { type: DataTypes.STRING, allowNull: false },
+  booking_type: { type: DataTypes.ENUM('service', 'tour'), defaultValue: 'service' },
+  assigned_staff: { type: DataTypes.STRING }, // Tên nhân viên/hướng dẫn viên
+  assigned_vehicle: { type: DataTypes.STRING }, // Thông tin xe/phương tiện
+  checklist: { type: DataTypes.JSONB }, // Danh sách đầu việc cần chuẩn bị
+  status: { type: DataTypes.ENUM('preparing', 'ongoing', 'completed', 'incident'), defaultValue: 'preparing' },
+  incidents: { type: DataTypes.TEXT }, // Nhật ký sự cố nếu có
+  notes: { type: DataTypes.TEXT }
+}, { tableName: 'operations_assignments', timestamps: true });
+
+// 31. Notification Model
 const Notification = sequelize.define('Notification', {
   id: { type: DataTypes.STRING, primaryKey: true }, // 'notif_' + timestamp + random
   user_id: { type: DataTypes.STRING, allowNull: false },
@@ -540,5 +592,7 @@ module.exports = {
   CPGS,
   Voucher,
   FAQ,
-  Notification
+  Notification,
+  ChangeRequest,
+  OperationsAssignment
 };

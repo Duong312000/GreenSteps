@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { LoginModalService } from '../../services/login-modal.service';
-import { User, Booking } from '../../models/models';
+import { User, Booking, Service } from '../../models/models';
 
 @Component({
   selector: 'app-partner-bookings',
@@ -15,72 +15,72 @@ import { User, Booking } from '../../models/models';
 })
 export class PartnerBookingsComponent implements OnInit {
   public currentUser: User | null = null;
-  public bookings: Booking[] = []; // Live database bookings
+  public bookings: any[] = []; 
+  public myServices: Service[] = [];
 
   // Tab State
-  public activeTab: 'bookings' | 'change-requests' | 'schedules' = 'bookings';
+  public activeTab: 'bookings' | 'change-requests' | 'schedules' | 'reviews' = 'bookings';
 
   // Bookings Tab Filters & Modals
   public searchQuery: string = '';
-  public statusFilter: string = 'Tất cả';
-  public dateFilter: string = 'Tất cả';
+  public bookingStatusFilter: string = 'Tất cả';
+  public paymentStatusFilter: string = 'Tất cả';
+  public operationStatusFilter: string = 'Tất cả';
+  
+  public isDetailsOpen: boolean = false;
+  public selectedBooking: any = null;
   public showConfirmModal: boolean = false;
   public showRejectModal: boolean = false;
-  public selectedBooking: any = null;
   public rejectReason: string = 'Dịch vụ đã hết chỗ';
   public rejectNotes: string = '';
 
-  public bookingsMock: any[] = [];
+  // Manual status overrides
+  public overrideBookingStatus: string = '';
+  public overridePaymentStatus: string = '';
+  public overrideOperationStatus: string = '';
 
   // Change Requests Tab Filters & Modals
   public changeSearchQuery: string = '';
   public changeTypeFilter: string = 'Tất cả';
   public changeStatusFilter: string = 'Tất cả';
-  public showApproveModal: boolean = false;
-  public showRejectChangeModal: boolean = false;
-  public showProposeModal: boolean = false;
+  public changeRequests: any[] = [];
   public selectedRequest: any = null;
+  public showApproveChangeModal: boolean = false;
+  public showRejectChangeModal: boolean = false;
+  public showProposeChangeModal: boolean = false;
+  
   public proposeNewDate: string = '';
-  public proposePriceDiff: number | null = null;
+  public proposePriceDiff: number = 0;
   public proposeNotes: string = '';
+  public rejectChangeReason: string = '';
 
-  public changeRequestsMock: any[] = [];
+  // Schedules (Operations Schedule)
+  public operations: any[] = [];
+  public selectedOperation: any = null;
+  public isAssignModalOpen: boolean = false;
+  public assignStaff: string = '';
+  public assignVehicle: string = '';
+  public assignNotes: string = '';
+  public assignChecklist: any[] = [];
+  
+  public newChecklistItemLabel: string = '';
+  public operationViewMode: 'list' | 'calendar' = 'list';
+  public currentMonthYear: string = 'Tháng 7, 2026';
 
-  public mockTours: any[] = [];
-  public selectedTour: any = { id: '', name: '', duration: '', type: '', image: '' };
-  public activeSection: 'itinerary' | 'route' | 'campsite' = 'itinerary';
-  public tourSearchQuery: string = '';
-
-  // Schedules Waypoints, Timelines, Campsite
-  public waypoints: any[] = [];
-  public itinerary: any[] = [];
-  public zones: any[] = [];
-
-  // Schedule modal state
-  public showActivityModal: boolean = false;
-  public selectedDayIndex: number = 1;
-  public newActivityTime: string = '08:00';
-  public newActivityTitle: string = '';
-  public newActivityType: string = 'experience';
-  public newActivityDesc: string = '';
-
-  // New Route Waypoint bindings
-  public showRouteModal: boolean = false;
-  public newWpName: string = '';
-  public newWpTag: string = '';
-  public newWpColor: string = 'bg-teal-600';
-  public newWpType: string = 'Checkpoint';
-
-  // New Campsite Zone bindings
-  public showCampsiteModal: boolean = false;
-  public newZoneName: string = '';
-  public newZoneDesc: string = '';
-  public newZoneCapacity: number = 10;
-  public newZoneStatus: string = 'Còn trống';
-  public newZoneColor: string = 'green';
-  public newZoneIcon: string = 'Tent';
-  public newZoneTop: string = '50%';
-  public newZoneLeft: string = '50%';
+  // Reviews Tab Filters & Modals
+  public reviews: any[] = [];
+  public reviewRatingFilter: string = 'Tất cả';
+  public reviewServiceFilter: string = 'Tất cả';
+  public reviewReplyFilter: string = 'Tất cả';
+  
+  public replyingToReviewId: string | null = null;
+  public replyText: string = '';
+  
+  public reportingReviewId: string | null = null;
+  public reportReasonText: string = '';
+  
+  public editingNotesReviewId: string | null = null;
+  public internalNotesText: string = '';
 
   constructor(
     private apiService: ApiService,
@@ -95,375 +95,460 @@ export class PartnerBookingsComponent implements OnInit {
       if (!user || user.role !== 'provider') {
         this.loginModalService.open();
       } else {
-        this.loadBookings();
+        this.loadAllData();
       }
       this.cdr.detectChanges();
     });
   }
 
+  public async loadAllData() {
+    if (!this.currentUser) return;
+    const providerId = this.currentUser.id || this.currentUser._id || '';
+    
+    // Load my services for filters
+    this.myServices = await this.apiService.getMyServices(providerId);
+
+    await Promise.all([
+      this.loadBookings(),
+      this.loadChangeRequests(),
+      this.loadOperations(),
+      this.loadReviews()
+    ]);
+    this.cdr.detectChanges();
+  }
+
+  // 1. Booking handlers
   public async loadBookings() {
     if (!this.currentUser) return;
     const providerId = this.currentUser.id || this.currentUser._id || '';
-    const realBookings = await this.apiService.getBookings(providerId) || [];
-    this.bookings = realBookings;
+    const res = await this.apiService.getBookings(providerId);
+    this.bookings = res || [];
+  }
 
-    // Map database fields to the properties expected by the HTML template
-    this.bookingsMock = realBookings.map((b: any) => {
-      let uiStatus = 'pending';
-      if (b.status === 'deposit') uiStatus = 'confirmed';
-      else if (b.status === 'completed') uiStatus = 'completed';
-      else if (b.status === 'rejected' || b.status === 'refunded') uiStatus = 'cancelled';
-      else if (b.status === 'pending') uiStatus = 'pending';
-
-      return {
-        id: b.id,
-        customerName: b.customer || 'Khách hàng',
-        customerPhone: '0903 xxx xxx', // Mock phone
-        serviceName: b.service || 'Dịch vụ',
-        useDate: b.date || '2026-07-12',
-        guests: b.guests || 1,
-        totalPrice: b.value || 0,
-        paidAmount: b.status === 'deposit' || b.status === 'completed' ? b.value : 0,
-        status: uiStatus
-      };
+  public get filteredBookings() {
+    return this.bookings.filter(b => {
+      const query = this.searchQuery.toLowerCase();
+      const matchSearch = b.id.toLowerCase().includes(query) || 
+                          b.customer.toLowerCase().includes(query) || 
+                          b.service.toLowerCase().includes(query);
+      
+      const matchBStatus = this.bookingStatusFilter === 'Tất cả' || b.booking_status === this.bookingStatusFilter;
+      const matchPStatus = this.paymentStatusFilter === 'Tất cả' || b.payment_status === this.paymentStatusFilter;
+      const matchOStatus = this.operationStatusFilter === 'Tất cả' || b.operation_status === this.operationStatusFilter;
+      
+      return matchSearch && matchBStatus && matchPStatus && matchOStatus;
     });
+  }
 
-    // Load real tours
-    const tours = await this.apiService.getPresetTours(this.currentUser.id) || [];
-    this.mockTours = tours.map(t => ({
-      id: t.id,
-      name: t.title,
-      type: t.tags && t.tags[0] ? t.tags[0] : 'Trải nghiệm',
-      image: t.image || 'image/greensteps_logo.png',
-      duration: `${t.days} Ngày`,
-      status: 'active',
-      data: t.data
-    }));
-
-    if (this.mockTours.length > 0) {
-      this.selectTour(this.mockTours[0]);
-    }
-
+  public openBookingDetails(booking: any) {
+    this.selectedBooking = booking;
+    this.overrideBookingStatus = booking.booking_status;
+    this.overridePaymentStatus = booking.payment_status;
+    this.overrideOperationStatus = booking.operation_status;
+    this.isDetailsOpen = true;
     this.cdr.detectChanges();
   }
 
-  public selectTour(t: any) {
-    this.selectedTour = t;
-    if (t && t.data) {
-      this.itinerary = t.data.map((dayActs: any[], index: number) => ({
-        day: index + 1,
-        title: `Hành trình Ngày ${index + 1}`,
-        activities: dayActs.map((act: any) => ({
-          id: act.id,
-          time: act.time,
-          title: act.name,
-          type: act.type || 'experience',
-          description: act.description || `Tham gia hoạt động ${act.name} tại địa điểm.`
-        }))
-      }));
+  public closeBookingDetails() {
+    this.isDetailsOpen = false;
+    this.selectedBooking = null;
+    this.cdr.detectChanges();
+  }
 
-      const wps: any[] = [];
-      t.data.forEach((dayActs: any[], dIdx: number) => {
-        dayActs.forEach((act: any) => {
-          if (act.lat && act.lng) {
-            wps.push({
-              id: act.id,
-              name: act.name,
-              tag: `Ngày ${dIdx + 1} - ${act.time}`,
-              color: dIdx === 0 ? 'bg-green-700' : 'bg-teal-600',
-              lat: act.lat,
-              lng: act.lng
-            });
-          }
-        });
-      });
-      this.waypoints = wps;
-
-      // Populate default campsite zones for visual demo
-      this.zones = [
-        { id: 'A', name: 'Glamping Cao Cấp', desc: 'Lều mông cổ cực lớn view rừng thông.', capacity: 15, unit: 'lều', status: 'Còn trống 5', color: 'green', top: '30%', left: '25%', icon: 'Tent' },
-        { id: 'B', name: 'Lều Chữ A Tiêu Chuẩn', desc: 'Lều chống thấm 4 người sàn gỗ nâng.', capacity: 30, unit: 'lều', status: 'Đã kín (Full)', color: 'blue', top: '60%', left: '45%', icon: 'Tent' },
-        { id: 'C', name: 'Khu Sinh Hoạt & BBQ', desc: 'Sân gỗ đốt lửa trại bàn gỗ lớn.', capacity: 10, unit: 'bàn', status: 'Sẵn sàng', color: 'orange', top: '40%', left: '70%', icon: 'Fire' }
-      ];
+  public async updateStatusesIndividually() {
+    if (!this.selectedBooking) return;
+    const updateData = {
+      booking_status: this.overrideBookingStatus,
+      payment_status: this.overridePaymentStatus,
+      operation_status: this.overrideOperationStatus
+    };
+    const success = await this.apiService.updateBookingStatuses(this.selectedBooking.id, updateData);
+    if (success) {
+      alert('Cập nhật trạng thái thành công!');
+      await this.loadBookings();
+      this.closeBookingDetails();
     } else {
-      this.itinerary = [];
-      this.waypoints = [];
-      this.zones = [];
+      alert('Lỗi cập nhật trạng thái.');
+    }
+  }
+
+  public async confirmBookingDirect(id: string) {
+    if (confirm('Bạn có chắc chắn muốn phê duyệt cọc đơn này?')) {
+      const ok = await this.apiService.approveBooking(id);
+      if (ok) {
+        alert('Duyệt thành công!');
+        await this.loadBookings();
+        this.closeBookingDetails();
+      } else {
+        alert('Lỗi phê duyệt.');
+      }
+    }
+  }
+
+  public triggerRejectModal(booking: any) {
+    this.selectedBooking = booking;
+    this.showRejectModal = true;
+    this.cdr.detectChanges();
+  }
+
+  public async submitRejectBooking() {
+    if (!this.selectedBooking) return;
+    const success = await this.apiService.rejectBooking(this.selectedBooking.id);
+    if (success) {
+      // Save rejection reason
+      await this.apiService.updateBookingStatuses(this.selectedBooking.id, {
+        booking_status: 'rejected',
+        rejection_reason: this.rejectReason
+      });
+      alert('Đã từ chối đơn đặt chỗ thành công.');
+      await this.loadBookings();
+      this.showRejectModal = false;
+      this.selectedBooking = null;
+    } else {
+      alert('Lỗi từ chối đơn đặt.');
+    }
+  }
+
+  public async completeBookingDirect(id: string) {
+    if (confirm('Đơn dịch vụ đã phục vụ xong? Hãy đánh dấu hoàn thành.')) {
+      const ok = await this.apiService.completeBooking(id);
+      if (ok) {
+        alert('Đã cập nhật trạng thái đơn thành HOÀN THÀNH!');
+        await this.loadBookings();
+        this.closeBookingDetails();
+      } else {
+        alert('Lỗi cập nhật.');
+      }
+    }
+  }
+
+  // 2. Change Requests handlers
+  public async loadChangeRequests() {
+    if (!this.currentUser) return;
+    const providerId = this.currentUser.id || this.currentUser._id || '';
+    this.changeRequests = await this.apiService.getChangeRequests(providerId) || [];
+  }
+
+  public get filteredChangeRequests() {
+    return this.changeRequests.filter(r => {
+      const query = this.changeSearchQuery.toLowerCase();
+      const matchSearch = r.id.toLowerCase().includes(query) || 
+                          r.booking_id.toLowerCase().includes(query) ||
+                          r.booking?.fullname?.toLowerCase().includes(query);
+      
+      const matchType = this.changeTypeFilter === 'Tất cả' || r.type === this.changeTypeFilter;
+      const matchStatus = this.changeStatusFilter === 'Tất cả' || r.status === this.changeStatusFilter;
+      
+      return matchSearch && matchType && matchStatus;
+    });
+  }
+
+  public openChangeRequestAction(req: any, action: 'approve' | 'reject' | 'propose') {
+    this.selectedRequest = req;
+    if (action === 'approve') {
+      this.showApproveChangeModal = true;
+    } else if (action === 'reject') {
+      this.rejectChangeReason = '';
+      this.showRejectChangeModal = true;
+    } else {
+      this.proposeNewDate = req.new_content?.date || '';
+      this.proposePriceDiff = req.price_diff || 0;
+      this.proposeNotes = '';
+      this.showProposeChangeModal = true;
     }
     this.cdr.detectChanges();
   }
 
-  public get newBookingsCount(): number {
-    return this.bookingsMock.length;
+  public async submitApproveChange() {
+    if (!this.selectedRequest) return;
+    const success = await this.apiService.approveChangeRequest(this.selectedRequest.id);
+    if (success) {
+      alert('Đã phê duyệt và áp dụng thay đổi thành công!');
+      await this.loadChangeRequests();
+      await this.loadBookings();
+      this.showApproveChangeModal = false;
+      this.selectedRequest = null;
+    } else {
+      alert('Lỗi phê duyệt thay đổi.');
+    }
   }
 
-  public get pendingCount(): number {
-    return this.bookingsMock.filter(b => b.status === 'pending').length;
+  public async submitRejectChange() {
+    if (!this.selectedRequest) return;
+    const success = await this.apiService.rejectChangeRequest(this.selectedRequest.id, this.rejectChangeReason);
+    if (success) {
+      alert('Từ chối yêu cầu thay đổi thành công.');
+      await this.loadChangeRequests();
+      this.showRejectChangeModal = false;
+      this.selectedRequest = null;
+    } else {
+      alert('Lỗi từ chối.');
+    }
   }
 
-  public get confirmedCount(): number {
-    return this.bookingsMock.filter(b => b.status === 'confirmed').length;
+  public async submitProposeChange() {
+    if (!this.selectedRequest) return;
+    const proposeData = {
+      propose_date: this.proposeNewDate,
+      propose_notes: this.proposeNotes,
+      price_diff: this.proposePriceDiff
+    };
+    const success = await this.apiService.proposeAlternativeChangeRequest(this.selectedRequest.id, proposeData);
+    if (success) {
+      alert('Đã gửi đề xuất lịch và giá mới đến khách hàng!');
+      await this.loadChangeRequests();
+      this.showProposeChangeModal = false;
+      this.selectedRequest = null;
+    } else {
+      alert('Lỗi gửi đề xuất.');
+    }
   }
 
-  public get ongoingCount(): number {
-    const today = new Date();
-    return this.bookingsMock.filter(b => {
-      if (b.status !== 'confirmed') return false;
-      const bDate = new Date(b.useDate);
-      const diffTime = bDate.getTime() - today.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays >= -1 && diffDays <= 7;
-    }).length;
+  // 3. Operations handlers
+  public async loadOperations() {
+    if (!this.currentUser) return;
+    const providerId = this.currentUser.id || this.currentUser._id || '';
+    this.operations = await this.apiService.getOperationsAssignments(providerId) || [];
   }
 
-  public get completedCount(): number {
-    return this.bookingsMock.filter(b => b.status === 'completed').length;
+  public openAssignModal(op: any) {
+    this.selectedOperation = op;
+    this.assignStaff = op.assigned_staff || '';
+    this.assignVehicle = op.assigned_vehicle || '';
+    this.assignNotes = op.notes || '';
+    this.assignChecklist = op.checklist ? [...op.checklist] : [];
+    this.isAssignModalOpen = true;
+    this.cdr.detectChanges();
   }
 
-  public get cancelledCount(): number {
-    return this.bookingsMock.filter(b => b.status === 'cancelled').length;
+  public closeAssignModal() {
+    this.isAssignModalOpen = false;
+    this.selectedOperation = null;
+    this.cdr.detectChanges();
   }
 
-  public get changePendingCount(): number {
-    return this.changeRequestsMock.filter(r => r.status === 'pending').length;
+  public addChecklistItem() {
+    if (this.newChecklistItemLabel.trim()) {
+      this.assignChecklist.push({ label: this.newChecklistItemLabel.trim(), done: false });
+      this.newChecklistItemLabel = '';
+      this.cdr.detectChanges();
+    }
   }
 
-  public get changeApprovedCount(): number {
-    return this.changeRequestsMock.filter(r => r.status === 'approved').length;
+  public removeChecklistItem(idx: number) {
+    this.assignChecklist.splice(idx, 1);
+    this.cdr.detectChanges();
   }
 
-  public get changeRejectedCount(): number {
-    return this.changeRequestsMock.filter(r => r.status === 'rejected').length;
+  public async submitAssign() {
+    if (!this.selectedOperation) return;
+    const data = {
+      assigned_staff: this.assignStaff,
+      assigned_vehicle: this.assignVehicle,
+      checklist: this.assignChecklist,
+      notes: this.assignNotes
+    };
+    const success = await this.apiService.assignStaffAndVehicle(this.selectedOperation.booking_id, data);
+    if (success) {
+      alert('Cập nhật phân công và checklist thành công!');
+      await this.loadOperations();
+      this.closeAssignModal();
+    } else {
+      alert('Lỗi lưu thông tin phân công.');
+    }
   }
 
-  public get changeProposedCount(): number {
-    return this.changeRequestsMock.filter(r => r.status === 'proposed').length;
+  public async toggleChecklistItemDirect(op: any, item: any, event: any) {
+    const isChecked = event.target.checked;
+    const success = await this.apiService.updateChecklistItem(op.booking_id, item.label, isChecked);
+    if (success) {
+      item.done = isChecked;
+      this.cdr.detectChanges();
+    } else {
+      alert('Lỗi cập nhật checklist.');
+      event.target.checked = !isChecked; // revert
+    }
   }
 
-  public get changeCancelCount(): number {
-    return this.changeRequestsMock.filter(r => r.type === 'cancel').length;
+  public async changeOperationStatus(op: any, status: string) {
+    let incidents = '';
+    if (status === 'incident') {
+      incidents = prompt('Mô tả sự cố hoặc nhật ký phát sinh (nếu có):') || '';
+      if (!incidents) return;
+    }
+    const success = await this.apiService.updateAssignmentStatus(op.booking_id, status, incidents);
+    if (success) {
+      alert('Cập nhật trạng thái vận hành thành công!');
+      await this.loadOperations();
+      await this.loadBookings();
+    } else {
+      alert('Lỗi cập nhật trạng thái.');
+    }
   }
 
-  public setActiveTab(tab: 'bookings' | 'change-requests' | 'schedules') {
+  // 4. Reviews handlers
+  public async loadReviews() {
+    if (!this.currentUser) return;
+    const providerId = this.currentUser.id || this.currentUser._id || '';
+    
+    const filters: any = {};
+    if (this.reviewRatingFilter !== 'Tất cả') filters.rating = this.reviewRatingFilter;
+    if (this.reviewServiceFilter !== 'Tất cả') filters.serviceId = this.reviewServiceFilter;
+    if (this.reviewReplyFilter !== 'Tất cả') {
+      filters.answered = this.reviewReplyFilter === 'Đã phản hồi' ? 'true' : 'false';
+    }
+    
+    this.reviews = await this.apiService.getProviderReviews(providerId, filters) || [];
+  }
+
+  public initiateReply(reviewId: string) {
+    this.replyingToReviewId = reviewId;
+    this.replyText = '';
+    this.cdr.detectChanges();
+  }
+
+  public async submitReply(reviewId: string) {
+    if (!this.replyText.trim()) return;
+    const success = await this.apiService.replyToReview(reviewId, this.replyText.trim());
+    if (success) {
+      alert('Đã phản hồi đánh giá thành công!');
+      await this.loadReviews();
+      this.replyingToReviewId = null;
+      this.replyText = '';
+    } else {
+      alert('Gửi phản hồi thất bại.');
+    }
+  }
+
+  public initiateReport(reviewId: string) {
+    this.reportingReviewId = reviewId;
+    this.reportReasonText = '';
+    this.cdr.detectChanges();
+  }
+
+  public async submitReport(reviewId: string) {
+    if (!this.reportReasonText.trim()) return;
+    const success = await this.apiService.reportReview(reviewId, this.reportReasonText.trim());
+    if (success) {
+      alert('Đã báo cáo đánh giá vi phạm thành công!');
+      await this.loadReviews();
+      this.reportingReviewId = null;
+      this.reportReasonText = '';
+    } else {
+      alert('Báo cáo vi phạm thất bại.');
+    }
+  }
+
+  public initiateNotes(reviewId: string, currentNotes: string) {
+    this.editingNotesReviewId = reviewId;
+    this.internalNotesText = currentNotes || '';
+    this.cdr.detectChanges();
+  }
+
+  public async submitNotes(reviewId: string) {
+    const success = await this.apiService.updateInternalNotes(reviewId, this.internalNotesText.trim());
+    if (success) {
+      alert('Cập nhật ghi chú nội bộ thành công!');
+      await this.loadReviews();
+      this.editingNotesReviewId = null;
+      this.internalNotesText = '';
+    } else {
+      alert('Cập nhật thất bại.');
+    }
+  }
+
+  // Tab navigation
+  public setActiveTab(tab: 'bookings' | 'change-requests' | 'schedules' | 'reviews') {
     this.activeTab = tab;
     this.cdr.detectChanges();
   }
 
-  // Filter lists
-  public get filteredBookings() {
-    return this.bookingsMock.filter(b => {
-      const matchSearch = b.id.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
-                          b.customerName.toLowerCase().includes(this.searchQuery.toLowerCase());
-      const matchStatus = this.statusFilter === 'Tất cả' || 
-                          (this.statusFilter === 'Chờ xác nhận' && b.status === 'pending') ||
-                          (this.statusFilter === 'Đã xác nhận' && b.status === 'confirmed') ||
-                          (this.statusFilter === 'Đã hủy' && b.status === 'cancelled');
-      return matchSearch && matchStatus;
-    });
-  }
-
-  public get filteredRequests() {
-    return this.changeRequestsMock.filter(r => {
-      const matchSearch = r.id.toLowerCase().includes(this.changeSearchQuery.toLowerCase()) || 
-                          r.bookingId.toLowerCase().includes(this.changeSearchQuery.toLowerCase()) ||
-                          r.customerName.toLowerCase().includes(this.changeSearchQuery.toLowerCase());
-      const matchStatus = this.changeStatusFilter === 'Tất cả' || 
-                          (this.changeStatusFilter === 'Chờ xử lý' && r.status === 'pending') ||
-                          (this.changeStatusFilter === 'Đã duyệt' && r.status === 'approved') ||
-                          (this.changeStatusFilter === 'Từ chối' && r.status === 'rejected') ||
-                          (this.changeStatusFilter === 'Đã đề xuất' && r.status === 'proposed');
-      return matchSearch && matchStatus;
-    });
-  }
-
-  public get filteredTours() {
-    return this.mockTours.filter(t => t.name.toLowerCase().includes(this.tourSearchQuery.toLowerCase()));
-  }
-
-  // Actions for Bookings
-  public handleBookingAction(booking: any, action: 'confirm' | 'reject') {
-    this.selectedBooking = booking;
-    if (action === 'confirm') {
-      this.showConfirmModal = true;
-    } else {
-      this.showRejectModal = true;
-    }
-    this.cdr.detectChanges();
-  }
-
-  public async submitConfirm() {
-    if (this.selectedBooking) {
-      const success = await this.apiService.approveBooking(this.selectedBooking.id);
-      if (success) {
-        alert('Đã duyệt và xác nhận booking thành công!');
-        await this.loadBookings();
-      } else {
-        alert('Có lỗi xảy ra khi phê duyệt booking.');
-      }
-      this.showConfirmModal = false;
-      this.selectedBooking = null;
-      this.cdr.detectChanges();
+  public getBookingStatusClass(status: string): string {
+    switch (status) {
+      case 'new': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'pending_confirm': return 'bg-orange-50 text-orange-700 border-orange-200';
+      case 'accepted': return 'bg-teal-50 text-teal-700 border-teal-200';
+      case 'rejected': return 'bg-red-50 text-red-700 border-red-200';
+      case 'cancelled': return 'bg-gray-100 text-gray-700 border-gray-200';
+      default: return 'bg-gray-50 text-gray-600';
     }
   }
 
-  public async submitReject() {
-    if (this.selectedBooking) {
-      const success = await this.apiService.rejectBooking(this.selectedBooking.id);
-      if (success) {
-        alert('Đã từ chối đơn đặt chỗ thành công.');
-        await this.loadBookings();
-      } else {
-        alert('Có lỗi xảy ra khi từ chối đơn đặt chỗ.');
-      }
-      this.showRejectModal = false;
-      this.selectedBooking = null;
-      this.cdr.detectChanges();
+  public getBookingStatusLabel(status: string): string {
+    switch (status) {
+      case 'new': return 'Chờ duyệt cọc';
+      case 'pending_confirm': return 'Chờ xác nhận';
+      case 'accepted': return 'Đã xác nhận';
+      case 'rejected': return 'Bị từ chối';
+      case 'cancelled': return 'Đã hủy';
+      default: return status;
     }
   }
 
-  // Actions for Change Requests
-  public handleChangeAction(req: any, action: 'approve' | 'reject' | 'propose') {
-    this.selectedRequest = req;
-    if (action === 'approve') {
-      this.showApproveModal = true;
-    } else if (action === 'reject') {
-      this.showRejectChangeModal = true;
-    } else {
-      this.showProposeModal = true;
-    }
-    this.cdr.detectChanges();
-  }
-
-  public submitApproveChange() {
-    if (this.selectedRequest) {
-      this.changeRequestsMock = this.changeRequestsMock.map(r => r.id === this.selectedRequest.id ? { ...r, status: 'approved' } : r);
-      alert('Đã duyệt yêu cầu thay đổi thành công!');
-      this.showApproveModal = false;
-      this.selectedRequest = null;
-      this.cdr.detectChanges();
+  public getPaymentStatusClass(status: string): string {
+    switch (status) {
+      case 'pending': return 'bg-yellow-50 text-yellow-700 border-yellow-250';
+      case 'deposit_paid': return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'fully_paid': return 'bg-teal-50 text-teal-700 border-teal-200';
+      case 'refunded': return 'bg-purple-50 text-purple-700 border-purple-200';
+      default: return 'bg-gray-50 text-gray-600';
     }
   }
 
-  public submitRejectChange() {
-    if (this.selectedRequest) {
-      this.changeRequestsMock = this.changeRequestsMock.map(r => r.id === this.selectedRequest.id ? { ...r, status: 'rejected' } : r);
-      alert('Đã từ chối yêu cầu thay đổi.');
-      this.showRejectChangeModal = false;
-      this.selectedRequest = null;
-      this.cdr.detectChanges();
+  public getPaymentStatusLabel(status: string): string {
+    switch (status) {
+      case 'pending': return 'Chưa thanh toán';
+      case 'deposit_paid': return 'Đã cọc';
+      case 'fully_paid': return 'Đã thanh toán hết';
+      case 'refunded': return 'Đã hoàn tiền';
+      default: return status;
     }
   }
 
-  public submitProposeChange() {
-    if (this.selectedRequest) {
-      this.changeRequestsMock = this.changeRequestsMock.map(r => r.id === this.selectedRequest.id ? { ...r, status: 'proposed' } : r);
-      alert(`Đã gửi đề xuất lịch mới (${this.proposeNewDate}) thành công đến khách hàng!`);
-      this.showProposeModal = false;
-      this.selectedRequest = null;
-      this.cdr.detectChanges();
+  public getOperationStatusClass(status: string): string {
+    switch (status) {
+      case 'preparing': return 'bg-orange-50 text-orange-700 border-orange-100';
+      case 'ongoing': return 'bg-blue-50 text-blue-700 border-blue-100';
+      case 'completed': return 'bg-teal-50 text-teal-700 border-teal-200';
+      case 'incident': return 'bg-red-100 text-red-800 border-red-200 font-bold animate-pulse';
+      default: return 'bg-gray-50 text-gray-600';
     }
   }
 
-  // Actions for Schedule Configurator
-  public openAddActivity(dayIndex: number) {
-    this.selectedDayIndex = dayIndex;
-    this.showActivityModal = true;
-    this.cdr.detectChanges();
-  }
-
-  public submitAddActivity() {
-    const act = {
-      id: 'a_' + Date.now(),
-      time: this.newActivityTime,
-      title: this.newActivityTitle,
-      type: this.newActivityType,
-      description: this.newActivityDesc
-    };
-    
-    this.itinerary = this.itinerary.map(d => {
-      if (d.day === this.selectedDayIndex) {
-        return {
-          ...d,
-          activities: [...d.activities, act].sort((a, b) => a.time.localeCompare(b.time))
-        };
-      }
-      return d;
-    });
-
-    this.showActivityModal = false;
-    this.newActivityTitle = '';
-    this.newActivityDesc = '';
-    this.cdr.detectChanges();
+  public getOperationStatusLabel(status: string): string {
+    switch (status) {
+      case 'preparing': return 'Đang chuẩn bị';
+      case 'ongoing': return 'Đang đi tour';
+      case 'completed': return 'Đã hoàn thành';
+      case 'incident': return 'Gặp sự cố!';
+      default: return status;
+    }
   }
 
   public getRequestTypeLabel(type: string): string {
-    if (type === 'date_change') return 'Đổi ngày sử dụng';
-    if (type === 'cancel') return 'Yêu cầu hủy đơn';
-    if (type === 'guest_change') return 'Thay đổi số khách';
-    return 'Thay đổi thông tin liên hệ';
-  }
-
-  // New Route Waypoint Modal Actions
-  public openRouteModal() {
-    this.newWpName = '';
-    this.newWpTag = `Ngày ${this.selectedDayIndex || 1} - 10:00`;
-    this.newWpColor = 'bg-teal-600';
-    this.newWpType = 'Checkpoint';
-    this.showRouteModal = true;
-    this.cdr.detectChanges();
-  }
-
-  public submitNewRoute() {
-    if (!this.newWpName.trim()) {
-      alert("Vui lòng nhập tên mốc waypoint!");
-      return;
+    switch (type) {
+      case 'date_change': return 'Đổi ngày sử dụng';
+      case 'time_change': return 'Đổi giờ khởi hành';
+      case 'guests_change': return 'Thay đổi số khách';
+      case 'info_change': return 'Thay đổi thông tin liên lạc';
+      case 'package_change': return 'Thay đổi gói dịch vụ';
+      case 'cancel_booking': return 'Yêu cầu hủy đơn';
+      case 'refund': return 'Yêu cầu hoàn trả tiền';
+      default: return type;
     }
-    const newWp = {
-      id: 'wp_' + Date.now(),
-      name: this.newWpName,
-      tag: this.newWpTag,
-      color: this.newWpColor,
-      lat: null as any,
-      lng: null as any
-    };
-    this.waypoints = [...this.waypoints, newWp];
-    this.showRouteModal = false;
-    this.cdr.detectChanges();
   }
 
-  // New Campsite Modal Actions
-  public openCampsiteModal() {
-    this.newZoneName = '';
-    this.newZoneDesc = '';
-    this.newZoneCapacity = 10;
-    this.newZoneStatus = 'Còn trống';
-    this.newZoneColor = 'green';
-    this.newZoneIcon = 'Tent';
-    this.newZoneTop = `${20 + Math.random() * 50}%`;
-    this.newZoneLeft = `${20 + Math.random() * 50}%`;
-    this.showCampsiteModal = true;
-    this.cdr.detectChanges();
-  }
-
-  public submitNewCampsite() {
-    if (!this.newZoneName.trim()) {
-      alert("Vui lòng nhập tên khu lều!");
-      return;
+  public getRequestStatusLabel(status: string): string {
+    switch (status) {
+      case 'pending': return 'Chờ duyệt';
+      case 'checking': return 'Đang kiểm tra';
+      case 'pending_customer_confirm': return 'Chờ khách xác nhận';
+      case 'pending_additional_payment': return 'Chờ thanh toán chênh lệch';
+      case 'pending_refund': return 'Chờ hoàn tiền';
+      case 'accepted': return 'Đã chấp nhận';
+      case 'rejected': return 'Bị từ chối';
+      case 'completed': return 'Đã hoàn thành';
+      default: return status;
     }
-    const newZone = {
-      id: String.fromCharCode(65 + this.zones.length), // A, B, C, D...
-      name: this.newZoneName,
-      desc: this.newZoneDesc || 'Mô tả khu lều trại mới được cấu hình.',
-      capacity: this.newZoneCapacity,
-      unit: this.newZoneIcon === 'Tent' ? 'lều' : 'bàn',
-      status: this.newZoneStatus,
-      color: this.newZoneColor,
-      top: this.newZoneTop,
-      left: this.newZoneLeft,
-      icon: this.newZoneIcon
-    };
-    this.zones = [...this.zones, newZone];
-    this.showCampsiteModal = false;
-    this.cdr.detectChanges();
   }
 }

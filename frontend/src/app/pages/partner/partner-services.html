@@ -1,11 +1,12 @@
 <main class="min-h-screen bg-[#fcfdfc] pt-28 pb-12 px-6 font-sans">
     <div class="max-w-[1440px] mx-auto space-y-6">
         
-
-        
         <!-- Header Section -->
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900">Dịch vụ của tôi</h1>
+        <div class="flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <i class="bi bi-box-seam text-teal-600"></i>
+                Dịch vụ của tôi
+            </h1>
         </div>
 
         <!-- Toolbar Section -->
@@ -13,7 +14,7 @@
             <div class="relative w-full md:w-[400px]">
                 <input
                     type="text"
-                    class="block w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 shadow-sm text-gray-700"
+                    class="block w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 shadow-sm text-gray-700"
                     placeholder="Tìm kiếm dịch vụ..."
                     [(ngModel)]="searchQuery"
                     (ngModelChange)="cdr.detectChanges()"
@@ -22,32 +23,32 @@
             </div>
             
             <div class="flex gap-3 w-full md:w-auto">
-                <button (click)="exportServicesList()" class="flex-1 md:flex-none px-4 py-2 border border-teal-600 bg-white text-teal-700 font-semibold text-sm rounded-lg hover:bg-teal-50 transition-colors shadow-sm cursor-pointer">
-                    Xuất danh sách
+                <button (click)="exportServicesList()" class="flex-1 md:flex-none px-4 py-2.5 border border-teal-600 bg-white text-teal-700 font-semibold text-sm rounded-xl hover:bg-teal-50 transition-all shadow-sm cursor-pointer">
+                    <i class="bi bi-download mr-1.5"></i> Xuất danh sách
                 </button>
-                <button (click)="openAddModal()" class="flex-1 md:flex-none px-4 py-2 bg-[#F4C76D] text-yellow-950 font-bold text-sm rounded-lg hover:bg-[#eab34e] transition-colors text-center shadow-sm cursor-pointer border-none">
-                    Thêm dịch vụ mới
+                <button (click)="openAddModal()" class="flex-1 md:flex-none px-5 py-2.5 bg-[#F4C76D] text-yellow-950 font-bold text-sm rounded-xl hover:bg-[#eab34e] hover:scale-[1.02] transition-all text-center shadow-sm cursor-pointer border-none">
+                    <i class="bi bi-plus-lg mr-1.5"></i> Đăng ký dịch vụ xanh
                 </button>
             </div>
         </div>
 
         <!-- Stats Bar -->
-        <div class="grid grid-cols-4 bg-white border border-teal-600/20 rounded-xl divide-x divide-teal-600/10 shadow-sm overflow-hidden text-center">
-            <div class="py-3 px-4 transition-all duration-300 hover:bg-gray-50 cursor-pointer">
+        <div class="grid grid-cols-4 bg-white border border-teal-600/20 rounded-2xl divide-x divide-teal-600/10 shadow-sm overflow-hidden text-center">
+            <div class="py-4 px-4 transition-all duration-300 hover:bg-gray-50 cursor-pointer">
                 <p class="text-[11px] uppercase tracking-wider text-gray-500 font-bold mb-1">Tổng số</p>
                 <p class="text-2xl font-extrabold text-gray-900">{{ totalCount }}</p>
             </div>
-            <div class="py-3 px-4 transition-all duration-300 hover:bg-teal-50/20 cursor-pointer">
+            <div class="py-4 px-4 transition-all duration-300 hover:bg-teal-50/20 cursor-pointer">
                 <p class="text-[11px] uppercase tracking-wider text-teal-600 font-bold mb-1">Hoạt động</p>
                 <p class="text-2xl font-extrabold text-teal-700">{{ activeCount }}</p>
             </div>
-            <div class="py-3 px-4 transition-all duration-300 hover:bg-orange-50/20 cursor-pointer">
+            <div class="py-4 px-4 transition-all duration-300 hover:bg-orange-50/20 cursor-pointer">
                 <p class="text-[11px] uppercase tracking-wider text-orange-600 font-bold mb-1">Chờ duyệt</p>
                 <p class="text-2xl font-extrabold text-orange-600">{{ pendingCount }}</p>
             </div>
-            <div class="py-3 px-4 transition-all duration-300 hover:bg-red-50/20 cursor-pointer">
-                <p class="text-[11px] uppercase tracking-wider text-red-600 font-bold mb-1">Hết chỗ</p>
-                <p class="text-2xl font-extrabold text-red-600">{{ rejectedCount }}</p>
+            <div class="py-4 px-4 transition-all duration-300 hover:bg-yellow-50/20 cursor-pointer">
+                <p class="text-[11px] uppercase tracking-wider text-yellow-600 font-bold mb-1">Bản nháp</p>
+                <p class="text-2xl font-extrabold text-yellow-600">{{ draftCount }}</p>
             </div>
         </div>
 
@@ -82,7 +83,7 @@
                                 <div class="w-4 h-4 rounded border flex items-center justify-center transition-colors" [ngClass]="selectedTypes.includes('tour') ? 'bg-teal-600 border-teal-600' : 'border-gray-300 group-hover:border-teal-500'">
                                     <i class="bi bi-check text-white text-xs" *ngIf="selectedTypes.includes('tour')"></i>
                                 </div>
-                                <span class="text-xs text-gray-600 font-semibold">Giải trí & Trải nghiệm (tour)</span>
+                                <span class="text-xs text-gray-600 font-semibold">Trải nghiệm (tour)</span>
                             </label>
                             <label class="flex items-center gap-2.5 cursor-pointer group" (click)="toggleTypeFilter('transport')">
                                 <div class="w-4 h-4 rounded border flex items-center justify-center transition-colors" [ngClass]="selectedTypes.includes('transport') ? 'bg-teal-600 border-teal-600' : 'border-gray-300 group-hover:border-teal-500'">
@@ -122,9 +123,9 @@
 
                     <hr class="border-gray-100" />
 
-                    <!-- Trạng thái -->
+                    <!-- Trạng thái chi tiết -->
                     <div>
-                        <span class="block text-sm font-bold text-gray-800 mb-3">Trạng thái hoạt động</span>
+                        <span class="block text-sm font-bold text-gray-800 mb-3">Trạng thái</span>
                         <div class="space-y-2.5">
                             <label class="flex items-center gap-2.5 cursor-pointer group" (click)="toggleStatusFilter('active')">
                                 <div class="w-4 h-4 rounded border flex items-center justify-center transition-colors" [ngClass]="selectedStatuses.includes('active') ? 'bg-teal-600 border-teal-600' : 'border-gray-300 group-hover:border-teal-500'">
@@ -138,17 +139,17 @@
                                 </div>
                                 <span class="text-xs text-gray-600 font-semibold">Chờ duyệt</span>
                             </label>
-                            <label class="flex items-center gap-2.5 cursor-pointer group" (click)="toggleStatusFilter('sold_out')">
-                                <div class="w-4 h-4 rounded border flex items-center justify-center transition-colors" [ngClass]="selectedStatuses.includes('sold_out') ? 'bg-teal-600 border-teal-600' : 'border-gray-300 group-hover:border-teal-500'">
-                                    <i class="bi bi-check text-white text-xs" *ngIf="selectedStatuses.includes('sold_out')"></i>
+                            <label class="flex items-center gap-2.5 cursor-pointer group" (click)="toggleStatusFilter('draft')">
+                                <div class="w-4 h-4 rounded border flex items-center justify-center transition-colors" [ngClass]="selectedStatuses.includes('draft') ? 'bg-teal-600 border-teal-600' : 'border-gray-300 group-hover:border-teal-500'">
+                                    <i class="bi bi-check text-white text-xs" *ngIf="selectedStatuses.includes('draft')"></i>
                                 </div>
-                                <span class="text-xs text-gray-600 font-semibold">Hết chỗ</span>
+                                <span class="text-xs text-gray-600 font-semibold">Bản nháp</span>
                             </label>
-                            <label class="flex items-center gap-2.5 cursor-pointer group" (click)="toggleStatusFilter('inactive')">
-                                <div class="w-4 h-4 rounded border flex items-center justify-center transition-colors" [ngClass]="selectedStatuses.includes('inactive') ? 'bg-teal-600 border-teal-600' : 'border-gray-300 group-hover:border-teal-500'">
-                                    <i class="bi bi-check text-white text-xs" *ngIf="selectedStatuses.includes('inactive')"></i>
+                            <label class="flex items-center gap-2.5 cursor-pointer group" (click)="toggleStatusFilter('rejected')">
+                                <div class="w-4 h-4 rounded border flex items-center justify-center transition-colors" [ngClass]="selectedStatuses.includes('rejected') ? 'bg-teal-600 border-teal-600' : 'border-gray-300 group-hover:border-teal-500'">
+                                    <i class="bi bi-check text-white text-xs" *ngIf="selectedStatuses.includes('rejected')"></i>
                                 </div>
-                                <span class="text-xs text-gray-600 font-semibold">Tạm ẩn</span>
+                                <span class="text-xs text-gray-600 font-semibold">Bị từ chối</span>
                             </label>
                         </div>
                     </div>
@@ -158,26 +159,29 @@
             <!-- Grid Content -->
             <div class="flex-1 flex flex-col w-full">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" *ngIf="filteredServices.length > 0">
-                    <div *ngFor="let srv of filteredServices" class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-[0_12px_30px_rgba(13,148,136,0.12)] hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full group">
+                    <div *ngFor="let srv of filteredServices" class="bg-white rounded-2xl border border-gray-150/60 overflow-hidden shadow-sm hover:shadow-[0_12px_35px_rgba(13,148,136,0.15)] hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full group">
+                        
                         <!-- Card Header Image -->
-                        <div class="relative h-[160px] w-full bg-gray-200 overflow-hidden shrink-0">
+                        <div class="relative h-[170px] w-full bg-gray-100 overflow-hidden shrink-0">
                             <img [src]="getServiceImage(srv)" [alt]="srv.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            
                             <!-- Left Badge: Type -->
                             <div class="absolute top-3 left-3">
-                                <span class="bg-white/90 backdrop-blur-sm text-gray-800 text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm uppercase tracking-wide">
+                                <span class="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm uppercase tracking-wide">
                                     {{ srv.type === 'stay' ? 'Lưu trú' : (srv.type === 'food' ? 'Ăn uống' : (srv.type === 'transport' ? 'Di chuyển' : 'Giải trí')) }}
                                 </span>
                             </div>
+                            
                             <!-- Right Badge: Status -->
                             <div class="absolute top-3 right-3">
-                                <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm uppercase tracking-wide border"
-                                      [ngClass]="srv.status === 'active' ? 'bg-teal-50 text-teal-700 border-teal-200' : 
-                                                 (srv.status === 'pending' ? 'bg-orange-50 text-orange-700 border-orange-200' : 
-                                                 (srv.status === 'sold_out' ? 'bg-red-50 text-red-700 border-red-200' : 
-                                                 'bg-gray-50 text-gray-700 border-gray-200'))">
-                                    {{ srv.status === 'active' ? 'Đang hoạt động' : 
-                                       (srv.status === 'pending' ? 'Chờ duyệt' : 
-                                       (srv.status === 'sold_out' ? 'Hết chỗ' : 'Tạm ẩn')) }}
+                                <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm uppercase tracking-wide border bg-white/95"
+                                      [ngClass]="srv.status === 'active' ? 'text-teal-700 border-teal-200' : 
+                                                 (srv.status === 'pending' ? 'text-orange-700 border-orange-200' : 
+                                                 (srv.status === 'draft' ? 'text-yellow-700 border-yellow-200' : 
+                                                 (srv.status === 'rejected' ? 'text-red-700 border-red-200' : 
+                                                 (srv.status === 'suspended' ? 'text-gray-600 border-gray-200' : 
+                                                 'text-purple-700 border-purple-200'))))">
+                                    {{ getStatusLabel(srv.status) }}
                                 </span>
                             </div>
                         </div>
@@ -189,21 +193,48 @@
                                 {{ srv.destination }}
                             </div>
                             
-                            <h3 class="font-bold text-gray-800 line-clamp-2 flex-1 mb-6 text-[15px] leading-snug">
+                            <h3 class="font-bold text-gray-800 line-clamp-2 flex-1 mb-4 text-[15px] leading-snug">
                                 {{ srv.name }}
                             </h3>
+
+                            <!-- Warning Rejection Reason block -->
+                            <div *ngIf="srv.status === 'rejected' && srv.rejection_reason" class="mb-4 p-2.5 bg-red-50 text-red-700 text-xs rounded-xl flex items-start gap-2 border border-red-100">
+                                <i class="bi bi-exclamation-triangle-fill text-red-500 mt-0.5"></i>
+                                <span><strong>Từ chối:</strong> {{ srv.rejection_reason }}</span>
+                            </div>
+
+                            <div class="flex justify-between items-center mb-4 text-xs text-gray-500 bg-teal-50/40 p-2.5 rounded-xl border border-teal-500/10">
+                                <span>CO₂ Giảm: <strong class="text-teal-700">{{ srv.carbon }} kg</strong></span>
+                                <span>Chỗ tối đa: <strong class="text-teal-700">{{ srv.max_capacity || 10 }}</strong></span>
+                            </div>
 
                             <div class="flex justify-between items-end mt-auto pt-3 border-t border-gray-50">
                                 <div>
                                     <p class="text-[10px] text-gray-400 mb-0.5 font-bold uppercase">Giá niêm yết</p>
                                     <p class="font-black text-teal-600 text-[16px]">{{ srv.cost | number:'1.0-0':'vi-VN' }}đ</p>
                                 </div>
-                                <div class="flex items-center gap-1.5 text-gray-400">
-                                    <button (click)="openEditModal(srv)" class="p-2 hover:text-teal-600 hover:bg-teal-50 border border-gray-100 bg-white rounded-lg transition-colors cursor-pointer" title="Chỉnh sửa">
+                                
+                                <!-- Action Buttons -->
+                                <div class="flex items-center gap-1.5">
+                                    <!-- Xem chi tiết -->
+                                    <button (click)="openDetailsModal(srv)" class="p-2 text-teal-600 hover:bg-teal-50 border border-gray-100 bg-white rounded-lg transition-colors cursor-pointer" title="Xem chi tiết">
+                                        <i class="bi bi-eye text-sm"></i>
+                                    </button>
+                                    <!-- Sửa -->
+                                    <button (click)="openEditModal(srv)" class="p-2 text-gray-600 hover:text-teal-600 hover:bg-teal-50 border border-gray-100 bg-white rounded-lg transition-colors cursor-pointer" title="Chỉnh sửa">
                                         <i class="bi bi-pencil-square text-sm"></i>
                                     </button>
-                                    <button class="p-2 hover:text-red-600 hover:bg-red-50 border border-gray-100 bg-white rounded-lg transition-colors cursor-pointer" title="Ẩn/Xóa">
-                                        <i class="bi bi-trash text-sm"></i>
+                                    <!-- Nhân bản -->
+                                    <button (click)="cloneService(srv)" class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 border border-gray-100 bg-white rounded-lg transition-colors cursor-pointer" title="Nhân bản">
+                                        <i class="bi bi-files text-sm"></i>
+                                    </button>
+                                    <!-- Tạm ngừng / Mở lại -->
+                                    <button (click)="suspendService(srv)" class="p-2 text-gray-600 hover:text-yellow-600 hover:bg-yellow-50 border border-gray-100 bg-white rounded-lg transition-colors cursor-pointer" [title]="srv.status === 'suspended' ? 'Hoạt động lại' : 'Tạm ngừng'">
+                                        <i class="bi" [class.bi-pause-circle]="srv.status !== 'suspended'" [class.bi-play-circle]="srv.status === 'suspended'" class="text-sm"></i>
+                                    </button>
+                                    <!-- Gửi duyệt lại -->
+                                    <button *ngIf="srv.status === 'rejected' || srv.status === 'draft'" (click)="resendServiceApproval(srv)" class="p-2 text-orange-600 hover:bg-orange-50 border border-gray-100 bg-white rounded-lg transition-colors cursor-pointer" title="Gửi duyệt lại">
+                                        <i class="bi bi-send text-sm"></i>
                                     </button>
                                 </div>
                             </div>
@@ -221,71 +252,274 @@
         </div>
     </div>
 
-    <!-- Registration Modal Form (Add Service) -->
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 transition-all" *ngIf="isAddModalOpen">
-        <div class="bg-white rounded-xl shadow-lg max-w-lg w-full overflow-hidden border border-gray-200">
-            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                    <i class="bi" [class.bi-plus-circle]="!editingServiceId" [class.bi-pencil-square]="editingServiceId" class="text-teal-600"></i>
-                    {{ editingServiceId ? 'Chỉnh sửa thông tin dịch vụ' : 'Đăng ký dịch vụ xanh mới' }}
-                </h3>
+    <!-- Wizard Registration Modal Form (Add/Edit Service) -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-all" *ngIf="isAddModalOpen">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-gray-100 flex flex-col max-h-[90vh]">
+            
+            <!-- Header -->
+            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-teal-50/50">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i class="bi text-teal-600" [class.bi-plus-circle]="!editingServiceId" [class.bi-pencil-square]="editingServiceId"></i>
+                        {{ editingServiceId ? 'Cập nhật dịch vụ xanh' : 'Đăng ký dịch vụ xanh mới' }}
+                    </h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Vui lòng hoàn thành 7 bước thông tin để kích hoạt dịch vụ của bạn.</p>
+                </div>
                 <button (click)="closeAddModal()" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg border-none bg-transparent cursor-pointer transition-colors">&times;</button>
             </div>
             
-            <form (submit)="submitNewService($event)" class="p-6 space-y-5">
-                <div class="flex flex-col gap-1.5">
-                    <label for="srvName" class="text-xs font-bold text-gray-600 uppercase tracking-wider">Tên dịch vụ *</label>
-                    <input type="text" id="srvName" [(ngModel)]="serviceName" name="serviceName" required placeholder="Ví dụ: Homestay Biển Xanh Phú Yên" class="h-11 px-4 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
+            <!-- Wizard Progress Stepper -->
+            <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100 overflow-x-auto whitespace-nowrap scrollbar-thin">
+                <div class="flex items-center justify-between gap-2 min-w-[580px]">
+                    <div *ngFor="let step of [1,2,3,4,5,6,7]" class="flex items-center gap-2">
+                        <button (click)="goToStep(step)" type="button" class="w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold transition-all cursor-pointer"
+                                [ngClass]="currentStep === step ? 'bg-teal-600 border-teal-600 text-white shadow-md shadow-teal-600/20' : 
+                                           (currentStep > step ? 'bg-teal-100 border-teal-100 text-teal-700' : 'bg-white border-gray-200 text-gray-400')">
+                            {{ step }}
+                        </button>
+                        <span class="text-xs font-bold" [ngClass]="currentStep === step ? 'text-teal-700' : 'text-gray-400'">
+                            {{ step === 1 ? 'Cơ bản' : (step === 2 ? 'Ảnh' : (step === 3 ? 'Giá' : (step === 4 ? 'Lịch' : (step === 5 ? 'Chính sách' : (step === 6 ? 'Lịch trình' : 'Xem trước'))))) }}
+                        </span>
+                        <i class="bi bi-chevron-right text-gray-300 text-[10px]" *ngIf="step < 7"></i>
+                    </div>
                 </div>
+            </div>
+            
+            <!-- Wizard Step Panels -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-5">
                 
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-1.5">
-                        <label for="srvDest" class="text-xs font-bold text-gray-600 uppercase tracking-wider">Khu vực *</label>
-                        <select id="srvDest" [(ngModel)]="serviceDest" name="serviceDest" required class="h-11 px-3 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
-                            <option value="Phú Yên">Phú Yên</option>
-                            <option value="Đà Lạt">Đà Lạt</option>
-                            <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>
-                        </select>
-                    </div>
+                <!-- Step 1: Basic Info -->
+                <div *ngIf="currentStep === 1" class="space-y-4">
+                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Thông tin cơ bản</h4>
                     
                     <div class="flex flex-col gap-1.5">
-                        <label for="srvType" class="text-xs font-bold text-gray-600 uppercase tracking-wider">Loại hình *</label>
-                        <select id="srvType" [(ngModel)]="serviceType" (ngModelChange)="onCostOrTypeChange()" name="serviceType" required class="h-11 px-3 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
-                            <option value="stay">Lưu trú (stay)</option>
-                            <option value="food">Ăn uống (food)</option>
-                            <option value="attraction">Khám phá (attraction)</option>
-                            <option value="transport">Vận chuyển xanh</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-1.5">
-                        <label for="srvCost" class="text-xs font-bold text-gray-600 uppercase tracking-wider">Giá niêm yết (VNĐ) *</label>
-                        <input type="number" id="srvCost" [(ngModel)]="serviceCost" (ngModelChange)="onCostOrTypeChange()" name="serviceCost" required placeholder="500000" min="0" class="h-11 px-4 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
+                        <label for="srvName" class="text-xs font-bold text-gray-600 uppercase">Tên dịch vụ *</label>
+                        <input type="text" id="srvName" [(ngModel)]="serviceName" required placeholder="Ví dụ: Homestay Biển Xanh Phú Yên" class="h-11 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
                     </div>
                     
-                    <div class="flex flex-col gap-1.5">
-                        <label for="srvCarbon" class="text-xs font-bold text-gray-600 uppercase tracking-wider">Lượng CO₂ giảm (kg) (Hệ thống tự tính) *</label>
-                        <input type="number" id="srvCarbon" [(ngModel)]="serviceCarbon" name="serviceCarbon" readonly required placeholder="Tự động tính..." class="h-11 px-4 rounded-lg border border-gray-200 text-sm text-gray-500 bg-gray-50 cursor-not-allowed focus:outline-none">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-1.5">
+                            <label for="srvDest" class="text-xs font-bold text-gray-600 uppercase">Khu vực *</label>
+                            <select id="srvDest" [(ngModel)]="serviceDest" required class="h-11 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                                <option value="Phú Yên">Phú Yên</option>
+                                <option value="Đà Lạt">Đà Lạt</option>
+                                <option value="Đà Nẵng - Hội An">Đà Nẵng - Hội An</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex flex-col gap-1.5">
+                            <label for="srvType" class="text-xs font-bold text-gray-600 uppercase">Loại hình *</label>
+                            <select id="srvType" [(ngModel)]="serviceType" (ngModelChange)="onCostOrTypeChange()" required class="h-11 px-3 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                                <option value="stay">Lưu trú (stay)</option>
+                                <option value="food">Ăn uống (food)</option>
+                                <option value="attraction">Khám phá (attraction)</option>
+                                <option value="transport">Vận chuyển xanh</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-1.5">
+                            <label for="maxCapacity" class="text-xs font-bold text-gray-600 uppercase">Số lượng chỗ tối đa *</label>
+                            <input type="number" id="maxCapacity" [(ngModel)]="maxCapacity" required min="1" class="h-11 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <label for="srvAddress" class="text-xs font-bold text-gray-600 uppercase">Địa chỉ chi tiết *</label>
+                            <input type="text" id="srvAddress" [(ngModel)]="serviceAddress" required placeholder="Ví dụ: 12 Hùng Vương, Phường 10" class="h-11 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Địa chỉ chi tiết -->
-                <div class="flex flex-col gap-1.5">
-                    <label for="srvAddress" class="text-xs font-bold text-gray-600 uppercase tracking-wider">Địa chỉ chi tiết *</label>
-                    <input type="text" id="srvAddress" [(ngModel)]="serviceAddress" name="serviceAddress" required placeholder="Ví dụ: 12 Hùng Vương, Phường 10" class="h-11 px-4 rounded-lg border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-teal-600 bg-white">
+                <!-- Step 2: Images -->
+                <div *ngIf="currentStep === 2" class="space-y-4">
+                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Hình ảnh dịch vụ</h4>
+                    
+                    <div class="flex flex-col gap-1.5">
+                        <label for="imageUrl" class="text-xs font-bold text-gray-600 uppercase">Đường dẫn hình ảnh *</label>
+                        <input type="text" id="imageUrl" [(ngModel)]="imageUrl" required class="h-11 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50 h-[220px] w-full flex items-center justify-center relative">
+                        <img [src]="imageUrl" alt="Preview Image" class="w-full h-full object-cover" *ngIf="imageUrl">
+                        <div class="text-center text-gray-400" *ngIf="!imageUrl">
+                            <i class="bi bi-image text-3xl block mb-2"></i>
+                            <span class="text-xs">Chưa có ảnh preview</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="pt-5 border-t border-gray-100 flex justify-end gap-3">
-                    <button type="button" (click)="closeAddModal()" class="px-5 py-2.5 border border-gray-200 rounded-lg font-bold text-gray-600 text-sm hover:bg-gray-50 transition-colors cursor-pointer bg-white">
-                        Hủy
+                <!-- Step 3: Cost -->
+                <div *ngIf="currentStep === 3" class="space-y-4">
+                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Giá & Lượng giảm CO₂</h4>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex flex-col gap-1.5">
+                            <label for="srvCost" class="text-xs font-bold text-gray-600 uppercase">Giá niêm yết (VNĐ) *</label>
+                            <input type="number" id="srvCost" [(ngModel)]="serviceCost" (ngModelChange)="onCostOrTypeChange()" required placeholder="500000" min="0" class="h-11 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                        </div>
+                        
+                        <div class="flex flex-col gap-1.5">
+                            <label for="srvCarbon" class="text-xs font-bold text-gray-600 uppercase">CO₂ giảm (kg) (Hệ thống tự tính) *</label>
+                            <input type="number" id="srvCarbon" [(ngModel)]="serviceCarbon" readonly class="h-11 px-4 rounded-xl border border-gray-250 text-sm text-gray-500 bg-gray-50 cursor-not-allowed focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Schedule -->
+                <div *ngIf="currentStep === 4" class="space-y-4">
+                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Lịch mở bán & Số lượng chỗ</h4>
+                    
+                    <div class="flex flex-col gap-1.5">
+                        <label for="openingSchedule" class="text-xs font-bold text-gray-600 uppercase">Lịch trình mở bán *</label>
+                        <input type="text" id="openingSchedule" [(ngModel)]="openingSchedule" required placeholder="Ví dụ: Tất cả các ngày, hoặc Thứ 2 - Thứ 6" class="h-11 px-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white">
+                    </div>
+                </div>
+
+                <!-- Step 5: Refund Policy -->
+                <div *ngIf="currentStep === 5" class="space-y-4">
+                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Chính sách đổi trả & hoàn tiền</h4>
+                    
+                    <div class="flex flex-col gap-1.5">
+                        <label for="cancellationPolicy" class="text-xs font-bold text-gray-600 uppercase">Nội dung chính sách hoàn trả *</label>
+                        <textarea id="cancellationPolicy" [(ngModel)]="cancellationPolicy" required rows="4" class="p-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white resize-none"></textarea>
+                    </div>
+                </div>
+
+                <!-- Step 6: Itinerary -->
+                <div *ngIf="currentStep === 6" class="space-y-4">
+                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Lịch trình & Hoạt động</h4>
+                    
+                    <div class="flex flex-col gap-1.5">
+                        <label for="itineraryText" class="text-xs font-bold text-gray-600 uppercase">Lịch trình chi tiết *</label>
+                        <textarea id="itineraryText" [(ngModel)]="itineraryText" required rows="4" class="p-4 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white resize-none"></textarea>
+                    </div>
+                </div>
+
+                <!-- Step 7: Preview & Save -->
+                <div *ngIf="currentStep === 7" class="space-y-4">
+                    <h4 class="text-sm font-bold text-gray-800 border-l-4 border-teal-600 pl-2">Xem trước dịch vụ</h4>
+                    
+                    <div class="border border-gray-100 rounded-2xl overflow-hidden shadow-xs bg-white divide-y divide-gray-150/40">
+                        <div class="p-4 flex gap-4">
+                            <img [src]="imageUrl" alt="Service Img" class="w-24 h-24 rounded-lg object-cover">
+                            <div>
+                                <h5 class="font-bold text-gray-900 text-sm mb-1">{{ serviceName }}</h5>
+                                <p class="text-xs text-gray-500 flex items-center gap-1"><i class="bi bi-geo-alt"></i> {{ serviceDest }}</p>
+                                <p class="text-xs text-gray-500 mt-1">Loại: {{ getActivityTypeLabel(serviceType) }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 grid grid-cols-2 gap-4 text-xs">
+                            <div>
+                                <p class="text-gray-400">Giá dịch vụ:</p>
+                                <p class="font-extrabold text-teal-600 text-sm mt-0.5">{{ serviceCost | number }}đ</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400">Chỗ trống / Lượng giảm CO₂:</p>
+                                <p class="font-bold text-gray-700 mt-0.5">{{ maxCapacity }} chỗ / {{ serviceCarbon }} kg CO₂</p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 text-xs space-y-2">
+                            <p><strong>Lịch mở bán:</strong> {{ openingSchedule }}</p>
+                            <p><strong>Chính sách hủy:</strong> {{ cancellationPolicy }}</p>
+                            <p><strong>Địa chỉ:</strong> {{ serviceAddress }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-gray-100 flex justify-between bg-gray-50">
+                <button type="button" (click)="closeAddModal()" class="px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 text-sm hover:bg-gray-100 transition-colors cursor-pointer bg-white">
+                    Hủy
+                </button>
+                
+                <div class="flex gap-2">
+                    <button type="button" *ngIf="currentStep > 1" (click)="prevStep()" class="px-5 py-2.5 border border-teal-600 text-teal-700 bg-white font-bold text-sm rounded-xl hover:bg-teal-50 cursor-pointer transition-colors">
+                        Quay lại
                     </button>
-                    <button type="submit" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-lg border-none cursor-pointer transition-colors">
-                        {{ editingServiceId ? 'Cập nhật dịch vụ' : 'Đăng dịch vụ' }}
+                    <button type="button" *ngIf="currentStep < 7" (click)="nextStep()" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-xl border-none cursor-pointer transition-colors">
+                        Tiếp theo
+                    </button>
+                    <button type="button" *ngIf="currentStep === 7" (click)="submitNewService($event)" class="px-6 py-2.5 bg-[#F4C76D] hover:bg-[#eab34e] text-yellow-950 font-black text-sm rounded-xl border-none cursor-pointer transition-colors">
+                        {{ editingServiceId ? 'Cập nhật & Gửi duyệt' : 'Đăng dịch vụ xanh' }}
                     </button>
                 </div>
-            </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Service Modal -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-all" *ngIf="isDetailsModalOpen && detailedService">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden border border-gray-100 flex flex-col max-h-[85vh]">
+            
+            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-teal-50/50">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i class="bi bi-info-circle text-teal-600"></i>
+                        Chi tiết dịch vụ xanh
+                    </h3>
+                </div>
+                <button (click)="closeDetailsModal()" class="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg border-none bg-transparent cursor-pointer transition-colors">&times;</button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-6 text-sm text-gray-700">
+                <div class="h-[200px] rounded-xl overflow-hidden relative">
+                    <img [src]="getServiceImage(detailedService)" alt="Service Detail" class="w-full h-full object-cover">
+                    <div class="absolute bottom-3 left-3 bg-teal-600 text-white px-3 py-1 rounded-lg font-bold text-xs">
+                        {{ detailedService.type === 'stay' ? 'Lưu trú' : (detailedService.type === 'food' ? 'Ăn uống' : 'Trải nghiệm') }}
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-extrabold text-gray-900 mb-1">{{ detailedService.name }}</h4>
+                    <p class="text-xs text-gray-400 flex items-center gap-1"><i class="bi bi-geo-alt-fill text-teal-600"></i> {{ detailedService.destination }} - {{ detailedService.current_data?.address || detailedService.address }}</p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3 bg-gray-50 p-4 rounded-xl text-center border border-gray-100">
+                    <div>
+                        <span class="block text-xs text-gray-400 font-bold uppercase">Giá niêm yết</span>
+                        <strong class="text-teal-600 font-black text-sm">{{ detailedService.cost | number }}đ</strong>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-gray-400 font-bold uppercase">CO₂ Tiết kiệm</span>
+                        <strong class="text-teal-600 font-black text-sm">{{ detailedService.carbon }} kg</strong>
+                    </div>
+                    <div>
+                        <span class="block text-xs text-gray-400 font-bold uppercase">Chỗ tối đa</span>
+                        <strong class="text-teal-600 font-black text-sm">{{ detailedService.max_capacity || 10 }} khách</strong>
+                    </div>
+                </div>
+
+                <div class="space-y-3.5">
+                    <div>
+                        <span class="block text-xs font-bold text-gray-400 uppercase mb-1">Lịch mở bán / hoạt động</span>
+                        <p class="text-gray-800 font-medium">{{ detailedService.current_data?.schedule || 'Tất cả các ngày trong tuần' }}</p>
+                    </div>
+                    
+                    <div>
+                        <span class="block text-xs font-bold text-gray-400 uppercase mb-1">Lịch trình & Hoạt động chi tiết</span>
+                        <p class="text-gray-800 whitespace-pre-line leading-relaxed font-medium bg-teal-50/20 p-3 rounded-xl border border-teal-500/5">{{ detailedService.current_data?.itinerary || 'Tự do tham quan' }}</p>
+                    </div>
+
+                    <div>
+                        <span class="block text-xs font-bold text-gray-400 uppercase mb-1">Chính sách hủy đơn & hoàn tiền</span>
+                        <p class="text-gray-800 whitespace-pre-line leading-relaxed font-medium bg-red-50/20 p-3 rounded-xl border border-red-500/5">{{ detailedService.current_data?.policy || 'Theo quy định chung' }}</p>
+                    </div>
+
+                    <div *ngIf="detailedService.status === 'rejected' && detailedService.rejection_reason" class="p-4 bg-red-50 text-red-800 rounded-xl border border-red-150">
+                        <strong class="block text-xs uppercase mb-1"><i class="bi bi-exclamation-triangle-fill text-red-600 mr-1.5"></i> Lý do quản trị viên từ chối</strong>
+                        <p class="font-medium text-xs">{{ detailedService.rejection_reason }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-gray-100 flex justify-end bg-gray-50">
+                <button type="button" (click)="closeDetailsModal()" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-xl border-none cursor-pointer transition-colors">
+                    Đóng cửa sổ
+                </button>
+            </div>
         </div>
     </div>
 </main>

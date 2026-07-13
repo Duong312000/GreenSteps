@@ -317,3 +317,93 @@ exports.updateService = async (req, res, next) => {
   }
 };
 
+// 8. Clone Service
+exports.cloneService = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const service = await GreenService.findByPk(id);
+    if (!service) {
+      return res.status(404).json({ success: false, message: 'Dịch vụ không tồn tại!' });
+    }
+
+    const newId = 'ser_' + Date.now();
+    const cloned = await GreenService.create({
+      id: newId,
+      vender_id: service.vender_id,
+      name_service: `${service.name_service} (Bản sao)`,
+      type: service.type,
+      cost: service.cost,
+      destination: service.destination,
+      carbon: service.carbon,
+      image_url: service.image_url,
+      rating: 5.0,
+      bookings_count: 0,
+      current_data: service.current_data || {},
+      max_capacity: service.max_capacity || 10,
+      status: 'draft',
+      views_count: 0
+    });
+
+    // Clone badges
+    const badges = await BadgeService.findAll({ where: { service_id: id } });
+    for (const b of badges) {
+      await BadgeService.create({ badge_name: b.badge_name, service_id: newId });
+    }
+
+    res.json({ success: true, message: 'Nhân bản dịch vụ thành công!', service: cloned });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 9. Suspend Service
+exports.suspendService = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const service = await GreenService.findByPk(id);
+    if (!service) {
+      return res.status(404).json({ success: false, message: 'Dịch vụ không tồn tại!' });
+    }
+    service.status = 'suspended';
+    await service.save();
+    res.json({ success: true, message: 'Đã tạm ngừng hoạt động dịch vụ!', service });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 10. Resend Service Approval
+exports.resendServiceApproval = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const service = await GreenService.findByPk(id);
+    if (!service) {
+      return res.status(404).json({ success: false, message: 'Dịch vụ không tồn tại!' });
+    }
+    service.status = 'pending';
+    service.rejection_reason = null;
+    await service.save();
+    res.json({ success: true, message: 'Đã gửi duyệt lại dịch vụ thành công!', service });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 11. Get Service Details
+exports.getServiceDetails = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const service = await GreenService.findByPk(id, {
+      include: [
+        { model: Badge, through: { attributes: [] } }
+      ]
+    });
+    if (!service) {
+      return res.status(404).json({ success: false, message: 'Dịch vụ không tồn tại!' });
+    }
+    res.json(service);
+  } catch (error) {
+    next(error);
+  }
+};
+

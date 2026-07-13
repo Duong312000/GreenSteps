@@ -15,6 +15,8 @@ const reviewsRoutes = require('./reviews.routes');
 const recommendationRoutes = require('./recommendation.routes');
 const notificationRoutes = require('./notification.routes');
 const spotRoutes = require('./spot.routes');
+const changeRequestRoutes = require('./change-request.routes');
+const operationsRoutes = require('./operations.routes');
 
 router.use('/auth', authRoutes);
 router.use('/bookings', bookingRoutes);
@@ -30,5 +32,7 @@ router.use('/reviews', reviewsRoutes);
 router.use('/recommendations', recommendationRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/spots', spotRoutes);
+router.use('/change-requests', changeRequestRoutes);
+router.use('/operations', operationsRoutes);
 
 module.exports = router;

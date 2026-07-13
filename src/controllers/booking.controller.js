@@ -675,7 +675,14 @@ exports.getBookings = async (req, res, next) => {
       status: row.status,
       evoucher: row.evoucher_code,
       type: 'service',
-      escrow: row.escrow_status
+      escrow: row.escrow_status,
+      booking_status: row.booking_status,
+      payment_status: row.payment_status,
+      operation_status: row.operation_status,
+      confirm_deadline: row.confirm_deadline,
+      payment_deadline: row.payment_deadline,
+      special_requests: row.special_requests,
+      rejection_reason: row.rejection_reason
     }));
 
     const mappedTours = tourBookings.map(row => ({
@@ -688,7 +695,14 @@ exports.getBookings = async (req, res, next) => {
       status: row.status,
       evoucher: row.evoucher_code,
       type: 'tour',
-      escrow: row.escrow_status
+      escrow: row.escrow_status,
+      booking_status: row.booking_status,
+      payment_status: row.payment_status,
+      operation_status: row.operation_status,
+      confirm_deadline: row.confirm_deadline,
+      payment_deadline: row.payment_deadline,
+      special_requests: row.special_requests,
+      rejection_reason: row.rejection_reason
     }));
 
     res.json([...mappedServices, ...mappedTours]);
@@ -743,6 +757,9 @@ exports.approveBooking = async (req, res, next) => {
     }
     booking.status = 'deposit';
     booking.escrow_status = 'holding';
+    booking.booking_status = 'accepted';
+    booking.payment_status = 'deposit_paid';
+    booking.operation_status = 'preparing';
     await booking.save();
 
     if (booking.schedule_id) {
@@ -799,6 +816,9 @@ exports.rejectBooking = async (req, res, next) => {
     }
     booking.status = 'rejected';
     booking.escrow_status = 'refunded';
+    booking.booking_status = 'rejected';
+    booking.payment_status = 'pending';
+    booking.rejection_reason = req.body.reason || 'Dịch vụ đã hết chỗ';
     await booking.save();
 
     // Sync pending QR transfer transaction
@@ -877,6 +897,86 @@ exports.getPendingBookings = async (req, res, next) => {
     }));
 
     res.json([...mappedServices, ...mappedTours, ...mappedItineraries]);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getBookingDetails = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    let booking = await ServiceBooking.findByPk(id, { include: [User] });
+    let type = 'service';
+    if (!booking) {
+      booking = await TourBooking.findByPk(id, { include: [User] });
+      type = 'tour';
+    }
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Đơn đặt chỗ không tồn tại!' });
+    }
+    res.json({
+      success: true,
+      booking: {
+        ...booking.toJSON(),
+        type
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.completeBooking = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    let booking = await ServiceBooking.findByPk(id);
+    if (!booking) {
+      booking = await TourBooking.findByPk(id);
+    }
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Đơn đặt chỗ không tồn tại!' });
+    }
+    booking.booking_status = 'accepted';
+    booking.payment_status = 'fully_paid';
+    booking.operation_status = 'completed';
+    booking.status = 'completed';
+    await booking.save();
+    res.json({ success: true, message: 'Đã hoàn thành booking thành công!', booking });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateBookingStatuses = async (req, res, next) => {
+  const { id } = req.params;
+  const { booking_status, payment_status, operation_status, confirm_deadline, payment_deadline } = req.body;
+  try {
+    let booking = await ServiceBooking.findByPk(id);
+    if (!booking) {
+      booking = await TourBooking.findByPk(id);
+    }
+    if (!booking) {
+      return res.status(404).json({ success: false, message: 'Đơn đặt chỗ không tồn tại!' });
+    }
+    if (booking_status !== undefined) booking.booking_status = booking_status;
+    if (payment_status !== undefined) booking.payment_status = payment_status;
+    if (operation_status !== undefined) booking.operation_status = operation_status;
+    if (confirm_deadline !== undefined) booking.confirm_deadline = confirm_deadline;
+    if (payment_deadline !== undefined) booking.payment_deadline = payment_deadline;
+    
+    // Map to legacy status for safety/backward-compat
+    if (booking.booking_status === 'rejected') {
+      booking.status = 'rejected';
+    } else if (booking.booking_status === 'cancelled') {
+      booking.status = 'refunded';
+    } else if (booking.operation_status === 'completed') {
+      booking.status = 'completed';
+    } else if (booking.payment_status === 'deposit_paid') {
+      booking.status = 'deposit';
+    }
+
+    await booking.save();
+    res.json({ success: true, message: 'Cập nhật trạng thái thành công!', booking });
   } catch (error) {
     next(error);
   }
