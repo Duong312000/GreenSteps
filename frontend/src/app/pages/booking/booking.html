@@ -405,6 +405,53 @@
 
   <div class="booking-toast" *ngIf="toastMessage">{{ toastMessage }}</div>
 
+  <!-- VietQR Payment Modal (Center Screen) -->
+  <div class="custom-alert-overlay" *ngIf="isQrModalOpen" (click)="closeQrModal()" style="z-index: 9999;">
+    <div class="custom-alert-card" (click)="$event.stopPropagation()" style="max-width: 460px; padding: 24px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1.5px solid #f3f4f6; padding-bottom:12px;">
+        <h3 style="font-size:1.15rem; font-weight:800; color:#111827; margin:0; display:flex; align-items:center; gap:8px;">
+          <i class="bi bi-qr-code-scan" style="color:#0E9F6E; font-size:1.3rem;"></i> Quét mã VietQR OCB
+        </h3>
+        <button type="button" (click)="closeQrModal()" style="background:none; border:none; font-size:1.4rem; color:#9ca3af; cursor:pointer; padding:0 4px;"><i class="bi bi-x-lg"></i></button>
+      </div>
+
+      <div style="background:#f0fdf4; border:1.5px dashed #10b981; border-radius:12px; padding:16px; margin-bottom:16px; text-align:left;">
+        <p style="font-size:.85rem; color:#046a38; font-weight:700; line-height:1.4; margin:0 0 10px;">
+          Vui lòng mở ứng dụng ngân hàng của bạn, quét mã QR và thanh toán để hoàn tất đặt cọc tour.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem;">
+          <div style="color:#4b5563;">Ngân hàng: <strong style="color:#111827;">OCB (TMCP Phương Đông)</strong></div>
+          <div style="color:#4b5563;">Chủ tài khoản: <strong style="color:#111827;">KIEU HOANG DUONG</strong></div>
+          <div style="color:#4b5563;">Số tài khoản: <strong style="color:#111827;">0392851304</strong></div>
+          <div style="color:#4b5563; margin-top: 4px; border-top: 1px solid #e5e7eb; padding-top: 6px;">
+            Số tiền đặt cọc: <strong style="color:#0E9F6E; font-size:1.15rem;">{{ qrAmount | number:'1.0-0':'vi-VN' }}đ</strong>
+          </div>
+          <div style="color:#4b5563;">
+            Nội dung chuyển khoản: <strong style="font-family:monospace; background:#e5e7eb; padding:2px 6px; border-radius:4px; color:#111827; font-weight:700;">{{ qrDescription }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#fff; border:1px solid #e5e7eb; border-radius:16px; padding:12px; display:inline-block; margin-bottom:16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+        <img [src]="qrCodeUrl" alt="VietQR OCB Code" style="width:260px; height:260px; display:block; border-radius:8px;">
+      </div>
+
+      <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:20px; color:#4b5563; font-size:0.85rem; font-weight:600;">
+        <div class="spinner-border animate-spin" style="width: 16px; height: 16px; border: 2px solid #0E9F6E; border-top-color: transparent; border-radius: 50%; display: inline-block;"></div>
+        <span>Đang chờ hệ thống ghi nhận thanh toán...</span>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button type="button" (click)="closeQrModal()" style="flex: 1; height:42px; background:#f3f4f6; border:none; border-radius:8px; color:#4b5563; font-weight:700; cursor:pointer; transition: background 0.2s;">
+          Hủy / Quay lại
+        </button>
+        <button type="button" (click)="closeQrModal()" style="flex: 1.5; height:42px; background:#0E9F6E; border:none; border-radius:8px; color:#fff; font-weight:700; cursor:pointer; transition: background 0.2s;">
+          Tôi đã chuyển khoản
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Custom Premium Alert Dialog Modal (Center Screen) -->
   <div class="custom-alert-overlay" *ngIf="alertVisible" (click)="closeAlert()">
     <div class="custom-alert-card" (click)="$event.stopPropagation()">

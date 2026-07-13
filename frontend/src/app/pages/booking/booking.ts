@@ -69,6 +69,7 @@ export class BookingComponent implements OnInit {
   public qrCodeUrl = '';
   public qrAmount = 0;
   public qrDescription = '';
+  private pollingInterval: any = null;
 
   public bookingContext: BookingContext = {
     hotelId: 'hotel_dahlia_dalat',
@@ -425,11 +426,14 @@ export class BookingComponent implements OnInit {
     const user = this.authService.getCurrentUser();
     const customerId = user ? (user.id || user._id || '') : '';
     
-    const interval = setInterval(async () => {
+    this.pollingInterval = setInterval(async () => {
       const bookings = await this.apiService.getBookings(customerId);
       const target = bookings.find(b => b.id === bookingId);
       if (target && target.status === 'deposit') {
-        clearInterval(interval);
+        if (this.pollingInterval) {
+          clearInterval(this.pollingInterval);
+          this.pollingInterval = null;
+        }
         this.isQrModalOpen = false;
         this.saveDraft();
         this.router.navigate(['/booking/confirm']);
@@ -437,7 +441,10 @@ export class BookingComponent implements OnInit {
     }, 2500);
 
     setTimeout(() => {
-      clearInterval(interval);
+      if (this.pollingInterval) {
+        clearInterval(this.pollingInterval);
+        this.pollingInterval = null;
+      }
     }, 900000);
   }
 
@@ -457,6 +464,14 @@ export class BookingComponent implements OnInit {
 
   public closeAlert() {
     this.alertVisible = false;
+  }
+
+  public closeQrModal() {
+    this.isQrModalOpen = false;
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+    }
   }
 
   public triggerAlertAction() {
