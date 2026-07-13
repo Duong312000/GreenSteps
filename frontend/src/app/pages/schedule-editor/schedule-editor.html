@@ -34,13 +34,15 @@
     <aside class="sidebar-panel" [style.width.px]="sidebarWidth" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 20px 0 20px 12px; overflow: visible !important;">
         <!-- Fixed Header & AI Button Area (Overflow Visible) -->
         <div style="display: flex; flex-direction: column; padding-right: 12px; margin-bottom: 20px; overflow: visible !important; position: relative; z-index: 20;">
-            <div class="sidebar-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                <button class="btn-back-tours" (click)="goBackToList()"><i class="bi bi-arrow-left"></i> Quay lại</button>
-                <span *ngIf="isAutoSaving" class="text-xs text-emerald-600 font-bold flex items-center gap-1">
+            <div class="sidebar-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <button (click)="goBackToList()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 4px 0;">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </button>
+                <span *ngIf="isAutoSaving" class="text-xs text-emerald-600 font-bold flex items-center gap-1" style="font-size: 10px;">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
                     Đang lưu...
                 </span>
-                <span *ngIf="!isAutoSaving && !isItineraryLocked()" class="text-[10px] text-gray-400 font-medium bg-gray-50 border border-gray-150 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span *ngIf="!isAutoSaving && !isItineraryLocked()" class="text-[10px] text-gray-400 font-medium bg-gray-50 border border-gray-150 px-2 py-0.5 rounded-full flex items-center gap-1" style="font-size: 9px; padding: 2px 6px;">
                     <i class="bi bi-check-all"></i> Tự động lưu
                 </span>
             </div>
@@ -98,14 +100,14 @@
         </div>
 
         <!-- Section 3.5: Guest Count Selector -->
-        <div style="padding: 10px 0px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-shrink: 0; margin-right: 20px;">
-            <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 4px;">
-                <i class="bi bi-people-fill" style="color: var(--primary-green);"></i> Số người đi du lịch:
+        <div style="padding: 6px 0px; border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-shrink: 0; margin-right: 20px;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary); display: flex; align-items: center; gap: 4px;">
+                <i class="bi bi-people-fill" style="color: var(--primary-green);"></i> Số người:
             </span>
-            <div style="display: flex; align-items: center; gap: 4px;">
-                <button type="button" (click)="decrementGuests()" style="width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--text-primary); transition: all 0.2s;">-</button>
-                <input type="number" [(ngModel)]="guestCount" (ngModelChange)="onGuestCountChange()" style="width: 38px; height: 26px; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; font-size: 12px; font-weight: 700; color: var(--text-primary); background: var(--bg-primary);" min="1">
-                <button type="button" (click)="incrementGuests()" style="width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--text-primary); transition: all 0.2s;">+</button>
+            <div style="display: flex; align-items: center; gap: 3px;">
+                <button type="button" (click)="decrementGuests()" style="width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--text-primary); transition: all 0.2s; font-size: 11px;">-</button>
+                <input type="number" [(ngModel)]="guestCount" (ngModelChange)="onGuestCountChange()" style="width: 32px; height: 22px; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-primary); background: var(--bg-primary);" min="1">
+                <button type="button" (click)="incrementGuests()" style="width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--text-primary); transition: all 0.2s; font-size: 11px;">+</button>
             </div>
         </div>
 
@@ -115,14 +117,18 @@
         <!-- Section 4: Budget & Checkout Metrics (Vertically resizable bottom panel) -->
         <div class="sidebar-metrics" [style.height]="isMetricsResizing || metricsHeight !== 90 ? metricsHeight + 'px' : 'auto'" style="border-top: none; padding-top: 6px; display: flex; flex-direction: column; justify-content: flex-start !important; gap: 6px; flex-shrink: 0; overflow-y: auto; padding-right: 20px;">
             <div class="metric-item">
-                <div class="metric-info" style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; margin-bottom: 4px;">
+                <div class="metric-info" style="display: flex; flex-direction: column; gap: 4px; font-size: 11px; margin-bottom: 4px;">
                     <div style="display: flex; justify-content: space-between;">
-                        <span class="label" style="font-weight: 600; color: var(--text-secondary);">Giá gốc / 1 người:</span>
-                        <span class="value" id="sidebarBudgetVal" style="font-weight: 700; color: var(--text-primary);">{{ totalCost | number:'1.0-0':'vi-VN' }}đ</span>
+                        <span class="label" style="color: var(--text-secondary);">Vé & Ăn uống (1 người):</span>
+                        <span class="value" style="font-weight: 700; color: var(--text-primary);">{{ itineraryPerPersonCost | number:'1.0-0':'vi-VN' }}đ</span>
+                    </div>
+                    <div *ngIf="itineraryFlatCost > 0" style="display: flex; justify-content: space-between;">
+                        <span class="label" style="color: var(--text-secondary);">Phòng / Homestay (chung):</span>
+                        <span class="value" style="font-weight: 700; color: var(--text-primary);">{{ itineraryFlatCost | number:'1.0-0':'vi-VN' }}đ</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; border-top: 1px dashed var(--border-color); padding-top: 4px; margin-top: 2px;">
                         <span class="label" style="font-weight: 700; color: var(--primary-green);">Tổng chi phí ({{ guestCount }} người):</span>
-                        <span class="value" style="font-weight: 800; color: var(--primary-green); font-size: 13px;">{{ (totalCost * guestCount) | number:'1.0-0':'vi-VN' }}đ</span>
+                        <span class="value" style="font-weight: 800; color: var(--primary-green); font-size: 13px;">{{ itineraryTotalCost | number:'1.0-0':'vi-VN' }}đ</span>
                     </div>
                 </div>
                 <div class="progress-bar-track" style="height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden;">

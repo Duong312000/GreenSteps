@@ -160,7 +160,19 @@
         <section class="booking-section choice-summary-card">
           <h2>Tóm tắt lựa chọn của bạn</h2>
           <div class="price-lines">
-            <p><span>Giá gốc <span style="font-size: 11px; color: #718096; font-weight: normal;">({{ (activeTour?.cost || 0) | number:'1.0-0':'vi-VN' }}đ x {{ bookingContext.guestCount }} khách)</span></span><b>{{ basePrice | number:'1.0-0':'vi-VN' }}đ</b></p>
+            <p>
+              <span>Giá gốc 
+                <span *ngIf="isItineraryBooking() && itineraryFlatCost > 0; else standardPriceLabel" style="font-size: 11px; color: #718096; font-weight: normal;">
+                  ({{ itineraryPerPersonCost | number:'1.0-0':'vi-VN' }}đ/người x {{ bookingContext.guestCount }} + {{ itineraryFlatCost | number:'1.0-0':'vi-VN' }}đ homestay)
+                </span>
+                <ng-template #standardPriceLabel>
+                  <span style="font-size: 11px; color: #718096; font-weight: normal;">
+                    ({{ (isItineraryBooking() ? itineraryPerPersonCost : (activeTour?.cost || 0)) | number:'1.0-0':'vi-VN' }}đ x {{ bookingContext.guestCount }} khách)
+                  </span>
+                </ng-template>
+              </span>
+              <b>{{ basePrice | number:'1.0-0':'vi-VN' }}đ</b>
+            </p>
             <p><span>Ưu đãi GreenSteps</span><b>-{{ discountAmount | number:'1.0-0':'vi-VN' }}đ</b></p>
             <p><span>Phí dịch vụ/thuế</span><b>{{ serviceFee | number:'1.0-0':'vi-VN' }}đ</b></p>
             <p><span>Dịch vụ thêm đã chọn</span><b>{{ addOnsTotal | number:'1.0-0':'vi-VN' }}đ</b></p>
@@ -383,7 +395,19 @@
 
     <article class="summary-card price-card">
       <h2>Tóm tắt giá</h2>
-      <p><span>Giá gốc <span style="font-size: 11px; color: #718096; font-weight: normal;">({{ (activeTour?.cost || 0) | number:'1.0-0':'vi-VN' }}đ x {{ bookingContext.guestCount }} khách)</span></span><b>{{ basePrice | number:'1.0-0':'vi-VN' }}đ</b></p>
+      <p>
+        <span>Giá gốc 
+          <span *ngIf="isItineraryBooking() && itineraryFlatCost > 0; else standardPriceLabel2" style="font-size: 11px; color: #718096; font-weight: normal;">
+            ({{ itineraryPerPersonCost | number:'1.0-0':'vi-VN' }}đ/người x {{ bookingContext.guestCount }} + {{ itineraryFlatCost | number:'1.0-0':'vi-VN' }}đ homestay)
+          </span>
+          <ng-template #standardPriceLabel2>
+            <span style="font-size: 11px; color: #718096; font-weight: normal;">
+              ({{ (isItineraryBooking() ? itineraryPerPersonCost : (activeTour?.cost || 0)) | number:'1.0-0':'vi-VN' }}đ x {{ bookingContext.guestCount }} khách)
+            </span>
+          </ng-template>
+        </span>
+        <b>{{ basePrice | number:'1.0-0':'vi-VN' }}đ</b>
+      </p>
       <p><span>Ưu đãi GreenSteps</span><b>-{{ discountAmount | number:'1.0-0':'vi-VN' }}đ</b></p>
       <p><span>Phí dịch vụ/thuế</span><b>{{ serviceFee | number:'1.0-0':'vi-VN' }}đ</b></p>
       <p *ngIf="addOnsTotal > 0"><span>Dịch vụ thêm</span><b>{{ addOnsTotal | number:'1.0-0':'vi-VN' }}đ</b></p>

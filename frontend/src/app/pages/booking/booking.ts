@@ -623,7 +623,42 @@ export class BookingComponent implements OnInit {
            this.route.snapshot.queryParamMap.get('bookingType') === 'itinerary';
   }
 
+  public get itineraryPerPersonCost() {
+    let total = 0;
+    if (this.activeTour?.data) {
+      this.activeTour.data.forEach((day: any) => {
+        if (day) {
+          day.forEach((act: any) => {
+            if (act && act.cost && act.type !== 'lodging') {
+              total += act.cost;
+            }
+          });
+        }
+      });
+    }
+    return total;
+  }
+
+  public get itineraryFlatCost() {
+    let total = 0;
+    if (this.activeTour?.data) {
+      this.activeTour.data.forEach((day: any) => {
+        if (day) {
+          day.forEach((act: any) => {
+            if (act && act.cost && act.type === 'lodging') {
+              total += act.cost;
+            }
+          });
+        }
+      });
+    }
+    return total;
+  }
+
   public get basePrice() {
+    if (this.isItineraryBooking() && this.activeTour?.data) {
+      return (this.itineraryPerPersonCost * Math.max(this.bookingContext.guestCount, 1)) + this.itineraryFlatCost;
+    }
     return Math.max(this.activeTour?.cost || 1890000, 0) * Math.max(this.bookingContext.guestCount, 1);
   }
 

@@ -105,19 +105,25 @@ exports.createBooking = async (req, res, next) => {
         return res.status(404).json({ success: false, message: 'Lịch trình hoặc Tour không tồn tại!' });
       }
 
-      let tourCost = 0;
       const sampleTour = await ScheduleSample.findOne({ where: { id: targetId } });
       if (sampleTour) {
-        tourCost = sampleTour.cost;
+        totalValue = sampleTour.cost * guests;
       } else {
         // It's a custom itinerary! Fetch costs of activities
         const activities = await ScheduleActivity.findAll({ where: { schedule_id: targetId } });
+        let perPersonCost = 0;
+        let flatCost = 0;
         activities.forEach(act => {
-          if (act.cost) tourCost += act.cost;
+          if (act.cost) {
+            if (act.type === 'lodging') {
+              flatCost += act.cost;
+            } else {
+              perPersonCost += act.cost;
+            }
+          }
         });
+        totalValue = (perPersonCost * guests) + flatCost;
       }
-
-      totalValue = tourCost * guests;
       tourNameOrServiceName = baseTour.tour_name || 'Lịch trình tự chọn';
       bookingId = 'BKT-' + Date.now();
     } else {

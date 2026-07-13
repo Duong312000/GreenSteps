@@ -2066,6 +2066,42 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     });
   }
 
+  public get itineraryPerPersonCost(): number {
+    let cost = 0;
+    if (this.activeItinerary && this.activeItinerary.days) {
+      this.activeItinerary.days.forEach((day: any) => {
+        if (day && day.activities) {
+          day.activities.forEach((act: any) => {
+            if (act.cost > 0 && act.type !== 'lodging') {
+              cost += act.cost;
+            }
+          });
+        }
+      });
+    }
+    return cost;
+  }
+
+  public get itineraryFlatCost(): number {
+    let cost = 0;
+    if (this.activeItinerary && this.activeItinerary.days) {
+      this.activeItinerary.days.forEach((day: any) => {
+        if (day && day.activities) {
+          day.activities.forEach((act: any) => {
+            if (act.cost > 0 && act.type === 'lodging') {
+              cost += act.cost;
+            }
+          });
+        }
+      });
+    }
+    return cost;
+  }
+
+  public get itineraryTotalCost(): number {
+    return (this.itineraryPerPersonCost * this.guestCount) + this.itineraryFlatCost;
+  }
+
   public incrementGuests() {
     this.guestCount++;
   }
