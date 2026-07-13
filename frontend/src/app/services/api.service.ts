@@ -483,6 +483,14 @@ export class ApiService {
     }
   }
 
+  public async getBooking(id: string): Promise<any> {
+    try {
+      return await firstValueFrom(this.http.get<any>(`${this.BACKEND_URL}/bookings/${id}`));
+    } catch (e) {
+      return null;
+    }
+  }
+
   public async createBooking(bookingData: any): Promise<{ success: boolean; bookingId?: string; message?: string }> {
     try {
       const res = await firstValueFrom(this.http.post<any>(`${this.BACKEND_URL}/bookings`, bookingData));

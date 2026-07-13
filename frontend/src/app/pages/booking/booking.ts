@@ -325,12 +325,12 @@ export class BookingComponent implements OnInit {
 
   public async completeDeposit() {
     const user = this.authService.getCurrentUser();
-    if (!user) {
-      this.showAlert("Chưa đăng nhập", "Vui lòng đăng nhập trước khi tiến hành đặt chỗ!", "warning");
+    if (this.paymentMethod === 'wallet' && !user) {
+      this.showAlert("Yêu cầu đăng nhập", "Vui lòng đăng nhập để thanh toán bằng ví điện tử!", "warning");
       return;
     }
 
-    const userId = user.id || user._id || '';
+    const userId = user ? (user.id || user._id || '') : null;
     const targetId = this.activeTour?.id || this.bookingContext.tourId || 'sample_tour_id';
 
     // Prepare API booking data
@@ -482,12 +482,8 @@ export class BookingComponent implements OnInit {
   }
 
   public startBookingStatusPolling(bookingId: string) {
-    const user = this.authService.getCurrentUser();
-    const customerId = user ? (user.id || user._id || '') : '';
-    
     this.pollingInterval = setInterval(async () => {
-      const bookings = await this.apiService.getBookings(customerId);
-      const target = bookings.find(b => b.id === bookingId);
+      const target = await this.apiService.getBooking(bookingId);
       if (target && target.status === 'deposit') {
         if (this.pollingInterval) {
           clearInterval(this.pollingInterval);
