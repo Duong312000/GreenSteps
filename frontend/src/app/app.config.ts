@@ -6,15 +6,16 @@ import { routes } from './app.routes';
 
 const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = localStorage.getItem('greensteps_token');
+  const cloneConfig: any = {
+    withCredentials: true
+  };
   if (token) {
-    const cloned = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    return next(cloned);
+    cloneConfig.setHeaders = {
+      Authorization: `Bearer ${token}`
+    };
   }
-  return next(req);
+  const cloned = req.clone(cloneConfig);
+  return next(cloned);
 };
 
 export const appConfig: ApplicationConfig = {

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { User } from '../models/models';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +14,14 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private apiService: ApiService) {
     this.loadSession();
+    const user = this.getCurrentUser();
+    if (user) {
+      this.apiService.preloadAppData(user.id);
+    } else {
+      this.apiService.preloadAppData();
+    }
   }
 
   private loadSession() {
@@ -40,6 +47,7 @@ export class AuthService {
       document.cookie = `role=${user.role}; path=/; max-age=86400`;
       document.cookie = `userId=${user.id || user._id}; path=/; max-age=86400`;
       document.cookie = `fullname=${encodeURIComponent(user.fullname)}; path=/; max-age=86400`;
+      this.apiService.preloadAppData(user.id || user._id);
     } else {
       localStorage.removeItem('greensteps_user');
       document.cookie = `isLoggedIn=; path=/; max-age=0`;

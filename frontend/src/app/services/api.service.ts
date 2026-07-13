@@ -246,9 +246,15 @@ export class ApiService {
 
   // 3. Wallet APIs
   public async getWalletInfo(userId: string): Promise<WalletInfo> {
+    const cacheKey = `wallet_info_${userId}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
       const res = await firstValueFrom(this.http.get<{ success: boolean; wallet: WalletInfo }>(`${this.BACKEND_URL}/wallet/${userId}`));
-      return res.success ? res.wallet : { registered: false, balance: 0 };
+      const data = res.success ? res.wallet : { registered: false, balance: 0 };
+      this.setCachedData(cacheKey, data);
+      return data;
     } catch (e) {
       return { registered: false, balance: 0 };
     }
@@ -256,6 +262,7 @@ export class ApiService {
 
   public async activateWallet(userId: string): Promise<{ success: boolean; balance: number; message?: string }> {
     try {
+      this.clearCache(`wallet_info_${userId}`);
       const res = await firstValueFrom(this.http.post<{ success: boolean; balance: number; message?: string }>(`${this.BACKEND_URL}/wallet/activate`, { userId }));
       return res;
     } catch (e) {
@@ -265,6 +272,8 @@ export class ApiService {
 
   public async depositMoney(userId: string, amount: number): Promise<{ success: boolean; balance: number; message?: string }> {
     try {
+      this.clearCache(`wallet_info_${userId}`);
+      this.clearCache(`transactions_${userId}`);
       const res = await firstValueFrom(this.http.post<{ success: boolean; balance: number; message?: string }>(`${this.BACKEND_URL}/wallet/deposit`, { userId, amount }));
       return res;
     } catch (e) {
@@ -285,6 +294,10 @@ export class ApiService {
 
   public async payItinerary(userId: string, itineraryId: string, amount: number): Promise<{ success: boolean; balance: number; message?: string }> {
     try {
+      this.clearCache(`wallet_info_${userId}`);
+      this.clearCache(`transactions_${userId}`);
+      this.clearCache(`itineraries_${userId}`);
+      this.clearCache(`itinerary_${itineraryId}`);
       const res = await firstValueFrom(
         this.http.post<{ success: boolean; balance: number; message?: string }>(`${this.BACKEND_URL}/wallet/pay`, { userId, itineraryId, amount })
       );
@@ -296,6 +309,10 @@ export class ApiService {
 
   public async payItineraryQr(userId: string, itineraryId: string, amount: number): Promise<{ success: boolean; balance: number; message?: string }> {
     try {
+      this.clearCache(`wallet_info_${userId}`);
+      this.clearCache(`transactions_${userId}`);
+      this.clearCache(`itineraries_${userId}`);
+      this.clearCache(`itinerary_${itineraryId}`);
       const res = await firstValueFrom(
         this.http.post<{ success: boolean; balance: number; message?: string }>(`${this.BACKEND_URL}/wallet/pay-qr`, { userId, itineraryId, amount })
       );
@@ -306,8 +323,14 @@ export class ApiService {
   }
 
   public async getTransactions(userId: string): Promise<WalletTransaction[]> {
+    const cacheKey = `transactions_${userId}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
-      return await firstValueFrom(this.http.get<WalletTransaction[]>(`${this.BACKEND_URL}/wallet/transactions/${userId}`));
+      const data = await firstValueFrom(this.http.get<WalletTransaction[]>(`${this.BACKEND_URL}/wallet/transactions/${userId}`));
+      this.setCachedData(cacheKey, data);
+      return data;
     } catch (e) {
       return [];
     }
@@ -315,8 +338,14 @@ export class ApiService {
 
   // 4. Community APIs
   public async getCommunityPosts(page = 0, limit = 15): Promise<CommunityPost[]> {
+    const cacheKey = `community_posts_${page}_${limit}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
-      return await firstValueFrom(this.http.get<CommunityPost[]>(`${this.BACKEND_URL}/community/posts?page=${page}&limit=${limit}`));
+      const data = await firstValueFrom(this.http.get<CommunityPost[]>(`${this.BACKEND_URL}/community/posts?page=${page}&limit=${limit}`));
+      this.setCachedData(cacheKey, data);
+      return data;
     } catch (e) {
       return [];
     }
@@ -324,6 +353,7 @@ export class ApiService {
 
   public async addCommunityPost(postData: any): Promise<boolean> {
     try {
+      this.clearCache('community_posts_');
       await firstValueFrom(this.http.post(`${this.BACKEND_URL}/community/posts`, postData));
       return true;
     } catch (e) {
@@ -333,6 +363,7 @@ export class ApiService {
 
   public async deleteCommunityPost(postId: string): Promise<boolean> {
     try {
+      this.clearCache('community_posts_');
       await firstValueFrom(this.http.delete(`${this.BACKEND_URL}/community/posts/${postId}`));
       return true;
     } catch (e) {
@@ -450,9 +481,15 @@ export class ApiService {
 
   // 5. Reviews & Ratings APIs
   public async getTourReviews(tourId: string): Promise<any[]> {
+    const cleanId = String(tourId).replace('preset_', '');
+    const cacheKey = `tour_reviews_${cleanId}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
-      const cleanId = String(tourId).replace('preset_', '');
-      return await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/reviews/tour/${cleanId}`));
+      const data = await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/reviews/tour/${cleanId}`));
+      this.setCachedData(cacheKey, data);
+      return data;
     } catch (e) {
       console.error('Failed to load tour reviews:', e);
       return [];
@@ -461,12 +498,17 @@ export class ApiService {
 
   public async postTourReview(reviewData: { userId: string; tourId: string; rating?: number | null; text: string; parentCommentId?: string | null }): Promise<any> {
     const cleanId = String(reviewData.tourId).replace('preset_', '');
+    this.clearCache(`tour_reviews_${cleanId}`);
+    this.clearCache(`preset_tour_`);
+    this.clearCache(`preset_tours_`);
     const data = { ...reviewData, tourId: cleanId };
     return await firstValueFrom(this.http.post<any>(`${this.BACKEND_URL}/reviews/tour`, data));
   }
 
   public async likeComment(commentId: string): Promise<any> {
     try {
+      this.clearCache(`tour_reviews_`);
+      this.clearCache(`service_reviews_`);
       return await firstValueFrom(this.http.post<any>(`${this.BACKEND_URL}/reviews/${commentId}/like`, {}));
     } catch (e) {
       console.error('Failed to like comment:', e);
@@ -475,8 +517,14 @@ export class ApiService {
   }
 
   public async getServiceReviews(serviceId: string): Promise<any[]> {
+    const cacheKey = `service_reviews_${serviceId}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
-      return await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/reviews/service/${serviceId}`));
+      const data = await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/reviews/service/${serviceId}`));
+      this.setCachedData(cacheKey, data);
+      return data;
     } catch (e) {
       console.error('Failed to load service reviews:', e);
       return [];
@@ -484,32 +532,66 @@ export class ApiService {
   }
 
   public async postServiceReview(reviewData: { userId: string; serviceId: string; rating: number; text: string }): Promise<any> {
+    this.clearCache(`service_reviews_${reviewData.serviceId}`);
     return await firstValueFrom(this.http.post<any>(`${this.BACKEND_URL}/reviews/service`, reviewData));
   }
 
   // 6. Recommendation APIs
   public async getDestinations(): Promise<string[]> {
+    const cacheKey = 'destinations_list';
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
-      return await firstValueFrom(this.http.get<string[]>(`${this.BACKEND_URL}/destinations`));
+      const data = await firstValueFrom(this.http.get<string[]>(`${this.BACKEND_URL}/destinations`));
+      this.setCachedData(cacheKey, data);
+      return data;
     } catch (e) {
       return ['Đà Lạt', 'Phú Yên', 'Đà Nẵng - Hội An']; // fallback
     }
   }
 
   public async getRecommendedTours(userId: string): Promise<Tour[]> {
+    const cacheKey = `recommended_tours_${userId}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
       const res = await firstValueFrom(this.http.get<any[]>(`${this.BACKEND_URL}/recommendations/tours/${userId}`));
-      return (res || []).map(t => this.mapTourToFrontend(t));
+      const data = (res || []).map(t => this.mapTourToFrontend(t));
+      this.setCachedData(cacheKey, data);
+      return data;
     } catch (e) {
       return this.getPresetTours(); // fallback
     }
   }
 
   public async getRecommendedServices(userId: string): Promise<Service[]> {
+    const cacheKey = `recommended_services_${userId}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
     try {
-      return await firstValueFrom(this.http.get<Service[]>(`${this.BACKEND_URL}/recommendations/services/${userId}`));
+      const data = await firstValueFrom(this.http.get<Service[]>(`${this.BACKEND_URL}/recommendations/services/${userId}`));
+      this.setCachedData(cacheKey, data);
+      return data;
     } catch (e) {
       return this.getServices(); // fallback
+    }
+  }
+
+  public preloadAppData(userId?: string) {
+    // Warm up the caches asynchronously to preload data
+    this.getPresetTours().catch(() => {});
+    this.getServices().catch(() => {});
+    this.getCommunityPosts().catch(() => {});
+    this.getDestinations().catch(() => {});
+    if (userId) {
+      this.getItineraries(userId).catch(() => {});
+      this.getWalletInfo(userId).catch(() => {});
+      this.getTransactions(userId).catch(() => {});
+      this.getRecommendedTours(userId).catch(() => {});
+      this.getRecommendedServices(userId).catch(() => {});
     }
   }
 
