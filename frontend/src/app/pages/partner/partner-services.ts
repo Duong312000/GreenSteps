@@ -483,4 +483,26 @@ export class PartnerServicesComponent implements OnInit {
   public previewService() {
     alert('Đang tải chế độ xem trước dịch vụ...');
   }
+
+  public onFileSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File quá lớn! Vui lòng chọn ảnh dưới 5MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imageUrl = reader.result as string;
+        this.cdr.detectChanges();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  public removeImage(event: Event) {
+    event.stopPropagation();
+    this.imageUrl = '';
+    this.cdr.detectChanges();
+  }
 }

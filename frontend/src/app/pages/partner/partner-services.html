@@ -339,28 +339,42 @@
                 
                 <div class="flex flex-col gap-1.5">
                     <label class="text-xs font-bold text-gray-600">Ảnh bìa (Tỷ lệ 16:9) *</label>
-                    <input type="text" [(ngModel)]="imageUrl" placeholder="Nhập đường dẫn URL ảnh bìa" class="h-10 px-3.5 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
+                    <input type="text" [(ngModel)]="imageUrl" placeholder="Nhập đường dẫn URL ảnh bìa (hoặc tải tệp trực tiếp dưới đây)" class="h-10 px-3.5 border border-gray-200 rounded-xl text-xs text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-teal-500">
                 </div>
 
-                <div class="border border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer h-[160px] relative overflow-hidden">
-                    <img [src]="imageUrl" alt="Cover Preview" class="w-full h-full object-cover absolute inset-0" *ngIf="imageUrl && imageUrl.startsWith('http')">
-                    <div class="flex flex-col items-center text-center z-10" [class.bg-white/80]="imageUrl && imageUrl.startsWith('http')" [class.p-2]="imageUrl && imageUrl.startsWith('http')" [class.rounded-xl]="imageUrl && imageUrl.startsWith('http')">
+                <div (click)="fileInput.click()" class="border border-dashed border-gray-200 bg-gray-50 hover:bg-gray-100 transition-all rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer h-[180px] relative overflow-hidden">
+                    <img [src]="imageUrl" alt="Cover Preview" class="w-full h-full object-cover absolute inset-0" *ngIf="imageUrl">
+                    
+                    <!-- Floating remove button -->
+                    <button *ngIf="imageUrl" type="button" (click)="removeImage($event)" class="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center border-none cursor-pointer hover:bg-rose-700 transition-colors shadow-md" title="Gỡ ảnh">
+                        <i class="bi bi-trash text-sm"></i>
+                    </button>
+                    
+                    <!-- Upload hint z-index helper -->
+                    <div *ngIf="!imageUrl" class="flex flex-col items-center text-center z-10">
                         <i class="bi bi-cloud-arrow-up text-3xl text-teal-600 mb-1"></i>
                         <span class="text-xs font-bold text-teal-700">Tải ảnh lên hoặc kéo thả vào đây</span>
                         <span class="text-[10px] text-gray-400">PNG, JPG, WEBP tối đa 5MB</span>
                     </div>
                 </div>
 
+                <!-- Hidden file input -->
+                <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)">
+
                 <div class="space-y-2">
                     <label class="text-xs font-bold text-gray-600 block">Thư viện ảnh (Tối đa 10 ảnh)</label>
                     <div class="flex flex-wrap gap-3">
-                        <div class="w-20 h-20 border border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-white hover:bg-gray-50 transition-all cursor-pointer">
+                        <div (click)="fileInput.click()" class="w-20 h-20 border border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-white hover:bg-gray-50 transition-all cursor-pointer">
                             <i class="bi bi-plus text-xl"></i>
                             <span class="text-[10px] font-bold">Thêm ảnh</span>
                         </div>
                         
                         <div class="w-20 h-20 rounded-xl border border-gray-200 overflow-hidden relative" *ngIf="imageUrl">
                             <img [src]="imageUrl" alt="Gallery item" class="w-full h-full object-cover">
+                            <!-- Floating remove button for gallery item -->
+                            <button type="button" (click)="removeImage($event)" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity border-none cursor-pointer text-white hover:text-rose-500" title="Gỡ ảnh">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
