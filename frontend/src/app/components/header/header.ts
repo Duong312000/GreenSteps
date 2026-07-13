@@ -556,12 +556,12 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     alert('Đã đăng xuất tài khoản!');
     this.router.navigate(['/']);
   }
-
   public updateNavigation() {
     const travelerTabs = [
       { label: 'Cộng đồng', link: '/community' },
       { label: 'Chuyến đi trọn gói', link: '/tours' },
-      { label: 'Lịch trình của tôi', action: 'ai_planner' }
+      { label: 'Lịch trình của tôi', action: 'ai_planner' },
+      { label: 'Tra cứu đặt chỗ', link: '/booking/lookup' }
     ];
 
     if (this.currentUser && this.currentUser.role === 'provider') {
