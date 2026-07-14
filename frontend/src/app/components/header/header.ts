@@ -202,12 +202,18 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public toggleMobileMenu() {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    if (this.isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
   }
 
   public loginModalMode: 'login' | 'register' = 'login';
 
   public openLoginModal(mode: 'login' | 'register' = 'login') {
     this.isMobileMenuOpen = false;
+    document.body.style.overflow = '';
     this.loginModalMode = mode;
     this.isLoginModalOpen = true;
   }
@@ -266,6 +272,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    document.body.style.overflow = '';
     this.loginModalSubscription?.unsubscribe();
     this.clearProfileCloseTimer();
     if (this.resizeObserver) {

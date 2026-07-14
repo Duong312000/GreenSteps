@@ -10515,6 +10515,19 @@ app-partner-register {
     }
     app-header .header-overflow-panel > div > div:first-child { width: 250px !important; }
 
+    @media (max-width: 1440px) {
+        app-header header > div:first-child > div:first-child,
+        app-header header > div:first-child > div:last-child {
+            width: 210px !important;
+        }
+        app-header .header-main-nav {
+            gap: 0.75rem !important;
+        }
+        app-header .nav-tab-item {
+            font-size: 0.9rem !important;
+        }
+    }
+
     /* Home hero and trip finder use px values outside the utility scale. */
     .gs-reference-shell {
         max-width: var(--gs-content-wide) !important;
