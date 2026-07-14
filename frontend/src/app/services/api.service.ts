@@ -491,11 +491,15 @@ export class ApiService {
     }
   }
 
-  public async lookupBookingsByPhone(phone: string): Promise<any[]> {
+  public async lookupBookingsByPhone(phone: string, email?: string): Promise<any[]> {
     try {
-      const res = await firstValueFrom(
-        this.http.get<any>(`${this.BACKEND_URL}/bookings/lookup/phone?phone=${encodeURIComponent(phone)}`)
-      );
+      let url = `${this.BACKEND_URL}/bookings/lookup/phone?`;
+      const params = [];
+      if (phone) params.push(`phone=${encodeURIComponent(phone)}`);
+      if (email) params.push(`email=${encodeURIComponent(email)}`);
+      url += params.join('&');
+
+      const res = await firstValueFrom(this.http.get<any>(url));
       return res.bookings || [];
     } catch (e) {
       return [];

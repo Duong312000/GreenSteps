@@ -116,6 +116,33 @@ export class AuthService {
     this.setCurrentUser(user);
   }
 
+  private decodeToken(token: string): any {
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      // atob is supported in modern browsers
+      const decoded = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(decoded);
+    } catch {
+      return null;
+    }
+  }
+
+  public loginWithOnlyToken(token: string): boolean {
+    const payload = this.decodeToken(token);
+    if (!payload) return false;
+    
+    const rawUser = {
+      id: payload.id,
+      username: payload.username,
+      fullname: payload.fullname || payload.username,
+      role: payload.role || 'traveler'
+    };
+    
+    this.loginWithToken(rawUser, token);
+    return true;
+  }
+
   public async register(payload: { username: string; email: string; password: string }): Promise<AuthResult> {
     try {
       const res = await firstValueFrom(

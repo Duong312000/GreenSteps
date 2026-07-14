@@ -40,15 +40,13 @@
   h1 { font-size: 1.5rem; font-weight: 800; color: #111827; margin: 0 0 6px; }
   .subtitle { color: #6b7280; font-size: 0.92rem; margin-bottom: 28px; line-height: 1.5; }
 
-  .input-row {
-    display: flex; gap: 10px; align-items: stretch;
-  }
   .code-input {
-    flex: 1;
-    padding: 14px 18px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 16px;
     border: 2px solid #e5e7eb;
-    border-radius: 14px;
-    font-size: 1rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
     font-family: 'Inter', sans-serif;
     font-weight: 600;
     color: #111827;
@@ -56,6 +54,7 @@
     transition: border-color 0.2s;
   }
   .code-input:focus { border-color: #0E9F6E; }
+  .code-input::placeholder { font-weight: 400; color: #9ca3af; }
 
   .lookup-btn {
     padding: 14px 24px;
@@ -85,24 +84,6 @@
   }
 
   /* Result card */
-  .result-card {
-    margin-top: 28px;
-    border: 1.5px solid #e5e7eb;
-    border-radius: 18px;
-    overflow: hidden;
-    animation: fadeIn 0.3s ease;
-  }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-
-  .result-header {
-    padding: 18px 22px;
-    background: linear-gradient(90deg, #f0fdf4, #dcfce7);
-    display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  .booking-id-label { font-size: 0.78rem; color: #6b7280; font-weight: 500; margin-bottom: 2px; }
-  .booking-id-value { font-size: 1rem; font-weight: 800; color: #111827; letter-spacing: 0.5px; }
-
   .status-badge {
     padding: 6px 14px;
     border-radius: 99px;
@@ -113,29 +94,6 @@
   .status-badge.ok { background: #d1fae5; color: #065f46; }
   .status-badge.wait { background: #fef3c7; color: #92400e; }
   .status-badge.bad { background: #fee2e2; color: #991b1b; }
-
-  .result-body { padding: 20px 22px; }
-  .info-row {
-    display: flex; justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #f3f4f6;
-    font-size: 0.88rem;
-  }
-  .info-row:last-child { border-bottom: none; }
-  .info-label { color: #6b7280; font-weight: 500; }
-  .info-value { font-weight: 700; color: #111827; text-align: right; max-width: 60%; }
-
-  .pending-notice {
-    margin-top: 16px;
-    padding: 14px 16px;
-    background: #fffbeb;
-    border: 1px solid #fde68a;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    color: #92400e;
-    line-height: 1.5;
-    display: flex; gap: 10px; align-items: flex-start;
-  }
 
   .home-link {
     display: inline-flex; align-items: center; gap: 7px;
@@ -152,6 +110,8 @@
     margin-top: 28px;
     animation: fadeIn 0.3s ease;
   }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
   .list-title {
     font-size: 0.9rem;
     font-weight: 700;
@@ -197,25 +157,31 @@
 
     <h1>Tra cứu đơn đặt chỗ</h1>
     <p class="subtitle">
-      Nhập <b>Mã đặt chỗ (BKT-xxxxxxxxxx)</b> hoặc <b>Số điện thoại</b> sử dụng khi đặt để kiểm tra thông tin & trạng thái xử lý.
+      Vui lòng cung cấp thông tin liên hệ khi đặt chỗ hoặc Mã đặt chỗ để kiểm tra trạng thái xử lý đơn hàng.
     </p>
 
-    <!-- Search input -->
-    <div class="input-row">
-      <input
-        id="booking-code-input"
-        class="code-input"
-        type="text"
-        placeholder="Nhập mã đặt chỗ hoặc SĐT di động..."
-        [(ngModel)]="bookingCode"
-        (keyup.enter)="lookup()"
-        autocomplete="off"
-        spellcheck="false"
-      />
-      <button class="lookup-btn" (click)="lookup()" [disabled]="isLoading" id="lookup-btn">
-        <i class="bi" [class.bi-search]="!isLoading" [class.bi-arrow-repeat]="isLoading"
-           [class.spin]="isLoading"></i>
-        {{ isLoading ? 'Đang tìm...' : 'Tra cứu' }}
+    <!-- Search Form -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <label style="display: flex; flex-direction: column; gap: 6px;">
+          <span style="font-size: 0.82rem; font-weight: 700; color: #4b5563;">Mã đặt chỗ (Không bắt buộc)</span>
+          <input class="code-input" type="text" placeholder="Ví dụ: BKT-1783983309146" [(ngModel)]="bookingCode" (keyup.enter)="lookup()" autocomplete="off" />
+        </label>
+        
+        <label style="display: flex; flex-direction: column; gap: 6px;">
+          <span style="font-size: 0.82rem; font-weight: 700; color: #4b5563;">Số điện thoại khách hàng</span>
+          <input class="code-input" type="text" placeholder="Ví dụ: 0901234567" [(ngModel)]="phone" (keyup.enter)="lookup()" autocomplete="off" />
+        </label>
+        
+        <label style="display: flex; flex-direction: column; gap: 6px;">
+          <span style="font-size: 0.82rem; font-weight: 700; color: #4b5563;">Địa chỉ Email nhận thông tin</span>
+          <input class="code-input" type="email" placeholder="Ví dụ: customer@example.com" [(ngModel)]="email" (keyup.enter)="lookup()" autocomplete="off" />
+        </label>
+      </div>
+      
+      <button class="lookup-btn" (click)="lookup()" [disabled]="isLoading" style="justify-content: center; width: 100%;">
+        <i class="bi" [class.bi-search]="!isLoading" [class.bi-arrow-repeat]="isLoading" [class.spin]="isLoading"></i>
+        {{ isLoading ? 'Đang tra cứu...' : 'Tìm kiếm đặt chỗ' }}
       </button>
     </div>
 
@@ -224,78 +190,11 @@
       <i class="bi bi-exclamation-circle-fill"></i> {{ errorMsg }}
     </div>
 
-    <!-- Case 1: Single Result (searched by code) -->
-    <div class="result-card" *ngIf="result && !resultsList.length">
-      <div class="result-header">
-        <div>
-          <div class="booking-id-label">Mã đặt chỗ</div>
-          <div class="booking-id-value">{{ result.id }}</div>
-        </div>
-        <span class="status-badge" [ngClass]="getStatusClass(result.status)">
-          <i class="bi"
-             [class.bi-check-circle-fill]="getStatusClass(result.status) === 'ok'"
-             [class.bi-clock-fill]="getStatusClass(result.status) === 'wait'"
-             [class.bi-x-circle-fill]="getStatusClass(result.status) === 'bad'"></i>
-          {{ getStatusLabel(result.status) }}
-        </span>
-      </div>
-
-      <div class="result-body">
-        <div class="info-row" *ngIf="result.fullname">
-          <span class="info-label">Khách hàng</span>
-          <span class="info-value">{{ result.fullname }}</span>
-        </div>
-        <div class="info-row" *ngIf="result.customer_phone || result.customerPhone">
-          <span class="info-label">SĐT liên hệ</span>
-          <span class="info-value">{{ result.customer_phone || result.customerPhone }}</span>
-        </div>
-        <div class="info-row" *ngIf="result.tour_name || result.tourName || result.name_service">
-          <span class="info-label">Tên Tour / Dịch vụ</span>
-          <span class="info-value">{{ result.tour_name || result.tourName || result.name_service }}</span>
-        </div>
-        <div class="info-row" *ngIf="result.booking_date || result.bookingDate">
-          <span class="info-label">Ngày khởi hành</span>
-          <span class="info-value">{{ (result.booking_date || result.bookingDate) | date:'dd/MM/yyyy' }}</span>
-        </div>
-        <div class="info-row" *ngIf="result.guests">
-          <span class="info-label">Số khách</span>
-          <span class="info-value">{{ result.guests }} người</span>
-        </div>
-        <div class="info-row" *ngIf="result.value">
-          <span class="info-label">Số tiền đặt cọc</span>
-          <span class="info-value" style="color:#0E9F6E; font-weight: 800;">
-            {{ result.value | number:'1.0-0':'vi-VN' }}đ
-          </span>
-        </div>
-        <div class="info-row" *ngIf="result.payment_method">
-          <span class="info-label">Phương thức</span>
-          <span class="info-value">
-            {{ result.payment_method === 'bank_transfer' ? 'Chuyển khoản QR' :
-               result.payment_method === 'counter' ? 'Tại quầy' :
-               result.payment_method === 'wallet' ? 'Ví GreenSteps' :
-               result.payment_method === 'card' ? 'Thẻ tín dụng' : result.payment_method }}
-          </span>
-        </div>
-        <div class="info-row" *ngIf="result.createdAt">
-          <span class="info-label">Thời gian tạo</span>
-          <span class="info-value">{{ result.createdAt | date:'HH:mm, dd/MM/yyyy' }}</span>
-        </div>
-
-        <!-- Pending notice -->
-        <div class="pending-notice" *ngIf="result.status === 'pending'">
-          <i class="bi bi-clock" style="font-size:1.1rem; margin-top:1px; flex-shrink:0;"></i>
-          <span>
-            Đơn của bạn đang chờ Admin xác nhận thanh toán. Giao dịch thông thường được phê duyệt trong vòng <b>1–2 giờ làm việc</b>.
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Case 2: Multiple Results (searched by Phone Number) -->
+    <!-- Results List -->
     <div class="results-list-container" *ngIf="resultsList.length > 0">
       <div class="list-title">
         <i class="bi bi-list-stars" style="color: #0E9F6E; font-size: 1.1rem;"></i>
-        <span>Tìm thấy {{ resultsList.length }} đơn đặt chỗ:</span>
+        <span>Tìm thấy {{ resultsList.length }} đơn đặt chỗ phù hợp:</span>
       </div>
 
       <div class="booking-item-card" *ngFor="let item of resultsList">
@@ -331,6 +230,14 @@
           <div>
             <span style="color: #6B7280;">Tiền cọc:</span>
             <div style="font-weight: 800; color: #0E9F6E;">{{ item.value | number:'1.0-0':'vi-VN' }}đ</div>
+          </div>
+          <div *ngIf="item.customer_phone">
+            <span style="color: #6B7280;">SĐT:</span>
+            <div style="font-weight: 700; color: #111827;">{{ item.customer_phone }}</div>
+          </div>
+          <div *ngIf="item.customer_email">
+            <span style="color: #6B7280;">Email:</span>
+            <div style="font-weight: 700; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ item.customer_email }}</div>
           </div>
         </div>
       </div>

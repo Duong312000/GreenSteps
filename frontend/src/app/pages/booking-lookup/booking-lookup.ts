@@ -12,8 +12,9 @@ import { ApiService } from '../../services/api.service';
 })
 export class BookingLookupComponent implements OnInit {
   public bookingCode = '';
+  public phone = '';
+  public email = '';
   public isLoading = false;
-  public result: any = null;
   public resultsList: any[] = [];
   public errorMsg = '';
   public searchPerformed = false;
@@ -29,35 +30,45 @@ export class BookingLookupComponent implements OnInit {
   }
 
   public async lookup() {
-    const input = this.bookingCode.trim();
-    if (!input) {
-      this.errorMsg = 'Vui lòng nhập mã đặt chỗ hoặc số điện thoại.';
+    const codeInput = this.bookingCode.trim();
+    const phoneInput = this.phone.trim();
+    const emailInput = this.email.trim();
+
+    if (!codeInput && !phoneInput && !emailInput) {
+      this.errorMsg = 'Vui lòng nhập Số điện thoại, Email hoặc Mã đặt chỗ.';
       return;
     }
+
     this.isLoading = true;
-    this.result = null;
     this.resultsList = [];
     this.errorMsg = '';
     this.searchPerformed = true;
 
-    // Detect if the query is a phone number
-    const isPhone = /^(\+?[0-9]{8,15}|0[0-9\s.-]{8,13})$/.test(input);
-
     try {
-      if (isPhone) {
-        const cleanPhone = input.replace(/[\s.-]/g, '');
-        const list = await this.apiService.lookupBookingsByPhone(cleanPhone);
+      if (codeInput) {
+        // Query by booking code
+        const data = await this.apiService.getBooking(codeInput);
+        if (data && data.success && data.booking) {
+          const booking = data.booking;
+          let matched = true;
+          if (phoneInput && booking.customer_phone && booking.customer_phone !== phoneInput) matched = false;
+          if (emailInput && booking.customer_email && booking.customer_email.toLowerCase() !== emailInput.toLowerCase()) matched = false;
+
+          if (matched) {
+            this.resultsList = [booking];
+          } else {
+            this.errorMsg = 'Thông tin Số điện thoại hoặc Email không khớp với Mã đặt chỗ.';
+          }
+        } else {
+          this.errorMsg = 'Không tìm thấy đơn đặt chỗ với mã này. Vui lòng kiểm tra lại.';
+        }
+      } else {
+        // Query by phone and/or email
+        const list = await this.apiService.lookupBookingsByPhone(phoneInput, emailInput);
         if (list && list.length > 0) {
           this.resultsList = list;
         } else {
-          this.errorMsg = 'Không tìm thấy đơn đặt chỗ nào liên kết với số điện thoại này.';
-        }
-      } else {
-        const data = await this.apiService.getBooking(input);
-        if (data && data.success && data.booking) {
-          this.result = data.booking;
-        } else {
-          this.errorMsg = 'Không tìm thấy đơn đặt chỗ với mã này. Vui lòng kiểm tra lại.';
+          this.errorMsg = 'Không tìm thấy đơn đặt chỗ nào khớp với thông tin cung cấp.';
         }
       }
     } catch {
