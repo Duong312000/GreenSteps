@@ -34,6 +34,7 @@ export class TourDetailComponent implements OnInit {
   public galleryPhotoUrl: string = '';
   public activeDayIndex: number = 0;
   public activeInfoTab: 'overview' | 'included' | 'itinerary' | 'policy' | 'reviews' = 'overview';
+  public isServiceDetail: boolean = false;
 
   // Booking details
   public bookingDate: string = '2026-06-15';
@@ -147,7 +148,9 @@ export class TourDetailComponent implements OnInit {
 
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.activeTour = await this.apiService.getPresetTour(id);
+      this.isServiceDetail = this.route.snapshot.routeConfig?.path?.startsWith('services') || false;
+      this.activeTour = this.isServiceDetail ? await this.apiService.getServiceAsTour(id) : await this.apiService.getPresetTour(id);
+      this.isServiceDetail = this.isServiceDetail || !!this.activeTour?.isService;
       if (this.activeTour) {
         this.setupSlides();
         await this.loadReviews(id);
@@ -285,7 +288,45 @@ export class TourDetailComponent implements OnInit {
   }
 
   public get displayNights(): number {
+    if (this.activeTour?.isService) return 0;
     return Math.max((this.activeTour?.days || 1) - 1, 1);
+  }
+
+  public get detailKindLabel(): string {
+    if (!this.activeTour?.isService) return 'Tour GreenSteps';
+    return this.activeTour.type || 'Dịch vụ GreenSteps';
+  }
+
+  public get detailEntityLabel(): string {
+    return this.activeTour?.isService ? 'dịch vụ' : 'tour';
+  }
+
+  public get detailBookingLabel(): string {
+    return this.activeTour?.isService ? 'Đặt Dịch Vụ Ngay' : 'Đặt Cọc Tour Ngay';
+  }
+
+  public get detailBookingLabelLower(): string {
+    return this.activeTour?.isService ? 'đặt dịch vụ ngay' : 'đặt cọc tour ngay';
+  }
+
+  public get detailConsultTitle(): string {
+    return this.activeTour?.isService
+      ? 'Bạn cần tư vấn thêm trước khi đặt dịch vụ?'
+      : 'Bạn cần tư vấn thêm trước khi đặt tour?';
+  }
+
+  public get detailConsultCopy(): string {
+    return this.activeTour?.isService
+      ? 'GreenSteps sẽ làm rõ lịch phục vụ, điều kiện đặt chỗ, hoàn hủy và các lưu ý để bạn chọn dịch vụ phù hợp.'
+      : 'GreenSteps sẽ làm rõ điều kiện đổi ngày, hoàn hủy và thanh toán để bạn đặt tour tự tin hơn.';
+  }
+
+  public get detailBackQueryType(): string {
+    const type = (this.activeTour?.type || '').toLowerCase();
+    if (type.includes('luu') || type.includes('lưu') || type.includes('tru') || type.includes('trú')) return 'stay';
+    if (type.includes('phuong') || type.includes('phương') || type.includes('tien') || type.includes('tiện')) return 'transport';
+    if (type.includes('an') || type.includes('ăn') || type.includes('uong') || type.includes('uống')) return 'food';
+    return 'attraction';
   }
 
   public async cloneAndEditTrip() {
@@ -321,7 +362,8 @@ export class TourDetailComponent implements OnInit {
     const bookingContext = {
       hotelId: `hotel_${this.activeTour.destination || 'greensteps'}`.toLowerCase().replace(/\s+/g, '_'),
       roomId: 'premium_double_window',
-      tourId: this.activeTour.id,
+      tourId: this.activeTour.isService ? undefined : this.activeTour.id,
+      serviceId: this.activeTour.isService ? this.activeTour.id : undefined,
       checkIn,
       checkOut,
       guestCount: this.totalGuests,

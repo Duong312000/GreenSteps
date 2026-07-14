@@ -29,7 +29,8 @@ interface OtherGuest {
 interface BookingContext {
   hotelId: string;
   roomId: string;
-  tourId: string;
+  tourId?: string;
+  serviceId?: string;
   checkIn: string;
   checkOut: string;
   guestCount: number;
@@ -228,12 +229,14 @@ export class BookingComponent implements OnInit {
         console.error('Failed to load itinerary for booking:', err);
       }
     } else {
-      if (this.bookingContext.tourId) {
+      if (this.bookingContext.serviceId) {
+        this.activeTour = await this.apiService.getServiceAsTour(this.bookingContext.serviceId);
+      } else if (this.bookingContext.tourId) {
         this.activeTour = await this.apiService.getPresetTour(this.bookingContext.tourId);
       }
     }
 
-    if (!this.activeTour) {
+    if (!this.activeTour && !this.bookingContext.serviceId) {
       const tours = await this.apiService.getPresetTours();
       this.activeTour = tours[0] || null;
     }
@@ -247,10 +250,21 @@ export class BookingComponent implements OnInit {
 
   public changeSelection() {
     if (this.activeTour?.id) {
-      this.router.navigate(['/tours', this.activeTour.id]);
+      this.router.navigate(this.activeTour.isService
+        ? ['/services', this.getActiveServiceRouteType(), this.activeTour.id]
+        : ['/tours', this.activeTour.id]
+      );
       return;
     }
-    this.router.navigate(['/tours']);
+    this.router.navigate([this.bookingContext.serviceId ? '/services' : '/tours']);
+  }
+
+  private getActiveServiceRouteType(): string {
+    const type = (this.activeTour?.type || '').toLowerCase();
+    if (type.includes('lưu') || type.includes('luu') || type.includes('trú') || type.includes('tru')) return 'stay';
+    if (type.includes('phương') || type.includes('phuong') || type.includes('tiện') || type.includes('tien')) return 'transport';
+    if (type.includes('ăn') || type.includes('an') || type.includes('uống') || type.includes('uong')) return 'food';
+    return 'attraction';
   }
 
   public toggleAddOn(id: string, checked: boolean) {

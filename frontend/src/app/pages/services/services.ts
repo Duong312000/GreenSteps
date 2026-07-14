@@ -170,6 +170,14 @@ export class ServicesComponent implements OnInit {
     this.filterServices();
   }
 
+  public getServiceRouteType(service: Service): string {
+    const type = (service.type || this.serviceType || '').toLowerCase();
+    if (type === 'stay' || type === 'lodging') return 'stay';
+    if (type === 'transport') return 'transport';
+    if (type === 'food' || type === 'dining') return 'food';
+    return 'attraction';
+  }
+
   public resetFilters() {
     this.searchQuery = '';
     this.filterDest = 'all';

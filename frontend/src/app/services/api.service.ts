@@ -990,6 +990,67 @@ export class ApiService {
     }
   }
 
+  public async getServiceAsTour(id: string): Promise<Tour | null> {
+    const cacheKey = `service_detail_tour_${id}`;
+    const cached = this.getCachedData(cacheKey);
+    if (cached) return cached;
+
+    try {
+      const s = await this.getServiceDetails(id);
+      if (!s) return null;
+
+      const serviceType = s.type || 'attraction';
+      const mappedType = serviceType === 'stay' || serviceType === 'lodging' ? 'Lưu trú' :
+                         serviceType === 'transport' ? 'Phương tiện' :
+                         serviceType === 'food' || serviceType === 'dining' ? 'Ăn uống' : 'Trải nghiệm';
+      const title = s.name || s.name_service || 'Dịch vụ GreenSteps';
+      const tour: Tour = {
+        id: s.id,
+        title,
+        destination: s.destination,
+        days: 1,
+        type: mappedType,
+        cost: Number(s.cost || 0),
+        oldCost: Number((s.cost || 0) * 1.12),
+        image: s.image_url || s.image || s.current_data?.img || 'image/Viet Nam.png',
+        description: s.current_data?.shortDesc || s.current_data?.description || s.description,
+        tags: [mappedType, ...(s.badges || [])],
+        badges: s.badges || [],
+        rating: Number(s.rating || 5.0),
+        votes: Number(s.bookings_count || s.bookingsCount || 0),
+        carbon: Number(s.carbon || 0),
+        data: [
+          [
+            {
+              id: 'act_' + s.id,
+              time: s.current_data?.startTime || '08:00',
+              name: title,
+              cost: Number(s.cost || 0),
+              carbon: Number(s.carbon || 0),
+              icon: serviceType === 'stay' || serviceType === 'lodging' ? 'bi-house-door-fill' :
+                    serviceType === 'food' || serviceType === 'dining' ? 'bi-cup-hot-fill' :
+                    serviceType === 'transport' ? 'bi-car-front-fill' : 'bi-tree-fill',
+              type: serviceType === 'stay' || serviceType === 'lodging' ? 'lodging' :
+                    serviceType === 'food' || serviceType === 'dining' ? 'dining' :
+                    serviceType === 'transport' ? 'transport' : 'attraction',
+              lat: s.current_data?.lat || null,
+              lng: s.current_data?.lng || null
+            }
+          ]
+        ],
+        isService: true,
+        gallery: s.current_data?.images || s.current_data?.gallery || [],
+        maxCapacity: s.max_capacity || s.maxCapacity || 10
+      };
+
+      this.setCachedData(cacheKey, tour);
+      return tour;
+    } catch (e) {
+      console.warn('Failed to load service detail:', e);
+      return null;
+    }
+  }
+
   public async cloneService(id: string): Promise<boolean> {
     this.clearCache('services_');
     try {

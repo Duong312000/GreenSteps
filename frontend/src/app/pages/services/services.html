@@ -102,7 +102,7 @@
             <!-- Real cards when not loading -->
             <ng-container *ngIf="!isPageLoading">
               <!-- Service cards rendered dynamically -->
-              <div class="tour-card" *ngFor="let svc of filteredServices" [routerLink]="['/tours', svc.id]" style="cursor: pointer;">
+              <div class="tour-card" *ngFor="let svc of filteredServices" [routerLink]="['/services', getServiceRouteType(svc), svc.id]" style="cursor: pointer;">
                   <div class="tour-img-container" style="position: relative;">
                       <!-- AI Recommended Badge -->
                       <div *ngIf="svc.isRecommended" style="position: absolute; top: 12px; left: 12px; background: linear-gradient(135deg, #059669 0%, #10B981 100%); color: white; padding: 4px 10px; font-size: 0.65rem; font-weight: 700; border-radius: 4px; box-shadow: 0 4px 8px rgba(4,120,87,0.25); display: flex; align-items: center; gap: 4px; z-index: 10; text-transform: uppercase;">

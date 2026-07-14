@@ -28,13 +28,20 @@
     <section class="tour-heading">
         <div>
             <nav class="detail-breadcrumb" aria-label="Breadcrumb">
-                <a routerLink="/tours"><i class="bi bi-chevron-left"></i> Tour GreenSteps</a>
+                <a *ngIf="!activeTour.isService" routerLink="/tours"><i class="bi bi-chevron-left"></i> Tour GreenSteps</a>
+                <a *ngIf="activeTour.isService" routerLink="/services" [queryParams]="{ type: detailBackQueryType }"><i class="bi bi-chevron-left"></i> {{ detailKindLabel }}</a>
                 <span>{{ activeTour.destination }}</span>
             </nav>
 
             <h1>{{ activeTour.title }}</h1>
 
-            <div class="tour-meta-row">
+            <div class="tour-meta-row" *ngIf="activeTour.isService">
+                <span><i class="bi bi-clock"></i> Theo lịch dịch vụ</span>
+                <span><i class="bi bi-geo-alt"></i> {{ activeTour.destination }}, Việt Nam</span>
+                <span><i class="bi bi-tag"></i> {{ detailKindLabel }}</span>
+            </div>
+
+            <div class="tour-meta-row" *ngIf="!activeTour.isService">
                 <span><i class="bi bi-clock"></i> {{ activeTour.days }} ngày {{ displayNights }} đêm</span>
                 <span><i class="bi bi-geo-alt"></i> {{ activeTour.destination }}, Việt Nam</span>
                 <span><i class="bi bi-tag"></i> Eco Tour, Gia đình, Thiên nhiên</span>
@@ -74,7 +81,11 @@
         </div>
 
         <aside class="booking-card" aria-label="Thông tin đặt tour">
-            <div class="booking-card-top">
+            <div class="booking-card-top" *ngIf="activeTour.isService">
+                <span class="duration-pill">Dịch vụ trong ngày</span>
+                <span class="eco-pill"><i class="bi bi-leaf"></i> {{ detailKindLabel }}</span>
+            </div>
+            <div class="booking-card-top" *ngIf="!activeTour.isService">
                 <span class="duration-pill">{{ activeTour.days }} ngày {{ displayNights }} đêm</span>
                 <span class="eco-pill"><i class="bi bi-leaf"></i> Eco Tour</span>
             </div>
@@ -125,12 +136,17 @@
                     <span>Sức chứa tối đa: {{ activeTour.maxCapacity }} khách</span>
                 </div>
 
-                <button type="submit" class="primary-booking-button">
+                <button *ngIf="activeTour.isService" type="submit" class="primary-booking-button">
+                    Đặt Dịch Vụ Ngay
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+
+                <button *ngIf="!activeTour.isService" type="submit" class="primary-booking-button">
                     Đặt Cọc Tour Ngay
                     <i class="bi bi-arrow-right"></i>
                 </button>
 
-                <button type="button" class="secondary-edit-button" (click)="cloneAndEditTrip()">
+                <button *ngIf="!activeTour.isService" type="button" class="secondary-edit-button" (click)="cloneAndEditTrip()">
                     <i class="bi bi-sliders"></i>
                     Tự chỉnh sửa lịch trình
                 </button>
@@ -139,10 +155,10 @@
     </section>
 
     <section class="content-shell">
-        <nav class="detail-tabs" aria-label="Tour detail tabs">
+        <nav class="detail-tabs" [attr.aria-label]="activeTour.isService ? 'Service detail tabs' : 'Tour detail tabs'">
             <button type="button" [class.active]="activeInfoTab === 'overview'" (click)="setInfoTab('overview')">Tổng quan</button>
             <button type="button" [class.active]="activeInfoTab === 'included'" (click)="setInfoTab('included')">Bao gồm những gì</button>
-            <button type="button" [class.active]="activeInfoTab === 'itinerary'" (click)="setInfoTab('itinerary')">Lịch trình</button>
+            <button type="button" [class.active]="activeInfoTab === 'itinerary'" (click)="setInfoTab('itinerary')">{{ activeTour.isService ? 'Thông tin dịch vụ' : 'Lịch trình' }}</button>
             <button type="button" [class.active]="activeInfoTab === 'policy'" (click)="setInfoTab('policy')">Chính sách</button>
             <button type="button" [class.active]="activeInfoTab === 'reviews'" (click)="setInfoTab('reviews')">Đánh giá</button>
         </nav>
@@ -153,25 +169,25 @@
                     <article>
                         <i class="bi bi-compass"></i>
                         <div>
-                            <span>Phong cách tour</span>
-                            <strong>Gia đình / Eco Travel</strong>
-                            <p>Trải nghiệm xanh phù hợp cho gia đình có trẻ nhỏ.</p>
+                            <span>{{ activeTour.isService ? 'Loại dịch vụ' : 'Phong cách tour' }}</span>
+                            <strong>{{ activeTour.isService ? detailKindLabel : 'Gia đình / Eco Travel' }}</strong>
+                            <p>{{ activeTour.isService ? 'Dịch vụ xanh được chọn lọc theo tiêu chí sạch, rõ thông tin và thân thiện môi trường.' : 'Trải nghiệm xanh phù hợp cho gia đình có trẻ nhỏ.' }}</p>
                         </div>
                     </article>
                     <article>
                         <i class="bi bi-list-check"></i>
                         <div>
-                            <span>Dịch vụ</span>
-                            <strong>Cơ bản</strong>
-                            <p>Bao gồm lưu trú, ăn uống và phương tiện được chọn theo tiêu chí gọn, sạch, xanh.</p>
+                            <span>{{ activeTour.isService ? 'Thông tin đặt chỗ' : 'Dịch vụ' }}</span>
+                            <strong>{{ activeTour.isService ? 'Theo từng lượt đặt' : 'Cơ bản' }}</strong>
+                            <p>{{ activeTour.isService ? 'Hiển thị giá, sức chứa, lịch phục vụ và chính sách để đặt đúng nhu cầu.' : 'Bao gồm lưu trú, ăn uống và phương tiện được chọn theo tiêu chí gọn, sạch, xanh.' }}</p>
                         </div>
                     </article>
                     <article>
                         <i class="bi bi-person-heart"></i>
                         <div>
-                            <span>Hướng dẫn viên</span>
+                            <span>{{ activeTour.isService ? 'Đối tác cung cấp' : 'Hướng dẫn viên' }}</span>
                             <strong>Thân thiện</strong>
-                            <p>Đồng hành an toàn, hỗ trợ tốt cho các gia đình.</p>
+                            <p>{{ activeTour.isService ? 'Được vận hành bởi đối tác trong hệ sinh thái GreenSteps.' : 'Đồng hành an toàn, hỗ trợ tốt cho các gia đình.' }}</p>
                         </div>
                     </article>
                     <article>
@@ -195,36 +211,37 @@
                         <div>
                             <span>Phát thải carbon</span>
                             <strong>{{ activeTour.carbon }}kg CO₂</strong>
-                            <p>Lịch trình được tối ưu để giảm phát thải và ưu tiên điểm đến xanh.</p>
+                            <p>{{ activeTour.isService ? 'Dịch vụ giúp giảm dấu chân carbon so với lựa chọn truyền thống.' : 'Lịch trình được tối ưu để giảm phát thải và ưu tiên điểm đến xanh.' }}</p>
                         </div>
                     </article>
                 </div>
 
                 <section class="tour-highlights">
                     <div class="section-kicker">Điểm nhấn</div>
-                    <h2>Điểm nổi bật của tour</h2>
+                    <h2>{{ activeTour.isService ? 'Điểm nổi bật của dịch vụ' : 'Điểm nổi bật của tour' }}</h2>
                     <div class="highlight-grid">
-                        <div><i class="bi bi-check2-circle"></i> Lịch trình phù hợp cho gia đình có trẻ nhỏ</div>
+                        <div><i class="bi bi-check2-circle"></i> {{ activeTour.isService ? 'Thông tin giá và sức chứa rõ ràng' : 'Lịch trình phù hợp cho gia đình có trẻ nhỏ' }}</div>
                         <div><i class="bi bi-check2-circle"></i> Ưu tiên điểm đến xanh, ít phát thải</div>
-                        <div><i class="bi bi-check2-circle"></i> Có thời gian nghỉ giữa các hoạt động</div>
-                        <div><i class="bi bi-check2-circle"></i> Trải nghiệm địa phương: vườn hoa, ẩm thực, thiên nhiên</div>
+                        <div><i class="bi bi-check2-circle"></i> {{ activeTour.isService ? 'Phù hợp để thêm vào hành trình cá nhân' : 'Có thời gian nghỉ giữa các hoạt động' }}</div>
+                        <div><i class="bi bi-check2-circle"></i> Trải nghiệm địa phương: lưu trú, ẩm thực, di chuyển hoặc khám phá thiên nhiên</div>
                     </div>
                 </section>
 
                 <p class="tour-description">
-                    Khám phá Đà Lạt theo cách nhẹ nhàng và bền vững, phù hợp cho gia đình có trẻ nhỏ.
-                    Lịch trình kết hợp thiên nhiên, văn hóa địa phương và các điểm đến xanh được tối ưu để giảm phát thải carbon.
+                    {{ activeTour.description || (activeTour.isService
+                        ? 'Dịch vụ GreenSteps được thiết kế để bổ sung linh hoạt vào chuyến đi, ưu tiên trải nghiệm địa phương và tiêu chí du lịch xanh.'
+                        : 'Khám phá Đà Lạt theo cách nhẹ nhàng và bền vững, phù hợp cho gia đình có trẻ nhỏ. Lịch trình kết hợp thiên nhiên, văn hóa địa phương và các điểm đến xanh được tối ưu để giảm phát thải carbon.') }}
                 </p>
 
                 <div class="tab-final-cta overview-cta-box">
                     <div class="tab-final-cta-icon"><i class="bi bi-headset"></i></div>
                     <div>
-                        <h3>Bạn cần tư vấn thêm trước khi đặt tour?</h3>
-                        <p>GreenSteps sẵn sàng hỗ trợ để gia đình bạn chọn hành trình Đà Lạt nhẹ nhàng, rõ ràng và phù hợp nhất.</p>
+                        <h3>{{ detailConsultTitle }}</h3>
+                        <p>{{ activeTour.isService ? detailConsultCopy : 'GreenSteps sẵn sàng hỗ trợ để gia đình bạn chọn hành trình Đà Lạt nhẹ nhàng, rõ ràng và phù hợp nhất.' }}</p>
                     </div>
                     <div class="tab-final-cta-actions">
                         <button type="button" class="cta-secondary"><i class="bi bi-chat"></i> Liên hệ tư vấn</button>
-                        <button type="button" class="cta-primary" (click)="submitBooking($event)"><i class="bi bi-calendar2-check"></i> Đặt cọc tour ngay</button>
+                        <button type="button" class="cta-primary" (click)="submitBooking($event)"><i class="bi bi-calendar2-check"></i> {{ detailBookingLabelLower }}</button>
                     </div>
                 </div>
             </section>
@@ -233,13 +250,13 @@
                 <div class="panel-hero included-hero">
                     <div>
                         <span class="section-kicker">GreenSteps Care</span>
-                        <h3>Mọi thứ gia đình cần cho một hành trình nhẹ nhàng</h3>
-                        <p>Dịch vụ được chọn theo tiêu chí gọn gàng, dễ chịu và phù hợp cho nhóm nhỏ yêu thiên nhiên.</p>
+                        <h3>{{ activeTour.isService ? 'Thông tin bao gồm trong dịch vụ' : 'Mọi thứ gia đình cần cho một hành trình nhẹ nhàng' }}</h3>
+                        <p>{{ activeTour.isService ? 'Các hạng mục được mô tả rõ để bạn biết chính xác dịch vụ cung cấp gì trước khi đặt.' : 'Dịch vụ được chọn theo tiêu chí gọn gàng, dễ chịu và phù hợp cho nhóm nhỏ yêu thiên nhiên.' }}</p>
                     </div>
                     <div class="included-hero-badges">
                         <div class="panel-hero-badge">
                             <i class="bi bi-leaf"></i>
-                            <span>Đã tối ưu cho tour gia đình 3N2Đ</span>
+                            <span>{{ activeTour.isService ? 'Dịch vụ xanh đã được chọn lọc' : 'Đã tối ưu cho tour gia đình 3N2Đ' }}</span>
                         </div>
                         <div class="panel-hero-badge">
                             <i class="bi bi-shield-check"></i>
@@ -265,8 +282,8 @@
                     <article class="special-card">
                         <div class="special-card-icon"><i class="bi bi-ticket-perforated"></i></div>
                         <div class="special-card-copy">
-                            <h4>Trải nghiệm trong tour</h4>
-                            <p>Đã bao gồm vé tham quan cơ bản và các điểm đến xanh phù hợp cho gia đình muốn đi chậm, đi đẹp.</p>
+                            <h4>{{ activeTour.isService ? 'Phạm vi dịch vụ' : 'Trải nghiệm trong tour' }}</h4>
+                            <p>{{ activeTour.isService ? 'Bao gồm các quyền lợi, thời lượng và tiện ích chính do đối tác GreenSteps cung cấp.' : 'Đã bao gồm vé tham quan cơ bản và các điểm đến xanh phù hợp cho gia đình muốn đi chậm, đi đẹp.' }}</p>
                             <ul>
                                 <li>Vé vào cổng cho các điểm chính</li>
                                 <li>Hướng dẫn viên địa phương thân thiện</li>
@@ -278,7 +295,7 @@
                     <article class="special-card">
                         <div class="special-card-icon"><i class="bi bi-cup-hot"></i></div>
                         <div class="special-card-copy">
-                            <h4>Ăn uống & nghỉ giữa hành trình</h4>
+                            <h4>{{ activeTour.isService ? 'Tiện ích & hỗ trợ' : 'Ăn uống & nghỉ giữa hành trình' }}</h4>
                             <p>GreenSteps gợi ý các điểm ăn uống dễ tiếp cận, hợp gia đình và ưu tiên trải nghiệm bản địa vừa đủ.</p>
                             <ul>
                                 <li>Gợi ý bữa trưa và bữa tối theo khu vực</li>
@@ -292,7 +309,7 @@
                         <div class="special-card-icon"><i class="bi bi-leaf"></i></div>
                         <div class="special-card-copy">
                             <h4>Cam kết trải nghiệm xanh</h4>
-                            <p>Lịch trình ưu tiên điểm đến gần nhau, hoạt động ngoài trời nhẹ nhàng và lựa chọn giúp giảm phát thải carbon.</p>
+                            <p>{{ activeTour.isService ? 'Dịch vụ ưu tiên vận hành bền vững, minh bạch thông tin và khuyến khích lựa chọn địa phương.' : 'Lịch trình ưu tiên điểm đến gần nhau, hoạt động ngoài trời nhẹ nhàng và lựa chọn giúp giảm phát thải carbon.' }}</p>
                             <ul>
                                 <li>Ưu tiên điểm tham quan có không gian tự nhiên</li>
                                 <li>Giảm thời gian di chuyển không cần thiết</li>
@@ -312,12 +329,12 @@
                 <div class="tab-final-cta included-cta-box">
                     <div class="tab-final-cta-icon included-cta-icon"><i class="bi bi-headset"></i></div>
                     <div>
-                        <h3>Bạn cần tư vấn thêm trước khi đặt tour?</h3>
-                        <p>GreenSteps sẽ giải thích rõ các dịch vụ bao gồm để gia đình bạn yên tâm trước khi giữ chỗ.</p>
+                        <h3>{{ detailConsultTitle }}</h3>
+                        <p>GreenSteps sẽ giải thích rõ các hạng mục bao gồm để bạn yên tâm trước khi giữ chỗ.</p>
                     </div>
                     <div class="tab-final-cta-actions included-cta-actions">
                         <button type="button" class="cta-secondary"><i class="bi bi-chat"></i> Liên hệ tư vấn</button>
-                        <button type="button" class="cta-primary" (click)="submitBooking($event)"><i class="bi bi-calendar2-check"></i> Đặt cọc tour ngay</button>
+                        <button type="button" class="cta-primary" (click)="submitBooking($event)"><i class="bi bi-calendar2-check"></i> {{ detailBookingLabelLower }}</button>
                     </div>
                 </div>
             </section>
@@ -329,8 +346,8 @@
                     </div>
                     <div class="policy-hero-copy">
                         <span class="section-kicker">Booking Policy</span>
-                        <h3>Rõ ràng từ lúc giữ chỗ đến khi khởi hành</h3>
-                        <p>GreenSteps cam kết minh bạch trong từng bước booking, để bạn yên tâm lên kế hoạch và tận hưởng hành trình trọn vẹn.</p>
+                        <h3>{{ activeTour.isService ? 'Rõ ràng từ lúc giữ chỗ đến khi sử dụng dịch vụ' : 'Rõ ràng từ lúc giữ chỗ đến khi khởi hành' }}</h3>
+                        <p>GreenSteps cam kết minh bạch trong từng bước booking, để bạn yên tâm lên kế hoạch và tận hưởng {{ activeTour.isService ? 'dịch vụ' : 'hành trình' }} trọn vẹn.</p>
                     </div>
                     <div class="policy-hero-points">
                         <div><i class="bi bi-shield-check"></i><span>Xác nhận trước thanh toán</span></div>
@@ -359,10 +376,10 @@
                         <div class="policy-flow-icon"><i class="bi bi-credit-card"></i></div>
                         <div class="policy-flow-main">
                             <h4>Đặt cọc & xác nhận</h4>
-                            <p>Cọc tour để giữ chỗ. Phần còn lại thanh toán theo thông tin xác nhận từ GreenSteps.</p>
+                            <p>{{ activeTour.isService ? 'Thanh toán/giữ chỗ dịch vụ theo thông tin xác nhận từ GreenSteps.' : 'Cọc tour để giữ chỗ. Phần còn lại thanh toán theo thông tin xác nhận từ GreenSteps.' }}</p>
                         </div>
                         <ul>
-                            <li>Cọc tour theo mức quy định của từng hành trình.</li>
+                            <li>{{ activeTour.isService ? 'Mức thanh toán áp dụng theo từng dịch vụ.' : 'Cọc tour theo mức quy định của từng hành trình.' }}</li>
                             <li>Nhận xác nhận qua email/SMS ngay sau khi đặt cọc.</li>
                             <li>Thanh toán phần còn lại theo hướng dẫn trong email xác nhận.</li>
                         </ul>
@@ -399,7 +416,7 @@
                             <div>
                                 <span>Hủy trước 3-6 ngày</span>
                                 <strong>Hoàn 50-70% tùy dịch vụ</strong>
-                                <p>Tùy chính sách của từng tour/dịch vụ.</p>
+                                <p>Tùy chính sách của từng {{ detailEntityLabel }}.</p>
                             </div>
                         </article>
                         <article>
@@ -411,7 +428,7 @@
                             </div>
                         </article>
                     </div>
-                    <p class="policy-footnote"><i class="bi bi-info-circle"></i> Chi tiết điều kiện của từng hành trình sẽ được hiển thị rõ ràng ở bước xác nhận booking.</p>
+                    <p class="policy-footnote"><i class="bi bi-info-circle"></i> Chi tiết điều kiện của từng {{ detailEntityLabel }} sẽ được hiển thị rõ ràng ở bước xác nhận booking.</p>
                 </section>
 
                 <section class="pretrip-support-box">
@@ -451,12 +468,12 @@
                 <div class="tab-final-cta policy-cta-box">
                     <div class="tab-final-cta-icon policy-cta-icon"><i class="bi bi-headset"></i></div>
                     <div>
-                        <h3>Bạn cần tư vấn thêm trước khi đặt tour?</h3>
-                        <p>GreenSteps sẽ làm rõ điều kiện đổi ngày, hoàn hủy và thanh toán để bạn đặt tour tự tin hơn.</p>
+                        <h3>{{ detailConsultTitle }}</h3>
+                        <p>{{ detailConsultCopy }}</p>
                     </div>
                     <div class="tab-final-cta-actions policy-cta-actions">
                         <button type="button" class="cta-secondary"><i class="bi bi-telephone"></i> Liên hệ tư vấn</button>
-                        <button type="button" class="cta-primary" (click)="submitBooking($event)"><i class="bi bi-calendar2-check"></i> Đặt cọc tour ngay</button>
+                        <button type="button" class="cta-primary" (click)="submitBooking($event)"><i class="bi bi-calendar2-check"></i> {{ detailBookingLabelLower }}</button>
                     </div>
                 </div>
             </section>
@@ -591,7 +608,7 @@
                     <div class="review-chip-row" aria-label="Lọc đánh giá">
                         <button type="button" [class.active]="activeFilter === 'Tất cả'" (click)="setFilter('Tất cả')">Tất cả</button>
                         <button type="button" [class.active]="activeFilter === 'Gia đình có trẻ nhỏ'" (click)="setFilter('Gia đình có trẻ nhỏ')">Gia đình có trẻ nhỏ</button>
-                        <button type="button" [class.active]="activeFilter === 'Lịch trình xanh'" (click)="setFilter('Lịch trình xanh')">Lịch trình xanh</button>
+                        <button type="button" [class.active]="activeFilter === 'Lịch trình xanh'" (click)="setFilter('Lịch trình xanh')">{{ activeTour.isService ? 'Dịch vụ xanh' : 'Lịch trình xanh' }}</button>
                         <button type="button" [class.active]="activeFilter === 'Hướng dẫn viên'" (click)="setFilter('Hướng dẫn viên')">Hướng dẫn viên</button>
                         <button type="button" [class.active]="activeFilter === 'Ẩm thực'" (click)="setFilter('Ẩm thực')">Ẩm thực</button>
                         <button type="button" [class.active]="activeFilter === 'Có ảnh'" (click)="setFilter('Có ảnh')">Có ảnh</button>
@@ -679,12 +696,12 @@
                 <div class="tab-final-cta review-cta-box">
                     <div class="tab-final-cta-icon"><i class="bi bi-headset"></i></div>
                     <div>
-                        <h3>Bạn cần tư vấn thêm trước khi đặt tour?</h3>
-                        <p>GreenSteps có thể gợi ý lịch trình dựa trên đánh giá thật từ các gia đình đã trải nghiệm.</p>
+                        <h3>{{ detailConsultTitle }}</h3>
+                        <p>{{ activeTour.isService ? 'GreenSteps có thể hỗ trợ kiểm tra lịch phục vụ, sức chứa và thông tin đối tác dựa trên đánh giá thật.' : 'GreenSteps có thể gợi ý lịch trình dựa trên đánh giá thật từ các gia đình đã trải nghiệm.' }}</p>
                     </div>
                     <div class="tab-final-cta-actions review-cta-actions">
                         <button type="button" class="cta-secondary"><i class="bi bi-chat"></i> Liên hệ tư vấn</button>
-                        <button type="button" class="cta-primary" (click)="submitBooking($event)"><i class="bi bi-calendar2-check"></i> Đặt cọc tour ngay</button>
+                        <button type="button" class="cta-primary" (click)="submitBooking($event)"><i class="bi bi-calendar2-check"></i> {{ detailBookingLabelLower }}</button>
                     </div>
                 </div>
             </section>
@@ -692,8 +709,8 @@
             <section class="itinerary-section" *ngIf="activeInfoTab === 'overview' || activeInfoTab === 'itinerary'">
                 <div class="section-title-row">
                     <div>
-                        <span>Lịch trình</span>
-                        <h2>Chi tiết hành trình xanh</h2>
+                        <span>{{ activeTour.isService ? 'Thông tin dịch vụ' : 'Lịch trình' }}</span>
+                        <h2>{{ activeTour.isService ? 'Chi tiết dịch vụ xanh' : 'Chi tiết hành trình xanh' }}</h2>
                     </div>
 
                     <div class="day-tabs-row">
@@ -702,7 +719,7 @@
                                 class="day-tab"
                                 [class.active]="activeDayIndex === idx"
                                 (click)="setDay(idx)">
-                            Ngày {{ idx + 1 }}
+                            {{ activeTour.isService ? 'Dịch vụ' : 'Ngày ' + (idx + 1) }}
                         </button>
                     </div>
                 </div>
@@ -722,7 +739,7 @@
 
                             <div class="activity-copy">
                                 <h3>{{ act.name }}</h3>
-                                <p>Trải nghiệm nhẹ nhàng, thân thiện với gia đình và được sắp xếp để tối ưu thời gian di chuyển.</p>
+                                <p>{{ activeTour.isService ? 'Thông tin chính của dịch vụ, bao gồm chi phí, mức phát thải và các lưu ý khi đặt.' : 'Trải nghiệm nhẹ nhàng, thân thiện với gia đình và được sắp xếp để tối ưu thời gian di chuyển.' }}</p>
                                 <div class="activity-tags">
                                     <span><i class="bi bi-geo-alt"></i> Điểm đến xanh</span>
                                     <span><i class="bi bi-star-fill"></i> Nhịp độ nhẹ nhàng</span>
@@ -740,12 +757,12 @@
                 <div class="tab-final-cta itinerary-cta">
                     <div class="tab-final-cta-icon"><i class="bi bi-headset"></i></div>
                     <div>
-                        <h3>Bạn cần tư vấn thêm trước khi đặt tour?</h3>
-                        <p>Tùy chỉnh điểm đến, thời gian nghỉ và hoạt động theo nhu cầu gia đình trước khi giữ chỗ.</p>
+                        <h3>{{ detailConsultTitle }}</h3>
+                        <p>{{ activeTour.isService ? 'Bạn có thể hỏi thêm về lịch phục vụ, địa chỉ, sức chứa hoặc cách thêm dịch vụ này vào chuyến đi.' : 'Tùy chỉnh điểm đến, thời gian nghỉ và hoạt động theo nhu cầu gia đình trước khi giữ chỗ.' }}</p>
                     </div>
                     <div class="tab-final-cta-actions itinerary-cta-actions">
-                        <button type="button" class="cta-secondary" (click)="cloneAndEditTrip()"><i class="bi bi-arrow-up-right-square"></i> Tự chỉnh sửa lịch trình</button>
-                        <button type="button" class="cta-primary" (click)="submitBooking($event)"><i class="bi bi-calendar2-check"></i> Đặt cọc tour ngay</button>
+                        <button *ngIf="!activeTour.isService" type="button" class="cta-secondary" (click)="cloneAndEditTrip()"><i class="bi bi-arrow-up-right-square"></i> Tự chỉnh sửa lịch trình</button>
+                        <button type="button" class="cta-primary" (click)="submitBooking($event)"><i class="bi bi-calendar2-check"></i> {{ detailBookingLabelLower }}</button>
                     </div>
                 </div>
             </section>
@@ -757,7 +774,7 @@
             <span>Từ</span>
             <strong>{{ activeTour.cost | number:'1.0-0':'vi-VN' }}đ</strong>
         </div>
-        <button type="button" (click)="submitBooking($event)">Đặt Cọc Tour Ngay</button>
+        <button type="button" (click)="submitBooking($event)">{{ detailBookingLabel }}</button>
     </div>
     <div class="tour-photo-modal" *ngIf="isPhotoGalleryOpen" (click)="closePhotoGallery()">
         <div class="tour-photo-modal-card" (click)="$event.stopPropagation()">
