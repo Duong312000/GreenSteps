@@ -31,6 +31,7 @@ export class PartnerServicesComponent implements OnInit {
   public serviceAddress: string = '';
   public maxCapacity: number | null = null;
   public imageUrl: string = 'image/Viet Nam.png';
+  public galleryImages: string[] = [];
   public openingSchedule: string = 'Tất cả các ngày trong tuần';
   public cancellationPolicy: string = 'Hoàn trả 100% nếu hủy trước 24 giờ khởi hành.';
   public itineraryText: string = 'Tự do tham quan theo hướng dẫn của đối tác.';
@@ -263,6 +264,7 @@ export class PartnerServicesComponent implements OnInit {
     this.serviceAddress = '';
     this.maxCapacity = null;
     this.imageUrl = 'image/Viet Nam.png';
+    this.galleryImages = [];
     this.openingSchedule = 'Tất cả các ngày trong tuần';
     this.cancellationPolicy = 'Hoàn trả 100% nếu hủy trước 24 giờ khởi hành.';
     this.itineraryText = 'Tự do tham quan theo hướng dẫn của đối tác.';
@@ -290,6 +292,7 @@ export class PartnerServicesComponent implements OnInit {
       this.serviceAddress = details.current_data?.address || '';
       this.maxCapacity = details.max_capacity || null;
       this.imageUrl = details.image_url || details.current_data?.img || 'image/Viet Nam.png';
+      this.galleryImages = details.current_data?.images || details.current_data?.gallery || [];
       this.openingSchedule = details.current_data?.schedule || 'Tất cả các ngày trong tuần';
       this.cancellationPolicy = details.current_data?.policy || 'Hoàn trả 100% nếu hủy trước 24 giờ khởi hành.';
       this.itineraryText = details.current_data?.itinerary || 'Tự do tham quan theo hướng dẫn của đối tác.';
@@ -467,6 +470,8 @@ export class PartnerServicesComponent implements OnInit {
       address: this.serviceAddress,
       category: categoryMap[this.serviceType] || 'Khám phá',
       img: this.imageUrl || 'image/Viet Nam.png',
+      images: this.galleryImages,
+      gallery: this.galleryImages,
       schedule: this.openingSchedule,
       policy: this.cancellationPolicy,
       itinerary: this.itineraryText,
@@ -629,6 +634,31 @@ export class PartnerServicesComponent implements OnInit {
   public removeImage(event: Event) {
     event.stopPropagation();
     this.imageUrl = '';
+    this.cdr.detectChanges();
+  }
+
+  public onGalleryFilesSelected(event: any) {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 5 * 1024 * 1024) {
+          this.showAlert(`Ảnh "${file.name}" quá lớn! Vui lòng chọn ảnh dưới 5MB.`, 'error');
+          continue;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          this.galleryImages.push(reader.result as string);
+          this.cdr.detectChanges();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  }
+
+  public removeGalleryImage(index: number, event: Event) {
+    event.stopPropagation();
+    this.galleryImages.splice(index, 1);
     this.cdr.detectChanges();
   }
 }

@@ -116,7 +116,9 @@ export class ApiService {
                 }
               ]
             ],
-            isService: true
+            isService: true,
+            gallery: s.current_data?.images || s.current_data?.gallery || [],
+            maxCapacity: s.max_capacity || s.maxCapacity || 10
           };
           this.setCachedData(cacheKey, tour);
           return tour;

@@ -269,6 +269,16 @@ export class TourDetailComponent implements OnInit {
     return Number(this.bookingAdults) + Number(this.bookingChildren);
   }
 
+  public get adultOptions(): number[] {
+    const limit = this.activeTour?.maxCapacity || 10;
+    return Array.from({ length: limit }, (_, i) => i + 1);
+  }
+
+  public get childrenOptions(): number[] {
+    const limit = this.activeTour?.maxCapacity || 10;
+    return Array.from({ length: limit }, (_, i) => i);
+  }
+
   public get displayOldCost(): number {
     if (!this.activeTour) return 0;
     return this.activeTour.oldCost || this.activeTour.old_cost || Math.round(this.activeTour.cost * 1.12);

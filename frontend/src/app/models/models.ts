@@ -49,6 +49,7 @@ export interface Tour {
   data: Activity[][];
   isRecommended?: boolean;
   isService?: boolean;
+  maxCapacity?: number;
 }
 
 export interface Itinerary {

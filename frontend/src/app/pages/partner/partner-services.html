@@ -377,19 +377,20 @@
 
                 <!-- Hidden file input -->
                 <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)">
+                <input #galleryFileInput type="file" accept="image/*" class="hidden" multiple (change)="onGalleryFilesSelected($event)">
 
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-gray-600 block">Thư viện ảnh</label>
+                    <label class="text-xs font-bold text-gray-600 block">Thư viện ảnh (Được đăng nhiều ảnh)</label>
                     <div class="flex flex-wrap gap-3">
-                        <div (click)="fileInput.click()" class="w-20 h-20 border border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-white hover:bg-gray-50 transition-all cursor-pointer">
+                        <div (click)="galleryFileInput.click()" class="w-20 h-20 border border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-white hover:bg-gray-50 transition-all cursor-pointer">
                             <i class="bi bi-plus text-xl"></i>
                             <span class="text-[10px] font-bold">Thêm ảnh</span>
                         </div>
                         
-                        <div class="w-20 h-20 rounded-xl border border-gray-200 overflow-hidden relative" *ngIf="imageUrl">
-                            <img [src]="imageUrl" alt="Gallery item" class="w-full h-full object-cover">
+                        <div class="w-20 h-20 rounded-xl border border-gray-200 overflow-hidden relative" *ngFor="let img of galleryImages; let idx = index">
+                            <img [src]="img" alt="Gallery item" class="w-full h-full object-cover">
                             <!-- Floating remove button for gallery item -->
-                            <button type="button" (click)="removeImage($event)" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity border-none cursor-pointer text-white hover:text-rose-500" title="Gỡ ảnh">
+                            <button type="button" (click)="removeGalleryImage(idx, $event)" class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity border-none cursor-pointer text-white hover:text-rose-500" title="Gỡ ảnh">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>

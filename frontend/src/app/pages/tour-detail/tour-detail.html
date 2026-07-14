@@ -108,23 +108,21 @@
                     <label class="form-field" for="bookingAdults">
                         <span>Người lớn</span>
                         <select id="bookingAdults" [(ngModel)]="bookingAdults" name="bookingAdults">
-                            <option [ngValue]="1">1</option>
-                            <option [ngValue]="2">2</option>
-                            <option [ngValue]="3">3</option>
-                            <option [ngValue]="4">4</option>
-                            <option [ngValue]="5">5</option>
+                            <option *ngFor="let opt of adultOptions" [ngValue]="opt">{{ opt }}</option>
                         </select>
                     </label>
 
                     <label class="form-field" for="bookingChildren">
                         <span>Trẻ em</span>
                         <select id="bookingChildren" [(ngModel)]="bookingChildren" name="bookingChildren">
-                            <option [ngValue]="0">0</option>
-                            <option [ngValue]="1">1</option>
-                            <option [ngValue]="2">2</option>
-                            <option [ngValue]="3">3</option>
+                            <option *ngFor="let opt of childrenOptions" [ngValue]="opt">{{ opt }}</option>
                         </select>
                     </label>
+                </div>
+                
+                <div style="font-size: 11px; color: #047857; font-weight: 700; margin-top: -6px; margin-bottom: 12px; display: flex; align-items: center; gap: 4px;" *ngIf="activeTour.maxCapacity">
+                    <i class="bi bi-info-circle"></i>
+                    <span>Sức chứa tối đa: {{ activeTour.maxCapacity }} khách</span>
                 </div>
 
                 <button type="submit" class="primary-booking-button">
