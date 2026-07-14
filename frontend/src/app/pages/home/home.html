@@ -354,8 +354,8 @@
       flex-direction: row !important;
       overflow-x: auto !important;
       scroll-snap-type: x mandatory !important;
-      gap: 16px !important;
-      padding: 10px 16px 24px !important;
+      gap: 12px !important;
+      padding: 10px 12px 20px !important;
       width: calc(100% - 16px) !important;
       max-width: calc(100% - 16px) !important;
       margin-left: 8px !important;
@@ -370,19 +370,42 @@
       position: relative !important;
       left: auto !important;
       top: auto !important;
-      flex: 0 0 280px !important;
+      flex: 0 0 145px !important;
       scroll-snap-align: start !important;
       max-width: none !important;
       transform: none !important;
       opacity: 1 !important;
       filter: none !important;
-      box-shadow: 0 22px 55px rgba(15, 23, 42, 0.12) !important;
-      height: 280px !important;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08) !important;
+      height: 185px !important;
+      border-radius: 12px !important;
     }
     .gs-destination-card.left .gs-destination-image,
     .gs-destination-card.right .gs-destination-image,
     .gs-destination-card.center .gs-destination-image {
-      height: 280px !important;
+      height: 185px !important;
+    }
+    .gs-destination-card h3 {
+      font-size: 15px !important;
+      font-weight: 800 !important;
+    }
+    .gs-destination-card p {
+      font-size: 9px !important;
+      line-height: 1.25 !important;
+    }
+    .gs-destination-card .dest-discover-btn {
+      display: none !important;
+    }
+    .gs-destination-card .absolute.left-5.top-5 {
+      left: 8px !important;
+      top: 8px !important;
+      padding: 2px 6px !important;
+      font-size: 8px !important;
+    }
+    .gs-destination-card .absolute.inset-x-6.bottom-6 {
+      left: 12px !important;
+      right: 12px !important;
+      bottom: 12px !important;
     }
     .gs-destination-dots {
       display: none !important;
@@ -398,6 +421,13 @@
     }
     .gs-home-page .group.min-h-\[118px\] {
         min-height: auto !important;
+        padding: 8px 10px !important;
+    }
+    .gs-home-page .feature-desc {
+        display: none !important;
+    }
+    .gs-home-page .preview-day-item:nth-of-type(n+3) {
+        display: none !important;
     }
   }
 
@@ -865,7 +895,7 @@
           <div class="absolute inset-x-6 bottom-6 text-white">
             <h3 class="font-serif text-3xl font-semibold">{{ card.title }}</h3>
             <p class="mt-1 text-xs font-bold text-white/90">{{ card.subtitle }}</p>
-            <button type="button" class="mt-5 inline-flex items-center gap-2 rounded-full border border-white/50 px-4 py-2 text-xs font-bold text-white transition-all duration-300 group-hover:bg-white group-hover:text-emerald-700">
+            <button type="button" class="dest-discover-btn mt-5 inline-flex items-center gap-2 rounded-full border border-white/50 px-4 py-2 text-xs font-bold text-white transition-all duration-300 group-hover:bg-white group-hover:text-emerald-700">
               Khám phá <i class="bi bi-arrow-right"></i>
             </button>
           </div>
@@ -914,7 +944,7 @@
                   [class.text-emerald-600]="activeHighlight !== 'eco'"><i class="bi bi-house-heart"></i></span>
                 <b class="text-base">Lưu trú xanh</b>
               </span>
-              <span class="mt-3 block text-xs font-semibold leading-5" [class.text-white/80]="activeHighlight === 'eco'" [class.text-slate-500]="activeHighlight !== 'eco'">Homestay, eco-stay và dịch vụ giảm nhựa dùng một lần.</span>
+              <span class="feature-desc mt-3 block text-xs font-semibold leading-5" [class.text-white/80]="activeHighlight === 'eco'" [class.text-slate-500]="activeHighlight !== 'eco'">Homestay, eco-stay và dịch vụ giảm nhựa dùng một lần.</span>
             </button>
 
             <button type="button" (click)="selectHighlight('guides')" class="group min-h-[118px] rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
@@ -932,7 +962,7 @@
                   [class.text-emerald-600]="activeHighlight !== 'guides'"><i class="bi bi-people-fill"></i></span>
                 <b class="text-base">Bản địa hóa</b>
               </span>
-              <span class="mt-3 block text-xs font-semibold leading-5" [class.text-white/80]="activeHighlight === 'guides'" [class.text-slate-500]="activeHighlight !== 'guides'">Kết nối hướng dẫn viên địa phương và trải nghiệm văn hóa thật.</span>
+              <span class="feature-desc mt-3 block text-xs font-semibold leading-5" [class.text-white/80]="activeHighlight === 'guides'" [class.text-slate-500]="activeHighlight !== 'guides'">Kết nối hướng dẫn viên địa phương và trải nghiệm văn hóa thật.</span>
             </button>
 
             <button type="button" (click)="selectHighlight('dates')" class="group rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
@@ -944,10 +974,10 @@
               [class.bg-white]="activeHighlight !== 'dates'">
               <span class="flex items-center gap-3">
                 <span class="grid h-10 w-10 place-items-center rounded-full text-base"
-                  [class.bg-white]="activeHighlight === 'dates'"
-                  [class.text-emerald-700]="activeHighlight === 'dates'"
-                  [class.bg-emerald-50]="activeHighlight !== 'dates'"
-                  [class.text-emerald-600]="activeHighlight !== 'dates'"><i class="bi bi-calendar3"></i></span>
+                   [class.bg-white]="activeHighlight === 'dates'"
+                   [class.text-emerald-700]="activeHighlight === 'dates'"
+                   [class.bg-emerald-50]="activeHighlight !== 'dates'"
+                   [class.text-emerald-600]="activeHighlight !== 'dates'"><i class="bi bi-calendar3"></i></span>
                 <b class="text-sm">Ngày đi linh hoạt</b>
               </span>
             </button>
@@ -961,10 +991,10 @@
               [class.bg-white]="activeHighlight !== 'ai'">
               <span class="flex items-center gap-3">
                 <span class="grid h-10 w-10 place-items-center rounded-full text-base"
-                  [class.bg-white]="activeHighlight === 'ai'"
-                  [class.text-emerald-700]="activeHighlight === 'ai'"
-                  [class.bg-emerald-50]="activeHighlight !== 'ai'"
-                  [class.text-emerald-600]="activeHighlight !== 'ai'"><i class="bi bi-stars"></i></span>
+                   [class.bg-white]="activeHighlight === 'ai'"
+                   [class.text-emerald-700]="activeHighlight === 'ai'"
+                   [class.bg-emerald-50]="activeHighlight !== 'ai'"
+                   [class.text-emerald-600]="activeHighlight !== 'ai'"><i class="bi bi-stars"></i></span>
                 <b class="text-sm">Lịch trình AI</b>
               </span>
             </button>
@@ -983,7 +1013,7 @@
           </div>
 
           <div class="mt-4 space-y-2.5">
-            <div *ngFor="let day of currentPreview.days | slice:0:4" class="grid grid-cols-[54px_1fr_62px] items-center gap-3 rounded-2xl bg-white/8 p-2.5 ring-1 ring-white/10">
+            <div *ngFor="let day of currentPreview.days | slice:0:4" class="preview-day-item grid grid-cols-[54px_1fr_62px] items-center gap-3 rounded-2xl bg-white/8 p-2.5 ring-1 ring-white/10">
               <span class="rounded-full bg-emerald-300/18 px-2 py-1.5 text-center text-[10px] font-black text-emerald-100">{{ day.label }}</span>
               <p class="min-w-0 text-[11px] leading-relaxed text-white/65"><b class="block truncate text-xs font-extrabold text-white">{{ day.title }}</b>{{ day.desc }}</p>
               <img [src]="day.img" class="h-12 w-[62px] rounded-xl object-cover shadow-sm" [alt]="day.title">
