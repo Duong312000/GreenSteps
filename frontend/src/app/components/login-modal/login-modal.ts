@@ -29,9 +29,7 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
   public errorMessage = '';
   public successMessage = '';
   
-  public showGoogleSimModal = false;
-  public googleSimEmail = '';
-  public googleSimName = '';
+  public showDevMessage = false;
 
   public loginUsername = '';
   public loginPassword = '';
@@ -352,10 +350,10 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
       if (clientId && clientId !== 'YOUR_GOOGLE_CLIENT_ID') {
         this.openRealGoogleLogin(clientId);
       } else {
-        alert('Vui lòng mở file index.html và cấu hình mã GOOGLE_CLIENT_ID của bạn để thực hiện liên kết và hiển thị tài khoản Google thực tế!');
+        this.showDevMessage = true;
       }
     } else {
-      alert(`GreenSteps đang tích hợp đăng nhập ${provider}. Vui lòng sử dụng email và mật khẩu.`);
+      this.showDevMessage = true;
     }
   }
 
@@ -418,13 +416,6 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  public async onGoogleCustomSubmit() {
-    if (!this.googleSimEmail) {
-      this.errorMessage = 'Vui lòng nhập địa chỉ email.';
-      return;
-    }
-    await this.submitGoogleSim(this.googleSimEmail, this.googleSimName || this.googleSimEmail.split('@')[0]);
-  }
 
   private setError(message: string) {
     this.errorMessage = message;

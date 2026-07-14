@@ -253,5 +253,14 @@
     </button>
   </p>
 </ng-template>
-
-
+<!-- DEVELOPING FEATURE NOTIFICATION MODAL -->
+<div *ngIf="showDevMessage" class="dev-modal-overlay" (click)="showDevMessage = false">
+  <div class="dev-modal" (click)="$event.stopPropagation()">
+    <div class="dev-modal__icon">
+      <i class="bi bi-cone-striped"></i>
+    </div>
+    <h3>Tính năng đang phát triển</h3>
+    <p>GreenSteps đang hoàn thiện phương thức đăng nhập này. Vui lòng sử dụng tài khoản và mật khẩu thông thường!</p>
+    <button type="button" class="dev-modal__btn" (click)="showDevMessage = false">Đã hiểu</button>
+  </div>
+</div>
