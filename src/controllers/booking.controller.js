@@ -117,6 +117,24 @@ exports.createBooking = async (req, res, next) => {
         };
       }
     }
+
+    if (userId) {
+      const user = await User.findByPk(userId);
+      if (user) {
+        let updated = false;
+        if (!user.fullname || user.fullname.trim() === '' || user.fullname === 'Khách hàng' || user.fullname === 'Khách hàng phục hồi') {
+          user.fullname = fullname;
+          updated = true;
+        }
+        if ((!user.phone || user.phone.trim() === '') && customerPhone) {
+          user.phone = customerPhone;
+          updated = true;
+        }
+        if (updated) {
+          await user.save();
+        }
+      }
+    }
     let bookingId;
     let totalValue = 0;
     let tourNameOrServiceName = '';

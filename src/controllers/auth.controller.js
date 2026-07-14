@@ -170,7 +170,7 @@ exports.verifyRegisterOtp = async (req, res, next) => {
         username: pending.username,
         password_hash: pending.password_hash,
         email: pending.email,
-        fullname: null,
+        fullname: pending.username,
         phone: null,
         dob: null,
         gender: 'Khác',
