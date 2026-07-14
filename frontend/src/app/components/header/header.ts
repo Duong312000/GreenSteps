@@ -210,7 +210,6 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isMobileMenuOpen = false;
     this.loginModalMode = mode;
     this.isLoginModalOpen = true;
-    this.router.navigate(['/home']);
   }
 
   public closeLoginModal() {
