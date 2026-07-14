@@ -755,7 +755,7 @@ export class ProfileComponent implements OnInit {
 
           const croppedBase64 = canvas.toDataURL('image/jpeg', 0.9);
           
-          const uploadRes = await this.apiService.uploadImageBase64(croppedBase64);
+          const uploadRes = await this.apiService.uploadImageBase64(croppedBase64, 'avatar');
           if (uploadRes && uploadRes.success) {
             resolve(uploadRes.url);
           } else {

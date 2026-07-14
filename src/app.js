@@ -43,12 +43,49 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.post('/api/upload-base64', (req, res) => {
   try {
-    const { base64 } = req.body;
+    const { base64, type } = req.body;
     if (!base64) {
       return res.status(400).json({ success: false, message: 'No base64 data provided' });
     }
-    // Return the base64 data URL directly so it will be saved in the database
-    res.json({ success: true, url: base64 });
+
+    // If it's already a URL, return it directly
+    if (base64.startsWith('http') || base64.startsWith('/uploads')) {
+      return res.json({ success: true, url: base64 });
+    }
+
+    // Parse base64
+    const matches = base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) {
+      // If it is not a valid data URI, return base64 string directly as fallback
+      return res.json({ success: true, url: base64 });
+    }
+
+    const mimeType = matches[1];
+    const buffer = Buffer.from(matches[2], 'base64');
+    
+    // Deduce file extension
+    let ext = 'png';
+    if (mimeType.includes('jpeg') || mimeType.includes('jpg')) ext = 'jpg';
+    else if (mimeType.includes('gif')) ext = 'gif';
+    else if (mimeType.includes('webp')) ext = 'webp';
+
+    // Determine subfolder based on type
+    let subfolder = 'posts';
+    if (type === 'avatar') subfolder = 'avatars';
+    else if (type === 'service') subfolder = 'services';
+    else if (type === 'post') subfolder = 'posts';
+    
+    const dirPath = path.join(__dirname, '../uploads', subfolder);
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
+
+    const filename = `image_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+    const filePath = path.join(dirPath, filename);
+    fs.writeFileSync(filePath, buffer);
+
+    const relativeUrl = `/uploads/${subfolder}/${filename}`;
+    res.json({ success: true, url: relativeUrl });
   } catch (err) {
     console.error('Base64 upload failed:', err);
     res.status(500).json({ success: false, message: 'Upload failed: ' + err.message });

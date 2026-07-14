@@ -355,7 +355,7 @@ exports.updateProfile = async (req, res, next) => {
       let vender = await Vender.findOne({ where: { user_id: userId } });
       if (!vender) {
         vender = await Vender.create({
-          id: 'vender_' + Date.now().toString().slice(-6),
+          id: `provider_${userId}`,
           user_id: userId,
           registration_date: new Date()
         });

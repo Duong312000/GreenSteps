@@ -2456,7 +2456,7 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     reader.onload = async () => {
       const base64Data = reader.result as string;
       try {
-        const uploadRes = await this.apiService.uploadImageBase64(base64Data);
+        const uploadRes = await this.apiService.uploadImageBase64(base64Data, 'post');
         if (uploadRes && uploadRes.success && uploadRes.url) {
           this.activeItinerary.imageUrl = uploadRes.url;
           await this.saveItineraryToDb();

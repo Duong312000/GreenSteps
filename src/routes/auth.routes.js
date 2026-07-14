@@ -39,7 +39,7 @@ router.post('/role/:userId', async (req, res) => {
       const existingVender = await Vender.findOne({ where: { user_id: userId } });
       if (!existingVender) {
         await Vender.create({
-          id: 'vender_' + Date.now().toString().slice(-6),
+          id: `provider_${userId}`,
           user_id: userId,
           registration_date: new Date()
         });

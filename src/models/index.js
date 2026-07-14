@@ -87,8 +87,10 @@ const WalletTransaction = sequelize.define('WalletTransaction', {
 // 6. Vender Model
 const Vender = sequelize.define('Vender', {
   id: { type: DataTypes.STRING, primaryKey: true },
+  role: { type: DataTypes.ENUM('provider'), defaultValue: 'provider', allowNull: false },
   registration_date: { type: DataTypes.DATEONLY, defaultValue: DataTypes.NOW }
-}, { timestamps: true });
+}, { tableName: 'Venders', timestamps: true });
+
 
 // 7. VenderContract Model
 const VenderContract = sequelize.define('VenderContract', {
@@ -251,11 +253,44 @@ const ScheduleActivity = sequelize.define('ScheduleActivity', {
   activity_name: { type: DataTypes.STRING, allowNull: false },
   activity_cost: { type: DataTypes.DOUBLE, defaultValue: 0.0 },
   carbon: { type: DataTypes.DOUBLE, defaultValue: 0.0 },
-  icon: { type: DataTypes.STRING },
-  type: { type: DataTypes.STRING },
   coordinates: { type: DataTypes.STRING }, // "lat, lng"
-  is_shared: { type: DataTypes.BOOLEAN, defaultValue: false }
-}, { timestamps: true });
+  cost: {
+    type: DataTypes.VIRTUAL,
+    get() {
+      return this.getDataValue('activity_cost');
+    }
+  },
+  type: {
+    type: DataTypes.VIRTUAL,
+    get() {
+      if (this.GreenService) {
+        const sType = this.GreenService.type;
+        return sType === 'stay' ? 'lodging' : sType === 'food' ? 'dining' : sType;
+      }
+      return 'attraction';
+    }
+  },
+  icon: {
+    type: DataTypes.VIRTUAL,
+    get() {
+      if (this.GreenService) {
+        const sType = this.GreenService.type;
+        return sType === 'stay' || sType === 'lodging' ? 'bi-house-door-fill' : (sType === 'dining' || sType === 'food' ? 'bi-cup-hot-fill' : 'bi-tree-fill');
+      }
+      return 'bi-tree-fill';
+    }
+  },
+  is_shared: {
+    type: DataTypes.VIRTUAL,
+    get() {
+      if (this.GreenService) {
+        const sType = this.GreenService.type;
+        return (sType === 'stay' || sType === 'lodging' || sType === 'transport');
+      }
+      return false;
+    }
+  }
+}, { tableName: 'ScheduleActivities', timestamps: true });
 
 // 22. AdCampaign Model (DATE start_date, end_date)
 const AdCampaign = sequelize.define('AdCampaign', {
@@ -563,6 +598,11 @@ CommentPost.addHook('afterDestroy', async (comment, options) => {
     await updateTargetRating(comment.service_id, 'service', comment.sequelize);
   }
 });
+
+// Default scope to eager load GreenService for dynamic virtual field evaluation
+ScheduleActivity.addScope('defaultScope', {
+  include: [{ model: GreenService, required: false }]
+}, { override: true });
 
 module.exports = {
   sequelize,

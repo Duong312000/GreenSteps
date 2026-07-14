@@ -1,4 +1,4 @@
-const { sequelize } = require('./src/models/index');
+const { sequelize } = require('../src/models/index');
 
 async function sync() {
   try {

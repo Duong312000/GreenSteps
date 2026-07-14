@@ -317,7 +317,7 @@ export class CommunityComponent implements OnInit {
       this.isUploading = true;
       this.cdr.detectChanges();
 
-      const res = await this.apiService.uploadImageBase64(base64);
+      const res = await this.apiService.uploadImageBase64(base64, 'post');
       this.isUploading = false;
       if (res && res.success) {
         this.postImage = res.url;
@@ -626,7 +626,7 @@ export class CommunityComponent implements OnInit {
       this.cdr.detectChanges();
 
       try {
-        const res = await this.apiService.uploadImageBase64(base64);
+        const res = await this.apiService.uploadImageBase64(base64, 'post');
         this.isCommentUploading[postId] = false;
         if (res && res.success) {
           this.commentImageDrafts[postId] = res.url;

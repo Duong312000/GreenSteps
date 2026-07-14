@@ -326,21 +326,31 @@ exports.saveCustomItinerary = async (req, res, next) => {
       // Save new activities
       const activitiesToSave = [];
       if (daysData && daysData.length > 0) {
+        // Query green services at this destination to auto-link service_id by name if not provided
+        const { GreenService } = require('../models/index');
+        const services = await GreenService.findAll({ where: { destination: base.destination } });
+        const serviceMap = {};
+        services.forEach(s => {
+          serviceMap[s.name_service.toLowerCase().trim()] = s.id;
+        });
+
         daysData.forEach((day, dIdx) => {
           day.forEach((act, aIdx) => {
             const actId = `act_${id}_${dIdx + 1}_${aIdx + 1}_${Math.random().toString(36).substring(2, 7)}`;
+            const actName = act.name || act.title || '[Địa điểm tự do]';
+            const nameKey = actName.toLowerCase().trim();
+            const serviceId = act.service_id || act.serviceId || serviceMap[nameKey] || null;
+
             activitiesToSave.push({
               id: actId,
               schedule_id: id,
               day_number: dIdx + 1,
               time: act.time || '08:00',
-              activity_name: act.name || act.title || '[Địa điểm tự do]',
+              activity_name: actName,
               activity_cost: act.cost || 0,
               carbon: act.carbon || 0,
-              icon: act.icon || 'bi-tree-fill',
-              type: act.type || 'attraction',
-              is_shared: act.is_shared === true || act.isShared === true,
-              coordinates: act.lat && act.lng ? `${act.lat}, ${act.lng}` : null
+              coordinates: act.lat && act.lng ? `${act.lat}, ${act.lng}` : null,
+              service_id: serviceId
             });
           });
         });
@@ -672,10 +682,8 @@ exports.cloneItinerary = async (req, res, next) => {
           activity_name: act.activity_name,
           activity_cost: act.activity_cost,
           carbon: act.carbon,
-          icon: act.icon,
-          type: act.type,
-          is_shared: act.is_shared,
-          coordinates: act.coordinates
+          coordinates: act.coordinates,
+          service_id: act.service_id
         };
       });
 

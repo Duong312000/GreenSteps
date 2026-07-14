@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const { Op } = require('sequelize');
 const { 
   sequelize, 
@@ -10,6 +12,32 @@ const {
   CommentPost, 
   CPGS 
 } = require('../models/index');
+
+function saveBase64Image(base64Data, subfolder = 'services') {
+  if (!base64Data || typeof base64Data !== 'string') return base64Data;
+  if (!base64Data.startsWith('data:image')) return base64Data;
+
+  const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+  if (!matches || matches.length !== 3) return base64Data;
+
+  const mimeType = matches[1];
+  const buffer = Buffer.from(matches[2], 'base64');
+  let ext = 'png';
+  if (mimeType.includes('jpeg') || mimeType.includes('jpg')) ext = 'jpg';
+  else if (mimeType.includes('gif')) ext = 'gif';
+  else if (mimeType.includes('webp')) ext = 'webp';
+
+  const dirPath = path.join(__dirname, '../../uploads', subfolder);
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+
+  const filename = `image_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+  const filePath = path.join(dirPath, filename);
+  fs.writeFileSync(filePath, buffer);
+
+  return `/uploads/${subfolder}/${filename}`;
+}
 
 // 1. Get All Green Services (with optional destination filter — Eager Loading)
 exports.getServices = async (req, res, next) => {
@@ -97,24 +125,35 @@ exports.addService = async (req, res, next) => {
     let vender = await Vender.findOne({ where: { user_id: providerId } });
     if (!vender) {
       vender = await Vender.create({
-        id: 'vender_' + Date.now().toString().slice(-6),
+        id: `provider_${providerId}`,
         user_id: providerId,
         registration_date: new Date()
       });
     }
 
     const serviceId = 'ser_' + Date.now();
-    const resolvedCurrentData = current_data || {
+    
+    // Save main cover image if base64
+    const savedImageUrl = saveBase64Image(imageUrl, 'services');
+    
+    const resolvedCurrentData = current_data ? { ...current_data } : {
       lat: lat ? parseFloat(lat) : null,
       lng: lng ? parseFloat(lng) : null,
       address: address || null,
       category: category || (type === 'food' ? 'Ăn uống' : type === 'stay' ? 'Lưu trú' : 'Khám phá'),
-      img: imageUrl || 'image/Viet Nam.png'
+      img: savedImageUrl || 'image/Viet Nam.png'
     };
 
-    // Ensure image in current_data is aligned
-    if (imageUrl) {
-      resolvedCurrentData.img = imageUrl;
+    // Keep current_data image aligned and save gallery images if base64
+    resolvedCurrentData.img = savedImageUrl || resolvedCurrentData.img;
+    if (resolvedCurrentData.img) {
+      resolvedCurrentData.img = saveBase64Image(resolvedCurrentData.img, 'services');
+    }
+    if (resolvedCurrentData.images && Array.isArray(resolvedCurrentData.images)) {
+      resolvedCurrentData.images = resolvedCurrentData.images.map(img => saveBase64Image(img, 'services'));
+    }
+    if (resolvedCurrentData.gallery && Array.isArray(resolvedCurrentData.gallery)) {
+      resolvedCurrentData.gallery = resolvedCurrentData.gallery.map(img => saveBase64Image(img, 'services'));
     }
 
     const service = await GreenService.create({
@@ -125,7 +164,7 @@ exports.addService = async (req, res, next) => {
       cost: cost,
       destination: destination,
       carbon: carbon || 0.5,
-      image_url: imageUrl || 'image/Viet Nam.png',
+      image_url: savedImageUrl || 'image/Viet Nam.png',
       rating: 5.0,
       bookings_count: 0,
       current_data: resolvedCurrentData,
@@ -313,24 +352,35 @@ exports.updateService = async (req, res, next) => {
     if (status !== undefined) service.status = status;
     if (maxCapacity !== undefined) service.max_capacity = Number(maxCapacity);
     if (req.body.max_capacity !== undefined) service.max_capacity = Number(req.body.max_capacity);
-    if (imageUrl !== undefined) service.image_url = imageUrl;
+    const savedImageUrl = imageUrl !== undefined ? saveBase64Image(imageUrl, 'services') : undefined;
+    if (savedImageUrl !== undefined) service.image_url = savedImageUrl;
 
     const currentData = service.current_data || {};
     if (lat !== undefined) currentData.lat = lat ? parseFloat(lat) : null;
     if (lng !== undefined) currentData.lng = lng ? parseFloat(lng) : null;
     if (address !== undefined) currentData.address = address;
     if (category !== undefined) currentData.category = category;
-    if (imageUrl !== undefined) currentData.img = imageUrl;
+    if (savedImageUrl !== undefined) currentData.img = savedImageUrl;
 
     if (current_data !== undefined) {
-      service.current_data = { ...currentData, ...current_data };
+      const resolvedCurrentData = { ...current_data };
+      if (resolvedCurrentData.img) {
+        resolvedCurrentData.img = saveBase64Image(resolvedCurrentData.img, 'services');
+      }
+      if (resolvedCurrentData.images && Array.isArray(resolvedCurrentData.images)) {
+        resolvedCurrentData.images = resolvedCurrentData.images.map(img => saveBase64Image(img, 'services'));
+      }
+      if (resolvedCurrentData.gallery && Array.isArray(resolvedCurrentData.gallery)) {
+        resolvedCurrentData.gallery = resolvedCurrentData.gallery.map(img => saveBase64Image(img, 'services'));
+      }
+      service.current_data = { ...currentData, ...resolvedCurrentData };
     } else {
       service.current_data = { ...currentData };
     }
     
     // Ensure image in current_data is aligned
-    if (imageUrl) {
-      service.current_data.img = imageUrl;
+    if (savedImageUrl) {
+      service.current_data.img = savedImageUrl;
     }
     
     service.changed('current_data', true);

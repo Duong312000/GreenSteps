@@ -29,7 +29,7 @@ const {
   CPGS,
   Voucher,
   FAQ
-} = require('./src/models/index');
+} = require('../src/models/index');
 
 async function seed() {
   try {

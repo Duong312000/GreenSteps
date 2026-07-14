@@ -834,10 +834,10 @@ export class ApiService {
     }
   }
 
-  public async uploadImageBase64(base64Data: string): Promise<{ success: boolean; url: string }> {
+  public async uploadImageBase64(base64Data: string, type?: string): Promise<{ success: boolean; url: string }> {
     try {
       return await firstValueFrom(
-        this.http.post<any>(`${this.BACKEND_URL}/upload-base64`, { base64: base64Data })
+        this.http.post<any>(`${this.BACKEND_URL}/upload-base64`, { base64: base64Data, type })
       );
     } catch (e) {
       return { success: false, url: '' };

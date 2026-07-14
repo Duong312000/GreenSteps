@@ -17,7 +17,7 @@ exports.registerProvider = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
     // 1. Create Vendor & Provider entries in pending state
-    const venderId = 'vender_' + Date.now().toString().slice(-6);
+    const venderId = `provider_${userId}`;
     await Vender.create({
       id: venderId,
       user_id: userId,
