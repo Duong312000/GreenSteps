@@ -103,6 +103,14 @@
           <div class="check-row">
             <label><input type="checkbox" name="receiveEmailConfirm" [(ngModel)]="guestInfo.receiveEmailConfirm"> Có, tôi muốn xác nhận điện tử miễn phí (được đề xuất)</label>
           </div>
+
+          <!-- Checkbox to quickly Register/Login via Gmail OTP -->
+          <div class="check-row" *ngIf="!currentUser" style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+            <label style="display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: #047857; cursor: pointer; user-select: none;">
+              <input type="checkbox" name="loginWithGmail" [(ngModel)]="loginWithGmail" style="width: 18px; height: 18px; accent-color: #10B981; cursor: pointer;">
+              Đăng ký/Đăng nhập nhanh bằng Gmail này để theo dõi chuyến đi
+            </label>
+          </div>
         </section>
 
         <section class="booking-section">
@@ -534,6 +542,71 @@
         <button class="btn-alert-ok" (click)="closeAlert()">Đóng</button>
         <button class="btn-alert-action" *ngIf="alertActionUrl" (click)="triggerAlertAction()">{{ alertActionUrl === '/booking/confirm' ? 'Xác nhận' : 'Trang cá nhân' }}</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Checkout OTP Verification Modal -->
+  <div class="custom-alert-overlay" *ngIf="showCheckoutOtpModal" style="z-index: 9999; display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
+    <div style="background: white; border-radius: 16px; padding: 28px 24px; max-width: 420px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); text-align: center; box-sizing: border-box; animation: scaleIn 0.3s ease;">
+      
+      <div style="width: 56px; height: 56px; border-radius: 50%; background-color: #ECFDF5; color: #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 16px;">
+        <i class="bi bi-envelope-check-fill"></i>
+      </div>
+      
+      <h3 style="margin: 0 0 8px; font-size: 1.25rem; font-weight: 800; color: #111827;">Nhập mã xác thực</h3>
+      <p style="margin: 0 0 20px; font-size: 0.85rem; color: #4B5563; line-height: 1.4;">
+        Mã xác thực đăng nhập đã được gửi tới email <strong style="color: #111827;">{{ guestInfo.email }}</strong>. Vui lòng nhập mã để hoàn tất đăng nhập nhanh.
+      </p>
+
+      <!-- OTP Inputs Row -->
+      <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 16px;">
+        <input
+          class="checkout-otp-input"
+          *ngFor="let digit of checkoutOtpDigits; let idx = index"
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          maxlength="1"
+          [value]="digit"
+          (input)="onCheckoutOtpInput($event, idx)"
+          (keydown)="onCheckoutOtpKeydown($event, idx)"
+          (paste)="onCheckoutOtpPaste($event)"
+          style="width: 42px; height: 48px; border: 1.5px solid #D1D5DB; border-radius: 8px; text-align: center; font-size: 1.25rem; font-weight: 700; color: #111827; outline: none; transition: all 0.2s; box-sizing: border-box;"
+          onfocus="this.style.borderColor='#10B981'; this.style.boxShadow='0 0 0 2px rgba(16,185,129,0.2)';"
+          onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none';">
+      </div>
+
+      <div *ngIf="checkoutOtpErrorMessage" style="color: #DC2626; font-size: 0.8rem; font-weight: 600; margin-bottom: 12px; animation: fadeIn 0.2s ease;">
+        <i class="bi bi-exclamation-circle-fill"></i> {{ checkoutOtpErrorMessage }}
+      </div>
+
+      <!-- Resend Block -->
+      <div style="margin-bottom: 20px;">
+        <span style="font-size: 0.825rem; color: #6B7280;">Bạn chưa nhận được mã? </span>
+        <button type="button" (click)="resendCheckoutOtp()" [disabled]="checkoutOtpResendSeconds > 0 || isCheckoutOtpSubmitting"
+                style="background: none; border: none; padding: 0; font-size: 0.825rem; font-weight: 700; color: #10B981; cursor: pointer; text-decoration: underline; transition: color 0.2s;"
+                [style.opacity]="checkoutOtpResendSeconds > 0 ? 0.5 : 1"
+                [style.cursor]="checkoutOtpResendSeconds > 0 ? 'not-allowed' : 'pointer'">
+          {{ checkoutOtpResendSeconds > 0 ? ('Gửi lại sau ' + checkoutOtpResendSeconds + 's') : 'Gửi lại ngay' }}
+        </button>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button type="button" (click)="showCheckoutOtpModal = false"
+                style="flex: 1; height: 42px; background: white; border: 1.5px solid #D1D5DB; border-radius: 10px; color: #4B5563; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+                onmouseover="this.style.background='#F9FAFB'"
+                onmouseout="this.style.background='white'">
+          Hủy bỏ
+        </button>
+        <button type="button" (click)="submitCheckoutOtpVerify()" [disabled]="isCheckoutOtpSubmitting"
+                style="flex: 1.5; height: 42px; background: #10B981; border: none; border-radius: 10px; color: white; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;"
+                onmouseover="this.style.background='#059669'"
+                onmouseout="this.style.background='#10B981'">
+          <span>{{ isCheckoutOtpSubmitting ? 'Đang xác thực...' : 'Xác nhận' }}</span>
+          <i class="bi bi-shield-check" style="font-size: 1.05rem;" *ngIf="!isCheckoutOtpSubmitting"></i>
+        </button>
+      </div>
+
     </div>
   </div>
 </main>

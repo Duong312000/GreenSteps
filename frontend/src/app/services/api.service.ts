@@ -1164,4 +1164,24 @@ export class ApiService {
       return false;
     }
   }
+
+  public async requestCheckoutOtp(email: string, fullname: string): Promise<{ success: boolean; message: string; exists?: boolean }> {
+    try {
+      return await firstValueFrom(
+        this.http.post<any>(`${this.BACKEND_URL}/auth/request-checkout-otp`, { email, fullname }, { withCredentials: true })
+      );
+    } catch (e: any) {
+      return { success: false, message: e?.error?.message || 'Không thể gửi mã xác thực.' };
+    }
+  }
+
+  public async verifyCheckoutOtp(email: string, otp: string, fullname: string, phone: string): Promise<{ success: boolean; message: string; token?: string; user?: any }> {
+    try {
+      return await firstValueFrom(
+        this.http.post<any>(`${this.BACKEND_URL}/auth/verify-checkout-otp`, { email, otp, fullname, phone }, { withCredentials: true })
+      );
+    } catch (e: any) {
+      return { success: false, message: e?.error?.message || 'Xác thực mã OTP thất bại.' };
+    }
+  }
 }

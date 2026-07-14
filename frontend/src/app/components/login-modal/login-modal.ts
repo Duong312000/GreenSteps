@@ -28,6 +28,10 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
   public isSubmitting = false;
   public errorMessage = '';
   public successMessage = '';
+  
+  public showGoogleSimModal = false;
+  public googleSimEmail = '';
+  public googleSimName = '';
 
   public loginUsername = '';
   public loginPassword = '';
@@ -339,7 +343,33 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public alertSocial(provider: string) {
-    alert(`GreenSteps đang tích hợp đăng nhập ${provider}. Vui lòng sử dụng email và mật khẩu.`);
+    if (provider === 'Google') {
+      this.showGoogleSimModal = true;
+    } else {
+      alert(`GreenSteps đang tích hợp đăng nhập ${provider}. Vui lòng sử dụng email và mật khẩu.`);
+    }
+  }
+
+  public async submitGoogleSim(email: string, fullname: string) {
+    this.errorMessage = '';
+    this.isSubmitting = true;
+    const res = await this.authService.googleLogin(email, fullname);
+    this.isSubmitting = false;
+    if (res.success && res.user) {
+      this.showGoogleSimModal = false;
+      this.requestClose();
+      this.router.navigate([res.user.role === 'admin' ? '/admin' : '/']);
+    } else {
+      this.errorMessage = res.message || 'Đăng nhập Google thất bại.';
+    }
+  }
+
+  public async onGoogleCustomSubmit() {
+    if (!this.googleSimEmail) {
+      this.errorMessage = 'Vui lòng nhập địa chỉ email.';
+      return;
+    }
+    await this.submitGoogleSim(this.googleSimEmail, this.googleSimName || this.googleSimEmail.split('@')[0]);
   }
 
   private setError(message: string) {

@@ -110,6 +110,23 @@ export class AuthService {
     }
   }
 
+  public async googleLogin(email: string, fullname: string): Promise<AuthResult> {
+    try {
+      const res = await firstValueFrom(
+        this.http.post<any>(`${this.BACKEND_URL}/google-login`, { email, fullname }, { withCredentials: true })
+      );
+      if (res?.success && res.user) {
+        if (res.token) localStorage.setItem('greensteps_token', res.token);
+        const user = this.mapUser(res.user);
+        this.setCurrentUser(user);
+        return { success: true, user, token: res.token, message: res.message };
+      }
+      return { success: false, message: res?.message || 'Đăng nhập Google thất bại.' };
+    } catch (err: any) {
+      return { success: false, message: err?.error?.message || 'Đăng nhập Google thất bại.' };
+    }
+  }
+
   public loginWithToken(rawUser: any, token: string) {
     if (token) localStorage.setItem('greensteps_token', token);
     const user = this.mapUser(rawUser);

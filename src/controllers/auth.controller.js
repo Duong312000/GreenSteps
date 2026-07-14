@@ -458,3 +458,254 @@ exports.logout = (req, res, next) => {
     next(error);
   }
 };
+
+exports.googleLogin = async (req, res, next) => {
+  try {
+    const { email, fullname } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email không được để trống.' });
+    }
+    const normalizedEmail = normalizeEmail(email);
+    let user = await User.findOne({ where: { email: normalizedEmail } });
+    if (!user) {
+      // Auto create new user
+      const newUserId = createUserId();
+      const generatedUsername = (fullname || email.split('@')[0])
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd').replace(/Đ/g, 'd')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
+
+      let finalUsername = generatedUsername || 'google_user';
+      let count = 1;
+      while (await User.findOne({ where: { username: finalUsername } })) {
+        finalUsername = (generatedUsername || 'google_user') + count;
+        count++;
+      }
+
+      const defaultPassword = finalUsername + '123';
+      const passwordHash = await bcrypt.hash(defaultPassword, 10);
+
+      user = await User.create({
+        id: newUserId,
+        role: 'traveler',
+        username: finalUsername,
+        password_hash: passwordHash,
+        email: normalizedEmail,
+        fullname: fullname || email.split('@')[0],
+        gender: 'Khác',
+        address: '',
+        job: '',
+        is_verified: true
+      });
+    }
+
+    const token = signAuthToken(user);
+    setAuthCookie(res, token);
+
+    res.json({
+      success: true,
+      message: 'Đăng nhập Google thành công!',
+      token,
+      user: publicUser(user)
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.requestCheckoutOtp = async (req, res, next) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const fullname = req.body.fullname || 'Khách hàng';
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email không được để trống.' });
+    }
+
+    // Check if user exists
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      // 1. Existing user: Send a login/auth OTP using AuthOtp
+      const latest = await AuthOtp.findOne({
+        where: { user_id: existingUser.id, purpose: 'RESET_PASSWORD', consumed_at: null },
+        order: [['created_at', 'DESC']]
+      });
+
+      if (latest && latest.resend_available_at && latest.resend_available_at > new Date()) {
+        const retryAfterSeconds = Math.ceil((latest.resend_available_at.getTime() - Date.now()) / 1000);
+        return res.status(429).json({ success: false, message: 'Vui lòng chờ trước khi gửi lại mã.', retryAfterSeconds });
+      }
+
+      await AuthOtp.update(
+        { consumed_at: new Date() },
+        { where: { user_id: existingUser.id, purpose: 'RESET_PASSWORD', consumed_at: null } }
+      );
+
+      const crypto = require('crypto');
+      const otp = crypto.randomInt(0, 1000000).toString().padStart(6, '0');
+      const otpHash = crypto.createHmac('sha256', JWT_SECRET).update(otp).digest('hex');
+      const hashFormat = `sha256:${otpHash}`;
+
+      await AuthOtp.create({
+        user_id: existingUser.id,
+        purpose: 'RESET_PASSWORD',
+        otp_hash: hashFormat,
+        expires_at: new Date(Date.now() + 5 * 60 * 1000),
+        resend_available_at: new Date(Date.now() + 60 * 1000)
+      });
+
+      console.log(`\n==================================================`);
+      console.log(`[OTP LOG] Đăng nhập Checkout: ${email}`);
+      console.log(`MÃ OTP: ${otp}`);
+      console.log(`==================================================\n`);
+
+      const { sendOtpEmail } = require('../services/email.service');
+      await sendOtpEmail({ to: email, otp, purpose: 'RESET_PASSWORD' }).catch(err => console.error(err));
+
+      return res.json({ success: true, message: 'Mã xác thực đăng nhập đã được gửi tới email của bạn.', exists: true });
+    } else {
+      // 2. New user: Send registration OTP using PendingRegistration
+      const generatedUsername = fullname
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd').replace(/Đ/g, 'd')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
+
+      let finalUsername = generatedUsername || 'traveler';
+      let count = 1;
+      while (await User.findOne({ where: { username: finalUsername } })) {
+        finalUsername = (generatedUsername || 'traveler') + count;
+        count++;
+      }
+
+      const defaultPassword = finalUsername + '123';
+      const passwordHash = await bcrypt.hash(defaultPassword, 10);
+
+      const { createAndSendPendingRegistrationOtp } = require('../services/otp.service');
+      try {
+        await createAndSendPendingRegistrationOtp({
+          username: finalUsername,
+          email,
+          passwordHash
+        });
+        return res.json({ success: true, message: 'Mã xác thực đăng ký tài khoản mới đã được gửi tới email của bạn.', exists: false });
+      } catch (err) {
+        return res.status(err.statusCode || 500).json({ success: false, message: err.message, retryAfterSeconds: err.retryAfterSeconds });
+      }
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.verifyCheckoutOtp = async (req, res, next) => {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const otp = req.body.otp;
+    const fullname = req.body.fullname || 'Khách hàng';
+    const phone = req.body.phone || null;
+
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp đầy đủ email và mã OTP.' });
+    }
+
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      // Verify login OTP using AuthOtp
+      const latest = await AuthOtp.findOne({
+        where: { user_id: existingUser.id, purpose: 'RESET_PASSWORD', consumed_at: null },
+        order: [['created_at', 'DESC']]
+      });
+
+      if (!latest || latest.expires_at < new Date()) {
+        return res.status(400).json({ success: false, message: 'Mã xác thực đã hết hạn hoặc không tồn tại.' });
+      }
+
+      const crypto = require('crypto');
+      const otpHash = crypto.createHmac('sha256', JWT_SECRET).update(otp).digest('hex');
+      const expectedHash = `sha256:${otpHash}`;
+
+      if (latest.otp_hash !== expectedHash) {
+        latest.attempt_count += 1;
+        await latest.save();
+        if (latest.attempt_count >= 5) {
+          latest.consumed_at = new Date();
+          await latest.save();
+        }
+        return res.status(400).json({ success: false, message: 'Mã xác thực không chính xác.' });
+      }
+
+      latest.consumed_at = new Date();
+      await latest.save();
+
+      // Log the existing user in!
+      const token = signAuthToken(existingUser);
+      setAuthCookie(res, token);
+
+      return res.json({
+        success: true,
+        message: 'Xác thực thành công và đã đăng nhập!',
+        token,
+        user: publicUser(existingUser)
+      });
+    } else {
+      // Verify registration OTP using PendingRegistration
+      const pending = await PendingRegistration.findOne({
+        where: { email, consumed_at: null },
+        order: [['created_at', 'DESC']]
+      });
+
+      if (!pending || pending.expires_at < new Date()) {
+        return res.status(400).json({ success: false, message: 'Mã xác thực đã hết hạn hoặc không tồn tại.' });
+      }
+
+      const crypto = require('crypto');
+      const otpHash = crypto.createHmac('sha256', JWT_SECRET).update(otp).digest('hex');
+      const expectedHash = `sha256:${otpHash}`;
+
+      if (pending.otp_hash !== expectedHash) {
+        pending.attempt_count += 1;
+        await pending.save();
+        if (pending.attempt_count >= 5) {
+          pending.consumed_at = new Date();
+          await pending.save();
+        }
+        return res.status(400).json({ success: false, message: 'Mã xác thực không chính xác.' });
+      }
+
+      pending.consumed_at = new Date();
+      await pending.save();
+
+      // Create new user since OTP is correct!
+      const newUserId = createUserId();
+      const user = await User.create({
+        id: newUserId,
+        role: 'traveler',
+        username: pending.username,
+        password_hash: pending.password_hash,
+        email: pending.email,
+        fullname: fullname,
+        phone: phone,
+        gender: 'Khác',
+        address: '',
+        job: '',
+        is_verified: true
+      });
+
+      const token = signAuthToken(user);
+      setAuthCookie(res, token);
+
+      return res.json({
+        success: true,
+        message: 'Đăng ký tài khoản mới thành công và đã đăng nhập!',
+        token,
+        user: publicUser(user)
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};

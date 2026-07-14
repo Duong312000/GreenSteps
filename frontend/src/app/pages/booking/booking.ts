@@ -58,6 +58,14 @@ export class BookingComponent implements OnInit {
   public newPassword = '';
   public isEmailAlreadyExists = false;
 
+  public loginWithGmail = false;
+  public showCheckoutOtpModal = false;
+  public checkoutOtpDigits = ['', '', '', '', '', ''];
+  public checkoutOtpErrorMessage = '';
+  public checkoutOtpResendSeconds = 0;
+  public isCheckoutOtpSubmitting = false;
+  public checkoutCountdownInterval: any = null;
+
   // Custom Alert Modal properties
   public alertVisible = false;
   public alertTitle = '';
@@ -257,7 +265,7 @@ export class BookingComponent implements OnInit {
     return this.addOns.includes(id);
   }
 
-  public continueToPayment() {
+  public async continueToPayment() {
     this.submitted = true;
     this.errors = this.validateDetails();
     if (Object.keys(this.errors).length > 0) {
@@ -267,8 +275,145 @@ export class BookingComponent implements OnInit {
       return;
     }
 
-    this.saveDraft();
-    this.router.navigate(['/booking/payment']);
+    if (!this.currentUser && this.loginWithGmail) {
+      this.isBookingLoading = true;
+      this.checkoutOtpErrorMessage = '';
+      try {
+        const fullname = `${this.guestInfo.lastName} ${this.guestInfo.firstName}`;
+        const res = await this.apiService.requestCheckoutOtp(this.guestInfo.email, fullname);
+        this.isBookingLoading = false;
+        if (res.success) {
+          this.showCheckoutOtpModal = true;
+          this.checkoutOtpDigits = ['', '', '', '', '', ''];
+          this.startCheckoutOtpCountdown(60);
+        } else {
+          this.showAlert('Lỗi', res.message || 'Không thể gửi mã xác thực.', 'error');
+        }
+      } catch (err: any) {
+        this.isBookingLoading = false;
+        this.showAlert('Lỗi', 'Không thể gửi mã xác thực.', 'error');
+      }
+    } else {
+      this.saveDraft();
+      this.router.navigate(['/booking/payment']);
+    }
+  }
+
+  public startCheckoutOtpCountdown(seconds: number) {
+    this.clearCheckoutOtpCountdown();
+    this.checkoutOtpResendSeconds = seconds;
+    this.checkoutCountdownInterval = setInterval(() => {
+      if (this.checkoutOtpResendSeconds > 0) {
+        this.checkoutOtpResendSeconds--;
+        this.cdr.detectChanges();
+      } else {
+        this.clearCheckoutOtpCountdown();
+      }
+    }, 1000);
+  }
+
+  public clearCheckoutOtpCountdown() {
+    if (this.checkoutCountdownInterval) {
+      clearInterval(this.checkoutCountdownInterval);
+      this.checkoutCountdownInterval = null;
+    }
+  }
+
+  public async resendCheckoutOtp() {
+    if (this.checkoutOtpResendSeconds > 0) return;
+    this.isCheckoutOtpSubmitting = true;
+    try {
+      const fullname = `${this.guestInfo.lastName} ${this.guestInfo.firstName}`;
+      const res = await this.apiService.requestCheckoutOtp(this.guestInfo.email, fullname);
+      this.isCheckoutOtpSubmitting = false;
+      if (res.success) {
+        this.checkoutOtpDigits = ['', '', '', '', '', ''];
+        this.checkoutOtpErrorMessage = '';
+        this.startCheckoutOtpCountdown(60);
+      } else {
+        this.checkoutOtpErrorMessage = res.message || 'Gửi lại mã thất bại.';
+      }
+    } catch (e) {
+      this.isCheckoutOtpSubmitting = false;
+      this.checkoutOtpErrorMessage = 'Gửi lại mã thất bại.';
+    }
+  }
+
+  public onCheckoutOtpInput(event: Event, index: number) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/\D/g, '').slice(-1);
+    this.checkoutOtpDigits[index] = value;
+    input.value = value;
+
+    if (value && index < 5) {
+      setTimeout(() => {
+        const allInputs = document.querySelectorAll('.checkout-otp-input');
+        const nextInput = allInputs[index + 1] as HTMLInputElement;
+        if (nextInput) nextInput.focus();
+      }, 0);
+      return;
+    }
+
+    if (this.checkoutOtpDigits.every(d => d.length === 1)) {
+      setTimeout(() => this.submitCheckoutOtpVerify(), 80);
+    }
+  }
+
+  public onCheckoutOtpKeydown(event: KeyboardEvent, index: number) {
+    if (event.key === 'Backspace' && !this.checkoutOtpDigits[index] && index > 0) {
+      setTimeout(() => {
+        const allInputs = document.querySelectorAll('.checkout-otp-input');
+        const prevInput = allInputs[index - 1] as HTMLInputElement;
+        if (prevInput) prevInput.focus();
+      }, 0);
+    }
+  }
+
+  public onCheckoutOtpPaste(event: ClipboardEvent) {
+    const text = event.clipboardData?.getData('text').replace(/\D/g, '').slice(0, 6) || '';
+    if (!text) return;
+    event.preventDefault();
+    this.checkoutOtpDigits = Array.from({ length: 6 }, (_, index) => text[index] || '');
+    setTimeout(() => {
+      const activeIdx = Math.min(text.length, 6) - 1;
+      const allInputs = document.querySelectorAll('.checkout-otp-input');
+      const targetInput = allInputs[activeIdx] as HTMLInputElement;
+      if (targetInput) targetInput.focus();
+      if (text.length === 6) this.submitCheckoutOtpVerify();
+    }, 0);
+  }
+
+  public async submitCheckoutOtpVerify() {
+    if (this.isCheckoutOtpSubmitting) return;
+    const otp = this.checkoutOtpDigits.join('');
+    if (otp.length !== 6) {
+      this.checkoutOtpErrorMessage = 'Vui lòng nhập đầy đủ 6 chữ số.';
+      return;
+    }
+
+    this.isCheckoutOtpSubmitting = true;
+    this.checkoutOtpErrorMessage = '';
+    try {
+      const fullname = `${this.guestInfo.lastName} ${this.guestInfo.firstName}`;
+      const res = await this.apiService.verifyCheckoutOtp(
+        this.guestInfo.email,
+        otp,
+        fullname,
+        this.guestInfo.phone
+      );
+      this.isCheckoutOtpSubmitting = false;
+      if (res.success && res.user && res.token) {
+        this.authService.loginWithToken(res.user, res.token);
+        this.showCheckoutOtpModal = false;
+        this.saveDraft();
+        this.router.navigate(['/booking/payment']);
+      } else {
+        this.checkoutOtpErrorMessage = res.message || 'Mã xác thực không chính xác.';
+      }
+    } catch (e: any) {
+      this.isCheckoutOtpSubmitting = false;
+      this.checkoutOtpErrorMessage = e?.error?.message || 'Xác thực OTP thất bại.';
+    }
   }
 
   public isActivatingWallet = false;
