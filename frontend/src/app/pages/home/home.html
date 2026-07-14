@@ -330,43 +330,71 @@
   }
 
   .gs-destination-dot {
+    width: 10px !important;
+    height: 10px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    border-radius: 50% !important;
+    background-color: #cbd5e1 !important;
     transition: width 260ms ease, background 260ms ease, opacity 260ms ease;
   }
 
   .gs-destination-dot.active {
-    width: 1.75rem;
-    background: #059669;
+    width: 24px !important;
+    height: 10px !important;
+    border-radius: 5px !important;
+    background-color: #059669 !important;
   }
 
   @media (max-width: 1024px) {
     .gs-destination-carousel {
-      display: grid;
-      min-height: auto;
-      gap: 1.5rem;
+      display: flex !important;
+      flex-direction: row !important;
+      overflow-x: auto !important;
+      scroll-snap-type: x mandatory !important;
+      gap: 16px !important;
+      padding: 10px 16px 24px !important;
+      width: calc(100% - 16px) !important;
+      max-width: calc(100% - 16px) !important;
+      margin-left: 8px !important;
+      scrollbar-width: none !important;
     }
-
+    .gs-destination-carousel::-webkit-scrollbar {
+      display: none !important;
+    }
     .gs-destination-card {
-      position: relative;
-      left: auto;
-      top: auto;
-      width: 100%;
-      max-width: 380px;
-      justify-self: center;
+      position: relative !important;
+      left: auto !important;
+      top: auto !important;
+      flex: 0 0 280px !important;
+      scroll-snap-align: start !important;
+      max-width: none !important;
       transform: none !important;
+      opacity: 1 !important;
+      filter: none !important;
+      box-shadow: 0 22px 55px rgba(15, 23, 42, 0.12) !important;
     }
-
-    .gs-destination-card.left,
-    .gs-destination-card.right,
-    .gs-destination-card.center {
-      opacity: 1;
-      filter: none;
-      box-shadow: 0 22px 55px rgba(15, 23, 42, 0.12);
-    }
-
     .gs-destination-card.left .gs-destination-image,
     .gs-destination-card.right .gs-destination-image,
     .gs-destination-card.center .gs-destination-image {
-      height: 360px;
+      height: 280px !important;
+    }
+    .gs-destination-dots {
+      display: none !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .gs-home-page h2.font-serif {
+        font-size: 28px !important;
+    }
+    .gs-home-page h3 {
+        font-size: 20px !important;
+    }
+    .gs-home-page .group.min-h-\[118px\] {
+        min-height: auto !important;
     }
   }
 
@@ -867,7 +895,7 @@
             <p class="max-w-sm text-sm font-semibold leading-6 text-slate-500">Chọn nhanh ưu tiên của bạn, GreenSteps sẽ cập nhật phần xem trước hành trình tương ứng.</p>
           </div>
 
-          <div class="mt-6 grid gap-3 sm:grid-cols-2">
+          <div class="mt-6 grid gap-3 grid-cols-2">
             <button type="button" (click)="selectHighlight('eco')" class="group min-h-[118px] rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
               [class.border-emerald-500]="activeHighlight === 'eco'"
               [class.bg-emerald-600]="activeHighlight === 'eco'"
@@ -966,7 +994,7 @@
       </div>
 
       <div class="mt-6 grid gap-4 rounded-[26px] bg-white/90 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)] ring-1 ring-slate-100 md:grid-cols-[1fr_auto] md:items-center">
-        <div class="grid gap-3 sm:grid-cols-2">
+        <div class="grid gap-3 grid-cols-2">
           <div class="flex items-center gap-3">
             <span class="grid h-11 w-11 place-items-center rounded-full bg-emerald-600 text-lg text-white"><i class="bi bi-people-fill"></i></span>
             <p><b class="text-lg font-black text-slate-950">50K+ du khách</b><br><span class="text-xs font-bold text-slate-500">Được du khách tin tưởng</span></p>
