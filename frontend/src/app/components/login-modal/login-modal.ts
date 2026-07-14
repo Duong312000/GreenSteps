@@ -356,17 +356,58 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public alertSocial(provider: string) {
     if (provider === 'Google') {
-      const width = 500;
-      const height = 620;
-      const left = window.screen.width / 2 - width / 2;
-      const top = window.screen.height / 2 - height / 2;
-      window.open(
-        '/google-login-sim.html',
-        'GoogleLoginSim',
-        `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,status=no,resizable=yes`
-      );
+      const clientId = (window as any).GOOGLE_CLIENT_ID || (window as any).env?.GOOGLE_CLIENT_ID;
+      if (clientId && clientId !== 'YOUR_GOOGLE_CLIENT_ID') {
+        this.openRealGoogleLogin(clientId);
+      } else {
+        const width = 500;
+        const height = 620;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+        window.open(
+          '/google-login-sim.html',
+          'GoogleLoginSim',
+          `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,status=no,resizable=yes`
+        );
+      }
     } else {
       alert(`GreenSteps đang tích hợp đăng nhập ${provider}. Vui lòng sử dụng email và mật khẩu.`);
+    }
+  }
+
+  private openRealGoogleLogin(clientId: string) {
+    const google = (window as any).google;
+    if (!google) {
+      alert('Không thể tải Google Sign-In SDK. Vui lòng kiểm tra lại kết nối mạng.');
+      return;
+    }
+
+    google.accounts.id.initialize({
+      client_id: clientId,
+      callback: (response: any) => {
+        const payload = this.decodeJwt(response.credential);
+        if (payload && payload.email) {
+          this.submitGoogleSim(payload.email, payload.name || payload.email.split('@')[0]);
+        }
+      }
+    });
+
+    google.accounts.id.prompt();
+  }
+
+  private decodeJwt(token: string): any {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      return JSON.parse(jsonPayload);
+    } catch (e) {
+      return null;
     }
   }
 

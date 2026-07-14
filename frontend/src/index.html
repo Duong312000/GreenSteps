@@ -40,6 +40,34 @@
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
 
+
+  <!-- Tailwind CSS utilities for the redesigned landing page -->
+  <script>
+    tailwind = {
+      config: {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Geist', 'Be Vietnam Pro', 'Arial', 'sans-serif']
+            },
+            colors: {
+              emerald: {
+                600: '#059669'
+              },
+              sky: {
+                500: '#0EA5E9'
+              },
+              slate: {
+                800: '#1E293B'
+              }
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -48,6 +76,14 @@
 
   <!-- Leaflet JS for Map -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <!-- Configuration for Google OAuth Login -->
+  <script>
+    window.GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'; // Replace this with your Google Client ID to run on google.com!
+  </script>
 </head>
 <body>
   <app-root></app-root>
