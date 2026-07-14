@@ -788,17 +788,17 @@
         [attr.aria-current]="idx === activeDestinationIndex ? 'true' : null">
         <div class="gs-destination-image relative">
           <img [src]="card.image" [alt]="card.title" class="h-full w-full object-cover transition-all duration-700 group-hover:scale-110">
-          <div class="absolute inset-0 bg-gradient-to-b from-slate-900/10 via-slate-900/15 to-slate-950/80"></div>
+          <div class="dest-gradient-overlay absolute inset-0 bg-gradient-to-b from-slate-900/10 via-slate-900/15 to-slate-950/80"></div>
           <div class="absolute left-5 top-5 rounded-full bg-white px-4 py-2 text-xs font-extrabold text-slate-800 shadow-lg shadow-slate-900/10">
             <i class="bi bi-geo-alt-fill text-emerald-600"></i> {{ card.label }}
           </div>
-          <div class="absolute inset-x-6 bottom-6 text-white">
-            <h3 class="font-serif text-3xl font-semibold">{{ card.title }}</h3>
-            <p class="mt-1 text-xs font-bold text-white/90">{{ card.subtitle }}</p>
-            <button type="button" class="dest-discover-btn mt-5 inline-flex items-center gap-2 rounded-full border border-white/50 px-4 py-2 text-xs font-bold text-white transition-all duration-300 group-hover:bg-white group-hover:text-emerald-700">
-              Khám phá <i class="bi bi-arrow-right"></i>
-            </button>
-          </div>
+        </div>
+        <div class="dest-text-content absolute inset-x-6 bottom-6 text-white z-10 pointer-events-none">
+          <h3 class="dest-title font-serif text-3xl font-semibold">{{ card.title }}</h3>
+          <p class="dest-subtitle mt-1 text-xs font-bold text-white/90">{{ card.subtitle }}</p>
+          <button type="button" class="dest-discover-btn mt-5 inline-flex items-center gap-2 rounded-full border border-white/50 px-4 py-2 text-xs font-bold text-white transition-all duration-300 group-hover:bg-white group-hover:text-emerald-700 pointer-events-auto">
+            Khám phá <i class="bi bi-arrow-right"></i>
+          </button>
         </div>
       </article>
     </div>

@@ -11570,7 +11570,74 @@ app-tour-detail .show-all-tile span {
   background-color: #059669 !important;
 }
 
-@media (max-width: 1024px) {
+@media (min-width: 640px) and (max-width: 1024px) {
+  .gs-destination-carousel {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 16px !important;
+    width: 100% !important;
+    padding: 10px 0 !important;
+    min-height: auto !important;
+  }
+  .gs-destination-card {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.1) !important;
+    height: 320px !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+  }
+  .gs-destination-card.left .gs-destination-image,
+  .gs-destination-card.right .gs-destination-image,
+  .gs-destination-card.center .gs-destination-image {
+    height: 320px !important;
+    width: 100% !important;
+  }
+  .dest-gradient-overlay {
+    display: block !important;
+  }
+  .dest-text-content {
+    position: absolute !important;
+    left: 16px !important;
+    right: 16px !important;
+    bottom: 16px !important;
+    color: #fff !important;
+    z-index: 10 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    width: auto !important;
+  }
+  .dest-title {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    color: #fff !important;
+  }
+  .dest-subtitle {
+    font-size: 11px !important;
+    color: rgba(255,255,255,0.9) !important;
+    margin-top: 2px !important;
+  }
+  .dest-discover-btn {
+    display: none !important;
+  }
+  .gs-destination-card .absolute.left-5.top-5 {
+    left: 12px !important;
+    top: 12px !important;
+    padding: 4px 10px !important;
+    font-size: 10px !important;
+  }
+  .gs-destination-dots {
+    display: none !important;
+  }
+}
+
+@media (max-width: 639px) {
   .gs-destination-carousel {
     display: flex !important;
     flex-direction: row !important;
@@ -11578,9 +11645,8 @@ app-tour-detail .show-all-tile span {
     scroll-snap-type: x mandatory !important;
     gap: 12px !important;
     padding: 10px 12px 20px !important;
-    width: calc(100% - 16px) !important;
-    max-width: calc(100% - 16px) !important;
-    margin-left: 8px !important;
+    width: 100% !important;
+    margin-left: 0 !important;
     scrollbar-width: none !important;
     min-height: auto !important;
     align-items: flex-start !important;
@@ -11599,23 +11665,56 @@ app-tour-detail .show-all-tile span {
     opacity: 1 !important;
     filter: none !important;
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08) !important;
-    height: 185px !important;
+    height: 195px !important;
     border-radius: 12px !important;
+    background: #fff !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border: 1px solid #edf2f0 !important;
+    overflow: hidden !important;
   }
   .gs-destination-card.left .gs-destination-image,
   .gs-destination-card.right .gs-destination-image,
   .gs-destination-card.center .gs-destination-image {
-    height: 185px !important;
+    height: 120px !important;
+    width: 100% !important;
+    position: relative !important;
   }
-  .gs-destination-card h3 {
-    font-size: 15px !important;
-    font-weight: 800 !important;
+  .dest-gradient-overlay {
+    display: none !important;
   }
-  .gs-destination-card p {
-    font-size: 9px !important;
-    line-height: 1.25 !important;
+  .dest-text-content {
+    position: static !important;
+    padding: 8px 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: #fff !important;
+    color: #0f172a !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    pointer-events: auto !important;
   }
-  .gs-destination-card .dest-discover-btn {
+  .dest-title {
+    font-size: 13px !important;
+    font-weight: 850 !important;
+    color: #0f172a !important;
+    line-height: 1.2 !important;
+    margin: 0 !important;
+    font-family: 'Be Vietnam Pro', sans-serif !important;
+  }
+  .dest-subtitle {
+    font-size: 9.5px !important;
+    color: #64748b !important;
+    margin-top: 3px !important;
+    line-height: 1.2 !important;
+    font-weight: 550 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 1 !important;
+    -webkit-box-orient: vertical !important;
+  }
+  .dest-discover-btn {
     display: none !important;
   }
   .gs-destination-card .absolute.left-5.top-5 {
@@ -11623,11 +11722,6 @@ app-tour-detail .show-all-tile span {
     top: 8px !important;
     padding: 2px 6px !important;
     font-size: 8px !important;
-  }
-  .gs-destination-card .absolute.inset-x-6.bottom-6 {
-    left: 12px !important;
-    right: 12px !important;
-    bottom: 12px !important;
   }
   .gs-destination-dots {
     display: none !important;
@@ -11652,5 +11746,3 @@ app-tour-detail .show-all-tile span {
       display: none !important;
   }
 }
-
-
