@@ -346,9 +346,25 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 0);
   }
 
+  @HostListener('window:message', ['$event'])
+  public onWindowMessage(event: MessageEvent) {
+    if (event.origin !== window.location.origin) return;
+    if (event.data && event.data.type === 'GOOGLE_LOGIN_SUCCESS') {
+      this.submitGoogleSim(event.data.email, event.data.name);
+    }
+  }
+
   public alertSocial(provider: string) {
     if (provider === 'Google') {
-      this.showGoogleSimModal = true;
+      const width = 500;
+      const height = 620;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
+      window.open(
+        '/google-login-sim.html',
+        'GoogleLoginSim',
+        `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,status=no,resizable=yes`
+      );
     } else {
       alert(`GreenSteps đang tích hợp đăng nhập ${provider}. Vui lòng sử dụng email và mật khẩu.`);
     }
@@ -360,7 +376,6 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
     const res = await this.authService.googleLogin(email, fullname);
     this.isSubmitting = false;
     if (res.success && res.user) {
-      this.showGoogleSimModal = false;
       this.requestClose();
       if (res.user.role === 'admin') {
         this.router.navigate(['/admin']);
