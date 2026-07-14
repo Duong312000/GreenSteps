@@ -211,36 +211,8 @@
 
             <!-- Choose Account View -->
             <div id="chooseAccountView">
-                <div class="account-list">
-                    <!-- Duong Partner -->
-                    <button class="account-item" onclick="selectAccount('duong.partner@gmail.com', 'Dương Nguyễn')">
-                        <div class="avatar avatar-duong">DN</div>
-                        <div class="account-info">
-                            <div class="account-name">Dương Nguyễn</div>
-                            <div class="account-email">duong.partner@gmail.com</div>
-                        </div>
-                    </button>
-
-                    <!-- Khach Du Lich -->
-                    <button class="account-item" onclick="selectAccount('khach.dulich@gmail.com', 'Khách Du Lịch')">
-                        <div class="avatar avatar-khach">KL</div>
-                        <div class="account-info">
-                            <div class="account-name">Khách Du Lịch</div>
-                            <div class="account-email">khach.dulich@gmail.com</div>
-                        </div>
-                    </button>
-
-                    <!-- Custom Account Button -->
-                    <button class="account-item" onclick="showCustomForm()">
-                        <div class="avatar avatar-custom">
-                            <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                            </svg>
-                        </div>
-                        <div class="account-info">
-                            <div class="account-name" style="color: #0b57d0;">Sử dụng một tài khoản khác</div>
-                        </div>
-                    </button>
+                <div class="account-list" id="accountListContainer">
+                    <!-- Loaded dynamically via script below -->
                 </div>
             </div>
 
@@ -271,6 +243,107 @@
     </div>
 
     <script>
+        function loadSavedAccounts() {
+            let accounts = [];
+
+            // 1. Check if there is a currently logged-in user in GreenSteps
+            try {
+                const userStr = localStorage.getItem('greensteps_user');
+                if (userStr) {
+                    const user = JSON.parse(userStr);
+                    if (user && user.email) {
+                        accounts.push({
+                            email: user.email,
+                            name: user.fullname || user.username || 'Người dùng hiện tại',
+                            avatarText: (user.fullname || user.username || 'U').substring(0, 2).toUpperCase(),
+                            isCurrent: true
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to parse current user:', e);
+            }
+
+            // 2. Check for other Google accounts saved in this browser
+            try {
+                const savedStr = localStorage.getItem('greensteps_saved_google_accounts');
+                if (savedStr) {
+                    const savedList = JSON.parse(savedStr);
+                    if (Array.isArray(savedList)) {
+                        savedList.forEach(acc => {
+                            // Avoid duplicate emails
+                            if (!accounts.some(a => a.email.toLowerCase() === acc.email.toLowerCase())) {
+                                accounts.push({
+                                    email: acc.email,
+                                    name: acc.name,
+                                    avatarText: (acc.name || 'G').substring(0, 2).toUpperCase(),
+                                    isCurrent: false
+                                });
+                            }
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to parse saved accounts:', e);
+            }
+
+            // 3. Fallbacks / Defaults (Dương Nguyễn and Khách Du Lịch)
+            const defaultAccounts = [
+                { email: 'duong.partner@gmail.com', name: 'Dương Nguyễn', avatarText: 'DN', isCurrent: false },
+                { email: 'khach.dulich@gmail.com', name: 'Khách Du Lịch', avatarText: 'KL', isCurrent: false }
+            ];
+
+            defaultAccounts.forEach(acc => {
+                if (!accounts.some(a => a.email.toLowerCase() === acc.email.toLowerCase())) {
+                    accounts.push(acc);
+                }
+            });
+
+            return accounts;
+        }
+
+        function renderAccounts() {
+            const accounts = loadSavedAccounts();
+            const container = document.getElementById('accountListContainer');
+            container.innerHTML = ''; // Clear
+
+            accounts.forEach(acc => {
+                const btn = document.createElement('button');
+                btn.className = 'account-item';
+                btn.onclick = () => selectAccount(acc.email, acc.name);
+
+                let avatarClass = 'avatar';
+                if (acc.email === 'duong.partner@gmail.com') avatarClass += ' avatar-duong';
+                else if (acc.email === 'khach.dulich@gmail.com') avatarClass += ' avatar-khach';
+                else avatarClass += ' avatar-custom';
+
+                btn.innerHTML = `
+                    <div class="${avatarClass}">${acc.avatarText}</div>
+                    <div class="account-info">
+                        <div class="account-name">${acc.name} ${acc.isCurrent ? '<span style="font-size: 10px; color: #0b57d0; font-weight: normal; margin-left: 4px;">(Đang đăng nhập)</span>' : ''}</div>
+                        <div class="account-email">${acc.email}</div>
+                    </div>
+                `;
+                container.appendChild(btn);
+            });
+
+            // Add custom account button
+            const customBtn = document.createElement('button');
+            customBtn.className = 'account-item';
+            customBtn.onclick = showCustomForm;
+            customBtn.innerHTML = `
+                <div class="avatar avatar-custom">
+                    <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                    </svg>
+                </div>
+                <div class="account-info">
+                    <div class="account-name" style="color: #0b57d0; font-weight: 500;">Sử dụng một tài khoản khác</div>
+                </div>
+            `;
+            container.appendChild(customBtn);
+        }
+
         function selectAccount(email, name) {
             if (window.opener) {
                 window.opener.postMessage({
@@ -294,7 +367,7 @@
 
         function submitCustom() {
             const email = document.getElementById('customEmail').value.trim();
-            const name = document.getElementById('customName').value.trim();
+            const name = document.getElementById('customName').value.trim() || email.split('@')[0];
             if (!email) {
                 alert('Vui lòng nhập địa chỉ email.');
                 return;
@@ -303,8 +376,32 @@
                 alert('Địa chỉ email không hợp lệ.');
                 return;
             }
-            selectAccount(email, name || email.split('@')[0]);
+
+            // Save to localStorage
+            try {
+                let savedList = [];
+                const savedStr = localStorage.getItem('greensteps_saved_google_accounts');
+                if (savedStr) {
+                    savedList = JSON.parse(savedStr);
+                }
+                if (!Array.isArray(savedList)) savedList = [];
+                
+                const existingIdx = savedList.findIndex(a => a.email.toLowerCase() === email.toLowerCase());
+                if (existingIdx >= 0) {
+                    savedList[existingIdx].name = name;
+                } else {
+                    savedList.push({ email: email, name: name });
+                }
+                localStorage.setItem('greensteps_saved_google_accounts', JSON.stringify(savedList));
+            } catch (e) {
+                console.warn('Failed to save custom account:', e);
+            }
+
+            selectAccount(email, name);
         }
+
+        // Initialize dynamic list on load
+        window.onload = renderAccounts;
     </script>
 </body>
 </html>
