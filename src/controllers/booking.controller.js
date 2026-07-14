@@ -491,10 +491,7 @@ exports.createBooking = async (req, res, next) => {
       const user = await User.findByPk(userId);
       const token = user ? localSignAuthToken(user) : '';
 
-      let redirectPath = '/profile';
-      if (type === 'itinerary' || (targetId && String(targetId).startsWith('iti_'))) {
-        redirectPath = '/schedule';
-      }
+      const redirectPath = '/schedule';
 
       const origin = req.headers.origin || 'http://localhost:4200';
       const lookupUrl = `${origin}${redirectPath}${token ? `?token=${token}` : ''}`;

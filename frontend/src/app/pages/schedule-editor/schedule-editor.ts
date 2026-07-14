@@ -243,7 +243,23 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
     this.cdr.detectChanges();
     try {
       const userId = user.id || user._id || '';
-      this.savedItineraries = await this.apiService.getItineraries(userId);
+      const customs = await this.apiService.getItineraries(userId);
+      const bookings: any[] = await this.apiService.getBookings(undefined, userId);
+      
+      const depositedToursMapped = (bookings || [])
+        .filter(b => b.type === 'tour' && (b.status === 'deposit' || b.status === 'confirmed' || b.status === 'accepted' || b.status === 'completed'))
+        .map(b => ({
+          id: b.id,
+          name: b.tour_name || 'Lịch trình Tour',
+          destination: b.tour_name || 'Việt Nam',
+          days: 3,
+          totalCost: b.value,
+          totalCarbon: 0,
+          status: 'deposited',
+          isTourBooking: true
+        }));
+
+      this.savedItineraries = [...customs, ...depositedToursMapped];
     } catch (e) {
       console.error(e);
     } finally {
@@ -270,6 +286,10 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   public openItinerary(id: string) {
+    if (id && id.startsWith('BKT-')) {
+      this.router.navigate(['/profile']);
+      return;
+    }
     this.router.navigate(['/schedule', id]);
   }
 
@@ -2792,7 +2812,9 @@ export class ScheduleEditorComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   public getCanCancelDeposit(iti: any): boolean {
-    if (!iti || !iti.deposit_deadline) return false;
+    if (!iti) return false;
+    if (iti.isTourBooking) return false;
+    if (!iti.deposit_deadline) return false;
     const today = new Date();
     const deadline = new Date(iti.deposit_deadline);
     today.setHours(0, 0, 0, 0);

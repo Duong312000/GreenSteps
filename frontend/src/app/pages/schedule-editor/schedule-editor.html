@@ -727,14 +727,16 @@
                                 <i class="bi bi-clock-history"></i> ID: {{ iti.id.substring(4, 12) }}
                             </span>
                             <div class="flex items-center gap-2">
-                                <button *ngIf="getCanCancelDeposit(iti)" (click)="cancelDeposit(iti, $event)" class="h-9 px-3 rounded-lg bg-red-50 hover:bg-red-100 border border-red-150 text-red-600 text-xs font-bold transition-all cursor-pointer flex items-center gap-1" title="Hủy đặt cọc">
-                                    <i class="bi bi-x-circle"></i> Hủy
-                                </button>
-                                <span *ngIf="!getCanCancelDeposit(iti)" class="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-lg border border-red-100">
-                                    Hết hạn hủy
-                                </span>
-                                <button (click)="openItinerary(iti.id)" class="h-9 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 text-[#184A37] text-xs font-bold transition-all border-0 cursor-pointer">
-                                    Xem
+                                <ng-container *ngIf="!iti.isTourBooking">
+                                    <button *ngIf="getCanCancelDeposit(iti)" (click)="cancelDeposit(iti, $event)" class="h-9 px-3 rounded-lg bg-red-50 hover:bg-red-100 border border-red-150 text-red-600 text-xs font-bold transition-all cursor-pointer flex items-center gap-1" title="Hủy đặt cọc">
+                                        <i class="bi bi-x-circle"></i> Hủy
+                                    </button>
+                                    <span *ngIf="!getCanCancelDeposit(iti)" class="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-lg border border-red-100">
+                                        Hết hạn hủy
+                                    </span>
+                                </ng-container>
+                                <button (click)="openItinerary(iti.id)" class="h-9 px-4 rounded-lg bg-[#ECFDF5] hover:bg-[#CCFBF1] text-[#0F6B4C] text-xs font-bold transition-all border-0 cursor-pointer">
+                                    {{ iti.isTourBooking ? 'Chi tiết' : 'Xem' }}
                                 </button>
                             </div>
                         </div>
