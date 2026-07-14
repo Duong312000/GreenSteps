@@ -70,12 +70,14 @@ exports.createBooking = async (req, res, next) => {
   const email = customerEmail || (req.user ? req.user.email : null);
 
   let autoCreatedCredentials = null;
+  let emailAlreadyExists = false;
 
   try {
     if (!userId && email) {
       const existingUser = await User.findOne({ where: { email } });
       if (existingUser) {
         userId = existingUser.id;
+        emailAlreadyExists = true;
       } else {
         const newUserId = 'UG' + Math.floor(10000000 + Math.random() * 90000000);
         const generatedUsername = fullname
@@ -509,11 +511,33 @@ exports.createBooking = async (req, res, next) => {
       }).catch(err => console.error('Booking confirmation email sending error:', err));
     }
 
-    res.json({
+    const responsePayload = {
       success: true,
       message: 'Đặt chỗ thành công!',
-      bookingId
-    });
+      bookingId,
+      emailAlreadyExists: !!emailAlreadyExists
+    };
+
+    if (userId && !emailAlreadyExists && autoCreatedCredentials) {
+      const user = await User.findByPk(userId);
+      if (user) {
+        responsePayload.autoCreatedUser = {
+          username: user.username,
+          defaultPassword: autoCreatedCredentials.password,
+          token: localSignAuthToken(user),
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+            fullname: user.fullname,
+            phone: user.phone
+          }
+        };
+      }
+    }
+
+    res.json(responsePayload);
   } catch (error) {
     next(error);
   }
@@ -1071,6 +1095,7 @@ exports.getBookingDetails = async (req, res, next) => {
     }
 
     let autoCreatedUser = null;
+    let emailAlreadyExists = false;
     if (booking.User && (booking.status === 'deposit' || booking.status === 'confirmed' || booking.status === 'accepted')) {
       const user = booking.User;
       const userCreatedTime = new Date(user.createdAt).getTime();
@@ -1089,6 +1114,8 @@ exports.getBookingDetails = async (req, res, next) => {
             phone: user.phone
           }
         };
+      } else {
+        emailAlreadyExists = true;
       }
     }
 
@@ -1098,7 +1125,8 @@ exports.getBookingDetails = async (req, res, next) => {
         ...booking.toJSON(),
         type
       },
-      autoCreatedUser
+      autoCreatedUser,
+      emailAlreadyExists
     });
   } catch (error) {
     next(error);

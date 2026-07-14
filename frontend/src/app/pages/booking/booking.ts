@@ -56,6 +56,7 @@ export class BookingComponent implements OnInit {
   public isNewUserCreated = false;
   public newUsername = '';
   public newPassword = '';
+  public isEmailAlreadyExists = false;
 
   // Custom Alert Modal properties
   public alertVisible = false;
@@ -154,6 +155,9 @@ export class BookingComponent implements OnInit {
         this.isNewUserCreated = true;
         this.newUsername = params.get('username') || '';
         this.newPassword = params.get('pwd') || '';
+      }
+      if (params.get('emailAlreadyExists') === 'true') {
+        this.isEmailAlreadyExists = true;
       }
     });
 
@@ -433,7 +437,18 @@ export class BookingComponent implements OnInit {
         this.isBookingLoading = false;
         if (res.success) {
           this.saveDraft();
-          this.router.navigate(['/booking/confirm']);
+          let queryParams = {};
+          if (res.emailAlreadyExists) {
+            queryParams = { emailAlreadyExists: 'true' };
+          } else if (res.autoCreatedUser) {
+            this.authService.loginWithToken(res.autoCreatedUser.user, res.autoCreatedUser.token);
+            queryParams = {
+              newUser: 'true',
+              username: res.autoCreatedUser.username,
+              pwd: res.autoCreatedUser.defaultPassword
+            };
+          }
+          this.router.navigate(['/booking/confirm'], { queryParams });
         } else {
           this.showAlert("Thanh toán thất bại", res.message || "Giao dịch trừ tiền ví bị từ chối hoặc có lỗi xảy ra.", "error");
         }
@@ -449,7 +464,18 @@ export class BookingComponent implements OnInit {
         this.isBookingLoading = false;
         if (res.success) {
           this.saveDraft();
-          this.router.navigate(['/booking/confirm']);
+          let queryParams = {};
+          if (res.emailAlreadyExists) {
+            queryParams = { emailAlreadyExists: 'true' };
+          } else if (res.autoCreatedUser) {
+            this.authService.loginWithToken(res.autoCreatedUser.user, res.autoCreatedUser.token);
+            queryParams = {
+              newUser: 'true',
+              username: res.autoCreatedUser.username,
+              pwd: res.autoCreatedUser.defaultPassword
+            };
+          }
+          this.router.navigate(['/booking/confirm'], { queryParams });
         } else {
           this.showAlert("Thanh toán thất bại", res.message || "Thao tác thanh toán thẻ bị từ chối.", "error");
         }
@@ -519,7 +545,9 @@ export class BookingComponent implements OnInit {
               }
 
               let queryParams = {};
-              if (res && res.autoCreatedUser) {
+              if (res && res.emailAlreadyExists) {
+                queryParams = { emailAlreadyExists: 'true' };
+              } else if (res && res.autoCreatedUser) {
                 this.authService.loginWithToken(res.autoCreatedUser.user, res.autoCreatedUser.token);
                 queryParams = {
                   newUser: 'true',

@@ -368,6 +368,19 @@
         </div>
       </div>
 
+      <!-- Email Already Exists Alert -->
+      <div *ngIf="isEmailAlreadyExists" style="background-color: #fef3c7; border: 1.5px solid #fde68a; border-radius: 16px; padding: 18px 22px; margin: 16px 0; text-align: left; animation: fadeIn 0.3s ease;">
+        <div style="display: flex; gap: 10px; align-items: flex-start; color: #b45309;">
+          <i class="bi bi-info-circle-fill" style="font-size: 1.3rem; margin-top: 2px;"></i>
+          <div>
+            <h4 style="margin: 0 0 6px; font-weight: 700; color: #b45309;">Email của bạn đã được đăng ký trước đó!</h4>
+            <p style="margin: 0; font-size: 0.82rem; line-height: 1.4; color: #78350f;">
+              Hệ thống nhận thấy email của bạn đã liên kết với một tài khoản GreenSteps. Bạn có thể đăng nhập tài khoản này để xem thêm chi tiết chuyến đi cũng như quản lý lịch trình của mình.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- Booking code banner (always show) -->
       <div *ngIf="currentBookingId" style="background: linear-gradient(135deg,#e8f5e9,#dcfce7); border: 1.5px solid #a7f3d0; border-radius: 16px; padding: 18px 22px; margin: 16px 0; text-align: center;">
         <p style="font-size:0.8rem; color:#065f46; font-weight:600; margin:0 0 6px; text-transform:uppercase; letter-spacing:0.5px;">Mã đặt chỗ của bạn</p>

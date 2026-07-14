@@ -553,10 +553,16 @@ export class ApiService {
     }
   }
 
-  public async createBooking(bookingData: any): Promise<{ success: boolean; bookingId?: string; message?: string }> {
+  public async createBooking(bookingData: any): Promise<{ success: boolean; bookingId?: string; message?: string; emailAlreadyExists?: boolean; autoCreatedUser?: any }> {
     try {
       const res = await firstValueFrom(this.http.post<any>(`${this.BACKEND_URL}/bookings`, bookingData));
-      return { success: true, bookingId: res.bookingId, message: res.message };
+      return { 
+        success: true, 
+        bookingId: res.bookingId, 
+        message: res.message,
+        emailAlreadyExists: res.emailAlreadyExists,
+        autoCreatedUser: res.autoCreatedUser
+      };
     } catch (e: any) {
       return { success: false, message: e?.error?.message || 'Có lỗi xảy ra khi tạo đặt chỗ.' };
     }
