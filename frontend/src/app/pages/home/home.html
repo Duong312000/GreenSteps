@@ -814,10 +814,10 @@
       </button>
     </div>
 
-    <section class="mx-auto mt-10 max-w-6xl overflow-hidden rounded-[34px] bg-gradient-to-br from-white via-emerald-50/55 to-sky-50 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] ring-1 ring-emerald-100/80 md:p-7">
+    <section class="gs-itinerary-showcase mx-auto mt-10 max-w-6xl overflow-hidden rounded-[34px] bg-gradient-to-br from-white via-emerald-50/55 to-sky-50 p-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] ring-1 ring-emerald-100/80 md:p-7">
       <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_430px]">
 
-        <div class="rounded-[28px] bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] ring-1 ring-slate-100 backdrop-blur md:p-7">
+        <div class="gs-highlight-panel rounded-[28px] bg-white/90 p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] ring-1 ring-slate-100 backdrop-blur md:p-7">
           <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-emerald-700">
@@ -828,8 +828,8 @@
             <p class="max-w-sm text-sm font-semibold leading-6 text-slate-500">Chọn nhanh ưu tiên của bạn, GreenSteps sẽ cập nhật phần xem trước hành trình tương ứng.</p>
           </div>
 
-          <div class="mt-6 grid gap-3 grid-cols-2">
-            <button type="button" (click)="selectHighlight('eco')" class="group min-h-[118px] rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
+          <div class="gs-highlight-options mt-6 grid gap-3 grid-cols-2">
+            <button type="button" (click)="selectHighlight('eco')" class="gs-highlight-option group min-h-[118px] rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
               [class.border-emerald-500]="activeHighlight === 'eco'"
               [class.bg-emerald-600]="activeHighlight === 'eco'"
               [class.text-white]="activeHighlight === 'eco'"
@@ -847,7 +847,7 @@
               <span class="feature-desc mt-3 block text-xs font-semibold leading-5" [class.text-white/80]="activeHighlight === 'eco'" [class.text-slate-500]="activeHighlight !== 'eco'">Homestay, eco-stay và dịch vụ giảm nhựa dùng một lần.</span>
             </button>
 
-            <button type="button" (click)="selectHighlight('guides')" class="group min-h-[118px] rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
+            <button type="button" (click)="selectHighlight('guides')" class="gs-highlight-option group min-h-[118px] rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
               [class.border-emerald-500]="activeHighlight === 'guides'"
               [class.bg-emerald-600]="activeHighlight === 'guides'"
               [class.text-white]="activeHighlight === 'guides'"
@@ -865,7 +865,7 @@
               <span class="feature-desc mt-3 block text-xs font-semibold leading-5" [class.text-white/80]="activeHighlight === 'guides'" [class.text-slate-500]="activeHighlight !== 'guides'">Kết nối hướng dẫn viên địa phương và trải nghiệm văn hóa thật.</span>
             </button>
 
-            <button type="button" (click)="selectHighlight('dates')" class="group rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
+            <button type="button" (click)="selectHighlight('dates')" class="gs-highlight-option group rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
               [class.border-emerald-500]="activeHighlight === 'dates'"
               [class.bg-emerald-600]="activeHighlight === 'dates'"
               [class.text-white]="activeHighlight === 'dates'"
@@ -882,7 +882,7 @@
               </span>
             </button>
 
-            <button type="button" (click)="selectHighlight('ai')" class="group rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
+            <button type="button" (click)="selectHighlight('ai')" class="gs-highlight-option group rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5"
               [class.border-emerald-500]="activeHighlight === 'ai'"
               [class.bg-emerald-600]="activeHighlight === 'ai'"
               [class.text-white]="activeHighlight === 'ai'"
@@ -901,43 +901,75 @@
           </div>
         </div>
 
-        <aside class="rounded-[28px] bg-emerald-950 p-4 text-white shadow-[0_26px_60px_rgba(6,78,59,0.22)] md:p-5">
-          <div class="relative overflow-hidden rounded-3xl">
-            <img [src]="currentPreview.days[0]?.img || 'https://i.pinimg.com/736x/f3/34/b3/f334b3d836d0d5fd68f797f7ad3c7021.jpg'" [alt]="currentPreview.title" class="h-44 w-full object-cover">
+        <aside id="itinerary-preview" class="gs-itinerary-preview rounded-[28px] bg-emerald-950 p-4 text-white shadow-[0_26px_60px_rgba(6,78,59,0.22)] md:p-5">
+          <div class="gs-preview-hero relative overflow-hidden rounded-3xl">
+            <img [src]="currentPreview.days[0]?.img || 'https://i.pinimg.com/736x/f3/34/b3/f334b3d836d0d5fd68f797f7ad3c7021.jpg'" [alt]="currentPreview.title" class="gs-preview-hero-img h-44 w-full object-cover">
             <div class="absolute inset-0 bg-gradient-to-t from-emerald-950 via-emerald-950/45 to-transparent"></div>
-            <div class="absolute bottom-4 left-4 right-4">
+            <div class="gs-preview-copy absolute bottom-4 left-4 right-4">
               <span class="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-200">Xem trước hành trình</span>
               <h3 class="mt-1 text-lg font-black leading-tight">{{ currentPreview.title }}</h3>
               <p class="mt-1 text-xs font-semibold text-white/70">{{ currentPreview.subtitle }}</p>
             </div>
           </div>
 
-          <div class="mt-4 space-y-2.5">
-            <div *ngFor="let day of currentPreview.days | slice:0:4" class="preview-day-item grid grid-cols-[54px_1fr_62px] items-center gap-3 rounded-2xl bg-white/8 p-2.5 ring-1 ring-white/10">
-              <span class="rounded-full bg-emerald-300/18 px-2 py-1.5 text-center text-[10px] font-black text-emerald-100">{{ day.label }}</span>
-              <p class="min-w-0 text-[11px] leading-relaxed text-white/65"><b class="block truncate text-xs font-extrabold text-white">{{ day.title }}</b>{{ day.desc }}</p>
-              <img [src]="day.img" class="h-12 w-[62px] rounded-xl object-cover shadow-sm" [alt]="day.title">
+          <div class="gs-preview-mobile-options hidden">
+            <button type="button" (click)="selectHighlight('eco')" class="gs-preview-mobile-option"
+              [class.active]="activeHighlight === 'eco'">
+              <span><i class="bi bi-house-heart"></i></span>
+              <b>Lưu trú xanh</b>
+            </button>
+            <button type="button" (click)="selectHighlight('guides')" class="gs-preview-mobile-option"
+              [class.active]="activeHighlight === 'guides'">
+              <span><i class="bi bi-people-fill"></i></span>
+              <b>Bản địa hóa</b>
+            </button>
+            <button type="button" (click)="selectHighlight('dates')" class="gs-preview-mobile-option"
+              [class.active]="activeHighlight === 'dates'">
+              <span><i class="bi bi-calendar3"></i></span>
+              <b>Ngày đi linh hoạt</b>
+            </button>
+            <button type="button" (click)="selectHighlight('ai')" class="gs-preview-mobile-option"
+              [class.active]="activeHighlight === 'ai'">
+              <span><i class="bi bi-stars"></i></span>
+              <b>Lịch trình AI</b>
+            </button>
+          </div>
+
+          <div class="gs-preview-days mt-4 space-y-2.5">
+            <div
+              *ngFor="let day of currentPreview.days | slice:0:4"
+              routerLink="/schedule/new"
+              role="button"
+              tabindex="0"
+              class="preview-day-item grid cursor-pointer grid-cols-[54px_1fr_62px] items-center gap-3 rounded-2xl bg-white/8 p-2.5 ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/12 focus:outline-none focus:ring-2 focus:ring-emerald-200">
+              <span class="gs-preview-day-label rounded-full bg-emerald-300/18 px-2 py-1.5 text-center text-[10px] font-black text-emerald-100">{{ day.label }}</span>
+              <p class="gs-preview-day-copy min-w-0 text-[11px] leading-relaxed text-white/65"><b class="gs-preview-day-title block truncate text-xs font-extrabold text-white">{{ day.title }}</b>{{ day.desc }}</p>
+              <img [src]="day.img" class="gs-preview-day-img h-12 w-[62px] rounded-xl object-cover shadow-sm" [alt]="day.title">
             </div>
           </div>
 
-          <a routerLink="/schedule/new" class="mt-5 flex items-center justify-center gap-3 rounded-full bg-white px-5 py-3 text-xs font-black text-emerald-800 transition-all duration-300 hover:bg-emerald-100">
+          <a routerLink="/schedule/new" class="gs-preview-cta mt-5 hidden items-center justify-center gap-3 rounded-full bg-white px-5 py-3 text-xs font-black text-emerald-800 transition-all duration-300 hover:bg-emerald-100">
             Xem lịch trình <i class="bi bi-arrow-right"></i>
           </a>
         </aside>
       </div>
 
-      <div class="mt-6 grid gap-4 rounded-[26px] bg-white/90 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)] ring-1 ring-slate-100 md:grid-cols-[1fr_auto] md:items-center">
-        <div class="grid gap-3 grid-cols-2">
-          <div class="flex items-center gap-3">
+      <div class="gs-preview-stats mt-6 grid gap-4 rounded-[26px] bg-white/90 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)] ring-1 ring-slate-100 md:grid-cols-[1fr_auto] md:items-center">
+        <div class="gs-preview-stats-heading md:hidden">
+          <span>GreenSteps trong lòng du khách</span>
+          <strong>Niềm tin tạo nên hành trình xanh</strong>
+        </div>
+        <div class="gs-preview-stat-grid grid gap-3 grid-cols-2">
+          <div class="gs-preview-stat-card flex items-center gap-3">
             <span class="grid h-11 w-11 place-items-center rounded-full bg-emerald-600 text-lg text-white"><i class="bi bi-people-fill"></i></span>
-            <p><b class="text-lg font-black text-slate-950">50K+ du khách</b><br><span class="text-xs font-bold text-slate-500">Được du khách tin tưởng</span></p>
+            <p><b class="text-lg font-black text-slate-950">50K+</b><br><span class="text-xs font-bold text-slate-500">Du khách tin tưởng</span></p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="gs-preview-stat-card flex items-center gap-3">
             <span class="grid h-11 w-11 place-items-center rounded-full bg-sky-500 text-lg text-white"><i class="bi bi-emoji-smile-fill"></i></span>
-            <p><b class="text-lg font-black text-slate-950">98% hài lòng</b><br><span class="text-xs font-bold text-slate-500">Từ du khách GreenSteps</span></p>
+            <p><b class="text-lg font-black text-slate-950">98%</b><br><span class="text-xs font-bold text-slate-500">Hài lòng với GreenSteps</span></p>
           </div>
         </div>
-        <a routerLink="/tours" class="inline-flex items-center justify-center gap-3 rounded-full bg-emerald-600 px-7 py-3.5 text-sm font-black text-white shadow-[0_18px_40px_rgba(5,150,105,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-700">
+        <a routerLink="/tours" class="gs-preview-tours inline-flex items-center justify-center gap-3 rounded-full bg-emerald-600 px-7 py-3.5 text-sm font-black text-white shadow-[0_18px_40px_rgba(5,150,105,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-emerald-700">
           Xem tất cả tour <i class="bi bi-arrow-right"></i>
         </a>
       </div>
@@ -1003,7 +1035,7 @@
     </div>
   </section>
 
-  <section class="relative overflow-hidden bg-gradient-to-br from-[#f8fbf8] via-[#eef8f1] to-white px-6 py-8 md:py-9">
+  <section class="gs-wallet-section relative overflow-hidden bg-gradient-to-br from-[#f8fbf8] via-[#eef8f1] to-white px-6 py-8 md:py-9">
     <div class="pointer-events-none absolute inset-0 opacity-50" style="background-image: radial-gradient(ellipse at 8% 48%, transparent 0 34%, rgba(16, 185, 129, 0.08) 35% 35.5%, transparent 36%), radial-gradient(ellipse at 96% 12%, transparent 0 36%, rgba(16, 185, 129, 0.08) 37% 37.5%, transparent 38%);"></div>
     <div class="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/70 to-transparent"></div>
     <div class="relative mx-auto w-full max-w-[1510px]">
@@ -1018,7 +1050,7 @@
       </div>
 
       <div class="mt-4 grid items-start justify-center gap-6 lg:grid-cols-[270px_440px_300px] xl:grid-cols-[280px_455px_300px] 2xl:grid-cols-[290px_480px_315px]">
-        <div class="flex justify-center lg:justify-start">
+        <div class="gs-wallet-phone-pane flex justify-center lg:justify-start">
           <div class="relative w-[260px] rounded-[2.45rem] bg-black p-[6px] shadow-[0_22px_48px_rgba(15,23,42,0.22)] ring-2 ring-black/90 cursor-pointer transition-transform hover:scale-[1.02] duration-300" routerLink="/profile" [queryParams]="{ section: 'wallet' }">
             <div class="absolute left-14 top-2 h-1 w-32 rounded-full bg-white/20"></div>
             <div class="absolute -right-1 top-32 h-14 w-1 rounded-r bg-black"></div>
@@ -1085,8 +1117,8 @@
           </div>
         </div>
 
-        <div class="grid gap-5 pt-3">
-          <div class="relative h-[225px] overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_62%_20%,rgba(16,185,129,0.32),transparent_28%),linear-gradient(135deg,#006b45,#004b35_48%,#003927)] p-6 text-white shadow-[0_24px_55px_rgba(6,78,59,0.24)] cursor-pointer transition-transform hover:scale-[1.02] duration-300" routerLink="/profile" [queryParams]="{ section: 'wallet' }">
+        <div class="gs-wallet-dashboard-pane grid gap-5 pt-3">
+          <div class="gs-wallet-card-preview relative h-[225px] overflow-hidden rounded-[18px] bg-[radial-gradient(circle_at_62%_20%,rgba(16,185,129,0.32),transparent_28%),linear-gradient(135deg,#006b45,#004b35_48%,#003927)] p-6 text-white shadow-[0_24px_55px_rgba(6,78,59,0.24)] cursor-pointer transition-transform hover:scale-[1.02] duration-300" routerLink="/profile" [queryParams]="{ section: 'wallet' }">
             <div class="absolute inset-0 opacity-30" style="background-image: repeating-linear-gradient(155deg, rgba(255,255,255,.08) 0 1px, transparent 1px 9px);"></div>
             <div class="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/10"></div>
             <div class="absolute right-10 top-20 h-36 w-36 rotate-45 rounded-[70%_0_70%_0] bg-white/12"></div>
@@ -1105,7 +1137,7 @@
             </div>
           </div>
 
-          <div class="rounded-[20px] bg-white/78 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_22px_60px_rgba(15,23,42,0.09)] ring-1 ring-white/80 backdrop-blur-xl">
+          <div class="gs-wallet-spending-card rounded-[20px] bg-white/78 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_22px_60px_rgba(15,23,42,0.09)] ring-1 ring-white/80 backdrop-blur-xl">
             <div class="flex items-center justify-between">
               <h3 class="text-lg font-bold text-slate-950">Tổng quan chi tiêu</h3>
               <button class="rounded-xl bg-white px-4 py-2 text-xs font-medium text-slate-700 shadow-sm ring-1 ring-slate-200">Tháng này <i class="bi bi-chevron-down ml-4 text-slate-700"></i></button>
@@ -1139,7 +1171,7 @@
           </div>
         </div>
 
-        <div class="pt-3">
+        <div class="gs-wallet-steps-pane pt-3">
           <div class="flex h-[487px] flex-col rounded-[22px] bg-white/82 px-6 py-7 shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_24px_70px_rgba(15,23,42,0.08)] ring-1 ring-white/80 backdrop-blur-xl">
             <h3 class="text-center text-lg font-bold text-slate-950">Đặt chỗ chỉ với 3 bước</h3>
             <div class="mt-2 flex flex-1 items-center">
@@ -1167,7 +1199,7 @@
     </div>
   </section>
 
-  <section class="relative overflow-hidden px-6 py-14 md:py-16">
+  <section class="gs-reviews-section relative overflow-hidden px-6 py-14 md:py-16">
     <img src="https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=2200&q=90" alt="Đánh giá từ du khách" class="absolute inset-0 h-full w-full object-cover object-top opacity-45">
     <div class="absolute inset-0 bg-gradient-to-b from-sky-50/92 via-white/76 to-sky-50/58"></div>
     <button class="absolute left-6 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/80 text-slate-400 shadow-lg shadow-slate-900/10 backdrop-blur transition-all duration-300 hover:text-emerald-600 md:grid">
@@ -1181,7 +1213,7 @@
         <h2 class="font-serif text-4xl font-semibold tracking-tight text-[#263c34]">Đánh giá từ du khách</h2>
         <p class="mt-2 text-xs font-medium text-slate-500">Câu chuyện thật từ những du khách thật.</p>
       </div>
-      <div class="mx-auto mt-9 flex max-w-5xl flex-col items-center justify-center gap-5 md:flex-row md:gap-0">
+      <div #reviewsTrack class="gs-reviews-track mx-auto mt-9 flex max-w-5xl flex-col items-center justify-center gap-5 md:flex-row md:gap-0" (scroll)="onReviewsScroll(reviewsTrack)">
         <article class="relative z-10 w-full max-w-[320px] rounded-lg bg-white/92 p-6 shadow-[0_16px_38px_rgba(15,23,42,0.10)] backdrop-blur transition-all duration-300 hover:-translate-y-2 md:-mr-4 md:scale-90 md:opacity-95">
           <div class="text-2xl font-light text-sky-500">4.9 <span class="text-sm tracking-widest">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div>
           <p class="mt-5 text-xs leading-6 text-slate-600">Trải nghiệm tại Đà Nẵng thật tuyệt vời! Mọi thứ được tổ chức chu đáo và lịch trình rất hợp lý.</p>
@@ -1198,11 +1230,15 @@
           <div class="mt-5 flex items-center gap-3"><span class="grid h-8 w-8 place-items-center rounded-full bg-emerald-100 font-bold text-emerald-700">E</span><p class="text-[11px]"><b>Emma Williams</b><br>Úc</p></div>
         </article>
       </div>
-      <div class="mt-8 flex justify-center gap-2"><span class="h-2 w-2 rounded-full bg-slate-300"></span><span class="h-2 w-2 rounded-full bg-slate-300"></span><span class="h-2 w-2 rounded-full bg-sky-500"></span></div>
+      <div class="gs-review-dots mt-8 flex justify-center gap-2" aria-label="Điều hướng đánh giá">
+        <button type="button" class="h-2 w-2 rounded-full bg-slate-300" [class.active]="activeReviewIndex === 0" (click)="scrollToReview(0, reviewsTrack)" aria-label="Xem đánh giá 1"></button>
+        <button type="button" class="h-2 w-2 rounded-full bg-slate-300" [class.active]="activeReviewIndex === 1" (click)="scrollToReview(1, reviewsTrack)" aria-label="Xem đánh giá 2"></button>
+        <button type="button" class="h-2 w-2 rounded-full bg-slate-300" [class.active]="activeReviewIndex === 2" (click)="scrollToReview(2, reviewsTrack)" aria-label="Xem đánh giá 3"></button>
+      </div>
     </div>
   </section>
 
-  <section class="relative overflow-hidden px-6 py-16 text-center text-white md:py-20">
+  <section class="gs-final-cta-section relative overflow-hidden px-6 py-16 text-center text-white md:py-20">
     <img src="https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=2200&q=90" alt="Bắt đầu hành trình" class="absolute inset-0 h-full w-full object-cover object-bottom">
     <div class="absolute inset-0 bg-emerald-950/58"></div>
     <div class="absolute inset-0 bg-gradient-to-b from-emerald-950/10 via-transparent to-emerald-950/20"></div>

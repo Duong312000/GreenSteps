@@ -117,6 +117,16 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   // Indices of tabs that overflow — used to hide them in the main nav
   public overflowTabIndices: Set<number> = new Set<number>();
 
+  public get filteredMobileTabs(): any[] {
+    const query = this.normalizeMenuSearch(this.smartSearchQuery);
+    if (!query) return this.allTabs;
+
+    return this.allTabs.filter(tab => {
+      const label = this.normalizeMenuSearch(tab.label || '');
+      return label.includes(query);
+    });
+  }
+
   // AI Planner Modal
   public isCreateModalOpen: boolean = false;
   public modalDest: string = 'Đà Lạt';
@@ -168,6 +178,14 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   @HostListener('window:resize')
   onResize() {
     this.scheduleOverflowCalc();
+  }
+
+  @HostListener('document:keydown.escape')
+  public onEscapeKey() {
+    if (this.isMobileMenuOpen) {
+      this.isMobileMenuOpen = false;
+      document.body.style.overflow = '';
+    }
   }
 
   public isHomePage(): boolean {
@@ -592,5 +610,15 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.overflowTabs = [];
+  }
+
+  private normalizeMenuSearch(value: string): string {
+    return (value || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 }

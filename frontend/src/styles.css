@@ -11893,3 +11893,1758 @@ app-tour-detail .show-all-tile span {
       display: none !important;
   }
 }
+
+/* GreenSteps Home mobile redesign */
+@media (max-width: 1023px) {
+  html,
+  body,
+  app-root,
+  app-home,
+  .gs-home-page {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  app-header header {
+    position: fixed !important;
+    top: 0 !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(16px) !important;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  app-header header > div:first-child {
+    height: 64px !important;
+    padding-inline: 16px !important;
+    align-items: center !important;
+  }
+
+  app-header header > div:first-child > div:first-child {
+    width: auto !important;
+    flex: 1 1 auto !important;
+  }
+
+  app-header header > div:first-child > div:nth-child(2) {
+    display: none !important;
+  }
+
+  app-header header > div:first-child > div:last-child {
+    width: auto !important;
+    flex: 0 0 auto !important;
+  }
+
+  app-header header > div:first-child > div:last-child > :not(.mobile-hamburger) {
+    display: none !important;
+  }
+
+  app-header header img[alt="GreenSteps"] {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  app-header header img[alt="GreenSteps"] + span span:first-child {
+    font-size: 18px !important;
+    color: #0f6b4c !important;
+    text-shadow: none !important;
+  }
+
+  app-header header img[alt="GreenSteps"] + span span:last-child {
+    font-size: 10px !important;
+    color: #0e9f6e !important;
+    text-shadow: none !important;
+  }
+
+  app-header .mobile-hamburger {
+    display: grid !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    border: 1px solid rgba(15, 107, 76, 0.14) !important;
+    background: #fff !important;
+    place-items: center !important;
+  }
+
+  app-header > div.fixed.inset-0 {
+    z-index: 1300 !important;
+  }
+
+  app-header > div.fixed.inset-0 > div {
+    width: min(88vw, 340px) !important;
+    padding: 22px 18px !important;
+  }
+
+  app-header .header-overflow-panel {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .gs-home-page > section:not(.gs-home-hero):not(.hidden) {
+    padding-block: 56px !important;
+  }
+
+  .gs-home-page p {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .gs-home-hero {
+    min-height: 620px !important;
+    height: auto !important;
+  }
+
+  .gs-home-hero__image {
+    object-position: 58% center !important;
+    filter: saturate(1.08) contrast(1.04) brightness(0.82) !important;
+  }
+
+  .gs-home-hero::after {
+    background: linear-gradient(180deg, rgba(3, 31, 23, 0.52), rgba(3, 31, 23, 0.28) 35%, rgba(3, 31, 23, 0.78) 100%) !important;
+  }
+
+  .gs-home-hero__inner {
+    width: 100% !important;
+    min-height: 620px !important;
+    padding: 86px 16px 22px !important;
+    align-items: flex-start !important;
+  }
+
+  .gs-hero-stack {
+    gap: 14px !important;
+  }
+
+  .gs-home-copy {
+    transform: none !important;
+    padding: 0 !important;
+  }
+
+  .gs-home-title {
+    max-width: 330px !important;
+    font-size: clamp(34px, 10vw, 40px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .gs-home-title em {
+    font-size: 0.76em !important;
+    line-height: 1.1 !important;
+    color: #b7f7ad !important;
+  }
+
+  .gs-home-description {
+    max-width: 315px !important;
+    margin-top: 10px !important;
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  .gs-home-actions {
+    margin-top: 14px !important;
+    gap: 10px !important;
+  }
+
+  .gs-home-action {
+    min-height: 46px !important;
+    flex: 1 1 100% !important;
+    border-radius: 12px !important;
+    font-size: 14px !important;
+  }
+
+  .gs-trip-finder {
+    margin-top: 14px !important;
+    padding-top: 40px !important;
+    border-radius: 18px !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+  }
+
+  .gs-trip-tabs {
+    position: absolute !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: translateY(-50%) !important;
+    overflow-x: auto !important;
+    gap: 8px !important;
+    padding: 5px !important;
+    border-radius: 999px !important;
+    scroll-snap-type: x mandatory !important;
+    scrollbar-width: none !important;
+  }
+
+  .gs-trip-tabs::-webkit-scrollbar,
+  .gs-destination-carousel::-webkit-scrollbar,
+  .gs-ai-days::-webkit-scrollbar,
+  .gs-reviews-section .mx-auto.mt-9.flex::-webkit-scrollbar,
+  .gs-reviews-track::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .gs-trip-tab {
+    min-width: max-content !important;
+    min-height: 36px !important;
+    padding: 0 14px !important;
+    border-radius: 999px !important;
+    font-size: 13px !important;
+    scroll-snap-align: start !important;
+  }
+
+  .gs-trip-tab.active::after {
+    display: none !important;
+  }
+
+  .gs-trip-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  .gs-trip-field:first-child,
+  .gs-trip-submit {
+    grid-column: 1 / -1 !important;
+  }
+
+  .gs-trip-field label {
+    margin-bottom: 5px !important;
+    font-size: 12px !important;
+  }
+
+  .gs-trip-control,
+  .gs-trip-submit {
+    height: 46px !important;
+    min-height: 46px !important;
+    border-radius: 12px !important;
+    font-size: 14px !important;
+  }
+
+  .gs-trip-submit {
+    height: 48px !important;
+    font-size: 15px !important;
+  }
+
+  .gs-hero-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-top: 4px !important;
+  }
+
+  .gs-hero-stat {
+    min-height: 54px !important;
+    padding: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 14px !important;
+    background: rgba(4, 54, 39, 0.22) !important;
+  }
+
+  .gs-hero-stat small {
+    font-size: 10px !important;
+  }
+
+  #diem-den-noi-bat {
+    padding: 56px 0 !important;
+  }
+
+  #diem-den-noi-bat > .relative {
+    padding-inline: 16px !important;
+  }
+
+  #diem-den-noi-bat h2,
+  .gs-ai-title,
+  .gs-wallet-section h2,
+  .gs-reviews-section h2 {
+    font-size: clamp(28px, 8vw, 34px) !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .gs-destination-carousel {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    gap: 14px !important;
+    padding: 10px 16px 22px !important;
+    margin-inline: -16px !important;
+    min-height: 0 !important;
+    scrollbar-width: none !important;
+  }
+
+  .gs-destination-card {
+    position: relative !important;
+    flex: 0 0 84vw !important;
+    width: 84vw !important;
+    max-width: 340px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    border-radius: 18px !important;
+    display: block !important;
+    transform: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    scroll-snap-align: start !important;
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.12) !important;
+  }
+
+  .gs-destination-card.left .gs-destination-image,
+  .gs-destination-card.right .gs-destination-image,
+  .gs-destination-card.center .gs-destination-image {
+    position: relative !important;
+    width: 100% !important;
+    height: 220px !important;
+  }
+
+  .dest-gradient-overlay {
+    display: block !important;
+  }
+
+  .dest-text-content {
+    position: absolute !important;
+    left: 16px !important;
+    right: 16px !important;
+    bottom: 16px !important;
+    width: auto !important;
+    padding: 0 !important;
+    background: transparent !important;
+    color: white !important;
+  }
+
+  .dest-title {
+    margin: 0 !important;
+    color: white !important;
+    font-size: 24px !important;
+    line-height: 1.1 !important;
+  }
+
+  .dest-subtitle {
+    margin-top: 6px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .gs-ai-section {
+    padding: 56px 0 !important;
+  }
+
+  .gs-ai-shell {
+    width: calc(100% - 32px) !important;
+    padding: 18px !important;
+    border-radius: 18px !important;
+    gap: 22px !important;
+  }
+
+  .gs-ai-subtitle {
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+  }
+
+  .gs-ai-search {
+    height: auto !important;
+    min-height: 54px !important;
+    padding: 8px 8px 8px 14px !important;
+    border-radius: 14px !important;
+  }
+
+  .gs-ai-assistant {
+    padding: 16px !important;
+    border-radius: 18px !important;
+  }
+
+  .gs-ai-message {
+    font-size: 14px !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 5 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  .gs-ai-days {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    gap: 14px !important;
+    margin-inline: -18px !important;
+    padding: 4px 18px 12px !important;
+    scrollbar-width: none !important;
+  }
+
+  .gs-ai-day {
+    flex: 0 0 88vw !important;
+    max-width: 360px !important;
+    border-radius: 18px !important;
+    scroll-snap-align: start !important;
+  }
+
+  .gs-ai-day-image {
+    height: auto !important;
+    aspect-ratio: 16 / 10 !important;
+  }
+
+  .gs-ai-day-copy {
+    min-height: 132px !important;
+    padding: 16px !important;
+  }
+
+  .gs-ai-day-copy h4 {
+    font-size: 18px !important;
+    letter-spacing: 0 !important;
+  }
+
+  .gs-ai-day-copy p,
+  .gs-ai-day-footer {
+    font-size: 14px !important;
+  }
+
+  .gs-wallet-section {
+    padding: 56px 16px !important;
+  }
+
+  .gs-wallet-section h2 + p {
+    max-width: 330px !important;
+    margin-inline: auto !important;
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+  }
+
+  .gs-wallet-section .mt-4.grid.items-start {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+    margin-top: 22px !important;
+  }
+
+  .gs-wallet-section .relative.w-\[260px\] {
+    width: min(270px, 78vw) !important;
+    margin-inline: auto !important;
+  }
+
+  .gs-wallet-section .relative.h-\[525px\] {
+    height: 500px !important;
+  }
+
+  .gs-wallet-section .grid.gap-5.pt-3 {
+    gap: 16px !important;
+    padding-top: 0 !important;
+  }
+
+  .gs-wallet-section .relative.h-\[225px\] {
+    height: 190px !important;
+    border-radius: 18px !important;
+  }
+
+  .gs-wallet-section .rounded-\[20px\] {
+    border-radius: 18px !important;
+    padding: 16px !important;
+  }
+
+  .gs-wallet-section .mt-4.grid.grid-cols-\[38px_1fr\] {
+    grid-template-columns: 28px minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .gs-wallet-section .ml-\[52px\] {
+    margin-left: 36px !important;
+    font-size: 10px !important;
+  }
+
+  .gs-wallet-section .flex.h-\[487px\] {
+    height: auto !important;
+    padding: 18px !important;
+    border-radius: 18px !important;
+  }
+
+  .gs-wallet-section .space-y-10 {
+    display: grid !important;
+    gap: 18px !important;
+  }
+
+  .gs-wallet-section .grid.grid-cols-\[40px_62px_1fr\] {
+    grid-template-columns: 40px 1fr !important;
+    gap: 12px !important;
+  }
+
+  .gs-wallet-section .grid.grid-cols-\[40px_62px_1fr\] > span:nth-child(2) {
+    display: none !important;
+  }
+
+  .gs-reviews-section {
+    min-height: auto !important;
+    padding: 58px 0 !important;
+  }
+
+  .gs-reviews-section > img {
+    opacity: 0.36 !important;
+    object-position: center top !important;
+  }
+
+  .gs-reviews-section > .absolute.inset-0 {
+    background: linear-gradient(180deg, rgba(240, 249, 255, 0.96) 0%, rgba(255, 255, 255, 0.72) 46%, rgba(224, 247, 250, 0.68) 100%) !important;
+  }
+
+  .gs-reviews-section .relative.mx-auto {
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  .gs-reviews-section .text-center {
+    padding-inline: 18px !important;
+    text-align: left !important;
+  }
+
+  .gs-reviews-section h2 {
+    max-width: 330px !important;
+    font-size: clamp(30px, 8vw, 36px) !important;
+    line-height: 1.16 !important;
+  }
+
+  .gs-reviews-section h2 + p {
+    max-width: 330px !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+  }
+
+  .gs-reviews-track {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    scroll-padding-inline: 18px !important;
+    gap: 14px !important;
+    padding: 10px 18px 18px !important;
+    margin: 22px 0 0 !important;
+    max-width: none !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .gs-reviews-section article {
+    flex: 0 0 min(86vw, 340px) !important;
+    width: min(86vw, 340px) !important;
+    max-width: 340px !important;
+    min-height: 250px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    margin: 0 !important;
+    padding: 22px !important;
+    border-radius: 22px !important;
+    transform: none !important;
+    opacity: 1 !important;
+    background: rgba(255, 255, 255, 0.62) !important;
+    border: 1px solid rgba(255, 255, 255, 0.78) !important;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.12) !important;
+    scroll-snap-align: start !important;
+  }
+
+  .gs-reviews-section article div:first-child {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    color: #0ea5e9 !important;
+    font-size: 34px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .gs-reviews-section article div:first-child span {
+    font-size: 15px !important;
+    letter-spacing: 0.12em !important;
+  }
+
+  .gs-reviews-section article p {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 5 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  .gs-reviews-section article .mt-5.flex {
+    margin-top: 18px !important;
+  }
+
+  .gs-reviews-section article .mt-5.flex > span {
+    width: 42px !important;
+    height: 42px !important;
+    flex: 0 0 42px !important;
+  }
+
+  .gs-reviews-section article .mt-5.flex p {
+    display: block !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+  }
+
+  .gs-review-dots {
+    margin-top: 8px !important;
+    gap: 8px !important;
+  }
+
+  .gs-review-dots button {
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 999px !important;
+    background: rgba(14, 165, 233, 0.26) !important;
+    transition: width 180ms ease, background 180ms ease !important;
+  }
+
+  .gs-review-dots button.active {
+    width: 24px !important;
+    background: #0ea5e9 !important;
+  }
+
+  .gs-final-cta-section {
+    min-height: 320px !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 52px 16px !important;
+  }
+
+  .gs-final-cta-section img {
+    object-position: center bottom !important;
+  }
+
+  .gs-final-cta-section h2 {
+    font-size: clamp(30px, 8vw, 38px) !important;
+    line-height: 1.15 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .gs-final-cta-section a {
+    width: 100% !important;
+    max-width: 280px !important;
+    min-height: 48px !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
+  }
+
+  .gs-footer > div {
+    padding: 32px 16px 20px !important;
+  }
+
+  .gs-footer .grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+
+  .gs-footer h3 {
+    margin: 0 0 10px !important;
+    padding-top: 14px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+    font-size: 14px !important;
+  }
+
+  .gs-footer a,
+  .gs-footer p {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+  }
+
+  .gs-footer .mt-4.flex.gap-3 span {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .gs-footer input {
+    min-height: 46px !important;
+    font-size: 14px !important;
+  }
+
+  .gs-footer button {
+    width: 46px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+  }
+}
+
+@media (max-width: 359px) {
+  .gs-trip-form {
+    grid-template-columns: 1fr !important;
+  }
+
+  .gs-trip-field,
+  .gs-trip-submit {
+    grid-column: 1 / -1 !important;
+  }
+
+  .gs-home-title {
+    font-size: 34px !important;
+  }
+}
+
+/* Itinerary preview card refinement */
+.gs-itinerary-preview {
+  isolation: isolate;
+}
+
+.gs-preview-hero-img {
+  transition: transform 700ms ease, filter 700ms ease;
+}
+
+.gs-itinerary-preview:hover .gs-preview-hero-img {
+  transform: scale(1.04);
+}
+
+.gs-preview-cta i,
+.gs-preview-tours i {
+  transition: transform 220ms ease;
+}
+
+.gs-preview-cta:hover i,
+.gs-preview-tours:hover i {
+  transform: translateX(4px);
+}
+
+@media (max-width: 767px) {
+  .gs-itinerary-showcase {
+    display: flex !important;
+    flex-direction: column !important;
+    margin-top: 32px !important;
+    margin-inline: 0 !important;
+    padding: 0 !important;
+    border-radius: 28px !important;
+    background: linear-gradient(180deg, #f7fffb 0%, #e9f8f1 55%, #eef9fb 100%) !important;
+    box-shadow: 0 18px 46px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .gs-itinerary-showcase > .grid {
+    order: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 18px !important;
+  }
+
+  .gs-highlight-panel {
+    order: 1 !important;
+    padding: 18px !important;
+    border-radius: 24px !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    display: none !important;
+  }
+
+  .gs-highlight-panel h3 {
+    font-size: 24px !important;
+    line-height: 1.18 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .gs-highlight-panel > div:first-child p {
+    max-width: none !important;
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+  }
+
+  .gs-highlight-options {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    margin-top: 16px !important;
+  }
+
+  .gs-highlight-option {
+    min-height: 78px !important;
+    padding: 12px !important;
+    border-radius: 18px !important;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  .gs-highlight-option > span:first-child {
+    gap: 10px !important;
+  }
+
+  .gs-highlight-option > span:first-child > span {
+    width: 40px !important;
+    height: 40px !important;
+    flex: 0 0 40px !important;
+  }
+
+  .gs-highlight-option b {
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+  }
+
+  .gs-highlight-option .feature-desc {
+    display: none !important;
+  }
+
+  .gs-itinerary-preview {
+    order: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin-inline: auto !important;
+    width: 100% !important;
+    max-width: 390px !important;
+    padding: 20px !important;
+    border-radius: 30px !important;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(20, 184, 166, 0.22), transparent 34%),
+      linear-gradient(180deg, #064432 0%, #003a2b 100%) !important;
+    box-shadow: 0 24px 60px rgba(6, 78, 59, 0.24) !important;
+  }
+
+  .gs-preview-hero {
+    order: 1 !important;
+    min-height: 222px !important;
+    border-radius: 24px !important;
+  }
+
+  .gs-preview-hero-img {
+    height: 222px !important;
+    object-position: center !important;
+    filter: saturate(1.08) contrast(1.04) !important;
+  }
+
+  .gs-preview-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(3, 47, 35, 0.08) 0%, rgba(3, 47, 35, 0.18) 36%, rgba(2, 36, 27, 0.88) 100%);
+    pointer-events: none;
+  }
+
+  .gs-preview-copy {
+    bottom: 18px !important;
+    left: 18px !important;
+    right: 18px !important;
+    z-index: 2 !important;
+  }
+
+  .gs-preview-copy > span {
+    display: block !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0.14em !important;
+    color: #b7f7d4 !important;
+  }
+
+  .gs-preview-title {
+    max-width: 300px !important;
+    margin-top: 8px !important;
+    font-size: clamp(24px, 7vw, 30px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .gs-preview-subtitle {
+    margin-top: 8px !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    color: rgba(255, 255, 255, 0.78) !important;
+  }
+
+  .gs-preview-days {
+    order: 2 !important;
+    margin-top: 18px !important;
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  .gs-preview-mobile-options {
+    order: 3 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    margin-top: 16px !important;
+  }
+
+  .gs-preview-mobile-option {
+    display: flex !important;
+    min-height: 74px !important;
+    align-items: center !important;
+    gap: 10px !important;
+    border-radius: 18px !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    padding: 10px !important;
+    text-align: left !important;
+    color: rgba(255, 255, 255, 0.86) !important;
+    transition: transform 220ms ease, background 220ms ease, color 220ms ease !important;
+  }
+
+  .gs-preview-mobile-option span {
+    display: grid !important;
+    width: 40px !important;
+    height: 40px !important;
+    flex: 0 0 40px !important;
+    place-items: center !important;
+    border-radius: 999px !important;
+    background: rgba(209, 250, 229, 0.14) !important;
+    color: #bbf7d0 !important;
+    font-size: 18px !important;
+  }
+
+  .gs-preview-mobile-option b {
+    min-width: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.18 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .gs-preview-mobile-option.active {
+    background: #fff !important;
+    color: #064e3b !important;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16) !important;
+  }
+
+  .gs-preview-mobile-option.active span {
+    background: #ecfdf5 !important;
+    color: #059669 !important;
+  }
+
+  .gs-preview-mobile-option:active {
+    transform: scale(0.98) !important;
+  }
+
+  .gs-home-page .preview-day-item {
+    display: grid !important;
+    grid-template-columns: 64px minmax(0, 1fr) 78px !important;
+    min-height: 92px !important;
+    gap: 12px !important;
+    padding: 12px !important;
+    border-radius: 20px !important;
+    background: rgba(255, 255, 255, 0.075) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .gs-home-page .preview-day-item:nth-of-type(n+3) {
+    display: none !important;
+  }
+
+  .gs-preview-day-label {
+    align-self: center !important;
+    display: grid !important;
+    min-height: 36px !important;
+    place-items: center !important;
+    border-radius: 999px !important;
+    background: rgba(180, 244, 211, 0.14) !important;
+    font-size: 12px !important;
+    color: #defbea !important;
+  }
+
+  .gs-preview-day-copy {
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  .gs-preview-day-title {
+    margin-bottom: 3px !important;
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+    white-space: normal !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 1 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  .gs-preview-day-img {
+    width: 78px !important;
+    height: 68px !important;
+    border-radius: 16px !important;
+  }
+
+  .gs-preview-cta {
+    min-height: 52px !important;
+    margin-top: 24px !important;
+    border-radius: 999px !important;
+    font-size: 15px !important;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.16) !important;
+  }
+
+  .gs-preview-stats {
+    order: 1 !important;
+    margin: 0 0 18px !important;
+    padding: 16px !important;
+    border-radius: 24px !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .gs-preview-stats-heading {
+    display: block !important;
+    margin-bottom: 4px !important;
+    text-align: left !important;
+  }
+
+  .gs-preview-stats-heading span {
+    display: inline-flex !important;
+    align-items: center !important;
+    min-height: 28px !important;
+    border-radius: 999px !important;
+    background: #ecfdf5 !important;
+    padding: 0 12px !important;
+    color: #047857 !important;
+    font-size: 11px !important;
+    font-weight: 900 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+  }
+
+  .gs-preview-stats-heading strong {
+    display: block !important;
+    margin-top: 9px !important;
+    color: #07111f !important;
+    font-size: 19px !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .gs-preview-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .gs-preview-stat-card {
+    display: grid !important;
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 10px !important;
+    padding: 8px !important;
+    border-radius: 18px !important;
+    background: linear-gradient(180deg, rgba(240, 253, 244, 0.86), rgba(255, 255, 255, 0.92)) !important;
+  }
+
+  .gs-preview-stat-card span {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .gs-preview-stat-card p {
+    min-width: 0 !important;
+    margin: 0 !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  .gs-preview-stat-card b {
+    display: block !important;
+    font-size: clamp(20px, 6vw, 26px) !important;
+    line-height: 1.08 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .gs-preview-stat-card b::first-line {
+    white-space: nowrap;
+  }
+
+  .gs-preview-stat-card span + p span {
+    display: block !important;
+    margin-top: 5px !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  .gs-preview-tours {
+    width: 100% !important;
+    min-height: 50px !important;
+    border-radius: 16px !important;
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 359px) {
+  .gs-home-page .preview-day-item {
+    grid-template-columns: 56px minmax(0, 1fr) 66px !important;
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+
+  .gs-preview-day-img {
+    width: 66px !important;
+    height: 62px !important;
+  }
+
+  .gs-preview-stat-card {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Footer refresh */
+.gs-footer a,
+.gs-footer button {
+  transition: color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.gs-footer a:hover,
+.gs-footer button:hover {
+  transform: translateY(-1px);
+}
+
+.gs-footer-socials span {
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.gs-footer-socials span:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 767px) {
+  .gs-footer {
+    background:
+      radial-gradient(circle at 18% 0%, rgba(16, 185, 129, 0.24), transparent 32%),
+      linear-gradient(180deg, #05361f 0%, #063f27 48%, #021f14 100%) !important;
+  }
+
+  .gs-footer-inner {
+    padding: 34px 16px 22px !important;
+  }
+
+  .gs-footer-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .gs-footer-brand,
+  .gs-footer-newsletter {
+    padding: 18px !important;
+    border-radius: 22px !important;
+    background: rgba(255, 255, 255, 0.075) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .gs-footer-logo {
+    margin-bottom: 12px !important;
+  }
+
+  .gs-footer-logo img {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .gs-footer-logo span {
+    font-size: 18px !important;
+    letter-spacing: 0.04em !important;
+  }
+
+  .gs-footer-brand p,
+  .gs-footer-newsletter p {
+    max-width: none !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    color: rgba(255, 255, 255, 0.76) !important;
+  }
+
+  .gs-footer-socials {
+    margin-top: 16px !important;
+    gap: 10px !important;
+  }
+
+  .gs-footer-socials span {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    font-size: 16px !important;
+  }
+
+  .gs-footer-col {
+    padding: 14px 16px !important;
+    border-radius: 18px !important;
+    background: rgba(255, 255, 255, 0.045) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .gs-footer-col h3,
+  .gs-footer-newsletter h3 {
+    margin: 0 0 12px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    font-size: 13px !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    color: rgba(236, 253, 245, 0.96) !important;
+  }
+
+  .gs-footer-col > div {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px 12px !important;
+  }
+
+  .gs-footer-col a {
+    min-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    border-radius: 12px !important;
+    padding: 0 10px !important;
+    background: rgba(255, 255, 255, 0.045) !important;
+    color: rgba(255, 255, 255, 0.76) !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+  }
+
+  .gs-footer-col a:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+  }
+
+  .gs-footer-form {
+    min-height: 50px !important;
+    margin-top: 14px !important;
+    border-radius: 16px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    padding: 4px !important;
+  }
+
+  .gs-footer-form input {
+    min-height: 42px !important;
+    padding-inline: 12px !important;
+    font-size: 14px !important;
+  }
+
+  .gs-footer-form button {
+    width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    border-radius: 13px !important;
+    background: #10a36f !important;
+  }
+
+  .gs-footer-bottom {
+    margin-top: 18px !important;
+    padding-top: 16px !important;
+    text-align: center !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+    color: rgba(255, 255, 255, 0.58) !important;
+  }
+}
+
+@media (max-width: 359px) {
+  .gs-footer-col > div {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Home hero mobile polish */
+@media (max-width: 767px) {
+  app-home .gs-home-hero {
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #073f2d !important;
+  }
+
+  app-home .gs-home-hero__image {
+    min-height: 100% !important;
+    object-position: 62% center !important;
+    filter: saturate(1.05) contrast(1.04) brightness(0.72) !important;
+  }
+
+  app-home .gs-home-hero::after {
+    background:
+      linear-gradient(180deg, rgba(4, 32, 25, 0.48) 0%, rgba(4, 32, 25, 0.22) 34%, rgba(4, 32, 25, 0.86) 100%) !important;
+  }
+
+  app-home .gs-home-hero__inner {
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 104px 16px 26px !important;
+  }
+
+  app-home .gs-hero-stack {
+    width: 100% !important;
+    gap: 16px !important;
+  }
+
+  app-home .gs-home-copy {
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  app-home .gs-home-title {
+    max-width: 360px !important;
+    font-size: clamp(40px, 11vw, 48px) !important;
+    line-height: 1.02 !important;
+    letter-spacing: 0 !important;
+    text-shadow: 0 8px 24px rgba(0, 0, 0, 0.28) !important;
+  }
+
+  app-home .gs-home-title em {
+    margin-top: 4px !important;
+    font-size: 0.74em !important;
+    line-height: 1.12 !important;
+    color: #b9f7a9 !important;
+    letter-spacing: 0 !important;
+  }
+
+  app-home .gs-home-description {
+    max-width: 340px !important;
+    margin-top: 12px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 15px !important;
+    line-height: 1.55 !important;
+    -webkit-line-clamp: 3 !important;
+  }
+
+  app-home .gs-home-actions {
+    margin-top: 16px !important;
+    gap: 10px !important;
+  }
+
+  app-home .gs-home-action {
+    min-height: 52px !important;
+    flex: 1 1 100% !important;
+    border-radius: 16px !important;
+    font-size: 15px !important;
+  }
+
+  app-home .gs-home-action:not(.gs-home-action--primary) {
+    display: none !important;
+  }
+
+  app-home .gs-home-action--primary {
+    background: #0b9467 !important;
+    border-color: #0b9467 !important;
+    box-shadow: 0 16px 34px rgba(2, 44, 34, 0.28) !important;
+  }
+
+  app-home .gs-trip-finder {
+    width: 100% !important;
+    margin-top: 14px !important;
+    padding-top: 0 !important;
+    overflow: hidden !important;
+    border-radius: 24px !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    box-shadow: 0 22px 52px rgba(3, 43, 31, 0.2) !important;
+  }
+
+  app-home .gs-trip-tabs {
+    position: relative !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+    transform: none !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(6, 78, 59, 0.1) !important;
+    border-radius: 0 !important;
+    background: rgba(248, 252, 248, 0.94) !important;
+    box-shadow: none !important;
+    padding: 8px !important;
+  }
+
+  app-home .gs-trip-tab {
+    min-width: max-content !important;
+    min-height: 42px !important;
+    padding: 0 16px !important;
+    border-radius: 999px !important;
+    font-size: 13px !important;
+    color: #315044 !important;
+  }
+
+  app-home .gs-trip-tab.active {
+    background: #0b7d55 !important;
+    color: #fff !important;
+    box-shadow: 0 10px 22px rgba(5, 150, 105, 0.24) !important;
+  }
+
+  app-home .gs-trip-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+
+  app-home .gs-trip-field:first-child,
+  app-home .gs-trip-submit {
+    grid-column: 1 / -1 !important;
+  }
+
+  app-home .gs-trip-field label {
+    margin-bottom: 7px !important;
+    color: #36564b !important;
+    font-size: 12px !important;
+  }
+
+  app-home .gs-trip-control-wrap {
+    border-radius: 14px !important;
+  }
+
+  app-home .gs-trip-control {
+    height: 48px !important;
+    min-height: 48px !important;
+    border-radius: 14px !important;
+    font-size: 14px !important;
+  }
+
+  app-home .gs-trip-submit {
+    height: 50px !important;
+    margin-top: 2px !important;
+    border-radius: 14px !important;
+    font-size: 15px !important;
+  }
+
+  app-home .gs-hero-stats {
+    display: none !important;
+  }
+}
+
+@media (max-width: 359px) {
+  app-home .gs-home-title {
+    font-size: 37px !important;
+  }
+
+  app-home .gs-trip-form {
+    grid-template-columns: 1fr !important;
+  }
+
+  app-home .gs-trip-field {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* Wallet mobile card and spending chart polish */
+@media (max-width: 767px) {
+  app-home .gs-wallet-card-preview {
+    height: auto !important;
+    min-height: 184px !important;
+    aspect-ratio: 1.72 / 1 !important;
+    border-radius: 22px !important;
+    padding: 18px !important;
+    background:
+      radial-gradient(circle at 74% 76%, rgba(255, 255, 255, 0.13), transparent 25%),
+      repeating-linear-gradient(150deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 10px),
+      linear-gradient(135deg, #006b45 0%, #004b35 54%, #003322 100%) !important;
+    box-shadow: 0 18px 42px rgba(6, 78, 59, 0.22) !important;
+  }
+
+  app-home .gs-wallet-card-preview > .absolute.inset-0,
+  app-home .gs-wallet-card-preview > .absolute.right-10,
+  app-home .gs-wallet-card-preview > .absolute.right-28 {
+    opacity: 0.45 !important;
+  }
+
+  app-home .gs-wallet-card-preview .absolute.left-6.top-6 {
+    left: 18px !important;
+    top: 18px !important;
+    width: 50px !important;
+    height: 34px !important;
+    border-radius: 12px !important;
+  }
+
+  app-home .gs-wallet-card-preview .bi-wifi {
+    right: 18px !important;
+    top: 20px !important;
+    font-size: 18px !important;
+  }
+
+  app-home .gs-wallet-card-preview > p.absolute.left-6 {
+    left: 18px !important;
+    top: 74px !important;
+    max-width: 220px !important;
+    font-size: 18px !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0.12em !important;
+  }
+
+  app-home .gs-wallet-card-preview .absolute.inset-x-6.bottom-7 {
+    left: 18px !important;
+    right: 18px !important;
+    bottom: 18px !important;
+    align-items: flex-end !important;
+  }
+
+  app-home .gs-wallet-card-preview .absolute.inset-x-6.bottom-7 p:first-child {
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+    color: rgba(255, 255, 255, 0.78) !important;
+  }
+
+  app-home .gs-wallet-card-preview .absolute.inset-x-6.bottom-7 p:first-child span {
+    margin-left: 8px !important;
+    font-size: 18px !important;
+  }
+
+  app-home .gs-wallet-card-preview .absolute.inset-x-6.bottom-7 p:last-child {
+    max-width: 170px !important;
+    margin-top: 10px !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0.04em !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  app-home .gs-wallet-card-preview .absolute.inset-x-6.bottom-7 > span {
+    font-size: 32px !important;
+    line-height: 1 !important;
+  }
+
+  app-home .gs-wallet-spending-card {
+    padding: 18px !important;
+    border-radius: 22px !important;
+    background: rgba(255, 255, 255, 0.88) !important;
+    box-shadow: 0 18px 44px rgba(15, 23, 42, 0.08) !important;
+  }
+
+  app-home .gs-wallet-spending-card > .flex.items-center.justify-between {
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  app-home .gs-wallet-spending-card h3 {
+    max-width: 170px !important;
+    font-size: 22px !important;
+    line-height: 1.16 !important;
+    letter-spacing: 0 !important;
+  }
+
+  app-home .gs-wallet-spending-card h3::after {
+    content: "Theo danh mục đặt dịch vụ";
+    display: block;
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  app-home .gs-wallet-spending-card button {
+    min-width: 116px !important;
+    min-height: 46px !important;
+    border-radius: 16px !important;
+    padding-inline: 14px !important;
+    font-size: 13px !important;
+  }
+
+  app-home .gs-wallet-spending-card button i {
+    margin-left: 10px !important;
+  }
+
+  app-home .gs-wallet-spending-card .mt-4.grid.grid-cols-\[38px_1fr\] {
+    grid-template-columns: 34px minmax(0, 1fr) !important;
+    gap: 10px !important;
+    margin-top: 18px !important;
+  }
+
+  app-home .gs-wallet-spending-card .flex.h-32 {
+    height: 148px !important;
+    font-size: 12px !important;
+    color: #64748b !important;
+  }
+
+  app-home .gs-wallet-spending-card .relative.h-32 {
+    height: 148px !important;
+    border-left-color: #dbe7e2 !important;
+  }
+
+  app-home .gs-wallet-spending-card .absolute.inset-x-0.bottom-0.flex {
+    padding-inline: 8px !important;
+    justify-content: space-between !important;
+  }
+
+  app-home .gs-wallet-spending-card .gs-bar-rise {
+    width: clamp(34px, 11vw, 48px) !important;
+    border-radius: 10px 10px 0 0 !important;
+  }
+
+  app-home .gs-wallet-spending-card .ml-\[52px\] {
+    margin-left: 34px !important;
+    margin-top: 12px !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    color: #475569 !important;
+  }
+
+  app-home .gs-wallet-spending-card .ml-\[52px\] span {
+    display: grid !important;
+    min-width: 0 !important;
+    justify-items: center !important;
+    gap: 5px !important;
+  }
+
+  app-home .gs-wallet-spending-card .ml-\[52px\] i {
+    font-size: 18px !important;
+    line-height: 1 !important;
+  }
+}
+
+@media (max-width: 359px) {
+  app-home .gs-wallet-spending-card {
+    padding: 14px !important;
+  }
+
+  app-home .gs-wallet-card-preview > p.absolute.left-6 {
+    font-size: 15px !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  app-home .gs-wallet-spending-card .ml-\[52px\] {
+    font-size: 10px !important;
+  }
+}
+
+/* Wallet section mobile layout */
+@media (max-width: 767px) {
+  app-home .gs-wallet-section {
+    padding: 52px 14px !important;
+    background: linear-gradient(180deg, #f8fffb 0%, #edf8f1 48%, #f7fbff 100%) !important;
+    overflow-x: hidden !important;
+  }
+
+  app-home .gs-wallet-section > .relative.mx-auto {
+    width: 100% !important;
+    max-width: 540px !important;
+    margin-inline: auto !important;
+  }
+
+  app-home .gs-wallet-section .text-center.cursor-pointer {
+    width: min(100%, 504px) !important;
+    margin-inline: auto !important;
+    padding-inline: 18px !important;
+    text-align: left !important;
+  }
+
+  app-home .gs-wallet-section h2 {
+    font-size: 30px !important;
+    line-height: 1.15 !important;
+  }
+
+  app-home .gs-wallet-section h2 + p {
+    max-width: none !important;
+    margin-top: 8px !important;
+    margin-inline: 0 !important;
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+  }
+
+  app-home .gs-wallet-section .text-center.cursor-pointer .mx-auto.mt-3 {
+    display: none !important;
+  }
+
+  app-home .gs-wallet-section .mt-4.grid.items-start {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 16px !important;
+    margin-top: 22px !important;
+    width: 100% !important;
+  }
+
+  app-home .gs-wallet-dashboard-pane {
+    order: 1 !important;
+    gap: 14px !important;
+    padding-top: 0 !important;
+    width: min(100%, 504px) !important;
+    margin-inline: auto !important;
+  }
+
+  app-home .gs-wallet-steps-pane {
+    order: 2 !important;
+    padding-top: 0 !important;
+    width: min(100%, 504px) !important;
+    margin-inline: auto !important;
+  }
+
+  app-home .gs-wallet-phone-pane {
+    order: 3 !important;
+    padding-top: 2px !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  app-home .gs-wallet-phone-pane > .relative.w-\[260px\] {
+    width: min(245px, 68vw) !important;
+    margin-inline: auto !important;
+    opacity: 0.96 !important;
+  }
+
+  app-home .gs-wallet-phone-pane .relative.h-\[525px\] {
+    height: 470px !important;
+  }
+
+  app-home .gs-wallet-card-preview {
+    width: 100% !important;
+    min-height: 178px !important;
+    aspect-ratio: 1.78 / 1 !important;
+    margin-inline: auto !important;
+  }
+
+  app-home .gs-wallet-spending-card {
+    width: 100% !important;
+    margin-inline: auto !important;
+  }
+
+  app-home .gs-wallet-steps-pane > .flex.h-\[487px\] {
+    height: auto !important;
+    width: 100% !important;
+    padding: 18px !important;
+    border-radius: 22px !important;
+    background: rgba(255, 255, 255, 0.86) !important;
+  }
+
+  app-home .gs-wallet-steps-pane h3 {
+    text-align: left !important;
+    font-size: 21px !important;
+    line-height: 1.2 !important;
+  }
+
+  app-home .gs-wallet-steps-pane .mt-2.flex.flex-1 {
+    margin-top: 16px !important;
+    align-items: stretch !important;
+  }
+
+  app-home .gs-wallet-steps-pane .relative.w-full.space-y-10 {
+    display: grid !important;
+    gap: 12px !important;
+  }
+
+  app-home .gs-wallet-steps-pane .relative.w-full.space-y-10::before {
+    display: none !important;
+  }
+
+  app-home .gs-wallet-steps-pane .grid.grid-cols-\[40px_62px_1fr\] {
+    display: grid !important;
+    grid-template-columns: 40px minmax(0, 1fr) !important;
+    gap: 12px !important;
+    align-items: start !important;
+    border-radius: 18px !important;
+    background: rgba(240, 253, 244, 0.72) !important;
+    padding: 12px !important;
+  }
+
+  app-home .gs-wallet-steps-pane .grid.grid-cols-\[40px_62px_1fr\] > span:nth-child(2) {
+    display: none !important;
+  }
+
+  app-home .gs-wallet-steps-pane .grid.grid-cols-\[40px_62px_1fr\] p {
+    margin: 0 !important;
+  }
+
+  app-home .gs-wallet-steps-pane .grid.grid-cols-\[40px_62px_1fr\] b {
+    font-size: 15px !important;
+  }
+
+  app-home .gs-wallet-steps-pane .grid.grid-cols-\[40px_62px_1fr\] span span,
+  app-home .gs-wallet-steps-pane .grid.grid-cols-\[40px_62px_1fr\] p span {
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  app-home .gs-wallet-section .mt-4.grid.items-start {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    align-items: start !important;
+  }
+
+  app-home .gs-wallet-dashboard-pane {
+    grid-column: 1 / -1 !important;
+  }
+}

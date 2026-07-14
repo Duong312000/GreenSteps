@@ -311,10 +311,11 @@
             </div>
 
             <div class="flex flex-col gap-5 text-[17px] font-semibold text-[#184A37]">
-                <ng-container *ngFor="let tab of allTabs">
+                <ng-container *ngFor="let tab of filteredMobileTabs">
                     <a *ngIf="tab.link"
                        [routerLink]="tab.link"
-                       (click)="toggleMobileMenu()"
+                       [queryParams]="tab.queryParams || null"
+                       (click)="smartSearchQuery = ''; toggleMobileMenu()"
                        class="hover:text-[#0E9F6E] transition-colors"
                        style="text-decoration:none;">{{ tab.label }}</a>
                     <a *ngIf="tab.action === 'green_handbook'"
@@ -325,6 +326,9 @@
                        [class.text-\[#0E9F6E\]]="isAiPlannerActive()"
                        class="hover:text-[#0E9F6E] cursor-pointer transition-colors">{{ tab.label }}</a>
                 </ng-container>
+                <p *ngIf="filteredMobileTabs.length === 0" class="rounded-2xl bg-[#184A37]/5 px-4 py-3 text-sm font-semibold text-[#184A37]/60">
+                    Không tìm thấy danh mục phù hợp.
+                </p>
             </div>
         </div>
 

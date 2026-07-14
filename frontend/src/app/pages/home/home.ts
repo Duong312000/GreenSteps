@@ -45,6 +45,7 @@ export class HomeComponent implements OnInit {
   public guests: string = '2';
   public budget: string = '2M-5M';
   public activeDestinationIndex = 1;
+  public activeReviewIndex = 0;
   public isDestinationTransitioning = false;
   public destinationDirection: 'prev' | 'next' = 'next';
   public wrappingDestinationIndex: number | null = null;
@@ -141,6 +142,54 @@ export class HomeComponent implements OnInit {
 
   public selectHighlight(section: 'eco' | 'guides' | 'dates' | 'ai') {
     this.activeHighlight = section;
+    this.scrollPreviewIntoViewOnMobile();
+  }
+
+  public scrollToReview(index: number, track: HTMLElement): void {
+    const cards = Array.from(track.querySelectorAll('article'));
+    const card = cards[index] as HTMLElement | undefined;
+    if (!card) return;
+
+    this.activeReviewIndex = index;
+    track.scrollTo({
+      left: card.offsetLeft - track.offsetLeft,
+      behavior: 'smooth'
+    });
+  }
+
+  public onReviewsScroll(track: HTMLElement): void {
+    if (typeof window === 'undefined' || window.innerWidth > 767) return;
+
+    const cards = Array.from(track.querySelectorAll('article')) as HTMLElement[];
+    if (cards.length === 0) return;
+
+    const center = track.scrollLeft + track.clientWidth / 2;
+    let closestIndex = 0;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    cards.forEach((card, index) => {
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+      const distance = Math.abs(cardCenter - center);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    this.activeReviewIndex = closestIndex;
+  }
+
+  private scrollPreviewIntoViewOnMobile(): void {
+    if (typeof window === 'undefined' || window.innerWidth > 767) return;
+
+    window.setTimeout(() => {
+      const preview = document.getElementById('itinerary-preview');
+      if (!preview) return;
+
+      const headerOffset = 76;
+      const top = preview.getBoundingClientRect().top + window.scrollY - headerOffset;
+      window.scrollTo({ top, behavior: 'smooth' });
+    }, 0);
   }
 
   public updatePreviewFromDatabase() {
