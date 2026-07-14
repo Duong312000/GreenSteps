@@ -350,7 +350,7 @@ export class BookingComponent implements OnInit {
     const targetId = this.activeTour?.id || this.bookingContext.tourId || 'sample_tour_id';
 
     const bookingData: any = {
-      type: targetId.startsWith('iti_') ? 'itinerary' : 'tour',
+      type: (targetId.toLowerCase().startsWith('srv_') || targetId.startsWith('SRV_')) ? 'service' : (targetId.startsWith('iti_') ? 'itinerary' : 'tour'),
       targetId: targetId,
       bookingDate: this.bookingContext.checkIn,
       guests: this.bookingContext.guestCount,

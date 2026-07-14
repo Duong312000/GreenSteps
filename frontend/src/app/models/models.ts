@@ -48,6 +48,7 @@ export interface Tour {
   tags?: string[];
   data: Activity[][];
   isRecommended?: boolean;
+  isService?: boolean;
 }
 
 export interface Itinerary {
@@ -89,6 +90,7 @@ export interface Service {
   image_url?: string;
   max_capacity?: number;
   rejection_reason?: string;
+  isRecommended?: boolean;
 }
 
 export interface Booking {

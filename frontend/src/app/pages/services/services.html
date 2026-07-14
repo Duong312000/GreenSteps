@@ -1,0 +1,177 @@
+<main class="main-viewport services-page">
+    <!-- HERO HEADER SECTION -->
+    <header class="services-hero-banner">
+        <div class="banner-gradient-overlay"></div>
+        <div class="banner-content-container">
+            <span class="banner-category-badge">GreenSteps Partner Services</span>
+            <h1 class="banner-title">{{ getCategoryTitle() }}</h1>
+            <p class="banner-subtitle">{{ getCategorySub() }}</p>
+        </div>
+    </header>
+
+    <!-- DESTINATION QUICK BANNERS -->
+    <section class="quick-dest-section">
+        <div class="dest-card" (click)="filterByDestination('Đà Lạt')">
+            <img src="image/1dc8619487310884c9d631d689ece1e7.jpg" alt="Đà Lạt">
+            <div class="dest-overlay">
+                <h3>Đà Lạt</h3>
+                <span class="dest-badge">Thành phố xanh</span>
+            </div>
+        </div>
+        <div class="dest-card" (click)="filterByDestination('Phú Yên')">
+            <img src="image/15a0c52a7c13e6fb493d5ce4cb1b644b.jpg" alt="Phú Yên">
+            <div class="dest-overlay">
+                <h3>Phú Yên</h3>
+                <span class="dest-badge">Xứ Nẫu bình dị</span>
+            </div>
+        </div>
+        <div class="dest-card" (click)="filterByDestination('Đà Nẵng')">
+            <img src="image/Viet Nam.png" alt="Đà Nẵng">
+            <div class="dest-overlay">
+                <h3>Đà Nẵng</h3>
+                <span class="dest-badge">Thành phố đáng sống</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- FILTER BOARD -->
+    <section class="services-filter-board">
+        <div class="filter-top-row">
+            <div class="search-box-wrapper">
+                <i class="bi bi-search"></i>
+                <input type="text" [(ngModel)]="searchQuery" (input)="filterServices()" placeholder="Tìm kiếm tên dịch vụ hoặc địa điểm...">
+            </div>
+            <div class="results-meta-row">
+                <span class="found-badge">Tìm thấy {{ filteredServices.length }} dịch vụ</span>
+                <button *ngIf="filterDest !== 'all' || filterPrice !== 'all' || filterRating !== 'all' || searchQuery || sortOrder !== 'popular'"
+                        (click)="resetFilters()"
+                        class="clear-filters-btn">
+                    <i class="bi bi-arrow-counterclockwise"></i> Đặt lại bộ lọc
+                </button>
+            </div>
+        </div>
+        
+        <div class="filter-dropdowns-row">
+            <!-- Dest -->
+            <div class="filter-select-group">
+                <label for="destSelect"><i class="bi bi-geo-alt"></i> Điểm đến</label>
+                <select id="destSelect" [(ngModel)]="filterDest" (change)="filterServices()">
+                    <option value="all">Tất cả điểm đến</option>
+                    <option value="Đà Lạt">Đà Lạt</option>
+                    <option value="Phú Yên">Phú Yên</option>
+                    <option value="Đà Nẵng">Đà Nẵng - Hội An</option>
+                </select>
+            </div>
+
+            <!-- Price -->
+            <div class="filter-select-group">
+                <label for="priceSelect"><i class="bi bi-currency-dollar"></i> Mức giá</label>
+                <select id="priceSelect" [(ngModel)]="filterPrice" (change)="filterServices()">
+                    <option value="all">Tất cả mức giá</option>
+                    <option value="under500k">Dưới 500.000đ</option>
+                    <option value="500k-1.5M">500.000đ - 1.500.000đ</option>
+                    <option value="above1.5M">Trên 1.500.000đ</option>
+                </select>
+            </div>
+
+            <!-- Rating -->
+            <div class="filter-select-group">
+                <label for="ratingSelect"><i class="bi bi-star"></i> Đánh giá</label>
+                <select id="ratingSelect" [(ngModel)]="filterRating" (change)="filterServices()">
+                    <option value="all">Tất cả đánh giá</option>
+                    <option value="above4.5">Từ 4.5★ trở lên</option>
+                    <option value="above4.0">Từ 4.0★ trở lên</option>
+                </select>
+            </div>
+
+            <!-- Sort order -->
+            <div class="filter-select-group">
+                <label for="sortSelect"><i class="bi bi-sort-down"></i> Sắp xếp</label>
+                <select id="sortSelect" [(ngModel)]="sortOrder" (change)="filterServices()">
+                    <option value="popular">Phổ biến nhất</option>
+                    <option value="rating">Đánh giá tốt nhất</option>
+                    <option value="cost_asc">Giá từ thấp đến cao</option>
+                    <option value="cost_desc">Giá từ cao đến thấp</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN SERVICES GRID -->
+    <section class="services-list-grid-section">
+        <div class="services-list-grid">
+            <!-- Skeleton cards when loading -->
+            <ng-container *ngIf="isPageLoading">
+              <div class="service-display-card skeleton-card" *ngFor="let s of [1, 2, 3, 4, 5, 6]">
+                <div class="skeleton-image skeleton"></div>
+                <div class="card-body-skeleton">
+                  <div class="skeleton skeleton-text" style="width: 35%; height: 12px; margin-bottom: 12px;"></div>
+                  <div class="skeleton skeleton-title" style="width: 80%; height: 18px; margin-bottom: 12px;"></div>
+                  <div class="skeleton skeleton-text" style="width: 50%; height: 12px; margin-bottom: 16px;"></div>
+                  <div class="skeleton skeleton-btn" style="width: 100%; height: 36px;"></div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Real cards when not loading -->
+            <ng-container *ngIf="!isPageLoading">
+              <!-- Service cards rendered dynamically -->
+              <div class="service-display-card" *ngFor="let svc of filteredServices" [routerLink]="['/tours', svc.id]">
+                  <div class="card-image-wrapper">
+                      <!-- AI Recommended Badge -->
+                      <div *ngIf="svc.isRecommended" class="recommend-badge-overlay">
+                          <i class="bi bi-patch-check-fill animate-pulse"></i> Đề xuất cho bạn
+                      </div>
+                      
+                      <img [src]="svc.image_url || 'image/Viet Nam.png'" [alt]="svc.name" class="service-card-img">
+                      
+                      <!-- Cost pill overlay -->
+                      <div class="card-price-overlay">
+                          <span class="price-value">{{ svc.cost | number:'1.0-0':'vi-VN' }}đ</span>
+                          <span class="price-unit">/dịch vụ</span>
+                      </div>
+
+                      <span class="category-type-tag">{{ getCategoryTitle().replace('Không gian ', '').replace('Phương Tiện ', '').replace('Ẩm Thực ', '').replace('Điểm Tham Quan & ', '') }}</span>
+                  </div>
+                  
+                  <div class="card-details-content">
+                      <div class="card-region-row">
+                          <i class="bi bi-geo-alt-fill text-emerald-500"></i>
+                          <span>{{ svc.destination }}</span>
+                      </div>
+                      <h3 class="card-service-title">{{ svc.name }}</h3>
+                      
+                      <!-- Ratings & Carbon row -->
+                      <div class="card-metrics-row">
+                          <div class="rating-stars-badge">
+                              <i class="bi bi-star-fill"></i>
+                              <span>{{ svc.rating || 5.0 }}</span>
+                              <span class="reviews-count">({{ svc.bookings_count || 0 }} lượt đặt)</span>
+                          </div>
+                          
+                          <div class="carbon-reduction-badge">
+                              <i class="bi bi-leaf-fill"></i>
+                              <span>{{ svc.carbon || 0 }} kg CO₂</span>
+                          </div>
+                      </div>
+
+                      <!-- Button view details -->
+                      <div class="card-actions-wrapper">
+                          <button class="view-details-action-btn">
+                              Xem chi tiết dịch vụ <i class="bi bi-arrow-right-short"></i>
+                          </button>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Empty view when no results found -->
+              <div *ngIf="filteredServices.length === 0" class="empty-results-fallback">
+                  <i class="bi bi-search-heart text-emerald-500"></i>
+                  <h3>Không tìm thấy dịch vụ phù hợp</h3>
+                  <p>Hãy thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm khác để khám phá nhiều dịch vụ xanh hơn.</p>
+                  <button (click)="resetFilters()" class="reset-empty-btn">Xem tất cả dịch vụ</button>
+              </div>
+            </ng-container>
+        </div>
+    </section>
+</main>

@@ -39,6 +39,7 @@
                 <ng-container *ngFor="let tab of allTabs; let i = index">
                     <a *ngIf="tab.link"
                        [routerLink]="tab.link"
+                       [queryParams]="tab.queryParams"
                        routerLinkActive="!text-[#0E9F6E]"
                        [style.visibility]="overflowTabIndices.has(i) ? 'hidden' : 'visible'"
                        class="nav-tab-item whitespace-nowrap flex-shrink-0 text-[18px] font-semibold

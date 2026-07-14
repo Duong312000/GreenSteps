@@ -80,6 +80,53 @@ export class ApiService {
     const cached = this.getCachedData(cacheKey);
     if (cached) return cached;
 
+    if (id && (id.toLowerCase().startsWith('srv_') || id.startsWith('SRV_'))) {
+      try {
+        const s = await this.getServiceDetails(id);
+        if (s) {
+          const mappedType = s.type === 'stay' ? 'Lưu trú' :
+                             s.type === 'transport' ? 'Phương tiện' :
+                             s.type === 'food' ? 'Ăn uống' : 'Giải trí';
+          const tour: Tour = {
+            id: s.id,
+            title: s.name || s.name_service,
+            destination: s.destination,
+            days: 1,
+            cost: Number(s.cost),
+            oldCost: Number(s.cost * 1.12),
+            image: s.image_url || s.image || 'image/Viet Nam.png',
+            tags: [mappedType, ...(s.badges || [])],
+            rating: Number(s.rating || 5.0),
+            votes: Number(s.bookings_count || s.bookingsCount || 0),
+            carbon: Number(s.carbon || 0),
+            data: [
+              [
+                {
+                  id: 'act_' + s.id,
+                  time: '08:00',
+                  name: s.name || s.name_service,
+                  cost: s.cost,
+                  carbon: s.carbon,
+                  icon: s.type === 'stay' ? 'bi-house-door-fill' : 
+                        s.type === 'food' ? 'bi-cup-hot-fill' : 
+                        s.type === 'transport' ? 'bi-car-front-fill' : 'bi-tree-fill',
+                  type: s.type === 'stay' ? 'lodging' : (s.type === 'food' ? 'dining' : (s.type === 'transport' ? 'transport' : 'attraction')),
+                  lat: s.current_data?.lat || null,
+                  lng: s.current_data?.lng || null
+                }
+              ]
+            ],
+            isService: true
+          };
+          this.setCachedData(cacheKey, tour);
+          return tour;
+        }
+      } catch (e) {
+        console.warn('Failed to load service as preset tour:', e);
+      }
+      return null;
+    }
+
     try {
       const cleanId = String(id).replace('preset_', '');
       const t = await firstValueFrom(this.http.get<any>(`${this.BACKEND_URL}/tours/${cleanId}`));
@@ -590,6 +637,11 @@ export class ApiService {
     return await firstValueFrom(this.http.post<any>(`${this.BACKEND_URL}/reviews/service`, reviewData));
   }
 
+  public async replyToComment(commentId: string, userId: string, text: string): Promise<any> {
+    this.clearCache(`tour_reviews_`);
+    this.clearCache(`service_reviews_`);
+    return await firstValueFrom(this.http.post<any>(`${this.BACKEND_URL}/reviews/${commentId}/reply`, { userId, text }));
+  }
   // 6. Recommendation APIs
   public async getDestinations(): Promise<string[]> {
     const cacheKey = 'destinations_list';

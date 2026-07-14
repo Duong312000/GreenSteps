@@ -13,6 +13,7 @@ import { PartnerPromotionsComponent } from './pages/partner/partner-promotions';
 import { PartnerRegisterComponent } from './pages/partner/partner-register';
 import { BookingComponent } from './pages/booking/booking';
 import { AdminComponent } from './pages/admin/admin';
+import { ServicesComponent } from './pages/services/services';
 import { roleGuard } from './guards/role.guard';
 
 export const routes: Routes = [
@@ -20,6 +21,7 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: 'tours', component: ToursComponent },
   { path: 'tours/:id', component: TourDetailComponent },
+  { path: 'services', component: ServicesComponent },
   { path: 'profile', component: ProfileComponent },
   { path: 'community', component: CommunityComponent },
   { path: 'schedule', component: ScheduleEditorComponent },

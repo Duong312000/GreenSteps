@@ -268,7 +268,11 @@ export class TourDetailComponent implements OnInit {
 
   // REVIEWS & COMMENTS FEATURE INTEGRATION
   public async loadReviews(tourId: string) {
-    this.reviewsList = await this.apiService.getTourReviews(tourId);
+    if (this.activeTour?.isService || (tourId && (tourId.toLowerCase().startsWith('srv_') || tourId.startsWith('SRV_')))) {
+      this.reviewsList = await this.apiService.getServiceReviews(tourId);
+    } else {
+      this.reviewsList = await this.apiService.getTourReviews(tourId);
+    }
     this.applyFilterAndSort();
     this.cdr.detectChanges();
   }
@@ -356,12 +360,17 @@ export class TourDetailComponent implements OnInit {
     const userId = this.currentUser.id || this.currentUser._id;
     const tourId = this.activeTour?.id || '';
 
-    const res = await this.apiService.postTourReview({
-      userId,
-      tourId,
-      text,
-      parentCommentId
-    });
+    let res;
+    if (this.activeTour?.isService) {
+      res = await this.apiService.replyToComment(parentCommentId, userId, text);
+    } else {
+      res = await this.apiService.postTourReview({
+        userId,
+        tourId,
+        text,
+        parentCommentId
+      });
+    }
 
     if (res && res.success) {
       this.replyInputs[parentCommentId] = '';
@@ -385,12 +394,22 @@ export class TourDetailComponent implements OnInit {
     const userId = this.currentUser.id || this.currentUser._id;
     const tourId = this.activeTour?.id || '';
 
-    const res = await this.apiService.postTourReview({
-      userId,
-      tourId,
-      rating: this.newReviewRating,
-      text: this.newReviewText
-    });
+    let res;
+    if (this.activeTour?.isService) {
+      res = await this.apiService.postServiceReview({
+        userId,
+        serviceId: tourId,
+        rating: this.newReviewRating,
+        text: this.newReviewText
+      });
+    } else {
+      res = await this.apiService.postTourReview({
+        userId,
+        tourId,
+        rating: this.newReviewRating,
+        text: this.newReviewText
+      });
+    }
 
     if (res && res.success) {
       this.newReviewText = '';
@@ -398,8 +417,13 @@ export class TourDetailComponent implements OnInit {
       if (this.activeTour) {
         await this.loadReviews(this.activeTour.id);
         this.activeTour.rating = res.rating;
-        this.activeTour.votes_count = res.votes_count;
-        this.activeTour.votes = res.votes_count;
+        if (res.votes_count !== undefined) {
+          this.activeTour.votes_count = res.votes_count;
+          this.activeTour.votes = res.votes_count;
+        } else {
+          // Increment fallback
+          this.activeTour.votes = (this.activeTour.votes || 0) + 1;
+        }
       }
     } else {
       alert('Gửi đánh giá thất bại!');
