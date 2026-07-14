@@ -346,29 +346,13 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
     }, 0);
   }
 
-  @HostListener('window:message', ['$event'])
-  public onWindowMessage(event: MessageEvent) {
-    if (event.origin !== window.location.origin) return;
-    if (event.data && event.data.type === 'GOOGLE_LOGIN_SUCCESS') {
-      this.submitGoogleSim(event.data.email, event.data.name);
-    }
-  }
-
   public alertSocial(provider: string) {
     if (provider === 'Google') {
       const clientId = (window as any).GOOGLE_CLIENT_ID || (window as any).env?.GOOGLE_CLIENT_ID;
       if (clientId && clientId !== 'YOUR_GOOGLE_CLIENT_ID') {
         this.openRealGoogleLogin(clientId);
       } else {
-        const width = 500;
-        const height = 620;
-        const left = window.screen.width / 2 - width / 2;
-        const top = window.screen.height / 2 - height / 2;
-        window.open(
-          '/google-login-sim.html',
-          'GoogleLoginSim',
-          `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,status=no,resizable=yes`
-        );
+        alert('Vui lòng mở file index.html và cấu hình mã GOOGLE_CLIENT_ID của bạn để thực hiện liên kết và hiển thị tài khoản Google thực tế!');
       }
     } else {
       alert(`GreenSteps đang tích hợp đăng nhập ${provider}. Vui lòng sử dụng email và mật khẩu.`);
@@ -382,32 +366,40 @@ export class LoginModalComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    google.accounts.id.initialize({
-      client_id: clientId,
-      callback: (response: any) => {
-        const payload = this.decodeJwt(response.credential);
-        if (payload && payload.email) {
-          this.submitGoogleSim(payload.email, payload.name || payload.email.split('@')[0]);
+    try {
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: 'email profile',
+        callback: (tokenResponse: any) => {
+          if (tokenResponse && tokenResponse.access_token) {
+            this.fetchGoogleProfile(tokenResponse.access_token);
+          }
         }
-      }
-    });
-
-    google.accounts.id.prompt();
+      });
+      client.requestAccessToken();
+    } catch (e) {
+      console.error('Failed to initialize Google token client:', e);
+      alert('Cấu hình Google Client ID không hợp lệ hoặc không được hỗ trợ từ nguồn này.');
+    }
   }
 
-  private decodeJwt(token: string): any {
+  private async fetchGoogleProfile(accessToken: string) {
     try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      return JSON.parse(jsonPayload);
-    } catch (e) {
-      return null;
+      this.isSubmitting = true;
+      const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      const profile = await response.json();
+      this.isSubmitting = false;
+      if (profile && profile.email) {
+        await this.submitGoogleSim(profile.email, profile.name || profile.email.split('@')[0]);
+      } else {
+        this.errorMessage = 'Không thể lấy thông tin tài khoản Google từ API.';
+      }
+    } catch (err) {
+      this.isSubmitting = false;
+      this.errorMessage = 'Lỗi kết nối khi lấy thông tin tài khoản Google.';
+      console.error(err);
     }
   }
 
