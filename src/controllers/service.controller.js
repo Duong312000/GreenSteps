@@ -48,6 +48,7 @@ exports.getServices = async (req, res, next) => {
         bookings_count: s.bookings_count,
         max_capacity: s.max_capacity || 10,
         badges: badges,
+        image_url: s.image_url || (s.current_data ? s.current_data.img : null),
         current_data: s.current_data || {}
       };
     });
@@ -214,6 +215,7 @@ exports.getRecommendations = async (req, res, next) => {
         bookings_count: s.bookings_count,
         max_capacity: s.max_capacity || 10,
         badges: badgeServices.map(bs => bs.badge_name),
+        image_url: s.image_url || (s.current_data ? s.current_data.img : null),
         current_data: s.current_data || {}
       });
     }

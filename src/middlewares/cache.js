@@ -8,7 +8,7 @@ const cache = new NodeCache();
  */
 const cacheMiddleware = (durationSec = 600) => (req, res, next) => {
   // Only cache GET requests
-  if (req.method !== 'GET') return next();
+  if (req.method !== 'GET' || req.query.nocache === 'true' || req.headers['x-no-cache'] === 'true') return next();
 
   const key = req.originalUrl || req.url;
   const cached = cache.get(key);
