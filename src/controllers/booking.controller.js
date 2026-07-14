@@ -493,7 +493,7 @@ exports.createBooking = async (req, res, next) => {
 
       let redirectPath = '/profile';
       if (type === 'itinerary' || (targetId && String(targetId).startsWith('iti_'))) {
-        redirectPath = `/schedule/${targetId}`;
+        redirectPath = '/schedule';
       }
 
       const origin = req.headers.origin || 'http://localhost:4200';
@@ -1149,8 +1149,22 @@ exports.updateBookingStatuses = async (req, res, next) => {
     // Map to legacy status for safety/backward-compat
     if (booking.booking_status === 'rejected') {
       booking.status = 'rejected';
+      if (booking.schedule_id) {
+        const sc = await ScheduleCustom.findByPk(booking.schedule_id);
+        if (sc) {
+          sc.status = 'draft';
+          await sc.save();
+        }
+      }
     } else if (booking.booking_status === 'cancelled') {
       booking.status = 'refunded';
+      if (booking.schedule_id) {
+        const sc = await ScheduleCustom.findByPk(booking.schedule_id);
+        if (sc) {
+          sc.status = 'draft';
+          await sc.save();
+        }
+      }
     } else if (booking.operation_status === 'completed') {
       booking.status = 'completed';
     } else if (booking.payment_status === 'deposit_paid') {
