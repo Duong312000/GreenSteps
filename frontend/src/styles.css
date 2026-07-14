@@ -11383,26 +11383,54 @@ app-partner-register {
 
     .tours-page-compact .tours-filter-header {
         align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    .tours-page-compact .tours-count-badge {
+        height: 28px !important;
+        font-size: 11px !important;
+        padding: 0 10px !important;
+        border-radius: 6px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+    }
+
+    .tours-page-compact .search-input-wrapper {
+        width: 100% !important;
+        max-width: none !important;
+        flex: 1 1 100% !important;
+    }
+
+    .tours-page-compact .search-input-wrapper input {
+        height: 38px !important;
+        font-size: 12px !important;
+        padding-left: 36px !important;
+        padding-right: 14px !important;
+    }
+
+    .tours-page-compact .search-input-wrapper i {
+        font-size: 14px !important;
+        left: 14px !important;
     }
 
     .tours-page-compact .tours-filters-row {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap !important;
-        gap: 10px !important;
+        gap: 6px !important;
         width: 100% !important;
-    }
-
-    .tours-page-compact .search-input-wrapper {
-        width: 100% !important;
-        max-width: none !important;
     }
 
     .tours-page-compact .tours-filters-row select {
-        flex: 1 1 110px !important;
+        flex: 1 1 85px !important;
         width: auto !important;
         min-width: 0 !important;
         max-width: none !important;
+        height: 34px !important;
+        font-size: 11px !important;
+        padding-inline: 6px !important;
+        font-weight: 700 !important;
+        border-radius: 6px !important;
     }
 }
 
