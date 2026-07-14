@@ -6992,19 +6992,19 @@
 
 @media (max-width: 1100px) {
     .community-layout {
-        grid-template-columns: 240px 1fr;
+        grid-template-columns: 240px 1fr !important;
     }
     .fb-right-sidebar {
-        display: none;
+        display: none !important;
     }
 }
 
 @media (max-width: 768px) {
     .community-layout {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
     }
     .fb-left-sidebar {
-        display: none;
+        display: none !important;
     }
 }
 
@@ -9942,12 +9942,34 @@ header .nav-hover-trigger img {
 .mobile-hamburger {
     display: grid !important;
 }
-@media (min-width: 640px) {
+@media (min-width: 1024px) {
     .header-main-nav {
         display: flex !important;
     }
     .mobile-hamburger {
         display: none !important;
+    }
+}
+
+@media (max-width: 1023px) {
+    app-header header > div:first-child {
+        justify-content: space-between !important;
+        padding-inline: 16px !important;
+        height: 70px !important;
+    }
+    app-header header > div:first-child > div:first-child,
+    app-header header > div:first-child > div:last-child {
+        width: auto !important;
+    }
+    app-header header img[alt="GreenSteps"] {
+        width: 2.25rem !important;
+        height: 2.25rem !important;
+    }
+    app-header header span.text-\[20px\] {
+        font-size: 16px !important;
+    }
+    app-header header span.text-\[11px\] {
+        font-size: 9px !important;
     }
 }
 
@@ -11186,9 +11208,64 @@ app-partner-register {
         width: calc(100% - 28px) !important;
     }
 
-    .tours-page-compact .tours-banners-section,
     .tours-page-compact .tours-grid {
         grid-template-columns: 1fr !important;
+    }
+
+    .tours-page-compact .tours-banners-section {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+    }
+
+    .tours-page-compact .dest-banner-card {
+        height: 90px !important;
+    }
+
+    .tours-page-compact .dest-banner-overlay h3 {
+        font-size: 14px !important;
+        font-weight: 850 !important;
+    }
+
+    .tours-page-compact .dest-banner-overlay p {
+        font-size: 9px !important;
+        margin-top: 1px !important;
+        font-weight: 600 !important;
+        opacity: 0.9 !important;
+    }
+
+    .tours-page-compact .tour-card {
+        min-height: auto !important;
+    }
+
+    .tours-page-compact .tour-img-container {
+        height: 150px !important;
+    }
+
+    .tours-page-compact .tour-info {
+        padding: 12px 14px 14px !important;
+        gap: 6px !important;
+    }
+
+    .tours-page-compact .tour-title {
+        font-size: 15px !important;
+        line-height: 1.25 !important;
+    }
+
+    .tours-page-compact .price-pill-overlay {
+        top: 10px !important;
+        right: 10px !important;
+        padding: 4px 8px !important;
+        min-width: auto !important;
+        border-radius: 8px !important;
+    }
+
+    .tours-page-compact .price-new {
+        font-size: 13px !important;
+    }
+
+    .tours-page-compact .tour-tag-pill {
+        font-size: 10px !important;
+        padding: 2px 6px !important;
     }
 
     .tours-page-compact .tours-filter-header {
@@ -11200,10 +11277,6 @@ app-partner-register {
         width: 100% !important;
         max-width: none !important;
         flex-basis: auto !important;
-    }
-
-    .tours-page-compact .dest-banner-card {
-        height: 168px !important;
     }
 }
 
