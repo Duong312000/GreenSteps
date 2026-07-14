@@ -48,21 +48,27 @@
     </section>
 
     <section class="tour-hero-grid" aria-label="Tour gallery and booking">
-        <div class="gallery-panel">
+        <div class="gallery-panel" [ngClass]="{
+            'layout-1-image': slideImages.length === 1,
+            'layout-2-images': slideImages.length === 2,
+            'layout-3-images': slideImages.length === 3,
+            'layout-4-images': slideImages.length === 4,
+            'layout-5-images': slideImages.length === 5
+        }">
             <div class="gallery-main" (click)="openPhotoGallery(activeSlideIndex)" role="button" tabindex="0" aria-label="Xem ảnh lớn">
                 <img [src]="slideImages[activeSlideIndex] || slideImages[0]" [alt]="activeTour.title">
             </div>
 
-            <div class="gallery-side-grid">
+            <div class="gallery-side-grid" *ngIf="slideImages.length > 1">
                 <button type="button"
                         *ngFor="let img of slideImages.slice(1, 7); let idx = index"
                         class="gallery-tile"
                         [class.active]="activeSlideIndex === idx + 1"
-                        [class.show-all-tile]="idx === 5"
+                        [class.show-all-tile]="idx === 5 || (slideImages.length > 2 && idx === slideImages.length - 2)"
                         (click)="openPhotoGallery(idx + 1)"
                         [attr.aria-label]="'Xem ảnh ' + (idx + 2)">
                     <img [src]="img" [alt]="activeTour.destination + ' ảnh ' + (idx + 2)">
-                    <span *ngIf="idx === 5"><i class="bi bi-grid-3x3-gap"></i> Xem tất cả ảnh</span>
+                    <span *ngIf="idx === 5 || (slideImages.length > 2 && idx === slideImages.length - 2)"><i class="bi bi-grid-3x3-gap"></i> Xem tất cả ảnh</span>
                 </button>
             </div>
         </div>
@@ -457,50 +463,31 @@
                 </div>
             </section>
 
-            <section id="reviews-section" class="reviews-panel" *ngIf="activeInfoTab === 'reviews'">
+            <section id="reviews-section" class="reviews-panel" *ngIf="activeInfoTab === 'reviews' && activeTour">
                 <div class="review-summary-card">
                     <div class="review-score-block">
-                        <span class="section-kicker">Đánh giá tour</span>
+                        <span class="section-kicker">{{ activeTour.isService ? 'Đánh giá dịch vụ' : 'Đánh giá tour' }}</span>
                         <div class="review-score">
-                            <strong>4.8</strong>
+                            <strong>{{ averageScore | number:'1.1-1':'vi-VN' }}</strong>
                             <span>/5</span>
                         </div>
-                        <div class="review-stars" aria-label="5 sao">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
+                        <div class="review-stars" [attr.aria-label]="averageScore + ' sao'">
+                            <i class="bi" [ngClass]="averageScore >= 1 ? 'bi-star-fill' : 'bi-star'"></i>
+                            <i class="bi" [ngClass]="averageScore >= 2 ? 'bi-star-fill' : 'bi-star'"></i>
+                            <i class="bi" [ngClass]="averageScore >= 3 ? 'bi-star-fill' : 'bi-star'"></i>
+                            <i class="bi" [ngClass]="averageScore >= 4 ? 'bi-star-fill' : 'bi-star'"></i>
+                            <i class="bi" [ngClass]="averageScore >= 4.7 ? 'bi-star-fill' : 'bi-star'"></i>
                         </div>
-                        <h3>Tuyệt vời</h3>
-                        <p>126 đánh giá từ các gia đình đã trải nghiệm GreenSteps Đà Lạt.</p>
+                        <h3>{{ ratingText }}</h3>
+                        <p *ngIf="totalReviewsCount > 0">Có {{ totalReviewsCount }} đánh giá từ khách hàng đã trải nghiệm {{ activeTour.title }}.</p>
+                        <p *ngIf="totalReviewsCount === 0">Chưa có lượt đánh giá nào cho dịch vụ này.</p>
                     </div>
 
                     <div class="rating-bars" aria-label="Phân bổ sao">
-                        <div class="rating-bar-row">
-                            <span>5 sao</span>
-                            <div class="rating-track"><span style="width: 92%"></span></div>
-                            <strong>92</strong>
-                        </div>
-                        <div class="rating-bar-row">
-                            <span>4 sao</span>
-                            <div class="rating-track"><span style="width: 24%"></span></div>
-                            <strong>24</strong>
-                        </div>
-                        <div class="rating-bar-row">
-                            <span>3 sao</span>
-                            <div class="rating-track"><span style="width: 7%"></span></div>
-                            <strong>7</strong>
-                        </div>
-                        <div class="rating-bar-row">
-                            <span>2 sao</span>
-                            <div class="rating-track"><span style="width: 2%"></span></div>
-                            <strong>2</strong>
-                        </div>
-                        <div class="rating-bar-row">
-                            <span>1 sao</span>
-                            <div class="rating-track"><span style="width: 1%"></span></div>
-                            <strong>1</strong>
+                        <div class="rating-bar-row" *ngFor="let stars of [5, 4, 3, 2, 1]">
+                            <span>{{ stars }} sao</span>
+                            <div class="rating-track"><span [style.width.%]="getRatingPercentage(stars)"></span></div>
+                            <strong>{{ getRatingCount(stars) }}</strong>
                         </div>
                     </div>
                 </div>
@@ -513,37 +500,40 @@
                     <div class="review-criteria-grid">
                         <article>
                             <i class="bi bi-person-heart"></i>
-                            <span>Hướng dẫn viên</span>
-                            <strong>4.9</strong>
-                            <div class="criteria-progress"><span style="width: 96%"></span></div>
-                            <p><i class="bi bi-leaf"></i> 96% khách khen thân thiện</p>
+                            <span>{{ activeTour.isService ? 'Dịch vụ chu đáo' : 'Hướng dẫn viên' }}</span>
+                            <strong>{{ guideRating | number:'1.1-1':'vi-VN' }}</strong>
+                            <div class="criteria-progress"><span [style.width.%]="guideRating * 20"></span></div>
+                            <p *ngIf="activeTour.isService"><i class="bi bi-star"></i> Phục vụ thân thiện, nhiệt tình</p>
+                            <p *ngIf="!activeTour.isService"><i class="bi bi-leaf"></i> 96% khách khen thân thiện</p>
                         </article>
                         <article>
                             <i class="bi bi-map"></i>
-                            <span>Lịch trình</span>
-                            <strong>4.8</strong>
-                            <div class="criteria-progress"><span style="width: 90%"></span></div>
-                            <p><i class="bi bi-calendar-check"></i> Lịch trình vừa sức, hợp lý</p>
+                            <span>{{ activeTour.isService ? 'Không gian xanh' : 'Lịch trình' }}</span>
+                            <strong>{{ itineraryRating | number:'1.1-1':'vi-VN' }}</strong>
+                            <div class="criteria-progress"><span [style.width.%]="itineraryRating * 20"></span></div>
+                            <p *ngIf="activeTour.isService"><i class="bi bi-leaf"></i> Cơ sở vật chất thân thiện môi trường</p>
+                            <p *ngIf="!activeTour.isService"><i class="bi bi-calendar-check"></i> Lịch trình vừa sức, hợp lý</p>
                         </article>
                         <article>
                             <i class="bi bi-people"></i>
                             <span>Phù hợp gia đình</span>
-                            <strong>4.9</strong>
-                            <div class="criteria-progress"><span style="width: 97%"></span></div>
-                            <p><i class="bi bi-heart"></i> Rất phù hợp cho gia đình có trẻ nhỏ</p>
+                            <strong>{{ familyRating | number:'1.1-1':'vi-VN' }}</strong>
+                            <div class="criteria-progress"><span [style.width.%]="familyRating * 20"></span></div>
+                            <p *ngIf="activeTour.isService"><i class="bi bi-heart"></i> Phù hợp với mọi đối tượng khách</p>
+                            <p *ngIf="!activeTour.isService"><i class="bi bi-heart"></i> Rất phù hợp cho gia đình có trẻ nhỏ</p>
                         </article>
                         <article>
                             <i class="bi bi-leaf"></i>
                             <span>Trải nghiệm xanh</span>
-                            <strong>4.7</strong>
-                            <div class="criteria-progress"><span style="width: 88%"></span></div>
-                            <p><i class="bi bi-leaf"></i> Ưu tiên điểm đến xanh, ít phát thải</p>
+                            <strong>{{ ecoRatingHighlight | number:'1.1-1':'vi-VN' }}</strong>
+                            <div class="criteria-progress"><span [style.width.%]="ecoRatingHighlight * 20"></span></div>
+                            <p><i class="bi bi-leaf"></i> Ưu tiên bảo vệ môi trường</p>
                         </article>
                         <article>
                             <i class="bi bi-wallet2"></i>
                             <span>Đáng tiền</span>
-                            <strong>4.8</strong>
-                            <div class="criteria-progress"><span style="width: 91%"></span></div>
+                            <strong>{{ valueRating | number:'1.1-1':'vi-VN' }}</strong>
+                            <div class="criteria-progress"><span [style.width.%]="valueRating * 20"></span></div>
                             <p><i class="bi bi-patch-check"></i> Chi phí xứng đáng với trải nghiệm</p>
                         </article>
                     </div>

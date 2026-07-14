@@ -1,1 +1,83 @@
-:host{display:block}
+/* Scoped styles for Tour Detail Component */
+
+:host ::ng-deep .gallery-panel.layout-1-image {
+  grid-template-columns: 1fr !important;
+  height: 500px !important;
+  min-height: 500px !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-1-image .gallery-side-grid {
+  display: none !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-1-image .gallery-main {
+  height: 500px !important;
+  width: 100% !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-2-images {
+  grid-template-columns: 1.2fr 1.2fr !important;
+  height: 500px !important;
+  min-height: 500px !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-2-images .gallery-side-grid {
+  grid-template-columns: 1fr !important;
+  grid-template-rows: 1fr !important;
+  height: 500px !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-2-images .gallery-tile {
+  height: 500px !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-3-images {
+  grid-template-columns: 1.2fr 0.8fr !important;
+  height: 500px !important;
+  min-height: 500px !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-3-images .gallery-side-grid {
+  grid-template-columns: 1fr !important;
+  grid-template-rows: repeat(2, 1fr) !important;
+  height: 500px !important;
+  gap: 12px !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-3-images .gallery-tile {
+  height: 244px !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-4-images {
+  grid-template-columns: 1.2fr 0.8fr !important;
+  height: 500px !important;
+  min-height: 500px !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-4-images .gallery-side-grid {
+  grid-template-columns: 1fr !important;
+  grid-template-rows: repeat(3, 1fr) !important;
+  height: 500px !important;
+  gap: 12px !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-4-images .gallery-tile {
+  height: 158px !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-5-images {
+  grid-template-columns: 1.2fr 0.8fr !important;
+  height: 500px !important;
+  min-height: 500px !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-5-images .gallery-side-grid {
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-rows: repeat(2, 1fr) !important;
+  height: 500px !important;
+  gap: 12px !important;
+}
+
+:host ::ng-deep .gallery-panel.layout-5-images .gallery-tile {
+  height: 244px !important;
+}
