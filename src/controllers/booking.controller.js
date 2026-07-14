@@ -470,7 +470,17 @@ exports.createBooking = async (req, res, next) => {
     }
 
     if (email) {
-      const lookupUrl = `${req.headers.origin || 'http://localhost:4200'}/booking/lookup?code=${bookingId}`;
+      const user = await User.findByPk(userId);
+      const token = user ? localSignAuthToken(user) : '';
+
+      let redirectPath = '/profile';
+      if (type === 'itinerary' || (targetId && String(targetId).startsWith('iti_'))) {
+        redirectPath = `/schedule/${targetId}`;
+      }
+
+      const origin = req.headers.origin || 'http://localhost:4200';
+      const lookupUrl = `${origin}${redirectPath}${token ? `?token=${token}` : ''}`;
+
       sendBookingConfirmationEmail({
         to: email,
         bookingId,

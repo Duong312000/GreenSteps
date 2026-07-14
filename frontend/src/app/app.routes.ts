@@ -12,7 +12,6 @@ import { PartnerAdsComponent } from './pages/partner/partner-ads';
 import { PartnerPromotionsComponent } from './pages/partner/partner-promotions';
 import { PartnerRegisterComponent } from './pages/partner/partner-register';
 import { BookingComponent } from './pages/booking/booking';
-import { BookingLookupComponent } from './pages/booking-lookup/booking-lookup';
 import { AdminComponent } from './pages/admin/admin';
 import { roleGuard } from './guards/role.guard';
 
@@ -28,7 +27,6 @@ export const routes: Routes = [
   { path: 'booking', component: BookingComponent },
   { path: 'booking/payment', component: BookingComponent },
   { path: 'booking/confirm', component: BookingComponent },
-  { path: 'booking/lookup', component: BookingLookupComponent },
   { path: 'partner-dashboard', component: PartnerDashboardComponent, canActivate: [roleGuard] },
   { path: 'partner-services', component: PartnerServicesComponent, canActivate: [roleGuard] },
   { path: 'partner-bookings', component: PartnerBookingsComponent, canActivate: [roleGuard] },
