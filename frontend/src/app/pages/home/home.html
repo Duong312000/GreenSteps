@@ -519,6 +519,23 @@
     .gs-stat-avatars { display: none; }
   }
 
+  @media (max-width: 1024px) {
+    .gs-trip-tabs {
+        width: calc(100% - 16px) !important;
+        max-width: calc(100% - 16px) !important;
+        justify-content: flex-start !important;
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+    }
+    .gs-trip-tabs::-webkit-scrollbar {
+        display: none !important;
+    }
+    .gs-trip-tab {
+        min-width: 128px !important;
+        flex: 0 0 auto !important;
+    }
+  }
+
   @media (max-width: 720px) {
     .gs-home-hero { height: auto; min-height: 100vh; overflow: hidden; }
     .gs-home-hero__inner { width: calc(100% - 28px); min-height: 100vh; padding: 88px 0 24px; align-items: flex-start; }
@@ -528,11 +545,8 @@
     .gs-home-description { font-size: 15px; }
     .gs-home-action { flex: 1 1 180px; }
     .gs-trip-finder { width: 100%; margin-top: 38px; padding-top: 34px; border-radius: 18px; }
-    .gs-trip-tabs { width: calc(100% - 16px); max-width: calc(100% - 16px); justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
-    .gs-trip-tabs::-webkit-scrollbar { display: none; }
-    .gs-trip-tab { min-width: 128px; flex: 0 0 auto; }
-    .gs-trip-form { grid-template-columns: 1fr; gap: 12px; padding: 10px 16px 16px; }
-    .gs-trip-field:first-child, .gs-trip-field:nth-child(5), .gs-trip-submit { grid-column: auto; }
+    .gs-trip-form { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 12px !important; padding: 12px 16px 16px !important; }
+    .gs-trip-field:first-child, .gs-trip-submit { grid-column: span 2 !important; }
     .gs-hero-stats { width: 100%; grid-template-columns: 1fr 1fr; gap: 0; padding-top: 2px; }
     .gs-hero-stat { min-height: 58px; justify-content: flex-start; padding: 8px 10px; border-left: 0; border-bottom: 1px solid rgba(255, 255, 255, .22); }
     .gs-hero-stat:nth-child(even) { border-left: 1px solid rgba(255, 255, 255, .22); }

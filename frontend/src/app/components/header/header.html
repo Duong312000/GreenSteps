@@ -40,7 +40,7 @@
                     <a *ngIf="tab.link"
                        [routerLink]="tab.link"
                        [queryParams]="tab.queryParams"
-                       routerLinkActive="!text-[#0E9F6E]"
+                       routerLinkActive="active-nav-tab"
                        [style.visibility]="overflowTabIndices.has(i) ? 'hidden' : 'visible'"
                        class="nav-tab-item whitespace-nowrap flex-shrink-0 text-[18px] font-semibold
                               relative transition-colors duration-300
@@ -236,7 +236,7 @@
                 <ng-container *ngFor="let tab of overflowTabs">
                     <a *ngIf="tab.link"
                        [routerLink]="tab.link"
-                       routerLinkActive="!text-[#0E9F6E]"
+                       routerLinkActive="active-nav-tab"
                        class="whitespace-nowrap flex-shrink-0 text-[18px] font-semibold
                               text-[#184A37] relative transition-colors duration-300
                               hover:text-[#0E9F6E]

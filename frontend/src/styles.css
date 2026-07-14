@@ -10526,6 +10526,7 @@ app-partner-register {
     }
     app-header .header-main-nav { gap: 1rem !important; }
     app-header .nav-tab-item { font-size: 1rem !important; }
+    app-header .active-nav-tab { color: #0E9F6E !important; }
     app-header header img[alt="GreenSteps"] {
         width: 3.15rem !important;
         height: 3.15rem !important;
@@ -11270,6 +11271,12 @@ app-partner-register {
 
     .tours-page-compact .tours-filter-header {
         align-items: stretch !important;
+    }
+
+    .tours-page-compact .tours-filters-row {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
     }
 
     .tours-page-compact .search-input-wrapper,
